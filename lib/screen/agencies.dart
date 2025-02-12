@@ -132,6 +132,149 @@ class _AgenciesDemoState extends State<AgenciesDemo> {
                       ),
                     ],
                   ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        left: 0.0, right: 190.0, top: 10, bottom: 0),
+                    child: Container(
+                      width: 160,
+                      height: 40,
+                      padding: const EdgeInsets.only(top: 2),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadiusDirectional.circular(8.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            offset: const Offset(
+                              0.5,
+                              0.5,
+                            ),
+                            blurRadius: 0.5,
+                            spreadRadius: 0.5,
+                          ), //BoxShadow
+                          BoxShadow(
+                            color: Colors.white,
+                            offset: const Offset(0.5, 0.5),
+                            blurRadius: 0.5,
+                            spreadRadius: 0.5,
+                          ), //BoxShadow
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Padding(padding: const EdgeInsets.only(left: 15),
+                              child:   Text("Agents",style: TextStyle(
+                                letterSpacing: 0.5,
+                              ),textAlign: TextAlign.center,)
+                          ),
+                          Container(
+                            margin: const EdgeInsets.only(left: 5),
+                            width: 75,
+                            height: 30,
+                            padding: const EdgeInsets.only(top: 5,left: 10),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadiusDirectional.circular(8.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.5,
+                                    0.5,
+                                  ),
+                                  blurRadius: 0.5,
+                                  spreadRadius: 0.5,
+                                ), //BoxShadow
+                                BoxShadow(
+                                  color: Colors.blue,
+                                  offset: const Offset(0.5, 0.5),
+                                  blurRadius: 0.5,
+                                  spreadRadius: 0.5,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child: Text("Agencies",style: TextStyle(
+                                letterSpacing: 0.5,color: Colors.white
+                            ),),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 15,left: 20,right: 10),
+                        child: Container(
+                          width: 250,
+                          height: 50,
+                          padding: const EdgeInsets.only(top: 5),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadiusDirectional.circular(10.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: const Offset(
+                                  0.5,
+                                  0.5,
+                                ),
+                                blurRadius: 1.0,
+                                spreadRadius: 0.5,
+                              ), //BoxShadow
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: const Offset(0.0, 0.0),
+                                blurRadius: 0.0,
+                                spreadRadius: 0.0,
+                              ), //BoxShadow
+                            ],),
+                          // Use a Material design search bar
+                          child: TextField(
+                            textAlign: TextAlign.left,
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: 'Dubai ',
+                              hintStyle: TextStyle(color: Colors.grey,fontSize: 15,
+                                  letterSpacing: 0.5),
+
+                              // Add a clear button to the search bar
+                              /* suffixIcon: IconButton(
+                            alignment: Alignment.topLeft,
+                            icon: Icon(Icons.mic),
+                            onPressed: () => _searchController.clear(),
+                          ),*/
+
+                              // Add a search icon or button to the search bar
+                              prefixIcon: IconButton(
+                                alignment: Alignment.topLeft,
+                                icon: Icon(Icons.location_on,color: Colors.red,),
+                                onPressed: () {
+                                  // Perform the search here
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(padding: const EdgeInsets.only(top: 15,left: 25,right: 5),
+                     child: Image.asset("assets/images/filter.png",width: 20,height: 30,),
+                      ),
+                      Padding(padding: const EdgeInsets.only(top: 15,left: 5,right: 10),
+                        child: Text("Filters",style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),),
+                      )
+                    ],
+                  ),
+                  //Searchbar
+                    Padding(padding: const EdgeInsets.only(left: 10,top: 15,right: 190),
+                    child: Text("Featured Agencies",style: TextStyle(fontWeight: FontWeight.bold,
+                    fontSize: 18,letterSpacing: 0.5,),textAlign: TextAlign.left,),
+                    ),
+                  Padding(padding: const EdgeInsets.only(left: 25,top: 5,right: 10),
+                    child: Text("Explore agents with a proven track record of high response rates"
+                        " and authentic listings.",style: TextStyle(
+                      fontSize: 15,letterSpacing: 0.5,),textAlign: TextAlign.left,),
+                  ),
                 ]
             )
         )
