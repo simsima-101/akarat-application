@@ -146,9 +146,6 @@ class _MyHomePageState extends State<HomeDemo> {
                       height: 100,
                       padding: const EdgeInsets.only(top: 0),
                       decoration: BoxDecoration(
-                        // image: DecorationImage(
-                        //   image: AssetImage("assets/images/01.png"),
-                        // ),
                         borderRadius: BorderRadiusDirectional.circular(10.0),
                         boxShadow: [
                           BoxShadow(
