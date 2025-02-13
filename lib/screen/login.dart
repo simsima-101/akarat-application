@@ -221,7 +221,7 @@ class _LoginDemoState extends State<LoginDemo> {
                             padding: const EdgeInsets.only(left:1.0),
                             child: InkWell(
                                 onTap: (){
-                                  //   print('hello');
+                                 // Text("hiiii");
                                 },
                                 child: Text('Create new account', style: TextStyle(fontSize: 14, color: Colors.black),)),
                           )

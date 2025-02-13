@@ -1,3 +1,4 @@
+import 'package:drawerdemo/screen/filter.dart';
 import 'package:flutter/material.dart';
 
 void main(){
@@ -22,6 +23,7 @@ class AboutAgentDemo extends StatefulWidget {
 }
 class _AboutAgentDemoState extends State<AboutAgentDemo> {
   bool _isVisible = true;
+  String selected = "About";
   int pageIndex = 0;
 
   final pages = [
@@ -36,7 +38,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: buildMyNavBar(context),
       backgroundColor: Colors.white,
         body: SingleChildScrollView(
         child: Column(
@@ -290,189 +292,425 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
             children: [
               GestureDetector(
                 onTap: (){
-                  //visibility
-                  Visibility(
-                      visible: _isVisible,
-                      child: Column(
-                        children: [
-                          //About details
-                          Padding(padding: const EdgeInsets.only(top: 20,left: 0.0,right: 310),
-                            child: Text("About",style: TextStyle(
-                                fontSize: 18,color: Colors.black,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Padding(padding: const EdgeInsets.only(top: 10,left: 0.0,right: 300),
-                            child: Text("Language(s)",style: TextStyle(
-                                fontSize: 10,color: Colors.grey,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Padding(padding: const EdgeInsets.only(top: 2,left: 0.0,right: 320),
-                            child: Text("dfgh ",style: TextStyle(
-                                fontSize: 15,color: Colors.black,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Padding(padding: const EdgeInsets.only(top: 20,left: 0.0,right: 310),
-                            child: Text("Expertise",style: TextStyle(
-                                fontSize: 10,color: Colors.grey,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Padding(padding: const EdgeInsets.only(top: 2,left: 0.0,right: 310),
-                            child: Text("About",style: TextStyle(
-                                fontSize: 15,color: Colors.black,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Padding(padding: const EdgeInsets.only(top: 20,left: 0.0,right: 290),
-                            child: Text("Services Area",style: TextStyle(
-                                fontSize: 10,color: Colors.grey,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Padding(padding: const EdgeInsets.only(top: 2,left: 0.0,right: 310),
-                            child: Text("About",style: TextStyle(
-                                fontSize: 15,color: Colors.black,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Padding(padding: const EdgeInsets.only(top: 20,left: 0.0,right: 310),
-                            child: Text("Properties",style: TextStyle(
-                                fontSize: 10,color: Colors.grey,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Row(
+                  setState(() {
+                    selected = 'About';
+                    Container(
+                    height: 300,
+                    child:  Column(
+                    children: [
+                    //About details
+                    Padding(
+                    padding: const EdgeInsets.only(top: 20, left: 0.0, right: 310),
+                    child: Text("About", style: TextStyle(
+                    fontSize: 18, color: Colors.black, letterSpacing: 0.5
+                    ),),
+                    ),
+                    Padding(
+                    padding: const EdgeInsets.only(top: 10, left: 0.0, right: 300),
+                    child: Text("Language(s)", style: TextStyle(
+                    fontSize: 10, color: Colors.grey, letterSpacing: 0.5
+                    ),),
+                    ),
+                    Padding(
+                    padding: const EdgeInsets.only(top: 2, left: 0.0, right: 320),
+                    child: Text("dfgh ", style: TextStyle(
+                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                    ),),
+                    ),
+                    Padding(
+                    padding: const EdgeInsets.only(top: 20, left: 0.0, right: 310),
+                    child: Text("Expertise", style: TextStyle(
+                    fontSize: 10, color: Colors.grey, letterSpacing: 0.5
+                    ),),
+                    ),
+                    Padding(
+                    padding: const EdgeInsets.only(top: 2, left: 0.0, right: 310),
+                    child: Text("About", style: TextStyle(
+                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                    ),),
+                    ),
+                    Padding(
+                    padding: const EdgeInsets.only(top: 20, left: 0.0, right: 290),
+                    child: Text("Services Area", style: TextStyle(
+                    fontSize: 10, color: Colors.grey, letterSpacing: 0.5
+                    ),),
+                    ),
+                    Padding(
+                    padding: const EdgeInsets.only(top: 2, left: 0.0, right: 310),
+                    child: Text("About", style: TextStyle(
+                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                    ),),
+                    ),
+                    Padding(
+                    padding: const EdgeInsets.only(top: 20, left: 0.0, right: 310),
+                    child: Text("Properties", style: TextStyle(
+                    fontSize: 10, color: Colors.grey, letterSpacing: 0.5
+                    ),),
+                    ),
+                    Row(
+                    children: [
+                    Padding(
+                    padding: const EdgeInsets.only(
+                    left: 10.0, right: 2.0, top: 20, bottom: 0),
+                    child: Container(
+                    // width: 130,
+                    height: 35,
+                    padding: const EdgeInsets.only(
+                    top: 5, left: 5, right: 10),
+                    decoration: BoxDecoration(
+                    borderRadius: BorderRadiusDirectional.circular(8.0),
+                    boxShadow: [
+                    BoxShadow(
+                    color: Colors.red,
+                    offset: const Offset(
+                    0.3,
+                    0.5,
+                    ),
+                    blurRadius: 0.5,
+                    spreadRadius: 0.8,
+                    ), //BoxShadow
+                    BoxShadow(
+                    color: Colors.white,
+                    offset: const Offset(0.5, 0.5),
+                    blurRadius: 0.5,
+                    spreadRadius: 0.5,
+                    ), //BoxShadow
+                    ],
+                    ),
+
+                    child: Row(
+                    children: [
+                    Text("18 Properties for Rent", style: TextStyle(
+                    letterSpacing: 0.5,
+                    color: Colors.black,
+                    fontSize: 13
+                    ), textAlign: TextAlign.left,),
+                    Padding(
+                    padding: const EdgeInsets.only(left: 5, right: 5),
+                    child: Image.asset("assets/images/arrow.png",
+                    width: 15,
+                    height: 15,
+                    fit: BoxFit.contain,)
+                    ),
+
+                    ],
+                    )
+                    ),
+                    ),
+                    Padding(
+                    padding: const EdgeInsets.only(
+                    left: 10.0, right: 2.0, top: 20, bottom: 0),
+                    child: Container(
+                    // width: 130,
+                    height: 35,
+                    padding: const EdgeInsets.only(
+                    top: 8, left: 5, right: 10),
+                    decoration: BoxDecoration(
+                    borderRadius: BorderRadiusDirectional.circular(8.0),
+                    boxShadow: [
+                    BoxShadow(
+                    color: Colors.red,
+                    offset: const Offset(
+                    0.3,
+                    0.5,
+                    ),
+                    blurRadius: 0.5,
+                    spreadRadius: 0.8,
+                    ), //BoxShadow
+                    BoxShadow(
+                    color: Colors.white,
+                    offset: const Offset(0.5, 0.5),
+                    blurRadius: 0.5,
+                    spreadRadius: 0.5,
+                    ), //BoxShadow
+                    ],
+                    ),
+                    child: Row(
+                    children: [
+                    Text("18 Properties for Rent", style: TextStyle(
+                    letterSpacing: 0.5,
+                    color: Colors.black,
+                    fontSize: 13
+                    ), textAlign: TextAlign.left,),
+                    Padding(
+                    padding: const EdgeInsets.only(left: 5, right: 5),
+                    child: Image.asset("assets/images/arrow.png",
+                    width: 15,
+                    height: 15,
+                    fit: BoxFit.contain,)
+                    ),
+                    ],
+                    )
+                    ),
+                    ),
+                    ],
+                    ),
+                    Padding(
+                    padding: const EdgeInsets.only(top: 20, left: 10.0, right: 290),
+                    child: Text("Description", style: TextStyle(
+                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                    ),),
+                    ),
+                    Padding(
+                    padding: const EdgeInsets.only(top: 8, left: 20.0, right: 10),
+                    child: SizedBox(
+                    width: 400,
+                    height: 70,
+                    child: Text(
+                    "Having worked in the real estate sector over 11 years across Dubai"
+                    "hong kong and india,i come with a rich experience"
+                    " of different aspects of the property market....",
+                    style: TextStyle(
+    fontSize: 13, color: Colors.grey, letterSpacing: 0.5
+    ),),
+    )
+    ),
+    Padding(
+    padding: const EdgeInsets.only(top: 1, left: 5.0, right: 320),
+    child: Text("BRN", style: TextStyle(
+    fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+    ),),
+    ),
+    Padding(
+    padding: const EdgeInsets.only(top: 5, left: 10.0, right: 310),
+    child: Text("40841", style: TextStyle(
+    fontSize: 15, color: Colors.black, letterSpacing: 0.5
+    ),),
+    ),
+    Padding(
+    padding: const EdgeInsets.only(top: 10, left: 10.0, right: 290),
+    child: Text("Experience", style: TextStyle(
+    fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+    ),),
+    ),
+    Padding(
+    padding: const EdgeInsets.only(top: 5, left: 10.0, right: 310),
+    child: Text("5 Years", style: TextStyle(
+    fontSize: 15, color: Colors.black, letterSpacing: 0.5
+    ),),
+    ),
+    //ending about details
+
+    ],
+    )
+    );
+                  });
+                 /* setState(() {
+                   if(selected == 'About') {
+                     Visibility(
+                       visible: _isVisible,
+                         child:SizedBox(
+                        width: double.infinity,
+                          height: 300,
+                          child:  Column(
                             children: [
+                              //About details
                               Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 10.0, right: 2.0, top: 20, bottom: 0),
-                                child: Container(
-                                  // width: 130,
-                                    height: 35,
-                                    padding: const EdgeInsets.only(top: 5,left: 5,right: 10),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadiusDirectional.circular(8.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.red,
-                                          offset: const Offset(
-                                            0.3,
-                                            0.5,
-                                          ),
-                                          blurRadius: 0.5,
-                                          spreadRadius: 0.8,
-                                        ), //BoxShadow
-                                        BoxShadow(
-                                          color: Colors.white,
-                                          offset: const Offset(0.5, 0.5),
-                                          blurRadius: 0.5,
-                                          spreadRadius: 0.5,
-                                        ), //BoxShadow
-                                      ],
-                                    ),
-
-                                    child:  Row(
-                                      children: [
-                                        Text("18 Properties for Rent",style: TextStyle(
-                                            letterSpacing: 0.5,color: Colors.black,fontSize: 13
-                                        ),textAlign: TextAlign.left,),
-                                        Padding(padding: const EdgeInsets.only(left: 5,right: 5),
-                                            child:  Image.asset("assets/images/arrow.png",
-                                              width: 15,
-                                              height: 15,
-                                              fit: BoxFit.contain,)
-                                        ),
-
-                                      ],
-                                    )
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 10.0, right: 2.0, top: 20, bottom: 0),
-                                child: Container(
-                                  // width: 130,
-                                    height: 35,
-                                    padding: const EdgeInsets.only(top: 8,left: 5,right: 10),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadiusDirectional.circular(8.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.red,
-                                          offset: const Offset(
-                                            0.3,
-                                            0.5,
-                                          ),
-                                          blurRadius: 0.5,
-                                          spreadRadius: 0.8,
-                                        ), //BoxShadow
-                                        BoxShadow(
-                                          color: Colors.white,
-                                          offset: const Offset(0.5, 0.5),
-                                          blurRadius: 0.5,
-                                          spreadRadius: 0.5,
-                                        ), //BoxShadow
-                                      ],
-                                    ),
-                                    child:  Row(
-                                      children: [
-                                        Text("18 Properties for Rent",style: TextStyle(
-                                            letterSpacing: 0.5,color: Colors.black,fontSize: 13
-                                        ),textAlign: TextAlign.left,),
-                                        Padding(padding: const EdgeInsets.only(left: 5,right: 5),
-                                            child:  Image.asset("assets/images/arrow.png",
-                                              width: 15,
-                                              height: 15,
-                                              fit: BoxFit.contain,)
-                                        ),
-                                      ],
-                                    )
-                                ),
-                              ),
-                            ],
-                          ),
-                          Padding(padding: const EdgeInsets.only(top: 20,left: 10.0,right: 290),
-                            child: Text("Description",style: TextStyle(
-                                fontSize: 15,color: Colors.black,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Padding(padding: const EdgeInsets.only(top: 8,left: 20.0,right: 10),
-                              child:SizedBox(
-                                width: 400,
-                                height: 70,
-                                child:    Text("Having worked in the real estate sector over 11 years across Dubai"
-                                    "hong kong and india,i come with a rich experience"
-                                    " of different aspects of the property market....",style: TextStyle(
-                                    fontSize: 13,color: Colors.grey,letterSpacing: 0.5
+                                padding: const EdgeInsets.only(top: 20, left: 0.0, right: 310),
+                                child: Text("About", style: TextStyle(
+                                    fontSize: 18, color: Colors.black, letterSpacing: 0.5
                                 ),),
-                              )
-                          ),
-                          Padding(padding: const EdgeInsets.only(top: 1,left: 5.0,right: 320),
-                            child: Text("BRN",style: TextStyle(
-                                fontSize: 12,color: Colors.grey,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Padding(padding: const EdgeInsets.only(top: 5,left: 10.0,right: 310),
-                            child: Text("40841",style: TextStyle(
-                                fontSize: 15,color: Colors.black,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Padding(padding: const EdgeInsets.only(top: 10,left: 10.0,right: 290),
-                            child: Text("Experience",style: TextStyle(
-                                fontSize: 12,color: Colors.grey,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Padding(padding: const EdgeInsets.only(top: 5,left: 10.0,right: 310),
-                            child: Text("5 Years",style: TextStyle(
-                                fontSize: 15,color: Colors.black,letterSpacing: 0.5
-                            ),),
-                          ),
-                          //ending about details
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10, left: 0.0, right: 300),
+                                child: Text("Language(s)", style: TextStyle(
+                                    fontSize: 10, color: Colors.grey, letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2, left: 0.0, right: 320),
+                                child: Text("dfgh ", style: TextStyle(
+                                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 20, left: 0.0, right: 310),
+                                child: Text("Expertise", style: TextStyle(
+                                    fontSize: 10, color: Colors.grey, letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2, left: 0.0, right: 310),
+                                child: Text("About", style: TextStyle(
+                                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 20, left: 0.0, right: 290),
+                                child: Text("Services Area", style: TextStyle(
+                                    fontSize: 10, color: Colors.grey, letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2, left: 0.0, right: 310),
+                                child: Text("About", style: TextStyle(
+                                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 20, left: 0.0, right: 310),
+                                child: Text("Properties", style: TextStyle(
+                                    fontSize: 10, color: Colors.grey, letterSpacing: 0.5
+                                ),),
+                              ),
+                              Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 10.0, right: 2.0, top: 20, bottom: 0),
+                                    child: Container(
+                                      // width: 130,
+                                        height: 35,
+                                        padding: const EdgeInsets.only(
+                                            top: 5, left: 5, right: 10),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadiusDirectional.circular(8.0),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.red,
+                                              offset: const Offset(
+                                                0.3,
+                                                0.5,
+                                              ),
+                                              blurRadius: 0.5,
+                                              spreadRadius: 0.8,
+                                            ), //BoxShadow
+                                            BoxShadow(
+                                              color: Colors.white,
+                                              offset: const Offset(0.5, 0.5),
+                                              blurRadius: 0.5,
+                                              spreadRadius: 0.5,
+                                            ), //BoxShadow
+                                          ],
+                                        ),
 
-                        ],
-                      )
-                  );
+                                        child: Row(
+                                          children: [
+                                            Text("18 Properties for Rent", style: TextStyle(
+                                                letterSpacing: 0.5,
+                                                color: Colors.black,
+                                                fontSize: 13
+                                            ), textAlign: TextAlign.left,),
+                                            Padding(
+                                                padding: const EdgeInsets.only(left: 5, right: 5),
+                                                child: Image.asset("assets/images/arrow.png",
+                                                  width: 15,
+                                                  height: 15,
+                                                  fit: BoxFit.contain,)
+                                            ),
+
+                                          ],
+                                        )
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 10.0, right: 2.0, top: 20, bottom: 0),
+                                    child: Container(
+                                      // width: 130,
+                                        height: 35,
+                                        padding: const EdgeInsets.only(
+                                            top: 8, left: 5, right: 10),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadiusDirectional.circular(8.0),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.red,
+                                              offset: const Offset(
+                                                0.3,
+                                                0.5,
+                                              ),
+                                              blurRadius: 0.5,
+                                              spreadRadius: 0.8,
+                                            ), //BoxShadow
+                                            BoxShadow(
+                                              color: Colors.white,
+                                              offset: const Offset(0.5, 0.5),
+                                              blurRadius: 0.5,
+                                              spreadRadius: 0.5,
+                                            ), //BoxShadow
+                                          ],
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Text("18 Properties for Rent", style: TextStyle(
+                                                letterSpacing: 0.5,
+                                                color: Colors.black,
+                                                fontSize: 13
+                                            ), textAlign: TextAlign.left,),
+                                            Padding(
+                                                padding: const EdgeInsets.only(left: 5, right: 5),
+                                                child: Image.asset("assets/images/arrow.png",
+                                                  width: 15,
+                                                  height: 15,
+                                                  fit: BoxFit.contain,)
+                                            ),
+                                          ],
+                                        )
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 20, left: 10.0, right: 290),
+                                child: Text("Description", style: TextStyle(
+                                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                  padding: const EdgeInsets.only(top: 8, left: 20.0, right: 10),
+                                  child: SizedBox(
+                                    width: 400,
+                                    height: 70,
+                                    child: Text(
+                                      "Having worked in the real estate sector over 11 years across Dubai"
+                                          "hong kong and india,i come with a rich experience"
+                                          " of different aspects of the property market....",
+                                      style: TextStyle(
+                                          fontSize: 13, color: Colors.grey, letterSpacing: 0.5
+                                      ),),
+                                  )
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 1, left: 5.0, right: 320),
+                                child: Text("BRN", style: TextStyle(
+                                    fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 5, left: 10.0, right: 310),
+                                child: Text("40841", style: TextStyle(
+                                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10, left: 10.0, right: 290),
+                                child: Text("Experience", style: TextStyle(
+                                    fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 5, left: 10.0, right: 310),
+                                child: Text("5 Years", style: TextStyle(
+                                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                                ),),
+                              ),
+                              //ending about details
+
+                            ],
+                          )
+
+                      ));
+                   }
+
+
+                  });*/
                 },
                 child:  Padding(
-                  padding: const EdgeInsets.only(
-                      left: 10.0, right: 2.0, top: 20, bottom: 0),
-                  child: Container(
-                    // width: 130,
+                    padding: const EdgeInsets.only(
+                        left: 10.0, right: 2.0, top: 20, bottom: 0),
+                    child: Container(
+                      // width: 130,
                       height: 35,
                       padding: const EdgeInsets.only(top: 8,left: 12,right: 12),
                       decoration: BoxDecoration(
@@ -495,13 +733,14 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                           ), //BoxShadow
                         ],
                       ),
-                      child:   Text("About",style: TextStyle(
+                      child: Text("About",style: TextStyle(
                           letterSpacing: 0.5,color: Colors.blue,fontSize: 15
-                      ),textAlign: TextAlign.center,)
-                  ),
-                ),
-
+                      ),textAlign: TextAlign.center,),
+                    )
+                )
               ),
+
+
               GestureDetector(
                 onTap: (){
                   //visibility
@@ -596,7 +835,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                         ],
                       ),
                       child:   Text("Properties",style: TextStyle(
-                          letterSpacing: 0.5,color: Colors.blue,fontSize: 15
+                          letterSpacing: 0.5,color: Colors.black,fontSize: 15
                       ),textAlign: TextAlign.center,)
                   ),
                 ),
@@ -646,6 +885,13 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
     );
   
   }
+
+  //  _topCategoriesListView() {
+  //
+  // }
+
+
+
   Container buildMyNavBar(BuildContext context) {
     return Container(
       height: 60,
@@ -786,6 +1032,10 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
     );
   }
 }
+
+
+
+
 class Page1 extends StatelessWidget {
   const Page1({Key? key}) : super(key: key);
 

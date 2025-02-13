@@ -34,7 +34,7 @@ dependencies:
   syncfusion_flutter_sliders:
   syncfusion_flutter_charts:
   syncfusion_flutter_core:
-
+  bubble_tab_indicator:
   flutter:
     sdk: flutter
 
