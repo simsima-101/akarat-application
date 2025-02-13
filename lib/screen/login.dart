@@ -28,9 +28,6 @@ class _LoginDemoState extends State<LoginDemo> {
       body: SingleChildScrollView(
         child: Column(
             children: <Widget>[
-
-
-
         //logo
         Padding(
         padding: const EdgeInsets.only(top: 200.0),
