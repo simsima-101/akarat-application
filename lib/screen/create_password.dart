@@ -1,3 +1,6 @@
+import 'package:drawerdemo/screen/emai_login.dart';
+import 'package:drawerdemo/screen/login.dart';
+import 'package:drawerdemo/screen/my_account.dart';
 import 'package:flutter/material.dart';
 
 void main(){
@@ -41,7 +44,7 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                   children: <Widget>[
                     //logo
                     Padding(
-                      padding: const EdgeInsets.only(top: 150.0),
+                      padding: const EdgeInsets.only(top: 160.0),
                       child: Center(
                         child: SizedBox(
                             width: 150,
@@ -52,32 +55,54 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
 
                     //textlogo
                     Padding(
-                      padding: const EdgeInsets.only(top:5),
+                      padding: const EdgeInsets.only(top:0),
                       child: Center(
                         child: SizedBox(
                             width: 150,
-                            height: 55,
+                            height: 35,
                             child: Image.asset('assets/images/logo-text.png')),
                       ),
                     ),
 
                     Container(
-                      height: 470,
+                      height: 400,
                       width: double.infinity,
-                      margin: const EdgeInsets.only(top: 10,left: 10,right: 20),
+                      margin: const EdgeInsets.only(top: 25,left: 20,right: 20),
                       padding: const EdgeInsets.only(top: 15,bottom: 00),
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(10.0),
-                          border: Border.all(
-                              color: Color(0xFFEEEEEE))),
+                        borderRadius: BorderRadiusDirectional.circular(10.0),
+                        color: Color(0xFFF5F5F5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            offset: const Offset(
+                              0.0,
+                              0.0,
+                            ),
+                            blurRadius: 0.1,
+                            spreadRadius: 0.1,
+                          ), //BoxShadow
+                          BoxShadow(
+                            color: Colors.white,
+                            offset: const Offset(0.0, 0.0),
+                            blurRadius: 0.0,
+                            spreadRadius: 0.0,
+                          ), //BoxShadow
+                        ],
+                      ),
                       child: Column(
                         children: [
                           Row(
                             children: [
-                              Text("    Back",style: TextStyle(
+                      GestureDetector(
+                      onTap: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> EmaiLogin()));
+                    },
+                      child:
+                      Text("    Back",style: TextStyle(
                                 color: Colors.blue,
-                                fontSize: 18,
-                              ),textAlign: TextAlign.left,),
+                                fontSize: 17,
+                              ),textAlign: TextAlign.left,),),
 
                             ],
                           ),
@@ -85,24 +110,24 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                             child:  Text("Create a Password                                 ",
                               style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 25,letterSpacing: 0.5
+                                  fontSize: 20,letterSpacing: 0.5
                               ),),
                           ),
-                          Padding(padding: const EdgeInsets.only(left: 20,top: 10),
+                          Padding(padding: const EdgeInsets.only(left: 15,top: 2),
                             child:  Text("View saved Properties Keep Search history across devices see"
                                 " which properties you have contacted.",
-                              style: TextStyle(fontSize: 16,letterSpacing: 0.5),
+                              style: TextStyle(fontSize: 14,letterSpacing: 0.5),
                               softWrap: true,),
                           ),
 
                           //google button
                           Padding(
                             padding: const EdgeInsets.only(
-                                left: 13, right: 15.0, top: 20, bottom: 0),
+                                left: 15, right: 15.0, top: 15, bottom: 0),
                             child: Container(
                               width: 350,
                               height: 50,
-                              padding: const EdgeInsets.only(top: 5),
+                              padding: const EdgeInsets.only(top: 4,left: 15),
                               decoration: BoxDecoration(
 
                                 borderRadius: BorderRadiusDirectional.circular(10.0),
@@ -110,11 +135,11 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                                   BoxShadow(
                                     color: Colors.grey,
                                     offset: const Offset(
-                                      0.5,
-                                      0.5,
+                                      0.3,
+                                      0.3,
                                     ),
-                                    blurRadius: 1.0,
-                                    spreadRadius: 0.5,
+                                    blurRadius: 0.3,
+                                    spreadRadius: 0.3,
                                   ), //BoxShadow
                                   BoxShadow(
                                     color: Colors.white,
@@ -125,25 +150,22 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                                 ],
                               ),
                               child: TextField(
-                                obscureText: true,
+                               // obscureText: true,
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
-                                  hintText: '    Name',hintStyle: TextStyle(color: Colors.grey)
+                                  hintText: 'Name',hintStyle: TextStyle(color: Colors.grey)
                                 ),
                                 textAlign: TextAlign.left,
                               ),
                             ),
                           ),
-
-
-                          //facebook button
                           Padding(
                             padding: const EdgeInsets.only(
-                                left: 15.0, right: 15.0, top: 20, bottom: 0),
+                                left: 15.0, right: 15.0, top: 15, bottom: 0),
                             child: Container(
                               width: 350,
                               height: 50,
-                              padding: const EdgeInsets.only(top: 5),
+                              padding: const EdgeInsets.only(top: 5,left: 8),
                               decoration: BoxDecoration(
 
                                 borderRadius: BorderRadiusDirectional.circular(10.0),
@@ -151,11 +173,68 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                                   BoxShadow(
                                     color: Colors.grey,
                                     offset: const Offset(
-                                      0.5,
-                                      0.5,
+                                      0.3,
+                                      0.3,
                                     ),
-                                    blurRadius: 1.0,
-                                    spreadRadius: 0.5,
+                                    blurRadius: 0.3,
+                                    spreadRadius: 0.3,
+                                  ), //BoxShadow
+                                  BoxShadow(
+                                    color: Colors.white,
+                                    offset: const Offset(0.0, 0.0),
+                                    blurRadius: 0.0,
+                                    spreadRadius: 0.0,
+                                  ), //BoxShadow
+                                ],
+                              ),
+
+                              child:   TextField(
+                                obscureText: passwordVisible,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                //  fillColor: Colors.white,
+                                  hintText: '  Password',
+                                  hintStyle: TextStyle(color: Colors.grey),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(passwordVisible
+                                        ? Icons.visibility
+                                        : Icons.visibility_off),
+                                    onPressed: () {
+                                      setState(
+                                            () {
+                                          passwordVisible = !passwordVisible;
+                                        },
+                                      );
+                                    },
+                                  ),
+                                  alignLabelWithHint: false,
+                                 // filled: true,
+                                ),
+                                keyboardType: TextInputType.visiblePassword,
+                                textInputAction: TextInputAction.done,
+                              ),
+                            ),
+
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 15.0, right: 15.0, top: 15, bottom: 0),
+                            child: Container(
+                              width: 350,
+                              height: 50,
+                              padding: const EdgeInsets.only(top: 5,left: 8),
+                              decoration: BoxDecoration(
+
+                                borderRadius: BorderRadiusDirectional.circular(10.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey,
+                                    offset: const Offset(
+                                      0.3,
+                                      0.3,
+                                    ),
+                                    blurRadius: 0.3,
+                                    spreadRadius: 0.3,
                                   ), //BoxShadow
                                   BoxShadow(
                                     color: Colors.white,
@@ -186,7 +265,7 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                                     },
                                   ),
                                   alignLabelWithHint: false,
-                                  filled: true,
+                                //  filled: true,
                                 ),
                                 keyboardType: TextInputType.visiblePassword,
                                 textInputAction: TextInputAction.done,
@@ -194,90 +273,26 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                             ),
 
                           ),
-
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 15.0, right: 15.0, top: 20, bottom: 0),
-                            child: Container(
-                              width: 350,
-                              height: 50,
-                              padding: const EdgeInsets.only(top: 5),
-                              decoration: BoxDecoration(
-
-                                borderRadius: BorderRadiusDirectional.circular(10.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey,
-                                    offset: const Offset(
-                                      0.5,
-                                      0.5,
-                                    ),
-                                    blurRadius: 1.0,
-                                    spreadRadius: 0.5,
-                                  ), //BoxShadow
-                                  BoxShadow(
-                                    color: Colors.white,
-                                    offset: const Offset(0.0, 0.0),
-                                    blurRadius: 0.0,
-                                    spreadRadius: 0.0,
-                                  ), //BoxShadow
-                                ],
-                              ),
-
-                              child:   TextField(
-                                obscureText: passwordVisible,
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  fillColor: Colors.white,
-                                  hintText: '  Password',
-                                  hintStyle: TextStyle(color: Colors.grey),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(passwordVisible
-                                        ? Icons.visibility
-                                        : Icons.visibility_off),
-                                    onPressed: () {
-                                      setState(
-                                            () {
-                                          passwordVisible = !passwordVisible;
-                                        },
-                                      );
-                                    },
-                                  ),
-                                  alignLabelWithHint: false,
-                                  filled: true,
-                                ),
-                                keyboardType: TextInputType.visiblePassword,
-                                textInputAction: TextInputAction.done,
-                              ),
-                            ),
-
-                          ),
-
-
                           //button
                           Padding(
                             padding: const EdgeInsets.only(
-                                left: 15.0, right: 15.0, top: 20, bottom: 0),
+                                left: 15.0, right: 15.0, top: 18, bottom: 0),
                             child: Container(
                               width: 350,
                               height: 50,
                               padding: const EdgeInsets.only(top: 13),
                               decoration: BoxDecoration(
                                 color: Colors.blue,
-
-                                /* image: DecorationImage(
-                   image: AssetImage("assets/images/Group_76.png"),
-                 ),*/
                                 borderRadius: BorderRadiusDirectional.circular(10.0),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey,
                                     offset: const Offset(
-                                      0.5,
-                                      0.5,
+                                      0.3,
+                                      0.3,
                                     ),
-                                    blurRadius: 1.0,
-                                    spreadRadius: 0.5,
+                                    blurRadius: 0.3,
+                                    spreadRadius: 0.3,
                                   ), //BoxShadow
                                   BoxShadow(
                                     color: Colors.white,
@@ -290,23 +305,20 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
 
                               child: InkWell(
                                   onTap: (){
-                                    //   print('hello');
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
                                   },
                                   child: Text('Create Account',textAlign: TextAlign.center,
                                     style: TextStyle(fontSize: 17,
                                         color: Colors.white),)),
                             ),
                           ),
-
                         ],
                       ),
-
                     ),
-
                     //text
                     Padding(
                       padding: const EdgeInsets.only(
-                          left:0.0,top: 7.0),
+                          left:15.0,top: 15.0),
 
                       child: Center(
                         child: Row(
@@ -314,7 +326,7 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                             Padding(
                               padding: const EdgeInsets.only(left: 62),
                               child: Text('Not registered yet? ',style: TextStyle(
-                                color: Colors.grey,fontSize: 13,
+                                color: Color(0xFF424242),fontSize: 13,
                               ),),
                             ),
 
@@ -322,9 +334,11 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                               padding: const EdgeInsets.only(left:1.0),
                               child: InkWell(
                                   onTap: (){
-                                    //   print('hello');
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
                                   },
-                                  child: Text('Login Here', style: TextStyle(fontSize: 14, color: Colors.black),)),
+                                  child: Text('Login Here', style: TextStyle(
+                                      fontWeight:FontWeight.bold,
+    fontSize: 15, color: Colors.black),)),
                             )
                           ],
                         ),

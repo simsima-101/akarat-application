@@ -351,9 +351,6 @@ class _FilterDemoState extends State<FilterDemo> {
 
           //images gridview
           Row(
-            // mainAxisAlignment: MainAxisAlignment.center,
-            // crossAxisAlignment: CrossAxisAlignment.center,
-            // spacing: 0.05,
             children: [
               //logo 1
               GestureDetector(

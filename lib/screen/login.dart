@@ -1,3 +1,6 @@
+import 'package:drawerdemo/screen/create_password.dart';
+import 'package:drawerdemo/screen/emai_login.dart';
+import 'package:drawerdemo/screen/login_page.dart';
 import 'package:flutter/material.dart';
 
 void main(){
@@ -30,48 +33,64 @@ class _LoginDemoState extends State<LoginDemo> {
             children: <Widget>[
         //logo
         Padding(
-        padding: const EdgeInsets.only(top: 200.0),
+        padding: const EdgeInsets.only(top: 190.0,bottom: 0),
         child: Center(
           child: SizedBox(
               width: 150,
-              height: 55,
+              height: 50,
               child: Image.asset('assets/images/app_icon.png')),
         ),
       ),
 
       //textlogo
       Padding(
-        padding: const EdgeInsets.only(top:5),
+        padding: const EdgeInsets.only(top:0),
         child: Center(
           child: SizedBox(
               width: 150,
-              height: 55,
+              height: 38,
               child: Image.asset('assets/images/logo-text.png')),
         ),
       ),
 
         Container(
-            height: 350,
+          // color: Colors.white70,
+            height: 310,
             width: double.infinity,
-            margin: const EdgeInsets.only(top: 10,left: 20,right: 20),
+            margin: const EdgeInsets.only(top: 30,left: 20,right: 20),
             padding: const EdgeInsets.only(top: 15,bottom: 00),
             // alignment: Alignment.bottomCenter,
             //transform: Matrix4.rotationZ(0.1),
             decoration: BoxDecoration(
                 borderRadius: BorderRadiusDirectional.circular(10.0),
-                border: Border.all(
-                    color: Color(0xFFEEEEEE))),
-
+               color: Color(0xFFF5F5F5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey,
+                  offset: const Offset(
+                    0.0,
+                    0.0,
+                  ),
+                  blurRadius: 0.1,
+                  spreadRadius: 0.1,
+                ), //BoxShadow
+                BoxShadow(
+                  color: Colors.white,
+                  offset: const Offset(0.0, 0.0),
+                  blurRadius: 0.0,
+                  spreadRadius: 0.0,
+                ), //BoxShadow
+              ],
+               /* border: Border.all(
+                    color: Color(0xFFEEEEEE))*/
+            ),
             child: Column(
               children: [
                 //welcome text
-
                 Text("Welcome to Akarat!",style: TextStyle(
                   color: Colors.black,
                   fontSize: 20,
                 ),textAlign: TextAlign.center,),
-
-
                 //google button
                 Padding(
                   padding: const EdgeInsets.only(
@@ -79,21 +98,21 @@ class _LoginDemoState extends State<LoginDemo> {
                   child: Container(
                     width: 300,
                     height: 50,
-                    padding: const EdgeInsets.only(top: 10),
+                    padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage("assets/images/g.png"),
-                      ),
+                      // image: DecorationImage(
+                      //   image: AssetImage("assets/images/g.png"),
+                      // ),
                       borderRadius: BorderRadiusDirectional.circular(10.0),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.grey,
                           offset: const Offset(
-                            0.5,
-                            0.5,
+                            0.3,
+                            0.3,
                           ),
-                          blurRadius: 1.0,
-                          spreadRadius: 0.5,
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
                         ), //BoxShadow
                         BoxShadow(
                           color: Colors.white,
@@ -103,6 +122,18 @@ class _LoginDemoState extends State<LoginDemo> {
                         ), //BoxShadow
                       ],
                     ),
+                    child: Row(
+                      children: [
+                        Padding(padding: const EdgeInsets.only(left: 60,top: 0),
+                        child:  Image.asset("assets/images/gi.webp",height: 25,
+                          alignment: Alignment.center,) ,
+                        ),
+                        Padding(padding: const EdgeInsets.only(left: 5,top: 0),
+                          child:  Text("Continue with Google",style: TextStyle(fontWeight: FontWeight.bold),) ,
+                        )
+
+                      ],
+                    ),
                   ),
                 ),
 
@@ -110,33 +141,32 @@ class _LoginDemoState extends State<LoginDemo> {
 
                 Padding(
                   padding: const EdgeInsets.only(
-                      left: 15.0, right: 15.0, top: 15, bottom: 0),
+                      left: 15.0, right: 15.0, top: 5, bottom: 0),
                   child:  Text("or",style: TextStyle(
                     color: Colors.grey,
-                    fontSize: 20,
+                    fontSize: 15,
                   ),textAlign: TextAlign.center,),
                 ),
 
                 //edittext
-
                 Padding(
                   padding: const EdgeInsets.only(
-                      left: 15.0, right: 15.0, top: 15, bottom: 0),
+                      left: 15.0, right: 15.0, top: 5, bottom: 0),
                   child: Container(
                     width: 300,
                     height: 50,
-                    padding: const EdgeInsets.only(top: 10,left: 10),
+                    padding: const EdgeInsets.only(top: 2,left: 10),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadiusDirectional.circular(10.0),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.grey,
                           offset: const Offset(
-                            0.5,
-                            0.5,
+                            0.3,
+                            0.3,
                           ),
-                          blurRadius: 1.0,
-                          spreadRadius: 0.5,
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
                         ), //BoxShadow
                         BoxShadow(
                           color: Colors.white,
@@ -144,12 +174,11 @@ class _LoginDemoState extends State<LoginDemo> {
                           blurRadius: 0.0,
                           spreadRadius: 0.0,
                         ), //BoxShadow
-                      ],),
+                      ],
+                    ),
                     child: TextField(
-                      obscureText: true,
+                    //  obscureText: true,
                       decoration: InputDecoration(
-                        /* border: OutlineInputBorder(
-                       ),*/
                         border: InputBorder.none,
                         hintText: 'Email',
                       ),
@@ -157,17 +186,18 @@ class _LoginDemoState extends State<LoginDemo> {
                     ),
                   ),
                 ),
-
                 //button
-
-
-                Padding(
+          GestureDetector(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> EmaiLogin()));
+              },
+               child:  Padding(
                   padding: const EdgeInsets.only(
                       left: 15.0, right: 15.0, top: 15, bottom: 0),
                   child: Container(
                     width: 300,
                     height: 50,
-                    padding: const EdgeInsets.only(top: 10),
+                    padding: const EdgeInsets.only(top: 15),
                     decoration: BoxDecoration(
                       color: Color(0xFFEEEEEE),
                       borderRadius: BorderRadiusDirectional.circular(10.0),
@@ -175,11 +205,11 @@ class _LoginDemoState extends State<LoginDemo> {
                         BoxShadow(
                           color: Colors.grey,
                           offset: const Offset(
-                            0.5,
-                            0.5,
+                            0.3,
+                            0.3,
                           ),
-                          blurRadius: 1.0,
-                          spreadRadius: 0.5,
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
                         ), //BoxShadow
                         BoxShadow(
                           color: Colors.white,
@@ -191,26 +221,27 @@ class _LoginDemoState extends State<LoginDemo> {
                     ),
 
                     child: Text("Continue",style: TextStyle(
-                      color: Colors.black,
+                      color: Colors.black,fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),textAlign: TextAlign.center,),
                   ),
                 ),
+          ),
 
 
                 //text
                 Padding(
                   padding: const EdgeInsets.only(
-                      left:0.0,top: 7.0),
+                      left:0.0,top: 15.0),
 
                   child: Container(
                     child: Center(
                       child: Row(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(left: 62),
+                            padding: const EdgeInsets.only(left: 55),
                             child: Text('Not registered yet? ',style: TextStyle(
-                              color: Colors.grey,fontSize: 13,
+                              color: Color(0xFF424242),fontSize: 13,
                             ),),
                           ),
 
@@ -218,9 +249,10 @@ class _LoginDemoState extends State<LoginDemo> {
                             padding: const EdgeInsets.only(left:1.0),
                             child: InkWell(
                                 onTap: (){
-                                 // Text("hiiii");
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginPage()));
                                 },
-                                child: Text('Create new account', style: TextStyle(fontSize: 14, color: Colors.black),)),
+                                child: Text('Create new account', style: TextStyle(fontSize: 14, color: Colors.black,
+                                fontWeight: FontWeight.bold),)),
                           )
                         ],
                       ),

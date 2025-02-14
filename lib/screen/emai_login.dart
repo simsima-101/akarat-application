@@ -1,3 +1,7 @@
+import 'package:drawerdemo/screen/create_password.dart';
+import 'package:drawerdemo/screen/login.dart';
+import 'package:drawerdemo/screen/login_page.dart';
+import 'package:drawerdemo/screen/my_account.dart';
 import 'package:flutter/material.dart';
 
 void main(){
@@ -47,56 +51,78 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
     child: Image.asset('assets/images/app_icon.png')),
     ),
     ),
-
     //textlogo
     Padding(
     padding: const EdgeInsets.only(top:5),
     child: Center(
     child: SizedBox(
     width: 150,
-    height: 55,
+    height: 40,
     child: Image.asset('assets/images/logo-text.png')),
     ),
     ),
 
           Container(
-            height: 400,
+            height: 340,
             width: double.infinity,
-            margin: const EdgeInsets.only(top: 10,left: 10,right: 20),
+            margin: const EdgeInsets.only(top: 25,left: 20,right: 20),
             padding: const EdgeInsets.only(top: 15,bottom: 00),
             decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(10.0),
-                border: Border.all(
-                    color: Color(0xFFEEEEEE))),
+              borderRadius: BorderRadiusDirectional.circular(10.0),
+              color: Color(0xFFF5F5F5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey,
+                  offset: const Offset(
+                    0.0,
+                    0.0,
+                  ),
+                  blurRadius: 0.1,
+                  spreadRadius: 0.1,
+                ), //BoxShadow
+                BoxShadow(
+                  color: Colors.white,
+                  offset: const Offset(0.0, 0.0),
+                  blurRadius: 0.0,
+                  spreadRadius: 0.0,
+                ), //BoxShadow
+              ],
+            ),
             child: Column(
               children: [
                 Row(
                   children: [
-                    Text("    Back",style: TextStyle(
+            GestureDetector(
+            onTap: (){
+          Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
+          },
+            child:
+            Text("   Back",style: TextStyle(
                       color: Colors.blue,
-                      fontSize: 18,
+                      fontSize: 17,
                     ),textAlign: TextAlign.left,),
+            ),
 
                   ],
                 ),
-        Padding(padding: const EdgeInsets.only(top: 10,left: 15),
+        Padding(padding: const EdgeInsets.only(top: 10,left: 14),
          child:  Text("Welcome to Akarat!                                  ",
           style: TextStyle(
             color: Colors.black,
-            fontSize: 25,letterSpacing: 0.5
+            fontSize: 20,letterSpacing: 0.5
           ),),
         ),
-      Padding(padding: const EdgeInsets.only(left: 20,top: 10),
+      Padding(padding: const EdgeInsets.only(left: 14,top: 8),
        child:  Text("View saved Properties Keep Search history across devices see"
             " which properties you have contacted.",
-          style: TextStyle(fontSize: 16,letterSpacing: 0.5),
+          style: TextStyle(fontSize: 14,letterSpacing: 0.5),
           softWrap: true,),
       ),
 
                 //google button
                 Padding(
                   padding: const EdgeInsets.only(
-                      left: 13, right: 15.0, top: 20, bottom: 0),
+                      left: 14, right: 14.0, top: 15, bottom: 0),
                   child: Container(
                     width: 350,
                     height: 50,
@@ -108,14 +134,14 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
                         BoxShadow(
                           color: Colors.grey,
                           offset: const Offset(
-                            0.5,
-                            0.5,
+                            0.3,
+                            0.3,
                           ),
-                          blurRadius: 1.0,
-                          spreadRadius: 0.5,
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
                         ), //BoxShadow
                         BoxShadow(
-                          color: Color(0xF6F6F6F6),
+                          color: Colors.white,
                           offset: const Offset(0.0, 0.0),
                           blurRadius: 0.0,
                           spreadRadius: 0.0,
@@ -127,23 +153,21 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
                         Text("    neethupbaby95@gmail.com",style:
                         TextStyle(color: Colors.grey),),
                         Container(
-                          width: 120,
+                          width: 100,
                         ),
                         Icon(Icons.check,color: Colors.green,)
                       ],
                     ),
                   ),
                 ),
-
-
                 //facebook button
                 Padding(
                   padding: const EdgeInsets.only(
-                      left: 15.0, right: 15.0, top: 20, bottom: 0),
+                      left: 14.0, right: 14.0, top: 15, bottom: 0),
                   child: Container(
                     width: 350,
                     height: 50,
-                    padding: const EdgeInsets.only(top: 5),
+                    padding: const EdgeInsets.only(top: 5,left: 8),
                     decoration: BoxDecoration(
 
                       borderRadius: BorderRadiusDirectional.circular(10.0),
@@ -151,11 +175,11 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
                         BoxShadow(
                           color: Colors.grey,
                           offset: const Offset(
-                            0.5,
-                            0.5,
+                            0.3,
+                            0.3,
                           ),
-                          blurRadius: 1.0,
-                          spreadRadius: 0.5,
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
                         ), //BoxShadow
                         BoxShadow(
                           color: Colors.white,
@@ -186,7 +210,7 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
                               },
                             ),
                             alignLabelWithHint: false,
-                            filled: true,
+                           // filled: true,
                           ),
                         keyboardType: TextInputType.visiblePassword,
                         textInputAction: TextInputAction.done,
@@ -195,29 +219,25 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
 
                   ),
                 //button
-                Padding(
+        Padding(
                   padding: const EdgeInsets.only(
-                      left: 15.0, right: 15.0, top: 20, bottom: 0),
+                      left: 14.0, right: 14.0, top: 15, bottom: 0),
                   child: Container(
                     width: 350,
                     height: 50,
                     padding: const EdgeInsets.only(top: 13),
                     decoration: BoxDecoration(
                       color: Colors.blue,
-
-                      /* image: DecorationImage(
-                   image: AssetImage("assets/images/Group_76.png"),
-                 ),*/
                       borderRadius: BorderRadiusDirectional.circular(10.0),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.grey,
                           offset: const Offset(
-                            0.5,
-                            0.5,
+                            0.3,
+                            0.3,
                           ),
-                          blurRadius: 1.0,
-                          spreadRadius: 0.5,
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
                         ), //BoxShadow
                         BoxShadow(
                           color: Colors.white,
@@ -227,26 +247,22 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
                         ), //BoxShadow
                       ],
                     ),
-
                     child: InkWell(
                         onTap: (){
-                          //   print('hello');
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=> CreatePassword()));
                         },
                         child: Text('Log in',textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 17,
                               color: Colors.white),)),
                   ),
                 ),
-
               ],
             ),
-
           ),
-
           //text
           Padding(
             padding: const EdgeInsets.only(
-                left:0.0,top: 7.0),
+                left:0.0,top: 15.0),
 
             child: Center(
               child: Row(
@@ -254,7 +270,7 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
                   Padding(
                     padding: const EdgeInsets.only(left: 62),
                     child: Text('Not registered yet? ',style: TextStyle(
-                      color: Colors.grey,fontSize: 13,
+                      color: Color(0xFF424242),fontSize: 13,
                     ),),
                   ),
 
@@ -262,9 +278,10 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
                     padding: const EdgeInsets.only(left:1.0),
                     child: InkWell(
                         onTap: (){
-                          //   print('hello');
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginPage()));
                         },
-                        child: Text('Create new account', style: TextStyle(fontSize: 14, color: Colors.black),)),
+                        child: Text('Create new account', style: TextStyle(fontSize: 15, color: Colors.black,
+                        fontWeight: FontWeight.bold),)),
                   )
                 ],
               ),

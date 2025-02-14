@@ -1,3 +1,5 @@
+import 'package:drawerdemo/screen/create_password.dart';
+import 'package:drawerdemo/screen/login.dart';
 import 'package:flutter/material.dart';
 
 void main(){
@@ -40,74 +42,91 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
 
       //textlogo
       Padding(
-        padding: const EdgeInsets.only(top:5),
+        padding: const EdgeInsets.only(top:0),
         child: Center(
           child: SizedBox(
               width: 150,
-              height: 55,
+              height: 40,
               child: Image.asset('assets/images/logo-text.png')),
         ),
       ),
 
      Container(
-      height: 400,
+      height: 380,
       width: double.infinity,
-      margin: const EdgeInsets.only(top: 10,left: 20,right: 20),
+      margin: const EdgeInsets.only(top: 25,left: 20,right: 20),
       padding: const EdgeInsets.only(top: 15,bottom: 00),
-     // alignment: Alignment.bottomCenter,
-      //transform: Matrix4.rotationZ(0.1),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadiusDirectional.circular(10.0),
-          border: Border.all(
-              color: Color(0xFFEEEEEE))),
-       /* child: Text("Create an account",style: TextStyle(
-         color: Colors.black,
-       fontSize: 20,
-       ),textAlign: TextAlign.center,),*/
+       decoration: BoxDecoration(
+         borderRadius: BorderRadiusDirectional.circular(10.0),
+         color: Color(0xFFF5F5F5),
+         boxShadow: [
+           BoxShadow(
+             color: Colors.grey,
+             offset: const Offset(
+               0.0,
+               0.0,
+             ),
+             blurRadius: 0.1,
+             spreadRadius: 0.1,
+           ), //BoxShadow
+           BoxShadow(
+             color: Colors.white,
+             offset: const Offset(0.0, 0.0),
+             blurRadius: 0.0,
+             spreadRadius: 0.0,
+           ), //BoxShadow
+         ],
+         /* border: Border.all(
+                    color: Color(0xFFEEEEEE))*/
+       ),
        child: Column(
          children: [
-
            Text("Create an account",style: TextStyle(
             color: Colors.black,
           fontSize: 20,
             ),textAlign: TextAlign.center,),
-
-
           //google button
           Padding(
             padding: const EdgeInsets.only(
-                left: 15.0, right: 15.0, top: 15, bottom: 0),
+                left: 15.0, right: 15.0, top: 10, bottom: 0),
             child: Container(
             width: 300,
             height: 50,
-            padding: const EdgeInsets.only(top: 10),
+            padding: const EdgeInsets.only(top: 5),
                 decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage("assets/images/g.png",),
-                  ),
                     borderRadius: BorderRadiusDirectional.circular(10.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey,
+                      offset: const Offset(
+                        0.3,
+                        0.3,
+                      ),
+                      blurRadius: 0.3,
+                      spreadRadius: 0.3,
+                    ), //BoxShadow
+                    BoxShadow(
+                      color: Colors.white,
+                      offset: const Offset(0.0, 0.0),
+                      blurRadius: 0.0,
+                      spreadRadius: 0.0,
+                    ), //BoxShadow
+                  ],
+            ),
+              child: Row(
+                children: [
+                  Padding(padding: const EdgeInsets.only(left: 60,top: 0),
+                    child:  Image.asset("assets/images/gi.webp",height: 25,
+                      alignment: Alignment.center,) ,
+                  ),
+                  Padding(padding: const EdgeInsets.only(left: 5,top: 0),
+                    child:  Text("Continue with Google",style: TextStyle(fontWeight: FontWeight.bold),) ,
+                  )
+
                 ],
+              ),
             ),
             ),
-            ),
-
-
      //facebook button
            Padding(
              padding: const EdgeInsets.only(
@@ -115,22 +134,18 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
              child: Container(
                width: 300,
                height: 50,
-               padding: const EdgeInsets.only(top: 10),
+               padding: const EdgeInsets.only(top: 5),
                decoration: BoxDecoration(
-
-                 /*image: DecorationImage(
-                   image: Image.asset("assets/images/f.png",),
-                 ),*/
                  borderRadius: BorderRadiusDirectional.circular(10.0),
                  boxShadow: [
                    BoxShadow(
                      color: Colors.grey,
                      offset: const Offset(
-                       0.5,
-                       0.5,
+                       0.3,
+                       0.3,
                      ),
-                     blurRadius: 1.0,
-                     spreadRadius: 0.5,
+                     blurRadius: 0.3,
+                     spreadRadius: 0.3,
                    ), //BoxShadow
                    BoxShadow(
                      color: Colors.white,
@@ -140,45 +155,49 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
                    ), //BoxShadow
                  ],
                ),
-               child: Image.asset("assets/images/f.png",
-                  width: 4,
-                   height: 4,
-                   fit:BoxFit.none ),
+               child: Row(
+                 children: [
+                   Padding(padding: const EdgeInsets.only(left: 60,top: 0),
+                     child:  Image.asset("assets/images/blog.png",height: 20,
+                       alignment: Alignment.center,) ,
+                   ),
+                   Padding(padding: const EdgeInsets.only(left: 5,top: 0),
+                     child:  Text("Continue with Facebook",style: TextStyle(fontWeight: FontWeight.bold),) ,
+                   )
+
+                 ],
+               ),
 
              ),
            ),
-
      //  Text
-
        Padding(
          padding: const EdgeInsets.only(
-             left: 15.0, right: 15.0, top: 15, bottom: 0),
+             left: 15.0, right: 15.0, top: 10, bottom: 0),
          child:  Text("or",style: TextStyle(
            color: Colors.grey,
-           fontSize: 20,
+           fontSize: 17,
          ),textAlign: TextAlign.center,),
        ),
-
 //edittext
-
            Padding(
              padding: const EdgeInsets.only(
-                 left: 15.0, right: 15.0, top: 15, bottom: 0),
+                 left: 15.0, right: 15.0, top: 10, bottom: 0),
              child: Container(
                width: 300,
                height: 50,
-               padding: const EdgeInsets.only(top: 10,left: 10),
+               padding: const EdgeInsets.only(top: 3,left: 12),
                decoration: BoxDecoration(
                  borderRadius: BorderRadiusDirectional.circular(10.0),
                  boxShadow: [
                    BoxShadow(
                      color: Colors.grey,
                      offset: const Offset(
-                       0.5,
-                       0.5,
+                       0.3,
+                       0.3,
                      ),
-                     blurRadius: 1.0,
-                     spreadRadius: 0.5,
+                     blurRadius: 0.3,
+                     spreadRadius: 0.3,
                    ), //BoxShadow
                    BoxShadow(
                      color: Colors.white,
@@ -186,9 +205,10 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
                      blurRadius: 0.0,
                      spreadRadius: 0.0,
                    ), //BoxShadow
-                 ],),
+                 ],
+               ),
                  child: TextField(
-                   obscureText: true,
+                  // obscureText: true,
                    decoration: InputDecoration(
                       /* border: OutlineInputBorder(
                        ),*/
@@ -199,34 +219,31 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
                ),
              ),
            ),
-           
-
            //button
-
-
+       GestureDetector(
+         onTap: (){
+           Navigator.push(context, MaterialPageRoute(builder: (context)=> CreatePassword()));
+         },
+         child:
            Padding(
              padding: const EdgeInsets.only(
                  left: 15.0, right: 15.0, top: 15, bottom: 0),
              child: Container(
                width: 300,
                height: 50,
-               padding: const EdgeInsets.only(top: 10),
+               padding: const EdgeInsets.only(top: 13),
                decoration: BoxDecoration(
                  color: Color(0xFFEEEEEE),
-
-                /* image: DecorationImage(
-                   image: AssetImage("assets/images/Group_76.png"),
-                 ),*/
                  borderRadius: BorderRadiusDirectional.circular(10.0),
                  boxShadow: [
                    BoxShadow(
                      color: Colors.grey,
                      offset: const Offset(
-                       0.5,
-                       0.5,
+                       0.3,
+                       0.3,
                      ),
-                     blurRadius: 1.0,
-                     spreadRadius: 0.5,
+                     blurRadius: 0.3,
+                     spreadRadius: 0.3,
                    ), //BoxShadow
                    BoxShadow(
                      color: Colors.white,
@@ -240,33 +257,32 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
              child: Text("Continue",style: TextStyle(
                color: Colors.black,
                fontSize: 15,
+               fontWeight: FontWeight.bold,
              ),textAlign: TextAlign.center,),
              ),
            ),
-
-
+       ),
           //text
            Padding(
              padding: const EdgeInsets.only(
-                 left:0.0,top: 7.0),
-
+                 left:0.0,top: 15.0),
              child: Center(
                child: Row(
                  children: [
                    Padding(
                      padding: const EdgeInsets.only(left: 62),
                      child: Text('Already have an account? ',style: TextStyle(
-                       color: Colors.grey,fontSize: 13,
+                       color: Color(0xFF424242),fontSize: 13,
                      ),),
                    ),
-
                    Padding(
                      padding: const EdgeInsets.only(left:1.0),
                      child: InkWell(
                          onTap: (){
-                        //   print('hello');
+                           Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
                          },
-                         child: Text('Login Here', style: TextStyle(fontSize: 14, color: Colors.black),)),
+                         child: Text('Login Here', style: TextStyle(fontSize: 14, color: Colors.black,
+                         fontWeight: FontWeight.bold),)),
                    )
                  ],
                ),
