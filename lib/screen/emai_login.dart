@@ -1,7 +1,6 @@
 import 'package:drawerdemo/screen/create_password.dart';
 import 'package:drawerdemo/screen/login.dart';
 import 'package:drawerdemo/screen/login_page.dart';
-import 'package:drawerdemo/screen/my_account.dart';
 import 'package:flutter/material.dart';
 
 void main(){

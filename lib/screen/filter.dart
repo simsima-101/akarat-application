@@ -1,6 +1,5 @@
 import 'package:drawerdemo/screen/home.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_core/core.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
@@ -96,7 +95,6 @@ class _FilterDemoState extends State<FilterDemo> {
   ];
 
   final TextEditingController _searchController = TextEditingController();
-  RangeValues _currentRangeValues = const RangeValues(0, 80);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
