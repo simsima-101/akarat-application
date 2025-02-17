@@ -39,7 +39,6 @@ class _FliterListDemoState extends State<FliterListDemo> {
   ];
 
   final TextEditingController _searchController = TextEditingController();
-  RangeValues _currentRangeValues = const RangeValues(0, 80);
 
   List<Product> products = [];
 

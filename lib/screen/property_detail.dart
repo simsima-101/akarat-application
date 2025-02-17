@@ -23,7 +23,6 @@ class Property_DetailDemo extends StatefulWidget {
   _Property_DetailDemoState createState() => _Property_DetailDemoState();
 }
 class _Property_DetailDemoState extends State<Property_DetailDemo> {
-  final TextEditingController _searchController = TextEditingController();
   int pageIndex = 0;
 
   final pages = [
