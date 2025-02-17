@@ -34,7 +34,6 @@ class _Property_DetailDemoState extends State<Property_DetailDemo> {
 
   @override
   void initState() {
-    // TODO: implement initState
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom]);
     super.initState();
   }
