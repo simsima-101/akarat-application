@@ -1,4 +1,6 @@
 import 'package:drawerdemo/screen/filter.dart';
+import 'package:drawerdemo/screen/new_projects.dart';
+import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
@@ -72,7 +74,6 @@ class _MyHomePageState extends State<HomeDemo> {
                 ),
               ],
             ),
-
             //Searchbar
             Padding(
               padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
@@ -127,10 +128,8 @@ class _MyHomePageState extends State<HomeDemo> {
                 ),
               ),
             ),
-
-//images gridview
+            //images gridview
             Row(
-             // spacing: 0.05,
               children: [
                 //logo 1
                 GestureDetector(
@@ -177,14 +176,11 @@ class _MyHomePageState extends State<HomeDemo> {
                                   fontSize: 12,fontWeight: FontWeight.bold
                               ),),
                           )
-
                         ],
                       )
                     ),
                   ),
-                                  ),
-
-
+                ),
                 //logo2
                 GestureDetector(
                   onTap: (){
@@ -199,10 +195,6 @@ class _MyHomePageState extends State<HomeDemo> {
                     height: 100,
                     padding: const EdgeInsets.only(top: 10),
                     decoration: BoxDecoration(
-
-                      // image: DecorationImage(
-                      //   image: AssetImage("assets/images/02.png"),
-                      // ),
                       borderRadius: BorderRadiusDirectional.circular(10.0),
                       boxShadow: [
                         BoxShadow(
@@ -226,14 +218,13 @@ class _MyHomePageState extends State<HomeDemo> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Image.asset("assets/images/ak-sale.png",height: 40,),
-                      Padding(padding: const EdgeInsets.only(left: 30,right: 20,top: 5),
+                          Padding(padding: const EdgeInsets.only(left: 30,right: 20,top: 5),
                             child:  Text("Property For Sale",style:
                             TextStyle(height: 1.2,
                                 letterSpacing: 0.5,
                                 fontSize: 12,fontWeight: FontWeight.bold
                             ),),
                           )
-
                         ],
                       )
                   ),
@@ -242,7 +233,7 @@ class _MyHomePageState extends State<HomeDemo> {
                 //logo2
                 GestureDetector(
                   onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> New_Projects()));
                   },
                   child:
                   Padding(
@@ -253,10 +244,6 @@ class _MyHomePageState extends State<HomeDemo> {
                     height: 100,
                     padding: const EdgeInsets.only(top: 10),
                     decoration: BoxDecoration(
-
-                      // image: DecorationImage(
-                      //   image: AssetImage("assets/images/03.png"),
-                      // ),
                       borderRadius: BorderRadiusDirectional.circular(10.0),
                       boxShadow: [
                         BoxShadow(
@@ -287,7 +274,6 @@ class _MyHomePageState extends State<HomeDemo> {
                                 fontSize: 12,fontWeight: FontWeight.bold
                             ),),
                           )
-
                         ],
                       )
                   ),
@@ -800,7 +786,7 @@ class _MyHomePageState extends State<HomeDemo> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                pageIndex = 3;
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
               });
             },
             icon: pageIndex == 3

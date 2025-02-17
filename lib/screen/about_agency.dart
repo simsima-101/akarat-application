@@ -1,3 +1,5 @@
+import 'package:drawerdemo/screen/home.dart';
+import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 
 void main(){
@@ -903,7 +905,7 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                pageIndex = 0;
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
               });
             },
             icon: pageIndex == 0
@@ -1006,7 +1008,7 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                pageIndex = 3;
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
               });
             },
             icon: pageIndex == 3

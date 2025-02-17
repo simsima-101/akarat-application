@@ -1,7 +1,7 @@
 import 'dart:convert';
-
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:drawerdemo/model/api2model.dart';
+import 'package:drawerdemo/screen/home.dart';
+import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:sliding_switch/sliding_switch.dart';
 import 'package:http/http.dart' as http;
@@ -600,7 +600,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                pageIndex = 0;
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
               });
             },
             icon: pageIndex == 0
@@ -657,7 +657,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                pageIndex = 3;
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
               });
             },
             icon: pageIndex == 3
