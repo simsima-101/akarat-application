@@ -2,7 +2,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:drawerdemo/screen/property_detail.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import '../model/api2model.dart';
 
 class ProductCard extends StatelessWidget {
