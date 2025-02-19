@@ -5,7 +5,6 @@ import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:sliding_switch/sliding_switch.dart';
 import 'package:http/http.dart' as http;
-
 import '../utils/api2cardscreen.dart';
 
 void main(){
@@ -50,7 +49,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
   Future<void> fetchProducts() async {
     // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://fakestoreapi.com/products'));
+    final response = await http.get(Uri.parse('https://akarat.com/api/properties'));
     if (response.statusCode == 200) {
       List<dynamic> jsonData = json.decode(response.body);
       setState(() {
@@ -60,8 +59,6 @@ class _FliterListDemoState extends State<FliterListDemo> {
       // Handle error if needed
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +121,6 @@ class _FliterListDemoState extends State<FliterListDemo> {
                   ),
                 ),
               ),
-
               //filter
               Padding(
                 padding: const EdgeInsets.only(top: 20,left: 10,right: 10),
@@ -384,7 +380,6 @@ class _FliterListDemoState extends State<FliterListDemo> {
                 ),
 
               ),
-
               //toggle
               Padding(
                 padding: const EdgeInsets.only(
@@ -436,8 +431,9 @@ class _FliterListDemoState extends State<FliterListDemo> {
               ),
               //filter
               Padding(
-                padding: const EdgeInsets.only(top: 20,left: 10,right: 10),
+                padding: const EdgeInsets.only(top: 10,left: 10,right: 10),
                 child: Container(
+                 // color: Colors.grey,
                   margin: const EdgeInsets.symmetric(vertical: 1),
                   height: 35,
                   child: ListView(
@@ -446,37 +442,38 @@ class _FliterListDemoState extends State<FliterListDemo> {
                      //items
                       //buy
                       Padding(
-                        padding: const EdgeInsets.only(top: 10,left: 10),
+                        padding: const EdgeInsets.only(top: 5,left: 10),
                         child:  Container(
-                          width: 70,
-                          height: 10,
-                          padding: const EdgeInsets.only(top: 2,),
+                          width: 100,
+                          height: 20,
+                          padding: const EdgeInsets.only(top: 5,),
                           decoration: BoxDecoration(
                               shape: BoxShape.rectangle,
                               border: Border.all(
                                 width: 0,
                               ),
                               borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.5,
-                                    0.5,
-                                  ),
-                                  blurRadius: 1.0,
-                                  spreadRadius: 0.5,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ]),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: const Offset(
+                                  0.3,
+                                  0.3,
+                                ),
+                                blurRadius: 0.3,
+                                spreadRadius: 0.3,
+                              ), //BoxShadow
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: const Offset(0.0, 0.0),
+                                blurRadius: 0.0,
+                                spreadRadius: 0.0,
+                              ), //BoxShadow
+                            ],
+                          ),
                           child:
                               Text("All",textAlign: TextAlign.center,style:
-                                TextStyle(letterSpacing: 0.5)),
+                                TextStyle(letterSpacing: 0.5,fontWeight: FontWeight.bold)),
 
                         ),
                       ),
@@ -486,38 +483,39 @@ class _FliterListDemoState extends State<FliterListDemo> {
                       ),
                       //buy
                       Padding(
-                        padding: const EdgeInsets.only(top: 10),
+                        padding: const EdgeInsets.only(top: 5),
                         child:  Container(
-                          width: 90,
+                          width: 100,
                           height: 10,
-                          padding: const EdgeInsets.only(top: 2,),
+                          padding: const EdgeInsets.only(top: 5,),
                           decoration: BoxDecoration(
                               shape: BoxShape.rectangle,
                               border: Border.all(
                                 width: 0,
                               ),
                               borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.5,
-                                    0.5,
-                                  ),
-                                  blurRadius: 1.0,
-                                  spreadRadius: 0.5,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ]),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: const Offset(
+                                  0.3,
+                                  0.3,
+                                ),
+                                blurRadius: 0.3,
+                                spreadRadius: 0.3,
+                              ), //BoxShadow
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: const Offset(0.0, 0.0),
+                                blurRadius: 0.0,
+                                spreadRadius: 0.0,
+                              ), //BoxShadow
+                            ],
+                          ),
 
                              child:  Text(" Ready",textAlign: TextAlign.center,
                                  style:
-                                 TextStyle(letterSpacing: 0.5)),
+                                 TextStyle(letterSpacing: 0.5,fontWeight: FontWeight.bold)),
 
                         ),
                       ),
@@ -527,48 +525,51 @@ class _FliterListDemoState extends State<FliterListDemo> {
                       ),
                       //buy
                       Padding(
-                        padding: const EdgeInsets.only(top: 10),
+                        padding: const EdgeInsets.only(top: 5),
                         child:  Container(
                           width: 100,
                           height: 10,
-                          padding: const EdgeInsets.only(top: 2,),
+                          padding: const EdgeInsets.only(top: 5,),
                           decoration: BoxDecoration(
                               shape: BoxShape.rectangle,
                               border: Border.all(
                                 width: 0,
                               ),
                               borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.5,
-                                    0.5,
-                                  ),
-                                  blurRadius: 1.0,
-                                  spreadRadius: 0.5,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ]),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: const Offset(
+                                  0.3,
+                                  0.3,
+                                ),
+                                blurRadius: 0.3,
+                                spreadRadius: 0.3,
+                              ), //BoxShadow
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: const Offset(0.0, 0.0),
+                                blurRadius: 0.0,
+                                spreadRadius: 0.0,
+                              ), //BoxShadow
+                            ],
+                          ),
                           child:
                               Text(" Off-Plan",textAlign: TextAlign.center,
                                   style:
-                                  TextStyle(letterSpacing: 0.5)),
+                                  TextStyle(letterSpacing: 0.5,fontWeight: FontWeight.bold)),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-             new ListView.builder(
+             ListView.builder(
+               scrollDirection: Axis.vertical,
+                   physics: const ScrollPhysics(),
                    // this give th length of item
                    itemCount: products.length,
-               shrinkWrap: true,
+                    shrinkWrap: true,
                    itemBuilder: (context, index) {
                      // here we card the card widget
                      // which is in utils folder

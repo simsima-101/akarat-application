@@ -7,7 +7,7 @@ void main(){
   runApp(const Property_Detail());
 }
 class Property_Detail extends StatelessWidget {
-  const Property_Detail({super.key});
+  const Property_Detail( {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -46,126 +46,146 @@ class _Property_DetailDemoState extends State<Property_DetailDemo> {
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
-                  /*Row(
-                    children: [
-                      Container(
-                        alignment: Alignment.topCenter,
-                        margin: const EdgeInsets.only(top: 50,left:15),
-                        height: 30,
-                        width: 30,
-                        padding: const EdgeInsets.only(top: 2),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(15.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.5,
-                                0.5,
+                  Stack(
+                    // alignment: Alignment.topCenter,
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.only(top: 0),
+                        child: Container(
+                          height: 50,
+                          width: double.infinity,
+                         // color: Color(0xFFEEEEEE),
+                          child:   Row(
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
+                                height: 35,
+                                width: 35,
+                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadiusDirectional.circular(20.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey,
+                                      offset: const Offset(
+                                        0.0,
+                                        0.0,
+                                      ),
+                                      blurRadius: 0.1,
+                                      spreadRadius: 0.1,
+                                    ), //BoxShadow
+                                    BoxShadow(
+                                      color: Colors.white,
+                                      offset: const Offset(0.0, 0.0),
+                                      blurRadius: 0.0,
+                                      spreadRadius: 0.0,
+                                    ), //BoxShadow
+                                  ],
+                                ),
+                                child: Image.asset("assets/images/ar-left.png",
+                                  width: 15,
+                                  height: 15,
+                                  fit: BoxFit.contain,),
                               ),
-                              blurRadius: 1.0,
-                              spreadRadius: 0.5,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Icon(Icons.arrow_back,color: Colors.red,
-                        ),
-                      ),
-                      Container(
-                        alignment: Alignment.topCenter,
-                        margin: const EdgeInsets.only(top: 50,left:15),
-                        height: 30,
-                        width: 30,
-                        padding: const EdgeInsets.only(top: 2),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(15.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.5,
-                                0.5,
+                              Container(
+                                margin: const EdgeInsets.only(left: 220,top: 5,bottom: 0,),
+                                height: 35,
+                                width: 35,
+                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadiusDirectional.circular(20.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey,
+                                      offset: const Offset(
+                                        0.0,
+                                        0.0,
+                                      ),
+                                      blurRadius: 0.1,
+                                      spreadRadius: 0.1,
+                                    ), //BoxShadow
+                                    BoxShadow(
+                                      color: Colors.white,
+                                      offset: const Offset(0.0, 0.0),
+                                      blurRadius: 0.0,
+                                      spreadRadius: 0.0,
+                                    ), //BoxShadow
+                                  ],
+                                ),
+                                child: Image.asset("assets/images/lov.png",
+                                  width: 15,
+                                  height: 15,
+                                  fit: BoxFit.contain,),
+                                //child: Image(image: Image.asset("assets/images/share.png")),
                               ),
-                              blurRadius: 1.0,
-                              spreadRadius: 0.5,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Icon(Icons.arrow_back,color: Colors.red,
-                        ),
-                      ),
-                      Container(
-                        alignment: Alignment.topCenter,
-                        margin: const EdgeInsets.only(top: 50,left:15),
-                        height: 30,
-                        width: 30,
-                        padding: const EdgeInsets.only(top: 2),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(15.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.5,
-                                0.5,
+                              Container(
+                                margin: const EdgeInsets.only(left: 5,top: 5,bottom: 0,),
+                                height: 35,
+                                width: 35,
+                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadiusDirectional.circular(20.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey,
+                                      offset: const Offset(
+                                        0.0,
+                                        0.0,
+                                      ),
+                                      blurRadius: 0.1,
+                                      spreadRadius: 0.1,
+                                    ), //BoxShadow
+                                    BoxShadow(
+                                      color: Colors.white,
+                                      offset: const Offset(0.0, 0.0),
+                                      blurRadius: 0.0,
+                                      spreadRadius: 0.0,
+                                    ), //BoxShadow
+                                  ],
+                                ),
+                                child: Image.asset("assets/images/forward.png",
+                                  width: 15,
+                                  height: 15,
+                                  fit: BoxFit.contain,),
+                                //child: Image(image: Image.asset("assets/images/share.png")),
                               ),
-                              blurRadius: 1.0,
-                              spreadRadius: 0.5,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Icon(Icons.arrow_back,color: Colors.red,
-                        ),
-                      ),
-                      Container(
-                        alignment: Alignment.topCenter,
-                        margin: const EdgeInsets.only(top: 50,left:15),
-                        height: 30,
-                        width: 30,
-                        padding: const EdgeInsets.only(top: 2),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(15.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.5,
-                                0.5,
+                              Container(
+                                margin: const EdgeInsets.only(left: 5,top: 5,bottom: 0,),
+                                height: 35,
+                                width: 35,
+                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadiusDirectional.circular(20.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey,
+                                      offset: const Offset(
+                                        0.0,
+                                        0.0,
+                                      ),
+                                      blurRadius: 0.1,
+                                      spreadRadius: 0.1,
+                                    ), //BoxShadow
+                                    BoxShadow(
+                                      color: Colors.white,
+                                      offset: const Offset(0.0, 0.0),
+                                      blurRadius: 0.0,
+                                      spreadRadius: 0.0,
+                                    ), //BoxShadow
+                                  ],
+                                ),
+                                child: Image.asset("assets/images/arrow_right.png",
+                                  width: 15,
+                                  height: 15,
+                                  fit: BoxFit.contain,),
+                                //child: Image(image: Image.asset("assets/images/share.png")),
                               ),
-                              blurRadius: 1.0,
-                              spreadRadius: 0.5,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Icon(Icons.arrow_back,color: Colors.red,
+                            ],
+                          ),
                         ),
                       ),
                     ],
-                  ),*/
+                  ),
                   Container(
                                 height: 550,
                                  margin: const EdgeInsets.only(left: 0,right: 0,top: 0),

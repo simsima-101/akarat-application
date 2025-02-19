@@ -100,11 +100,18 @@ flutter:
   - assets/images/ar-left.png
   - assets/images/share.png
   - assets/images/ag.png
+  - assets/images/map.png
   - assets/images/arrow.png
   - assets/images/Residential__1.png
   - assets/images/rooms_stand.png
   - assets/images/ak-icon-agent 1.png
   - assets/images/filter.png
+  - assets/images/lov.png
+  - assets/images/forward.png
+  - assets/images/arrow_right.png
+  - assets/images/bath.png
+  - assets/images/bed.png
+  - assets/images/messure.png
 
 #        -assets/images/image 2.png
 #        - assets/images/image3.png
