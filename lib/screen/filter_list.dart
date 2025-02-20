@@ -3,6 +3,7 @@ import 'package:drawerdemo/model/api2model.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:sliding_switch/sliding_switch.dart';
 import 'package:http/http.dart' as http;
 import '../utils/api2cardscreen.dart';

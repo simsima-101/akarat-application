@@ -2,6 +2,7 @@ import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 
 void main(){
   runApp(const Product_Detail());
@@ -11,7 +12,7 @@ class Product_Detail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       home: Product_DetailDemo(),
     );
@@ -210,9 +211,10 @@ class _Product_DetailDemoState extends State<Product_DetailDemo> {
                    // color: Colors.grey,
                     child: Row(
                       children: [
-                        Text("Townhouse",style: TextStyle(
+                        Text(Get.arguments.toString()),
+                       /* Text("Townhouse",style: TextStyle(
                           letterSpacing: 0.5
-                        ),),
+                        ),),*/
                         Padding(
                           padding: const EdgeInsets.only(
                               left: 10.0, right: 0.0, top: 0, bottom: 0),
@@ -917,7 +919,7 @@ class _Product_DetailDemoState extends State<Product_DetailDemo> {
                         fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                     ),),
                   ),
-                  Padding(padding: const EdgeInsets.only(top: 10,left: 20,right: 0),
+                  /*Padding(padding: const EdgeInsets.only(top: 10,left: 20,right: 0),
                     child: Container(
                       margin: const EdgeInsets.only(left: 0,top: 0,right: 0),
                       height: 200,
@@ -925,88 +927,48 @@ class _Product_DetailDemoState extends State<Product_DetailDemo> {
                         padding: const EdgeInsets.only(right: 10),
                         scrollDirection: Axis.horizontal,
                         children: [
-                          Container(
-                            height: 200,
-                            width: 200,
-                            color: Colors.grey,
-                          ),
-
-                          Container(
-                            height: 200,
-                            width: 200,
-                            color: Colors.green,
-                          ),
-                          Container(
-                            height: 200,
-                            width: 200,
-                            color: Colors.black,
-                          ),
-                          Container(
-                            height: 200,
-                            width: 200,
-                            color: Colors.blue,
-                          ),
-                          Container(
-                            height: 200,
-                            width: 200,
-                            color: Colors.red,
-                          ),
-                          Container(
-                            height: 200,
-                            width: 200,
-                            color: Colors.white,
-                          ),
-                          Container(
-                            height: 200,
-                            width: 200,
-                            color: Colors.green,
-                          ),
-                          Container(
-                            height: 200,
-                            width: 200,
-                            color: Colors.grey,
-                          ),
-                          Container(
-                            height: 200,
-                            width: 200,
-                            color: Colors.black,
-                          ),
+                      Card(
+                        color: Colors.grey,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 5.0,top: 1,right: 5),
+                        child: Column(
+                          children: [
+                            AspectRatio(
+                                aspectRatio: 1.5,
+                            child: Image.asset("assets/images/image 1.png",
+                              fit: BoxFit.cover,
+                              height: 100,),
+                            ),
+                            Padding(padding: const EdgeInsets.only(top: 5),
+                              child: ListTile(
+                                title: Text("AED 134677",style: TextStyle(
+                                    fontWeight: FontWeight.bold,fontSize: 18,height: 1.4
+                                ),),
+                              ),
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Padding(padding: const EdgeInsets.only(left: 1,right: 5,top: 0),
+                                  child:  Image.asset("assets/images/map.png",height: 14,),
+                                ),
+                                Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
+                                  child: Text("sdfghjkgsdfghjxcvbnmdfghj",style: TextStyle(
+                                      fontWeight: FontWeight.bold,fontSize: 13,height: 1.4,
+                                      overflow: TextOverflow.visible
+                                  ),),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        ),
+                      )
                         ],
                       ),
                     ),
-                    /*child:  ListView(
-                      shrinkWrap: true,
-                      scrollDirection: Axis.horizontal,
-                      children: <Widget>[
-                      Container(
-                     // width: 100,
-                      height: 50,
-                      padding: const EdgeInsets.only(top: 5),
-                      decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                      BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                      0.5,
-                      0.5,
-                      ),
-                      blurRadius: 1.0,
-                      spreadRadius: 0.5,
-                      ), //BoxShadow
-                      BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                      ), //BoxShadow
-                      ]),
-                      *//*child: Text("Maids Room",
-                      style: TextStyle(color: Colors.black,
-                      letterSpacing: 0.5),textAlign: TextAlign.center,),*//*
-                      ),
-                        ]),*/
-                  ),
+                  ),*/
+
                   SizedBox(height: 100,)
                 ]
             )

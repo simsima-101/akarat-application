@@ -173,7 +173,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                 children: <Widget>[
                 GestureDetector(
                 onTap: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
+         // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
           },
           child:   Container(
               margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
@@ -203,7 +203,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                 ),
         GestureDetector(
             onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
+              //Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
             },
                 child:   Container(
                     margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
@@ -233,7 +233,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
         ),
         GestureDetector(
             onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
+             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
             },child:
                   Container(
                     margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
@@ -263,7 +263,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
         ),
         GestureDetector(
             onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
+             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
             },child:
                   Container(
                     margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
@@ -310,7 +310,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                   children: <Widget>[
                   GestureDetector(
                   onTap: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
+         // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
           },child:
                     Container(
                       margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
@@ -340,7 +340,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                   ),
         GestureDetector(
             onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
+             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
             },child:
                     Container(
                       margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
@@ -370,7 +370,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
         ),
         GestureDetector(
             onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
+             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
             },child:
                     Container(
                       margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
@@ -400,7 +400,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
         ),
         GestureDetector(
             onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
+             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
             },child:
                     Container(
                       margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),

@@ -3,26 +3,20 @@ import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-void main(){
-  runApp(const Property_Detail());
-}
+/*void main(){
+  runApp(const Property_Detail(data: '',));
+}*/
 class Property_Detail extends StatelessWidget {
-  const Property_Detail( {super.key});
+  final String data;
+   Property_Detail({super.key, required this.data});
+ /* @override
+  State<Property_Detail> createState() => _Property_DetailState();*/
+/*}
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Property_DetailDemo(),
-    );
-  }
-}
+class _Property_DetailState extends State<Property_Detail> {
+ */
 
-class Property_DetailDemo extends StatefulWidget {
-  @override
-  _Property_DetailDemoState createState() => _Property_DetailDemoState();
-}
-class _Property_DetailDemoState extends State<Property_DetailDemo> {
+//   @override
   int pageIndex = 0;
 
   final pages = [
@@ -35,7 +29,7 @@ class _Property_DetailDemoState extends State<Property_DetailDemo> {
   @override
   void initState() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom]);
-    super.initState();
+   // super.initState();
   }
 
   @override
@@ -209,8 +203,8 @@ class _Property_DetailDemoState extends State<Property_DetailDemo> {
                     height: 30,
                    // color: Colors.grey,
                     margin: const EdgeInsets.only(left: 5,top: 5),
-                    child: Text("Sky Edition at Sea heaven",textAlign: TextAlign.left,style: TextStyle(
-                      fontSize: 23,fontWeight: FontWeight.bold,letterSpacing: 0.5
+                    child: Text(data,textAlign: TextAlign.left,style: TextStyle(
+                        fontSize: 23,fontWeight: FontWeight.bold,letterSpacing: 0.5
                     ),),
                   ),
                   ),
@@ -816,6 +810,7 @@ class _Property_DetailDemoState extends State<Property_DetailDemo> {
         )
     );
   }
+
   Container buildMyNavBar(BuildContext context) {
     return Container(
       height: 60,
@@ -832,9 +827,9 @@ class _Property_DetailDemoState extends State<Property_DetailDemo> {
           IconButton(
             enableFeedback: false,
             onPressed: () {
-              setState(() {
+
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
-              });
+
             },
             icon: pageIndex == 0
                 ? const Icon(
@@ -935,9 +930,9 @@ class _Property_DetailDemoState extends State<Property_DetailDemo> {
           IconButton(
             enableFeedback: false,
             onPressed: () {
-              setState(() {
+
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-              });
+
             },
             icon: pageIndex == 3
                 ? const Icon(
