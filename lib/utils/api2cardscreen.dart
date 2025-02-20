@@ -1,10 +1,8 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:drawerdemo/screen/product_detail.dart';
 import 'package:drawerdemo/screen/property_detail.dart';
 import 'package:flutter/material.dart';
 import '../model/api2model.dart';
-import 'package:get/get.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;

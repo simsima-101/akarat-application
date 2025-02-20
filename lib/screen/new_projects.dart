@@ -1,6 +1,5 @@
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
-import 'package:drawerdemo/screen/property_detail.dart';
 import 'package:flutter/material.dart';
 
 void main(){
