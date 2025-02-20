@@ -74,10 +74,15 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                   ), //BoxShadow
                                 ],
                               ),
+                    child: GestureDetector(
+                      onTap: (){
+                       // Navigator.push(context, MaterialPageRoute(builder: (context) => FliterList()));
+                      },
                               child: Image.asset("assets/images/ar-left.png",
                                 width: 15,
                                 height: 15,
                                 fit: BoxFit.contain,),
+                    ),
                             ),
                             Container(
                               margin: const EdgeInsets.only(left: 280,top: 35,bottom: 15),

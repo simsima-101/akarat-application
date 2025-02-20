@@ -1,24 +1,13 @@
+import 'package:drawerdemo/screen/filter_list.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/*void main(){
-  runApp(const Property_Detail(data: '',));
-}*/
 class Property_Detail extends StatelessWidget {
   final String data;
    Property_Detail({super.key, required this.data});
- /* @override
-  State<Property_Detail> createState() => _Property_DetailState();*/
-/*}
-
-class _Property_DetailState extends State<Property_Detail> {
- */
-
-//   @override
   int pageIndex = 0;
-
   final pages = [
     const Page1(),
     const Page2(),
@@ -31,7 +20,6 @@ class _Property_DetailState extends State<Property_Detail> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom]);
    // super.initState();
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,13 +64,18 @@ class _Property_DetailState extends State<Property_Detail> {
                                     ), //BoxShadow
                                   ],
                                 ),
-                                child: Image.asset("assets/images/ar-left.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,),
+                                child: GestureDetector(
+                                  onTap: (){
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => FliterList()));
+                                  },
+                                  child: Image.asset("assets/images/ar-left.png",
+                                    width: 15,
+                                    height: 15,
+                                    fit: BoxFit.contain,),
+                                )
                               ),
                               Container(
-                                margin: const EdgeInsets.only(left: 220,top: 5,bottom: 0,),
+                                margin: const EdgeInsets.only(left: 260,top: 5,bottom: 0,),
                                 height: 35,
                                 width: 35,
                                 padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
@@ -138,37 +131,6 @@ class _Property_DetailState extends State<Property_Detail> {
                                   ],
                                 ),
                                 child: Image.asset("assets/images/forward.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,),
-                                //child: Image(image: Image.asset("assets/images/share.png")),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(left: 5,top: 5,bottom: 0,),
-                                height: 35,
-                                width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Image.asset("assets/images/arrow_right.png",
                                   width: 15,
                                   height: 15,
                                   fit: BoxFit.contain,),
