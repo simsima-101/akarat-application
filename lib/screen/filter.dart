@@ -31,9 +31,9 @@ class FilterDemo extends StatefulWidget {
 }
 class _FilterDemoState extends State<FilterDemo> {
   late bool isSelected = true;
-  final double _min = 2.0;
-  final double _max = 30.0;
-  final SfRangeValues _values = SfRangeValues(12.5, 20.5);
+  final double _min = 5.0;
+  final double _max = 60.0;
+  final SfRangeValues _values = SfRangeValues(12.5, 30.5);
   late RangeController _rangeController;
 
 
@@ -54,40 +54,65 @@ class _FilterDemoState extends State<FilterDemo> {
 
 
   final List<Data> chartData = <Data>[
-    Data(x: 2.0, y: 9.2),
-    Data(x: 3.0, y: 23.4),
-    Data(x: 4.0, y: 4.13),
-    Data(x: 5.0, y: 15.6),
-    Data(x: 6.0, y: 6.3),
-    Data(x: 7.0, y: 7.12),
+    Data(x: 5.0, y: 15.45),
+    Data(x: 6.0, y: 10.44),
+    Data(x: 7.0, y: 38.12),
     Data(x: 8.0, y: 18.9),
-    Data(x: 9.0, y: 9.8),
+    Data(x: 9.0, y: 22.8),
     Data(x: 10.0, y:19.7),
-    Data(x: 11.0, y: 11.11),
+    Data(x: 11.0, y: 36.11),
     Data(x: 12.0, y: 12.5),
     Data(x: 13.0, y: 13.7),
     Data(x: 14.0, y: 20.8),
-    Data(x: 15.0, y: 6.7),
-    Data(x: 16.0, y: 16.7),
+    Data(x: 15.0, y: 33.7),
+    Data(x: 16.0, y: 34.7),
     Data(x: 17.0, y: 17.7),
     Data(x: 18.0, y: 22.7),
     Data(x: 19.0, y: 19.7),
-    Data(x: 20.0, y: 11.7),
+    Data(x: 20.0, y: 22.7),
     Data(x: 21.0, y: 20.7),
-    Data(x: 22.0, y: 9.7),
-    Data(x: 23.0, y: 8.7),
-    Data(x: 24.0, y: 12.7),
+    Data(x: 22.0, y: 44.7),
+    Data(x: 23.0, y: 45.7),
+    Data(x: 24.0, y: 40.7),
     Data(x: 25.0, y: 15.7),
     Data(x: 26.0, y: 26.7),
     Data(x: 27.0, y: 14.7),
     Data(x: 28.0, y: 20.7),
-    Data(x: 29.0, y: 15.7),
+    Data(x: 29.0, y: 41.7),
     Data(x: 30.0, y: 13.7),
+    Data(x: 31.0, y: 13.7),
+    Data(x: 32.0, y: 34.0),
+    Data(x: 33.0, y: 25.5),
+    Data(x: 34.0, y: 41.5),
+    Data(x: 35.0, y: 13.7),
+    Data(x: 36.0, y: 13.7),
+    Data(x: 37.0, y: 13.7),
+    Data(x: 38.0, y: 45.7),
+    Data(x: 39.0, y: 13.7),
+    Data(x: 40.0, y: 13.7),
+    Data(x: 41.0, y: 42.7),
+    Data(x: 42.0, y: 13.7),
+    Data(x: 43.0, y: 44.7),
+    Data(x: 44.0, y: 13.7),
+    Data(x: 45.0, y: 20.7),
+    Data(x: 46.0, y: 44.7),
+    Data(x: 47.0, y: 55.7),
+    Data(x: 48.0, y: 60.7),
+    Data(x: 49.0, y: 33.7),
+    Data(x: 50.0, y: 24.7),
+    Data(x: 51.0, y: 27.7),
+    Data(x: 52.0, y: 35.7),
+    Data(x: 53.0, y: 36.7),
+    Data(x: 54.0, y: 39.7),
+    Data(x: 55.0, y: 25.7),
+    Data(x: 56.0, y: 13.7),
+    Data(x: 57.0, y: 40.7),
+    Data(x: 58.0, y: 56.7),
+    Data(x: 59.0, y: 60.7),
+    Data(x: 60.0, y: 53.7),
   ];
 
-
   int pageIndex = 0;
-
   final pages = [
     const Page1(),
     const Page2(),
@@ -148,7 +173,6 @@ class _FilterDemoState extends State<FilterDemo> {
             )
             ),
           ),
-
           //properties
           Padding(
             padding: const EdgeInsets.only(top: 10,left: 15,right: 10),
@@ -160,23 +184,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Properties",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5,fontWeight: FontWeight.bold),
@@ -191,23 +216,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("New projects",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5,
@@ -223,23 +249,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Buy",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5,fontWeight: FontWeight.bold),
@@ -254,23 +281,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Rent",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5,fontWeight: FontWeight.bold),
@@ -292,11 +320,11 @@ class _FilterDemoState extends State<FilterDemo> {
                   BoxShadow(
                     color: Colors.red,
                     offset: const Offset(
-                      0.5,
-                      0.5,
+                      0.3,
+                      0.3,
                     ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
+                    blurRadius: 0.3,
+                    spreadRadius: 0.3,
                   ), //BoxShadow
                   BoxShadow(
                     color: Colors.white,
@@ -304,7 +332,8 @@ class _FilterDemoState extends State<FilterDemo> {
                     blurRadius: 0.0,
                     spreadRadius: 0.0,
                   ), //BoxShadow
-                ],),
+                ],
+              ),
               // Use a Material design search bar
               child: TextField(
                 textAlign: TextAlign.left,
@@ -347,7 +376,6 @@ class _FilterDemoState extends State<FilterDemo> {
               ),
             ],
           ),
-
           //images gridview
           Row(
             children: [
@@ -369,11 +397,11 @@ class _FilterDemoState extends State<FilterDemo> {
                       BoxShadow(
                         color: Colors.grey,
                         offset: const Offset(
-                          0.5,
-                          0.5,
+                          0.3,
+                          0.3,
                         ),
-                        blurRadius: 1.0,
-                        spreadRadius: 0.5,
+                        blurRadius: 0.3,
+                        spreadRadius: 0.3,
                       ), //BoxShadow
                       BoxShadow(
                         color: Colors.white,
@@ -423,11 +451,11 @@ class _FilterDemoState extends State<FilterDemo> {
                       BoxShadow(
                         color: Colors.grey,
                         offset: const Offset(
-                          0.5,
-                          0.5,
+                          0.3,
+                          0.3,
                         ),
-                        blurRadius: 1.0,
-                        spreadRadius: 0.5,
+                        blurRadius: 0.3,
+                        spreadRadius: 0.3,
                       ), //BoxShadow
                       BoxShadow(
                         color: Colors.white,
@@ -467,20 +495,16 @@ class _FilterDemoState extends State<FilterDemo> {
                   height: 100,
                   padding: const EdgeInsets.only(top: 10),
                   decoration: BoxDecoration(
-
-                    // image: DecorationImage(
-                    //   image: AssetImage("assets/images/03.png"),
-                    // ),
                     borderRadius: BorderRadiusDirectional.circular(10.0),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.grey,
                         offset: const Offset(
-                          0.5,
-                          0.5,
+                          0.3,
+                          0.3,
                         ),
-                        blurRadius: 1.0,
-                        spreadRadius: 0.5,
+                        blurRadius: 0.3,
+                        spreadRadius: 0.3,
                       ), //BoxShadow
                       BoxShadow(
                         color: Colors.white,
@@ -508,8 +532,8 @@ class _FilterDemoState extends State<FilterDemo> {
               ),
             ],
           ),
-//text
-        Row(
+          //text
+          Row(
           children: [
             Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
               child:  Text("Residential Categories",
@@ -521,8 +545,7 @@ class _FilterDemoState extends State<FilterDemo> {
             ),
           ],
         ),
-
-//category
+          //category
           Padding(
               padding: const EdgeInsets.only(top: 10,left: 15,right: 5),
               child: Row(
@@ -535,23 +558,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("All Residential",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5,fontWeight: FontWeight.bold),
@@ -566,23 +590,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Apartment",
                       style: TextStyle(color: Colors.black,letterSpacing: 0.5
                       ,fontWeight: FontWeight.bold),textAlign: TextAlign.center,),
@@ -596,23 +621,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Villa",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5,fontWeight: FontWeight.bold),textAlign: TextAlign.center,),
@@ -626,23 +652,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Townhouse",
                       style: TextStyle(color: Colors.black,letterSpacing: 0.5,
                       fontWeight: FontWeight.bold),textAlign: TextAlign.center,),
@@ -662,8 +689,7 @@ class _FilterDemoState extends State<FilterDemo> {
               ),
             ],
           ),
-
-      Padding(
+          Padding(
         padding: const EdgeInsets.only(top: 10,left: 15,right: 10),
         child: Row(
             // mainAxisAlignment: MainAxisAlignment.center,
@@ -679,11 +705,11 @@ class _FilterDemoState extends State<FilterDemo> {
                     BoxShadow(
                       color: Colors.grey,
                       offset: const Offset(
-                        0.5,
-                        0.5,
+                        0.3,
+                        0.3,
                       ),
-                      blurRadius: 1.0,
-                      spreadRadius: 0.5,
+                      blurRadius: 0.3,
+                      spreadRadius: 0.3,
                     ), //BoxShadow
                     BoxShadow(
                       color: Colors.white,
@@ -691,7 +717,8 @@ class _FilterDemoState extends State<FilterDemo> {
                       blurRadius: 0.0,
                       spreadRadius: 0.0,
                     ), //BoxShadow
-                  ],),
+                  ],
+                ),
                 child: TextField(
                   obscureText: true,
                   decoration: InputDecoration(
@@ -726,11 +753,11 @@ class _FilterDemoState extends State<FilterDemo> {
                     BoxShadow(
                       color: Colors.grey,
                       offset: const Offset(
-                        0.5,
-                        0.5,
+                        0.3,
+                        0.3,
                       ),
-                      blurRadius: 1.0,
-                      spreadRadius: 0.5,
+                      blurRadius: 0.3,
+                      spreadRadius: 0.3,
                     ), //BoxShadow
                     BoxShadow(
                       color: Colors.white,
@@ -738,7 +765,8 @@ class _FilterDemoState extends State<FilterDemo> {
                       blurRadius: 0.0,
                       spreadRadius: 0.0,
                     ), //BoxShadow
-                  ],),
+                  ],
+                ),
                 child: TextField(
                   obscureText: true,
                   decoration: InputDecoration(
@@ -754,50 +782,53 @@ class _FilterDemoState extends State<FilterDemo> {
               ]
         )
       ),
-  //rangeslider
+          //rangeslider
           Padding(padding: const EdgeInsets.only(top: 25.0,left: 1,bottom: 15),
-           child:  SfRangeSelector(
-             min: _min,
-             max: _max,
-             interval: 1,
-             enableTooltip: true,
-             shouldAlwaysShowTooltip: true,
-             initialValues: _values,
-             child: SizedBox(
-               height: 70,
-               width: 400,
-               child: SfCartesianChart(
-                 plotAreaBorderColor: Colors.transparent,
-                 margin: const EdgeInsets.all(0),
-                 primaryXAxis: NumericAxis(minimum: _min, maximum: _max,
-                   isVisible: false,),
-                 primaryYAxis: NumericAxis(isVisible: false),
-                 plotAreaBorderWidth: 0,
-                 plotAreaBackgroundColor: Colors.transparent,
-                 series: <ColumnSeries<Data, double>>[
-                   ColumnSeries<Data, double>(
-                     trackColor: Colors.transparent,
-                     dataSource: chartData,
-                     selectionBehavior: SelectionBehavior(
-                       unselectedOpacity: 0,
-                       selectedOpacity: 1.5,unselectedColor: Colors.transparent,
-                       selectionController: _rangeController,
-                     ),
-                     xValueMapper: (Data sales, int index) => sales.x,
-                     yValueMapper: (Data sales, int index) => sales.y,
-                     pointColorMapper: (Data sales, int index) {
-                       return const Color.fromRGBO(0, 178, 206, 1);
-                     },
-                     dashArray: const <double>[5, 3],
-                     animationDuration: 0,
-                     borderWidth: 0,
-                   ),
-                 ],
-               ),
-             ),
-           ),
+            child: SfRangeSelector(
+              min: _min,
+              max: _max,
+              interval: 1,
+              enableTooltip: true,
+              shouldAlwaysShowTooltip: true,
+              initialValues: _values,
+              child: SizedBox(
+                height: 60,
+                width: 400,
+                child: SfCartesianChart(
+                  plotAreaBorderColor: Colors.transparent,
+                  margin: const EdgeInsets.all(0),
+                  primaryXAxis: NumericAxis(minimum: _min, maximum: _max,
+                    isVisible: false,),
+                  primaryYAxis: NumericAxis(isVisible: false),
+                  plotAreaBorderWidth: 0,
+                  plotAreaBackgroundColor: Colors.transparent,
+                  series: <ColumnSeries<Data, double>>[
+                    ColumnSeries<Data, double>(
+                      trackColor: Colors.transparent,
+                      // color: Color.fromARGB(255, 126, 184, 253),
+                      dataSource: chartData,
+                      selectionBehavior: SelectionBehavior(
+                        unselectedOpacity: 0,
+                        selectedOpacity: 1.5,unselectedColor: Colors.transparent,
+                        selectionController: _rangeController,
+                      ),
+                      xValueMapper: (Data sales, int index) => sales.x,
+                      yValueMapper: (Data sales, int index) => sales.y,
+                      pointColorMapper: (Data sales, int index) {
+                        return const Color.fromRGBO(0, 178, 206, 1);
+                      },
+                      // color: const Color.fromRGBO(255, 255, 255, 0),
+                      dashArray: const <double>[5, 3],
+                      // borderColor: const Color.fromRGBO(194, 194, 194, 1),
+                      animationDuration: 0,
+                      borderWidth: 0,
+                      //opacity: 0.5,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-
           Row(
             children: [
               Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
@@ -809,8 +840,6 @@ class _FilterDemoState extends State<FilterDemo> {
               ),
             ],
           ),
-
-
           //studio
           Padding(
               padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
@@ -824,23 +853,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Studio",
                       style: TextStyle(color: Colors.black,letterSpacing: 0.5),textAlign: TextAlign.center,),
                   ),
@@ -853,23 +883,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("1",
                       style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
                   ),
@@ -882,23 +913,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("2",
                       style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
                   ),
@@ -911,23 +943,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("3",
                       style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
                   ),
@@ -940,23 +973,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("4",
                       style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
                   ),
@@ -969,23 +1003,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("5",
                       style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
                   ),
@@ -998,23 +1033,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("6",
                       style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
                   ),
@@ -1027,23 +1063,24 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("7",
                       style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
                   ),
@@ -1056,30 +1093,31 @@ class _FilterDemoState extends State<FilterDemo> {
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("8+",
                       style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
                   ),
                 ],
               )
           ),
-Row(
+          Row(
   children: [
     Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
       child:  Text("Bathrooms",
@@ -1090,8 +1128,7 @@ Row(
     ),
   ],
 ),
-
-      Padding(
+          Padding(
         padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
         child: Row(
             // mainAxisAlignment: MainAxisAlignment.start,
@@ -1103,23 +1140,24 @@ Row(
                 padding: const EdgeInsets.only(top: 5),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadiusDirectional.circular(6.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.5,
-                          0.5,
-                        ),
-                        blurRadius: 1.0,
-                        spreadRadius: 0.5,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ]),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey,
+                      offset: const Offset(
+                        0.3,
+                        0.3,
+                      ),
+                      blurRadius: 0.3,
+                      spreadRadius: 0.3,
+                    ), //BoxShadow
+                    BoxShadow(
+                      color: Colors.white,
+                      offset: const Offset(0.0, 0.0),
+                      blurRadius: 0.0,
+                      spreadRadius: 0.0,
+                    ), //BoxShadow
+                  ],
+                ),
                 child: Text("1",
                   style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
               ),
@@ -1132,23 +1170,24 @@ Row(
                 padding: const EdgeInsets.only(top: 5),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadiusDirectional.circular(6.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.5,
-                          0.5,
-                        ),
-                        blurRadius: 1.0,
-                        spreadRadius: 0.5,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ]),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey,
+                      offset: const Offset(
+                        0.3,
+                        0.3,
+                      ),
+                      blurRadius: 0.3,
+                      spreadRadius: 0.3,
+                    ), //BoxShadow
+                    BoxShadow(
+                      color: Colors.white,
+                      offset: const Offset(0.0, 0.0),
+                      blurRadius: 0.0,
+                      spreadRadius: 0.0,
+                    ), //BoxShadow
+                  ],
+                ),
                 child: Text("2",
                   style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
               ),
@@ -1161,23 +1200,24 @@ Row(
                 padding: const EdgeInsets.only(top: 5),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadiusDirectional.circular(6.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.5,
-                          0.5,
-                        ),
-                        blurRadius: 1.0,
-                        spreadRadius: 0.5,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ]),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey,
+                      offset: const Offset(
+                        0.3,
+                        0.3,
+                      ),
+                      blurRadius: 0.3,
+                      spreadRadius: 0.3,
+                    ), //BoxShadow
+                    BoxShadow(
+                      color: Colors.white,
+                      offset: const Offset(0.0, 0.0),
+                      blurRadius: 0.0,
+                      spreadRadius: 0.0,
+                    ), //BoxShadow
+                  ],
+                ),
                 child: Text("3",
                   style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
               ),
@@ -1190,23 +1230,24 @@ Row(
                 padding: const EdgeInsets.only(top: 5),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadiusDirectional.circular(6.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.5,
-                          0.5,
-                        ),
-                        blurRadius: 1.0,
-                        spreadRadius: 0.5,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ]),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey,
+                      offset: const Offset(
+                        0.3,
+                        0.3,
+                      ),
+                      blurRadius: 0.3,
+                      spreadRadius: 0.3,
+                    ), //BoxShadow
+                    BoxShadow(
+                      color: Colors.white,
+                      offset: const Offset(0.0, 0.0),
+                      blurRadius: 0.0,
+                      spreadRadius: 0.0,
+                    ), //BoxShadow
+                  ],
+                ),
                 child: Text("4",
                   style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
               ),
@@ -1219,23 +1260,24 @@ Row(
                 padding: const EdgeInsets.only(top: 5),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadiusDirectional.circular(6.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.5,
-                          0.5,
-                        ),
-                        blurRadius: 1.0,
-                        spreadRadius: 0.5,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ]),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey,
+                      offset: const Offset(
+                        0.3,
+                        0.3,
+                      ),
+                      blurRadius: 0.3,
+                      spreadRadius: 0.3,
+                    ), //BoxShadow
+                    BoxShadow(
+                      color: Colors.white,
+                      offset: const Offset(0.0, 0.0),
+                      blurRadius: 0.0,
+                      spreadRadius: 0.0,
+                    ), //BoxShadow
+                  ],
+                ),
                 child: Text("5",
                   style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
               ),
@@ -1248,23 +1290,24 @@ Row(
                 padding: const EdgeInsets.only(top: 5),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadiusDirectional.circular(6.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.5,
-                          0.5,
-                        ),
-                        blurRadius: 1.0,
-                        spreadRadius: 0.5,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ]),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey,
+                      offset: const Offset(
+                        0.3,
+                        0.3,
+                      ),
+                      blurRadius: 0.3,
+                      spreadRadius: 0.3,
+                    ), //BoxShadow
+                    BoxShadow(
+                      color: Colors.white,
+                      offset: const Offset(0.0, 0.0),
+                      blurRadius: 0.0,
+                      spreadRadius: 0.0,
+                    ), //BoxShadow
+                  ],
+                ),
                 child: Text("6+",
                   style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
               ),
@@ -1284,7 +1327,6 @@ Row(
               ),
             ],
           ),
-
           Padding(
               padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
               child: Row(
@@ -1301,11 +1343,11 @@ Row(
                           BoxShadow(
                             color: Colors.grey,
                             offset: const Offset(
-                              0.5,
-                              0.5,
+                              0.3,
+                              0.3,
                             ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
+                            blurRadius: 0.3,
+                            spreadRadius: 0.3,
                           ), //BoxShadow
                           BoxShadow(
                             color: Colors.white,
@@ -1313,7 +1355,8 @@ Row(
                             blurRadius: 0.0,
                             spreadRadius: 0.0,
                           ), //BoxShadow
-                        ],),
+                        ],
+                      ),
                       child: TextField(
                         obscureText: true,
                         decoration: InputDecoration(
@@ -1348,11 +1391,11 @@ Row(
                           BoxShadow(
                             color: Colors.grey,
                             offset: const Offset(
-                              0.5,
-                              0.5,
+                              0.3,
+                              0.3,
                             ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
+                            blurRadius: 0.3,
+                            spreadRadius: 0.3,
                           ), //BoxShadow
                           BoxShadow(
                             color: Colors.white,
@@ -1360,7 +1403,8 @@ Row(
                             blurRadius: 0.0,
                             spreadRadius: 0.0,
                           ), //BoxShadow
-                        ],),
+                        ],
+                      ),
                       child: TextField(
                         obscureText: true,
                         decoration: InputDecoration(
@@ -1423,9 +1467,8 @@ Row(
              ),
            ),
           ),
-
-//furnished
-Row(
+          //furnished
+          Row(
   children: [
     Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
       child:  Text("Furnished Type",
@@ -1447,23 +1490,24 @@ Row(
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("All",
                       style: TextStyle(color: Colors.black
                       ,letterSpacing: 0.5),textAlign: TextAlign.center,),
@@ -1477,23 +1521,24 @@ Row(
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Furnished",
                       style: TextStyle(color: Colors.grey,
                           letterSpacing: 0.5),textAlign: TextAlign.center,),
@@ -1507,23 +1552,24 @@ Row(
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Unfurnished",
                       style: TextStyle(color: Colors.grey,
                           letterSpacing: 0.5),textAlign: TextAlign.center,),
@@ -1531,8 +1577,8 @@ Row(
                 ],
               )
           ),
-//Amenities
-Row(
+          //Amenities
+          Row(
   children: [
     Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
       child:  Text("Amenities",
@@ -1544,38 +1590,71 @@ Row(
     ),
   ],
 ),
-
           Padding(padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
             child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 1),
-              height: 30,
-              child: ListView(
+             // margin: const EdgeInsets.symmetric(vertical: 1),
+              height: 50,
+             // color: Colors.grey,
+             child: ListView(
+               shrinkWrap: true,
+               scrollDirection: Axis.horizontal,
+               children: [
+                 Container(
+                   height: 30,
+                   width: double.infinity,
+                   //color: Colors.green,
+                   decoration: BoxDecoration(
+                     borderRadius: BorderRadiusDirectional.circular(6.0),
+                     boxShadow: [
+                       BoxShadow(
+                         color: Colors.grey,
+                         offset: const Offset(
+                           0.3,
+                           0.3,
+                         ),
+                         blurRadius: 0.3,
+                         spreadRadius: 0.3,
+                       ), //BoxShadow
+                       BoxShadow(
+                         color: Colors.white,
+                         offset: const Offset(0.0, 0.0),
+                         blurRadius: 0.0,
+                         spreadRadius: 0.0,
+                       ), //BoxShadow
+                     ],),
+                   child: Text("Maids Room",
+                     style: TextStyle(color: Colors.black,
+                         letterSpacing: 0.5),textAlign: TextAlign.center,),
+                 )
+               ],
+             ),
+             /* child: ListView(
                 shrinkWrap: true,
                 scrollDirection: Axis.horizontal,
                 children: <Widget>[
                   Container(
-                    width: 100,
+                    width: double.infinity,
                     height: 30,
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],),
                     child: Text("Maids Room",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5),textAlign: TextAlign.center,),
@@ -1589,23 +1668,24 @@ Row(
                      padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Study",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5),textAlign: TextAlign.center,),
@@ -1619,23 +1699,24 @@ Row(
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Central A/C & Heating",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5),textAlign: TextAlign.center,),
@@ -1649,23 +1730,24 @@ Row(
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Balcony",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5),textAlign: TextAlign.center,),
@@ -1679,36 +1761,35 @@ Row(
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Private Garden",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5),textAlign: TextAlign.center,),
                   ),
 
                 ],
-              ),
+              ),*/
             ),
 
           ),
-
-//view
-Row(
+         /* Row(
   children: [
     Padding(
       padding: const EdgeInsets.only(
@@ -1724,9 +1805,8 @@ Row(
        child: Icon(Icons.arrow_forward_outlined,color: Colors.red,size: 15,),
     ),
   ],
-),
+),*/
           //real estate
-
           Row(
             children: [
               Padding(
@@ -1741,7 +1821,7 @@ Row(
               ),
             ],
           ),
-      Padding(
+          Padding(
         padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
             child:   Container(
                 width: 400,
@@ -1753,11 +1833,11 @@ Row(
                     BoxShadow(
                       color: Colors.grey,
                       offset: const Offset(
-                        0.5,
-                        0.5,
+                        0.3,
+                        0.3,
                       ),
-                      blurRadius: 1.0,
-                      spreadRadius: 0.5,
+                      blurRadius: 0.3,
+                      spreadRadius: 0.3,
                     ), //BoxShadow
                     BoxShadow(
                       color: Colors.white,
@@ -1765,7 +1845,8 @@ Row(
                       blurRadius: 0.0,
                       spreadRadius: 0.0,
                     ), //BoxShadow
-                  ],),
+                  ],
+                ),
                 child: TextField(
                   textAlignVertical: TextAlignVertical.center,
                  // obscureText: true,
@@ -1807,23 +1888,24 @@ Row(
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Yearly",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5),textAlign: TextAlign.center,),
@@ -1837,23 +1919,24 @@ Row(
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Bi-Yearly",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5),textAlign: TextAlign.center,),
@@ -1867,23 +1950,24 @@ Row(
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Quarterly",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5),textAlign: TextAlign.center,),
@@ -1897,23 +1981,24 @@ Row(
                     padding: const EdgeInsets.only(top: 5),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
                     child: Text("Monthly",
                       style: TextStyle(color: Colors.black,
                           letterSpacing: 0.5),textAlign: TextAlign.center,),
@@ -1924,7 +2009,7 @@ Row(
           Container(
             height: 150,
           ),
-GestureDetector(
+          GestureDetector(
   onTap: (){
     Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
   },
@@ -1943,11 +2028,11 @@ GestureDetector(
           BoxShadow(
             color: Colors.grey,
             offset: const Offset(
-              0.5,
-              0.5,
+              0.3,
+              0.3,
             ),
-            blurRadius: 1.0,
-            spreadRadius: 0.5,
+            blurRadius: 0.3,
+            spreadRadius: 0.3,
           ), //BoxShadow
           BoxShadow(
             color: Colors.white,
@@ -1963,7 +2048,6 @@ GestureDetector(
     ),
   ),
 ),
-
           Container(
             height: 10,
           ),
@@ -1971,7 +2055,6 @@ GestureDetector(
         ),
         );
   }
-
 Container buildMyNavBar(BuildContext context) {
   return Container(
     height: 60,
@@ -2086,7 +2169,6 @@ class Page1 extends StatelessWidget {
     );
   }
 }
-
 class Page2 extends StatelessWidget {
   const Page2({Key? key}) : super(key: key);
 
@@ -2107,7 +2189,6 @@ class Page2 extends StatelessWidget {
     );
   }
 }
-
 class Page3 extends StatelessWidget {
   const Page3({Key? key}) : super(key: key);
 
@@ -2128,7 +2209,6 @@ class Page3 extends StatelessWidget {
     );
   }
 }
-
 class Page4 extends StatelessWidget {
   const Page4({Key? key}) : super(key: key);
 
@@ -2149,7 +2229,6 @@ class Page4 extends StatelessWidget {
     );
   }
 }
-
 class Data {
   Data({required this.x, required this.y});
   final double x;
