@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:drawerdemo/model/api2model.dart';
+import 'package:drawerdemo/screen/blog.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
@@ -638,7 +639,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                pageIndex = 2;
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Blog()));
               });
             },
             icon: pageIndex == 2

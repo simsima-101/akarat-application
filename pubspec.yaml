@@ -115,6 +115,10 @@ flutter:
   - assets/images/bath.png
   - assets/images/bed.png
   - assets/images/messure.png
+  - assets/images/calender.png
+  - assets/images/dot.png
+  - assets/images/dis-like.png
+  - assets/images/like.png
 
 #        -assets/images/image 2.png
 #        - assets/images/image3.png
