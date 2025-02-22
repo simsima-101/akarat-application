@@ -38,6 +38,7 @@ class _MyHomePageState extends State<HomeDemo> {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         bottomNavigationBar: buildMyNavBar(context),
       //body: pages[pageIndex],
@@ -85,13 +86,13 @@ class _MyHomePageState extends State<HomeDemo> {
                   borderRadius: BorderRadiusDirectional.circular(15.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.red,
+                      color: Colors.grey,
                       offset: const Offset(
-                        0.5,
-                        0.5,
+                        0.3,
+                        0.3,
                       ),
-                      blurRadius: 1.0,
-                      spreadRadius: 0.5,
+                      blurRadius: 0.3,
+                      spreadRadius: 0.3,
                     ), //BoxShadow
                     BoxShadow(
                       color: Colors.white,
@@ -141,7 +142,7 @@ class _MyHomePageState extends State<HomeDemo> {
                         left: 12.0, right: 5.0, top: 10, bottom: 0),
 
                     child: Container(
-                      width: 115,
+                        width: screenSize.width * 0.3,
                       height: 100,
                       padding: const EdgeInsets.only(top: 0),
                       decoration: BoxDecoration(
@@ -150,11 +151,11 @@ class _MyHomePageState extends State<HomeDemo> {
                           BoxShadow(
                             color: Colors.grey,
                             offset: const Offset(
-                              0.5,
-                              0.5,
+                              0.3,
+                              0.3,
                             ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
+                            blurRadius: 0.3,
+                            spreadRadius: 0.3,
                           ), //BoxShadow
                           BoxShadow(
                             color: Colors.white,
@@ -191,7 +192,7 @@ class _MyHomePageState extends State<HomeDemo> {
                   padding: const EdgeInsets.only(
                       left: 5.0, right: 5.0, top: 13.0, bottom: 0),
                   child: Container(
-                    width: 115,
+                      width: screenSize.width * 0.3,
                     height: 100,
                     padding: const EdgeInsets.only(top: 10),
                     decoration: BoxDecoration(
@@ -200,11 +201,11 @@ class _MyHomePageState extends State<HomeDemo> {
                         BoxShadow(
                           color: Colors.grey,
                           offset: const Offset(
-                            0.5,
-                            0.5,
+                            0.3,
+                            0.3,
                           ),
-                          blurRadius: 1.0,
-                          spreadRadius: 0.5,
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
                         ), //BoxShadow
                         BoxShadow(
                           color: Colors.white,
@@ -240,7 +241,7 @@ class _MyHomePageState extends State<HomeDemo> {
                   padding: const EdgeInsets.only(
                       left: 4.0, right: 5.0, top: 13.0, bottom: 0),
                   child: Container(
-                    width: 120,
+                      width: screenSize.width * 0.3,
                     height: 100,
                     padding: const EdgeInsets.only(top: 10),
                     decoration: BoxDecoration(
@@ -249,11 +250,11 @@ class _MyHomePageState extends State<HomeDemo> {
                         BoxShadow(
                           color: Colors.grey,
                           offset: const Offset(
-                            0.5,
-                            0.5,
+                            0.3,
+                            0.3,
                           ),
-                          blurRadius: 1.0,
-                          spreadRadius: 0.5,
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
                         ), //BoxShadow
                         BoxShadow(
                           color: Colors.white,
@@ -281,8 +282,6 @@ class _MyHomePageState extends State<HomeDemo> {
                 ),
               ],
             ),
-
-
             Row(
               children: [
                 //logo 1
@@ -295,7 +294,7 @@ class _MyHomePageState extends State<HomeDemo> {
                   padding: const EdgeInsets.only(
                       left: 12.0, right: 5.0, top: 8, bottom: 0),
                   child: Container(
-                    width: 115,
+                      width: screenSize.width * 0.3,
                     height: 100,
                     padding: const EdgeInsets.only(top: 10),
                     decoration: BoxDecoration(
@@ -308,11 +307,11 @@ class _MyHomePageState extends State<HomeDemo> {
                         BoxShadow(
                           color: Colors.grey,
                           offset: const Offset(
-                            0.5,
-                            0.5,
+                            0.3,
+                            0.3,
                           ),
-                          blurRadius: 1.0,
-                          spreadRadius: 0.5,
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
                         ), //BoxShadow
                         BoxShadow(
                           color: Colors.white,
@@ -339,7 +338,6 @@ class _MyHomePageState extends State<HomeDemo> {
                   ),
                 ),
                 ),
-
                 //logo2
                 GestureDetector(
                   onTap: (){
@@ -350,7 +348,7 @@ class _MyHomePageState extends State<HomeDemo> {
                   padding: const EdgeInsets.only(
                       left: 5.0, right: 5.0, top: 8, bottom: 0),
                   child: Container(
-                    width: 115,
+                      width: screenSize.width * 0.3,
                     height: 100,
                     padding: const EdgeInsets.only(top: 10),
                     decoration: BoxDecoration(
@@ -363,11 +361,11 @@ class _MyHomePageState extends State<HomeDemo> {
                         BoxShadow(
                           color: Colors.grey,
                           offset: const Offset(
-                            0.5,
-                            0.5,
+                            0.3,
+                            0.3,
                           ),
-                          blurRadius: 1.0,
-                          spreadRadius: 0.5,
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
                         ), //BoxShadow
                         BoxShadow(
                           color: Colors.white,
@@ -404,7 +402,7 @@ class _MyHomePageState extends State<HomeDemo> {
                   padding: const EdgeInsets.only(
                       left: 5.0, right: 5.0, top: 8, bottom: 0),
                   child: Container(
-                    width: 120,
+                      width: screenSize.width * 0.3,
                     height: 100,
                     padding: const EdgeInsets.only(top: 10),
                     decoration: BoxDecoration(
@@ -417,11 +415,11 @@ class _MyHomePageState extends State<HomeDemo> {
                         BoxShadow(
                           color: Colors.grey,
                           offset: const Offset(
-                            0.5,
-                            0.5,
+                            0.3,
+                            0.3,
                           ),
-                          blurRadius: 1.0,
-                          spreadRadius: 0.5,
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
                         ), //BoxShadow
                         BoxShadow(
                           color: Colors.white,
@@ -456,7 +454,7 @@ class _MyHomePageState extends State<HomeDemo> {
                       left: 10.0, right: 10.0, top: 12.0, bottom: 0),
                   child:
                   Container(
-                  width: 405,
+                    width: screenSize.width * 1.0,
                   height: 150,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadiusDirectional.circular(10.0),
@@ -464,11 +462,11 @@ class _MyHomePageState extends State<HomeDemo> {
                       BoxShadow(
                         color: Colors.grey,
                         offset: const Offset(
-                          0.5,
-                          0.5,
+                          0.3,
+                          0.3,
                         ),
-                        blurRadius: 1.0,
-                        spreadRadius: 0.5,
+                        blurRadius: 0.3,
+                        spreadRadius: 0.3,
                       ), //BoxShadow
                       BoxShadow(
                         color: Colors.white,
@@ -476,7 +474,7 @@ class _MyHomePageState extends State<HomeDemo> {
                         blurRadius: 0.0,
                         spreadRadius: 0.0,
                       ), //BoxShadow
-                ]),
+                    ],),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                          crossAxisAlignment: CrossAxisAlignment.center,
@@ -506,11 +504,8 @@ class _MyHomePageState extends State<HomeDemo> {
                    ),
                 )
                             ),
-                Image.asset('assets/images/02.png',height: 145,width: 140,),
-                           SizedBox(
-                             width: 20,
-                             height: 20,
-                           )
+                Image.asset('assets/images/02.png',height: 145, width: screenSize.width * 0.36,),
+
               ],
             ),),),
 
@@ -643,11 +638,11 @@ class _MyHomePageState extends State<HomeDemo> {
                     BoxShadow(
                       color: Colors.grey,
                       offset: const Offset(
-                        0.5,
-                        0.5,
+                        0.3,
+                        0.3,
                       ),
-                      blurRadius: 1.0,
-                      spreadRadius: 0.5,
+                      blurRadius: 0.3,
+                      spreadRadius: 0.3,
                     ), //BoxShadow
                     BoxShadow(
                       color: Colors.white,
@@ -657,48 +652,45 @@ class _MyHomePageState extends State<HomeDemo> {
                     ), //BoxShadow
                   ],),
 
-                  child:  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        height: 10,
-                        width: 25,
-                      ),
-                      Expanded(flex:1,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            // Button onPressed action
-                          }, label: Text("call",style: TextStyle(color: Colors.black),),
-                          icon: Icon(Icons.call,color: Colors.red,),
+               child:  Row(
+                  children: [
+                    Padding(padding: const EdgeInsets.only(left: 30,top: 10,bottom: 10),
+                      child: ElevatedButton.icon(onPressed: (){},
+                          label: Text("call",style: TextStyle(
+                              color: Colors.black
+                          ),),
                           style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5.0))),
-
-                        ),),
-                      SizedBox(
-                        height: 10,
-                        width: 25,
-                      ),
-                      Expanded(flex: 1,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            // Button onPressed action
-                          },
-                          label: Text("Whatsapp",style: TextStyle(color: Colors.black),),
-                          icon: Icon(Icons.call,color: Colors.red,),
+                            backgroundColor: Colors.grey[50],
+                            alignment: Alignment.center,
+                            elevation: 1,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 40),
+                            textStyle: TextStyle(letterSpacing: 0.5,
+                                color: Colors.black,fontSize: 15,fontWeight: FontWeight.bold
+                            ),
+                          ),
+                          icon: Icon(Icons.call,color: Colors.red,)),
+                    ),
+                    // Text(product.description),
+                    Padding(padding: const EdgeInsets.only(left: 15,top: 10,bottom: 10),
+                      child: ElevatedButton.icon(onPressed: (){},
+                          label: Text("Watsapp",style: TextStyle(
+                              color: Colors.black
+                          ),),
                           style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5.0))),
-
-                        ),
-                      ),
-                      SizedBox(
-                        height: 10,
-                        width: 25,
-                      ),
-                    ],
-                  ),
+                            backgroundColor: Colors.grey[50],
+                            alignment: Alignment.center,
+                            elevation: 1,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 30),
+                            textStyle: TextStyle(letterSpacing: 0.5,
+                                color: Colors.black,fontSize: 12,fontWeight: FontWeight.bold
+                            ),
+                          ),
+                          icon: Icon(Icons.call,color: Colors.red,)),
+                    ),
+                  ],
+                ),
               ),
             ),
           //tab

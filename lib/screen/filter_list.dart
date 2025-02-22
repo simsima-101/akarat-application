@@ -81,13 +81,13 @@ class _FliterListDemoState extends State<FliterListDemo> {
                     borderRadius: BorderRadiusDirectional.circular(15.0),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.red,
+                        color: Colors.grey,
                         offset: const Offset(
-                          0.5,
-                          0.5,
+                          0.3,
+                          0.3,
                         ),
-                        blurRadius: 1.0,
-                        spreadRadius: 0.5,
+                        blurRadius: 0.3,
+                        spreadRadius: 0.3,
                       ), //BoxShadow
                       BoxShadow(
                         color: Colors.white,
@@ -173,23 +173,23 @@ class _FliterListDemoState extends State<FliterListDemo> {
                               width: 1,
                             ),
                             borderRadius: BorderRadiusDirectional.circular(6.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey,
-                                offset: const Offset(
-                                  0.5,
-                                  0.5,
-                                ),
-                                blurRadius: 1.0,
-                                spreadRadius: 0.5,
-                              ), //BoxShadow
-                              BoxShadow(
-                                color: Colors.white,
-                                offset: const Offset(0.0, 0.0),
-                                blurRadius: 0.0,
-                                spreadRadius: 0.0,
-                              ), //BoxShadow
-                            ]),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],),
                       child: Row(
                         children: [
                           Text(" Buy"),
@@ -217,23 +217,23 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                 width: 1,
                               ),
                               borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.5,
-                                    0.5,
-                                  ),
-                                  blurRadius: 1.0,
-                                  spreadRadius: 0.5,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ]),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: const Offset(
+                                  0.3,
+                                  0.3,
+                                ),
+                                blurRadius: 0.3,
+                                spreadRadius: 0.3,
+                              ), //BoxShadow
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: const Offset(0.0, 0.0),
+                                blurRadius: 0.0,
+                                spreadRadius: 0.0,
+                              ), //BoxShadow
+                            ],),
                           child: Row(
                             children: [
                               Text(" All Residential"),
@@ -261,23 +261,23 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                 width: 1,
                               ),
                               borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.5,
-                                    0.5,
-                                  ),
-                                  blurRadius: 1.0,
-                                  spreadRadius: 0.5,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ]),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: const Offset(
+                                  0.3,
+                                  0.3,
+                                ),
+                                blurRadius: 0.3,
+                                spreadRadius: 0.3,
+                              ), //BoxShadow
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: const Offset(0.0, 0.0),
+                                blurRadius: 0.0,
+                                spreadRadius: 0.0,
+                              ), //BoxShadow
+                            ],),
                           child: Row(
                             children: [
                               Text(" Price Range"),
@@ -304,23 +304,23 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                 width: 1,
                               ),
                               borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.5,
-                                    0.5,
-                                  ),
-                                  blurRadius: 1.0,
-                                  spreadRadius: 0.5,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ]),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: const Offset(
+                                  0.3,
+                                  0.3,
+                                ),
+                                blurRadius: 0.3,
+                                spreadRadius: 0.3,
+                              ), //BoxShadow
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: const Offset(0.0, 0.0),
+                                blurRadius: 0.0,
+                                spreadRadius: 0.0,
+                              ), //BoxShadow
+                            ],),
                           child: Row(
                             children: [
                               Text(" Buy"),
@@ -348,23 +348,23 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                 width: 1,
                               ),
                               borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.5,
-                                    0.5,
-                                  ),
-                                  blurRadius: 1.0,
-                                  spreadRadius: 0.5,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ]),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: const Offset(
+                                  0.3,
+                                  0.3,
+                                ),
+                                blurRadius: 0.3,
+                                spreadRadius: 0.3,
+                              ), //BoxShadow
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: const Offset(0.0, 0.0),
+                                blurRadius: 0.0,
+                                spreadRadius: 0.0,
+                              ), //BoxShadow
+                            ],),
                           child: Row(
                             children: [
                               Text(" Buy"),
