@@ -1,3 +1,4 @@
+import 'package:drawerdemo/screen/findagent.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
@@ -34,8 +35,8 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
     final TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
-       // length: 3,
         bottomNavigationBar: buildMyNavBar(context),
       backgroundColor: Colors.white,
       body: DefaultTabController(
@@ -44,16 +45,20 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
         child: Column(
         children: <Widget>[
           Stack(
-           // alignment: Alignment.topCenter,
               children: <Widget>[
                 Padding(
                   padding: EdgeInsets.only(top: 0),
                   child: Container(
-                    height: 180,
+                    height: screenSize.height*0.2,
                     width: double.infinity,
                     color: Color(0xFFEEEEEE),
                   child:   Row(
                       children: [
+                      GestureDetector(
+                      onTap: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> FindAgent()));
+                  },
+                    child:
                         Container(
                             margin: const EdgeInsets.only(left: 10,top: 20,bottom: 100),
                             height: 35,
@@ -84,8 +89,9 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                             height: 15,
                             fit: BoxFit.contain,),
                         ),
+                      ),
                         Container(
-                            margin: const EdgeInsets.only(left: 290,top: 20,bottom: 100,),
+                            margin: const EdgeInsets.only(left: 300,top: 20,bottom: 100,),
                             height: 35,
                             width: 35,
                             padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
@@ -123,11 +129,6 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                   margin: const EdgeInsets.only(top: 70,left: 20),
                   width: 130,
                   height: 130,
-                //  color: Colors.white,
-                 /* decoration: ShapeDecoration(
-                    shape: CircleBorder(),
-                   // color: Colors.red,
-                  ),*/
                   decoration: BoxDecoration(
                     borderRadius: BorderRadiusDirectional.circular(63.0),
                     boxShadow: [
@@ -156,7 +157,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                 )
               ],
           ),
-          Padding(padding: const EdgeInsets.only(top: 10,left: 0.0,right: 170),
+          Padding(padding: const EdgeInsets.only(top: 15,left: 0.0,right: 195),
           child: Text("Dina Marzouk Soffar",style: TextStyle(
             fontSize: 20,color: Colors.black,letterSpacing: 0.5
           ),),
@@ -165,11 +166,11 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(
-                    left: 10.0, right: 2.0, top: 20, bottom: 0),
+                    left: 20.0, right: 5.0, top: 20, bottom: 0),
                 child: Container(
                  // width: 130,
                   height: 35,
-                  padding: const EdgeInsets.only(top: 2,left: 5,right: 0),
+                  padding: const EdgeInsets.only(top: 2,left: 8,right: 3),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadiusDirectional.circular(8.0),
                     boxShadow: [
@@ -206,11 +207,11 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
               ),
               Padding(
                 padding: const EdgeInsets.only(
-                    left: 10.0, right: 2.0, top: 20, bottom: 0),
+                    left: 10.0, right: 5.0, top: 20, bottom: 0),
                 child: Container(
                  // width: 130,
                   height: 35,
-                  padding: const EdgeInsets.only(top: 2,left: 5,right: 0),
+                  padding: const EdgeInsets.only(top: 2,left: 5,right: 3),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadiusDirectional.circular(8.0),
                     boxShadow: [
@@ -247,11 +248,11 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
               ),
               Padding(
                 padding: const EdgeInsets.only(
-                    left: 10.0, right: 5.0, top: 20, bottom: 0),
+                    left: 10.0, right: 10.0, top: 20, bottom: 0),
                 child: Container(
                  // width: 130,
                   height: 35,
-                  padding: const EdgeInsets.only(top: 2,left: 5,right: 0),
+                  padding: const EdgeInsets.only(top: 2,left: 5,right: 3),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadiusDirectional.circular(8.0),
                     boxShadow: [
@@ -289,7 +290,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
             ],
           ),
           TabBar(
-            padding: const EdgeInsets.only(top: 15,left: 0,right: 120),
+            padding: const EdgeInsets.only(top: 20,left: 0,right: 120),
             labelPadding: const EdgeInsets.symmetric(horizontal: 0,),
             splashFactory: NoSplash.splashFactory,
             indicatorWeight: 1.0,
@@ -301,7 +302,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
             tabs: [
 
               Container(
-                margin: const EdgeInsets.only(left: 10),
+                margin: const EdgeInsets.only(left: 20),
                 width: 80,
                 height: 30,
                 padding: const EdgeInsets.only(top: 5,),
@@ -330,7 +331,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                 ),
               ),
               Container(
-                margin: const EdgeInsets.only(left: 10),
+                margin: const EdgeInsets.only(left: 20),
                 width: 80,
                 height: 30,
                 padding: const EdgeInsets.only(top: 5,),
@@ -358,7 +359,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                 ),
               ),
               Container(
-                margin: const EdgeInsets.only(left: 10),
+                margin: const EdgeInsets.only(left: 20),
                 width: 80,
                 height: 30,
                 padding: const EdgeInsets.only(top: 5,),
@@ -389,16 +390,18 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
             ],
           ),
           SizedBox(
-            height: 800,
+            height: screenSize.height*0.8,
             child: TabBarView(
               children: [
                 Container(
-                height: 800,
+                 // color: Colors.grey,
+                margin: const EdgeInsets.only(left: 15,right: 15,top: 10),
+                height: screenSize.height*0.8,
                 child:  Column(
                   children: [
                     //About details
                     Padding(
-                      padding: const EdgeInsets.only(top: 20, left: 0.0, right: 310),
+                      padding: const EdgeInsets.only(top: 10, left: 0.0, right: 310),
                       child: Text("About", style: TextStyle(
                           fontSize: 18, color: Colors.black, letterSpacing: 0.5
                       ),),
@@ -449,7 +452,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(
-                              left: 10.0, right: 2.0, top: 20, bottom: 0),
+                              left: 15.0, right: 5, top: 20, bottom: 0),
                           child: Container(
                             // width: 130,
                               height: 35,
@@ -497,7 +500,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(
-                              left: 10.0, right: 2.0, top: 20, bottom: 0),
+                              left: 10.0, right: 5.0, top: 20, bottom: 0),
                           child: Container(
                             // width: 130,
                               height: 35,
@@ -550,7 +553,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                       ),),
                     ),
                     Padding(
-                        padding: const EdgeInsets.only(top: 8, left: 20.0, right: 10),
+                        padding: const EdgeInsets.only(top: 8, left: 19.0, right: 10),
                         child: SizedBox(
                           width: 400,
                           height: 70,
@@ -564,19 +567,19 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                         )
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 1, left: 5.0, right: 320),
+                      padding: const EdgeInsets.only(top: 5, left: 5.0, right: 335),
                       child: Text("BRN", style: TextStyle(
                           fontSize: 12, color: Colors.grey, letterSpacing: 0.5
                       ),),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 5, left: 10.0, right: 310),
+                      padding: const EdgeInsets.only(top: 5, left: 10.0, right: 320),
                       child: Text("40841", style: TextStyle(
                           fontSize: 15, color: Colors.black, letterSpacing: 0.5
                       ),),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 10, left: 10.0, right: 290),
+                      padding: const EdgeInsets.only(top: 15, left: 10.0, right: 300),
                       child: Text("Experience", style: TextStyle(
                           fontSize: 12, color: Colors.grey, letterSpacing: 0.5
                       ),),
@@ -593,15 +596,17 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                 )
             ),
                 Container(
-                  height: 800,
+                  height: screenSize.height*0.8,
+                 // color: Colors.grey,
+                  margin: const EdgeInsets.only(left: 15,right: 15,top: 20),
                   child:  Column(
                     children: [
                       //About details
-                      Padding(padding: const EdgeInsets.only(top: 10,left: 5),
+                      Padding(padding: const EdgeInsets.only(top: 5,left: 5),
                   child:  Row(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(top: 10,left: 5,right: 10),
+                        padding: const EdgeInsets.only(top: 5,left: 5,right: 10),
                         child: Container(
                           width: 250,
                           height: 50,
@@ -657,7 +662,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                     ],
                   ),
                 ),
-                      Padding(padding: const EdgeInsets.only(top: 10,left: 5),
+                      Padding(padding: const EdgeInsets.only(top: 10,left: 2),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
@@ -769,7 +774,9 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
             ),
           ),
                 Container(
-                    height: 800,
+                    height: screenSize.height*0.8,
+                   // color: Colors.grey,
+                    margin: const EdgeInsets.only(left: 15,right: 15,top: 20),
                     child:  Column(
                         children: [
                           //About details
@@ -780,7 +787,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                               letterSpacing: 0.5,
                             ),textAlign: TextAlign.left,),
                           ),
-                          Padding(padding: const EdgeInsets.only(top: 10,left: 15,right: 15),
+                          Padding(padding: const EdgeInsets.only(top: 15,left: 15,right: 15),
                           child: Container(
                          //   width: 250,
                             height: 120,

@@ -38,7 +38,9 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   final TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
+
         bottomNavigationBar: buildMyNavBar(context),
         backgroundColor: Colors.white,
         body: DefaultTabController(
@@ -48,9 +50,14 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                 children: <Widget>[
                   Row(
                     children: [
+            GestureDetector(
+                onTap: (){
+          Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+        },
+          child:
                       Container(
                         alignment: Alignment.topCenter,
-                        margin: const EdgeInsets.only(top: 40,left:15),
+                        margin: const EdgeInsets.only(top: 40,left:5),
                         height: 30,
                         width: 30,
                         padding: const EdgeInsets.only(top: 2),
@@ -77,6 +84,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                         child: Icon(Icons.arrow_back,color: Colors.red,
                         ),
                       ),
+            ),
                       //logo 1
                       Container(
                         alignment: Alignment.topCenter,
@@ -93,7 +101,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                       //logo2
                       Container(
                         alignment: Alignment.topCenter,
-                        margin: const EdgeInsets.only(top: 40,left: 2),
+                        margin: const EdgeInsets.only(top: 40,left: 25),
                         height: 30,
                         width: 125,
                         decoration: BoxDecoration(
@@ -105,7 +113,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                       ),
                     ],
                   ),
-                  Padding(padding: const EdgeInsets.only(top: 10,left: 15,right: 180),
+                  Padding(padding: const EdgeInsets.only(top: 20,left: 15,right: 200),
                   child: Container(
                     height: 32,
                     width: 200,
@@ -271,15 +279,15 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                   ),
                   ),
                   SizedBox(
-                    height: 800,
+                    height: screenSize.height*0.8,
                     child: TabBarView(
                       children: [
                         Container(
-                          height: 800,
+                          height: screenSize.height*0.8,
                          child: Column(
                            children: [
                              Padding(
-                               padding: const EdgeInsets.only(top: 10,left: 5,right: 20),
+                               padding: const EdgeInsets.only(top: 15,left: 10,right: 20),
                                child: Container(
                                  margin: const EdgeInsets.symmetric(vertical: 1),
                                  height: 35,
@@ -289,7 +297,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                      //items
                                      //buy
                                      Padding(
-                                       padding: const EdgeInsets.only(top: 10,left: 10),
+                                       padding: const EdgeInsets.only(top: 10,left: 10,right: 15),
                                        child:  Container(
                                          width: 70,
                                          height: 10,
@@ -318,10 +326,6 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                          TextStyle(letterSpacing: 0.5)),
 
                                        ),
-                                     ),
-                                     //all residential
-                                     Container(
-                                       width: 10,
                                      ),
                                      //buy
                                      Padding(
@@ -360,11 +364,11 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                              ),
                              //Searchbar
                              Padding(
-                               padding: const EdgeInsets.only(top: 15,left: 15,right: 15),
+                               padding: const EdgeInsets.only(top: 20,left: 20,right: 20),
                                child: Container(
-                                 width: 400,
-                                 height: 60,
-                                 padding: const EdgeInsets.only(top: 10),
+                                 width: screenSize.width*1.0,
+                                 height: screenSize.height*0.07,
+                                 padding: const EdgeInsets.only(top: 12),
                                  decoration: BoxDecoration(
                                    borderRadius: BorderRadiusDirectional.circular(15.0),
                                    boxShadow: [
@@ -412,7 +416,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                              ),
                              Padding(
                                padding: const EdgeInsets.only(
-                                   left: 15.0, right: 250.0, top: 15, bottom: 0),
+                                   left: 5.0, right: 260.0, top: 20, bottom: 0),
                                child: Container(
                                  width: 130,
                                  height: 35,
@@ -452,14 +456,14 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                ),
                              ),
 
-                             Padding(padding: const EdgeInsets.only(left: 15,top: 15),
+                             Padding(padding: const EdgeInsets.only(left: 20,top: 20),
                                child: Text("Explore agents with a proven track record of high response rates "
                                    "and Authentic listings.",style: TextStyle(
                                  letterSpacing: 0.5,
                                ),),
                              ),
                              Padding(
-                               padding: const EdgeInsets.only(top: 5,left: 5,right: 10),
+                               padding: const EdgeInsets.only(top: 10,left: 10,right: 10),
                                child: Container(
                                  margin: const EdgeInsets.symmetric(vertical: 1),
                                  height: 35,
@@ -588,7 +592,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                onTap: (){
                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> AboutAgent()));
                                },
-                               child:  Padding(padding: const EdgeInsets.only(left: 15,top: 15,right: 10),
+                               child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
                                  child: Container(
                                    height: 120,
                                    decoration: BoxDecoration(
@@ -618,7 +622,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                onTap: (){
                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> AboutAgent()));
                                },
-                               child:  Padding(padding: const EdgeInsets.only(left: 15,top: 15,right: 10),
+                               child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
                                  child: Container(
                                    height: 120,
                                    decoration: BoxDecoration(
@@ -648,14 +652,14 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                          )
                         ),
                         Container(
-                          height: 400,
+                          height: screenSize.height*0.4,
                           padding: const EdgeInsets.only(top: 0,left: 0),
                           child: Column(
                             children: [
                               Row(
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.only(top: 15,left: 15,right: 10),
+                                    padding: const EdgeInsets.only(top: 20,left: 20,right: 10),
                                     child: Container(
                                       width: 250,
                                       height: 50,
@@ -711,11 +715,11 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 ],
                               ),
                               //Searchbar
-                              Padding(padding: const EdgeInsets.only(left: 5,top: 10,right: 200),
+                              Padding(padding: const EdgeInsets.only(left: 5,top: 20,right: 225),
                                 child: Text("Featured Agencies",style: TextStyle(fontWeight: FontWeight.bold,
                                   fontSize: 18,letterSpacing: 0.5,),textAlign: TextAlign.left,),
                               ),
-                              Padding(padding: const EdgeInsets.only(left: 15,top: 5,right: 10),
+                              Padding(padding: const EdgeInsets.only(left: 20,top: 5,right: 10),
                                 child: Text("Explore agents with a proven track record of high response rates"
                                     " and authentic listings.",style: TextStyle(
                                   fontSize: 15,letterSpacing: 0.5,),textAlign: TextAlign.left,),
@@ -724,7 +728,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 onTap: (){
                                   Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Agency()));
                                 },
-                                child:  Padding(padding: const EdgeInsets.only(left: 15,top: 15,right: 10),
+                                child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
                                   child: Container(
                                     height: 120,
                                     decoration: BoxDecoration(
@@ -754,7 +758,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 onTap: (){
                                   Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Agency()));
                                 },
-                                child:  Padding(padding: const EdgeInsets.only(left: 15,top: 15,right: 10),
+                                child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
                                   child: Container(
                                     height: 120,
                                     decoration: BoxDecoration(
@@ -784,7 +788,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 onTap: (){
                                   Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Agency()));
                                 },
-                                child:  Padding(padding: const EdgeInsets.only(left: 15,top: 15,right: 10),
+                                child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
                                   child: Container(
                                     height: 120,
                                     decoration: BoxDecoration(
@@ -814,7 +818,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 onTap: (){
                                   Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Agency()));
                                 },
-                                child:  Padding(padding: const EdgeInsets.only(left: 15,top: 15,right: 10),
+                                child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
                                   child: Container(
                                     height: 120,
                                     decoration: BoxDecoration(

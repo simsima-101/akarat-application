@@ -1,5 +1,7 @@
 import 'package:drawerdemo/screen/home.dart';
+import 'package:drawerdemo/screen/product_detail.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
+import 'package:drawerdemo/screen/property_detail.dart';
 import 'package:flutter/material.dart';
 
 void main(){
@@ -34,6 +36,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
         bottomNavigationBar: buildMyNavBar(context),
@@ -88,7 +91,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
             ],
           ),
           Container(
-            margin: const EdgeInsets.only(top: 15,left: 10,right: 15),
+            margin: const EdgeInsets.only(top: 15,left: 15,right: 15),
             padding: const EdgeInsets.only(top: 5,left: 5,right: 10),
             height: 50,
             width: double.infinity,
@@ -99,9 +102,9 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
           Row(
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 20,left: 15,right: 15),
+                padding: const EdgeInsets.only(top: 20,left: 20,right: 15),
                 child: Container(
-                  width: 362,
+                  width: screenSize.width*0.9,
                   height: 50,
                  // color: Colors.grey,
                   padding: const EdgeInsets.only(top: 5),
@@ -147,12 +150,12 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
               ),
             ],
           ),
-         Padding(padding: const EdgeInsets.only(top: 20,left: 10,right: 205),
+         Padding(padding: const EdgeInsets.only(top: 20,left: 10,right: 190),
            child: Text("Latest Projects in Dubai",textAlign: TextAlign.left,
            style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15),),
          ),
           Container(
-            margin: const EdgeInsets.only(top: 15,left: 10,right: 15),
+            margin: const EdgeInsets.only(top: 15,left: 20,right: 15),
             padding: const EdgeInsets.only(top: 5,left: 5,right: 10),
             height: 50,
             width: double.infinity,
@@ -172,7 +175,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                 children: <Widget>[
                 GestureDetector(
                 onTap: (){
-         // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
+          Navigator.push(context, MaterialPageRoute(builder: (context)=> Product_Detail()));
           },
           child:   Container(
               margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),

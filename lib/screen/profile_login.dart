@@ -1,3 +1,5 @@
+import 'package:drawerdemo/screen/blog.dart';
+import 'package:drawerdemo/screen/findagent.dart';
 import 'package:drawerdemo/screen/login.dart';
 import 'package:flutter/material.dart';
 
@@ -281,7 +283,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                     ],
                   ),
                   Padding(padding: const EdgeInsets.only(top: 0,left: 15),
-                   child:  ListView.builder(
+                   /*child:  ListView.builder(
                         shrinkWrap: true,
                         itemCount: 7,
                         itemBuilder: (BuildContext context, int index) {
@@ -292,7 +294,221 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                 style: TextStyle(color: Colors.green, fontSize: 15),
                               ),
                               title: Text("List item $index"));
-                        }),
+                        }),*/
+                    child: ListView(
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                      children: [
+                        GestureDetector(
+                        onTap: (){
+                    //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                    },
+                    child:
+                        Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(right: 38.0),
+                              child: Image.asset("assets/images/city.png",height: 25,),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 238.0),
+                              child: Text("City"),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                            )
+                          ],
+                        ),
+                        ),
+                        ),
+                        GestureDetector(
+                          onTap: (){
+                            //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                          },
+                          child:
+                            Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 38.0),
+                                    child: Image.asset("assets/images/city.png",height: 25,),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 200.0),
+                                    child: Text("Languages"),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        GestureDetector(
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> FindAgent()));
+                          },
+                          child:
+                            Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 38.0),
+                                    child: Image.asset("assets/images/city.png",height: 25,),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 238.0),
+                                    child: Text("Agent"),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                                  )
+                                ],
+                              ),
+                            ),
+                            ),
+                        GestureDetector(
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Blog()));
+                          },
+                          child:
+                        Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 38.0),
+                                child: Image.asset("assets/images/city.png",height: 25,),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 238.0),
+                                child: Text("Blogs"),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                              )
+                            ],
+                          ),
+                        ),
+                          ),
+                        GestureDetector(
+                          onTap: (){
+                            //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                          },
+                          child:
+                        Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 38.0),
+                                child: Image.asset("assets/images/city.png",height: 25,),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 220.0),
+                                child: Text("Support"),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                              )
+                            ],
+                          ),
+                        ),
+                        ),
+                        GestureDetector(
+                          onTap: (){
+                            //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                          },
+                          child:
+                        Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 38.0),
+                                child: Image.asset("assets/images/city.png",height: 25,),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 230.0),
+                                child: Text("Call Us"),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                              )
+                            ],
+                          ),
+                        ),
+                        ),
+                        GestureDetector(
+                          onTap: (){
+                           // Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                          },
+                          child:
+                        Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 38.0),
+                                child: Image.asset("assets/images/city.png",height: 25,),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 130.0),
+                                child: Text("Terms And Conditions"),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                              )
+                            ],
+                          ),
+                        ),
+                        ),
+                        GestureDetector(
+                          onTap: (){
+                           // Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                          },
+                          child:
+                        Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 38.0),
+                                child: Image.asset("assets/images/city.png",height: 25,),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 200.0),
+                                child: Text("Advertising"),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                              )
+                            ],
+                          ),
+                        ),
+                        ),
+                      ],
+                    ),
                   ),
 
 

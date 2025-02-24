@@ -40,7 +40,7 @@ class Property_Detail extends StatelessWidget {
                           child:   Row(
                             children: [
                               Container(
-                                margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
+                                margin: const EdgeInsets.only(left: 19,top: 10,bottom: 0),
                                 height: 35,
                                 width: 35,
                                 padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),

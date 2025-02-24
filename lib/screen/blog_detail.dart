@@ -1,4 +1,5 @@
 
+import 'package:drawerdemo/screen/blog.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:flutter/material.dart';
 
@@ -45,6 +46,10 @@ class _Blog_DetailDemoState extends State<Blog_DetailDemo> {
           // color: Color(0xFFEEEEEE),
           child:   Row(
             children: [
+              GestureDetector(
+                  onTap: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Blog()));
+                  },child:
               Container(
                   margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
                   height: 35,
@@ -70,10 +75,6 @@ class _Blog_DetailDemoState extends State<Blog_DetailDemo> {
                       ), //BoxShadow
                     ],
                   ),
-                  child: GestureDetector(
-                    onTap: (){
-                      // Navigator.push(context, MaterialPageRoute(builder: (context) => FliterList()));
-                    },
                     child: Image.asset("assets/images/ar-left.png",
                       width: 15,
                       height: 15,

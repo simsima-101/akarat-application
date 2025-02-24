@@ -1,3 +1,4 @@
+import 'package:drawerdemo/screen/findagent.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +35,7 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
   final TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
         bottomNavigationBar: buildMyNavBar(context),
@@ -60,11 +62,11 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                   BoxShadow(
                                     color: Colors.grey,
                                     offset: const Offset(
-                                      0.0,
-                                      0.0,
+                                      0.3,
+                                      0.3,
                                     ),
-                                    blurRadius: 0.1,
-                                    spreadRadius: 0.1,
+                                    blurRadius: 0.3,
+                                    spreadRadius: 0.3,
                                   ), //BoxShadow
                                   BoxShadow(
                                     color: Colors.white,
@@ -76,7 +78,7 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                               ),
                     child: GestureDetector(
                       onTap: (){
-                       // Navigator.push(context, MaterialPageRoute(builder: (context) => FliterList()));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => FindAgent()));
                       },
                               child: Image.asset("assets/images/ar-left.png",
                                 width: 15,
@@ -95,11 +97,11 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                   BoxShadow(
                                     color: Colors.grey,
                                     offset: const Offset(
-                                      0.0,
-                                      0.0,
+                                      0.3,
+                                      0.3,
                                     ),
-                                    blurRadius: 0.1,
-                                    spreadRadius: 0.1,
+                                    blurRadius: 0.3,
+                                    spreadRadius: 0.3,
                                   ), //BoxShadow
                                   BoxShadow(
                                     color: Colors.white,
@@ -125,11 +127,11 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                 BoxShadow(
                                   color: Colors.grey,
                                   offset: const Offset(
-                                    0.5,
-                                    0.5,
+                                    0.3,
+                                    0.3,
                                   ),
-                                  blurRadius: 1.0,
-                                  spreadRadius: 0.5,
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
                                 ), //BoxShadow
                                 BoxShadow(
                                   color: Colors.white,
@@ -275,30 +277,33 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                     ],
                   ),
                   Container(
-                      height: 800,
+                      height: screenSize.height*0.8,
                       child: TabBarView(
                           children: [
                             Container(
+                              //padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
+                               margin: const EdgeInsets.only(left: 15,right: 15,top: 30),
                                // height: 800,
+                             // color: Colors.grey,
                                 child:  Column(
                                   children: [
                                     //About details
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 20, left: 10.0, right: 310),
-                                      child: Text("About", style: TextStyle(
+                                      padding: const EdgeInsets.only(top: 0, left: 0.0, right: 290),
+                                      child: Text("About  ", style: TextStyle(
                                           fontSize: 20, color: Colors.black, letterSpacing: 0.5,
                                         fontWeight: FontWeight.bold
-                                      ),),
+                                      ),textAlign: TextAlign.start,),
                                     ),
 
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 2, left: 10.0, right: 280),
+                                      padding: const EdgeInsets.only(top: 5, left: 10.0, right: 280),
                                       child: Text("Description ", style: TextStyle(
                                           fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold
                                       ),),
                                     ),
                                     Padding(
-                                        padding: const EdgeInsets.only(top: 8, left: 20.0, right: 10),
+                                        padding: const EdgeInsets.only(top: 10, left: 20.0, right: 10),
                                         child: SizedBox(
                                           width: 400,
                                           height: 65,
@@ -336,7 +341,7 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                       ),),
                                     ),*/
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 0, left: 10.0, right: 310),
+                                      padding: const EdgeInsets.only(top: 10, left: 15.0, right: 310),
                                       child: Text("Properties", style: TextStyle(
                                           fontSize: 12, color: Colors.grey, letterSpacing: 0.5
                                       ),),
@@ -345,7 +350,7 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                       children: [
                                         Padding(
                                           padding: const EdgeInsets.only(
-                                              left: 10.0, right: 5.0, top: 5, bottom: 0),
+                                              left: 15.0, right: 5.0, top: 10, bottom: 0),
                                           child: Container(
                                             // width: 130,
                                               height: 35,
@@ -358,16 +363,16 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                                     color: Colors.red,
                                                     offset: const Offset(
                                                       0.3,
-                                                      0.5,
+                                                      0.3,
                                                     ),
-                                                    blurRadius: 0.5,
-                                                    spreadRadius: 0.8,
+                                                    blurRadius: 0.3,
+                                                    spreadRadius: 0.3,
                                                   ), //BoxShadow
                                                   BoxShadow(
                                                     color: Colors.white,
-                                                    offset: const Offset(0.5, 0.5),
-                                                    blurRadius: 0.5,
-                                                    spreadRadius: 0.5,
+                                                    offset: const Offset(0.0, 0.0),
+                                                    blurRadius: 0.0,
+                                                    spreadRadius: 0.0,
                                                   ), //BoxShadow
                                                 ],
                                               ),
@@ -407,16 +412,16 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                                     color: Colors.red,
                                                     offset: const Offset(
                                                       0.3,
-                                                      0.5,
+                                                      0.3,
                                                     ),
-                                                    blurRadius: 0.5,
-                                                    spreadRadius: 0.8,
+                                                    blurRadius: 0.3,
+                                                    spreadRadius: 0.3,
                                                   ), //BoxShadow
                                                   BoxShadow(
                                                     color: Colors.white,
-                                                    offset: const Offset(0.5, 0.5),
-                                                    blurRadius: 0.5,
-                                                    spreadRadius: 0.5,
+                                                    offset: const Offset(0.0, 0.0),
+                                                    blurRadius: 0.0,
+                                                    spreadRadius: 0.0,
                                                   ), //BoxShadow
                                                 ],
                                               ),
@@ -441,53 +446,53 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                       ],
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 15, left: 5.0, right: 290),
+                                      padding: const EdgeInsets.only(top: 15, left: 10.0, right: 290),
                                       child: Text("Service Areas", style: TextStyle(
                                           fontSize: 12, color: Colors.grey, letterSpacing: 0.5,
                                           height: 1.0
                                       ),),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 5, left: 10.0, right: 80),
+                                      padding: const EdgeInsets.only(top: 8, left: 15.0, right: 80),
                                       child: Text("Meydan City, Al Marjan Island, Dubailand", style: TextStyle(
                                           fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
                                           height: 1.0
                                       ),),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 15, left: 10.0, right: 290),
+                                      padding: const EdgeInsets.only(top: 15, left: 15.0, right: 290),
                                       child: Text("Property Type", style: TextStyle(
                                           fontSize: 12, color: Colors.grey, letterSpacing: 0.5
                                       ),),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 5, left: 10.0, right: 150),
+                                      padding: const EdgeInsets.only(top: 8, left: 15.0, right: 150),
                                       child: Text(" Villas, Townhouses,Apartments", style: TextStyle(
                                           fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
                                           height: 1.0
                                       ),),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 15, left: 10.0, right: 340),
+                                      padding: const EdgeInsets.only(top: 15, left: 15.0, right: 340),
                                       child: Text("DED", style: TextStyle(
                                           fontSize: 12, color: Colors.grey, letterSpacing: 0.5
                                       ),),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 5, left: 10.0, right: 325),
+                                      padding: const EdgeInsets.only(top: 8, left: 15.0, right: 325),
                                       child: Text(" 40841", style: TextStyle(
                                           fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
                                           height: 1.0
                                       ),),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 15, left: 10.0, right: 330),
+                                      padding: const EdgeInsets.only(top: 15, left: 15.0, right: 330),
                                       child: Text("RERA", style: TextStyle(
                                           fontSize: 12, color: Colors.grey, letterSpacing: 0.5
                                       ),),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 5, left: 10.0, right: 325),
+                                      padding: const EdgeInsets.only(top: 8, left: 15.0, right: 325),
                                       child: Text(" 23364", style: TextStyle(
                                           fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
                                           height: 1.0
@@ -499,7 +504,9 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                 )
                             ),
                             Container(
-                              height: 800,
+                              height: screenSize.height*0.8,
+                             // color: Colors.grey,
+                              margin: const EdgeInsets.only(left: 15,right: 15,top: 30),
                               child:  Column(
                                 children: [
                                   //About details
@@ -518,11 +525,11 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                                 BoxShadow(
                                                   color: Colors.grey,
                                                   offset: const Offset(
-                                                    0.5,
-                                                    0.5,
+                                                    0.3,
+                                                    0.3,
                                                   ),
-                                                  blurRadius: 1.0,
-                                                  spreadRadius: 0.5,
+                                                  blurRadius: 0.3,
+                                                  spreadRadius: 0.3,
                                                 ), //BoxShadow
                                                 BoxShadow(
                                                   color: Colors.white,
@@ -530,7 +537,8 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                                   blurRadius: 0.0,
                                                   spreadRadius: 0.0,
                                                 ), //BoxShadow
-                                              ],),
+                                              ],
+                                            ),
                                             // Use a Material design search bar
                                             child: TextField(
                                               textAlign: TextAlign.left,
@@ -580,17 +588,17 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                                   BoxShadow(
                                                     color: Colors.grey,
                                                     offset: const Offset(
-                                                      1.5,
-                                                      1.5,
+                                                      0.3,
+                                                      0.3,
                                                     ),
-                                                    blurRadius: 0.5,
-                                                    spreadRadius: 0.5,
+                                                    blurRadius: 0.3,
+                                                    spreadRadius: 0.3,
                                                   ), //BoxShadow
                                                   BoxShadow(
-                                                    color: Color(0xFFEAD893),
-                                                    offset: const Offset(0.5, 0.5),
-                                                    blurRadius: 0.5,
-                                                    spreadRadius: 0.5,
+                                                    color: Colors.white,
+                                                    offset: const Offset(0.0, 0.0),
+                                                    blurRadius: 0.0,
+                                                    spreadRadius: 0.0,
                                                   ), //BoxShadow
                                                 ],
                                               ),
@@ -614,17 +622,17 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                                   BoxShadow(
                                                     color: Colors.grey,
                                                     offset: const Offset(
-                                                      1.5,
-                                                      1.5,
+                                                      0.3,
+                                                      0.3,
                                                     ),
-                                                    blurRadius: 0.5,
-                                                    spreadRadius: 0.5,
+                                                    blurRadius: 0.3,
+                                                    spreadRadius: 0.3,
                                                   ), //BoxShadow
                                                   BoxShadow(
                                                     color: Colors.white,
-                                                    offset: const Offset(0.5, 0.5),
-                                                    blurRadius: 0.5,
-                                                    spreadRadius: 0.5,
+                                                    offset: const Offset(0.0, 0.0),
+                                                    blurRadius: 0.0,
+                                                    spreadRadius: 0.0,
                                                   ), //BoxShadow
                                                 ],
                                               ),
@@ -648,17 +656,17 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                                     BoxShadow(
                                                       color: Colors.grey,
                                                       offset: const Offset(
-                                                        1.5,
-                                                        1.5,
+                                                        0.3,
+                                                        0.3,
                                                       ),
-                                                      blurRadius: 0.5,
-                                                      spreadRadius: 0.5,
+                                                      blurRadius: 0.3,
+                                                      spreadRadius: 0.3,
                                                     ), //BoxShadow
                                                     BoxShadow(
                                                       color: Colors.white,
-                                                      offset: const Offset(0.5, 0.5),
-                                                      blurRadius: 0.5,
-                                                      spreadRadius: 0.5,
+                                                      offset: const Offset(0.0, 0.0),
+                                                      blurRadius: 0.0,
+                                                      spreadRadius: 0.0,
                                                     ), //BoxShadow
                                                   ],
                                                 ),
@@ -675,7 +683,9 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                               ),
                             ),
                             Container(
-                                height: 800,
+                                height: screenSize.height*0.8,
+                                //color: Colors.grey,
+                                margin: const EdgeInsets.only(left: 15,right: 15,top: 30),
                                 child:  Column(
                                     children: [
                                       GestureDetector(
@@ -691,11 +701,11 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                                 BoxShadow(
                                                   color: Colors.grey,
                                                   offset: const Offset(
-                                                    0.5,
-                                                    0.5,
+                                                    0.3,
+                                                    0.3,
                                                   ),
-                                                  blurRadius: 1.0,
-                                                  spreadRadius: 0.5,
+                                                  blurRadius: 0.3,
+                                                  spreadRadius: 0.3,
                                                 ), //BoxShadow
                                                 BoxShadow(
                                                   color: Colors.white,
@@ -721,11 +731,11 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                                 BoxShadow(
                                                   color: Colors.grey,
                                                   offset: const Offset(
-                                                    0.5,
-                                                    0.5,
+                                                    0.3,
+                                                    0.3,
                                                   ),
-                                                  blurRadius: 1.0,
-                                                  spreadRadius: 0.5,
+                                                  blurRadius: 0.3,
+                                                  spreadRadius: 0.3,
                                                 ), //BoxShadow
                                                 BoxShadow(
                                                   color: Colors.white,
@@ -751,11 +761,11 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                                 BoxShadow(
                                                   color: Colors.grey,
                                                   offset: const Offset(
-                                                    0.5,
-                                                    0.5,
+                                                    0.3,
+                                                    0.3,
                                                   ),
-                                                  blurRadius: 1.0,
-                                                  spreadRadius: 0.5,
+                                                  blurRadius: 0.3,
+                                                  spreadRadius: 0.3,
                                                 ), //BoxShadow
                                                 BoxShadow(
                                                   color: Colors.white,
@@ -772,7 +782,9 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                 )
                             ),
                             Container(
-                                height: 800,
+                                height: screenSize.height*0.8,
+                               // color: Colors.grey,
+                                margin: const EdgeInsets.only(left: 15,right: 15,top: 30),
                                 child:  Column(
                                     children: [
                                       //About details
@@ -794,11 +806,11 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                                 BoxShadow(
                                                   color: Colors.grey,
                                                   offset: const Offset(
-                                                    0.5,
-                                                    0.5,
+                                                    0.3,
+                                                    0.3,
                                                   ),
-                                                  blurRadius: 1.0,
-                                                  spreadRadius: 0.5,
+                                                  blurRadius: 0.3,
+                                                  spreadRadius: 0.3,
                                                 ), //BoxShadow
                                                 BoxShadow(
                                                   color: Colors.white,
@@ -825,11 +837,11 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                                                 BoxShadow(
                                                                   color: Colors.grey,
                                                                   offset: const Offset(
-                                                                    0.5,
-                                                                    0.5,
+                                                                    0.3,
+                                                                    0.3,
                                                                   ),
-                                                                  blurRadius: 1.0,
-                                                                  spreadRadius: 0.5,
+                                                                  blurRadius: 0.3,
+                                                                  spreadRadius: 0.3,
                                                                 ), //BoxShadow
                                                                 BoxShadow(
                                                                   color: Colors.white,

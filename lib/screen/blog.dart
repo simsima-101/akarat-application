@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:drawerdemo/model/api2model.dart';
 import 'package:drawerdemo/screen/home.dart';
+import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:drawerdemo/utils/blogcardscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -104,7 +105,7 @@ class _BlogDemoState extends State<BlogDemo> {
                      ),
                      child: GestureDetector(
                        onTap: (){
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => FliterList()));
+                         Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
                        },
                        child: Image.asset("assets/images/ar-left.png",
                          width: 15,

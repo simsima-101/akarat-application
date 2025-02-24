@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:drawerdemo/screen/blog_detail.dart';
 import 'package:drawerdemo/screen/property_detail.dart';
 import 'package:flutter/material.dart';
 import '../model/api2model.dart';
@@ -15,9 +16,9 @@ class Blogcardscreen extends StatelessWidget {
           onTap: (){
             //Get.to(Product_Detail,arguments: "sxcdvbnm");
             //Get.to(Product_Detail,arguments: '${product.id}');
-            //Navigator.push(context, MaterialPageRoute(builder: (context) => Property_Detail(data: '${product.id}')));
-            var snackBar = SnackBar(content: Text("Tapped on ${product.id}"));
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+            Navigator.push(context, MaterialPageRoute(builder: (context) => Blog_Detail()));
+            // var snackBar = SnackBar(content: Text("Tapped on ${product.id}"));
+            // ScaffoldMessenger.of(context).showSnackBar(snackBar);
             /* var snackBar = SnackBar(content: Text("Tapped on ${product.id}"));
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
           Navigator.push(context,
