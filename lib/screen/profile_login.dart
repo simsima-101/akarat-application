@@ -340,7 +340,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                     child: Image.asset("assets/images/city.png",height: 25,),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.only(right: 200.0),
+                                    padding: const EdgeInsets.only(right: 175.0),
                                     child: Text("Languages"),
                                   ),
                                   Padding(
@@ -366,7 +366,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                     child: Image.asset("assets/images/city.png",height: 25,),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.only(right: 238.0),
+                                    padding: const EdgeInsets.only(right: 210.0),
                                     child: Text("Agent"),
                                   ),
                                   Padding(
@@ -392,7 +392,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                 child: Image.asset("assets/images/city.png",height: 25,),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(right: 238.0),
+                                padding: const EdgeInsets.only(right: 210.0),
                                 child: Text("Blogs"),
                               ),
                               Padding(
@@ -418,7 +418,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                 child: Image.asset("assets/images/city.png",height: 25,),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(right: 220.0),
+                                padding: const EdgeInsets.only(right: 200.0),
                                 child: Text("Support"),
                               ),
                               Padding(
@@ -444,7 +444,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                 child: Image.asset("assets/images/city.png",height: 25,),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(right: 230.0),
+                                padding: const EdgeInsets.only(right: 200.0),
                                 child: Text("Call Us"),
                               ),
                               Padding(
@@ -470,7 +470,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                 child: Image.asset("assets/images/city.png",height: 25,),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(right: 130.0),
+                                padding: const EdgeInsets.only(right: 100.0),
                                 child: Text("Terms And Conditions"),
                               ),
                               Padding(
@@ -496,7 +496,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                 child: Image.asset("assets/images/city.png",height: 25,),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(right: 200.0),
+                                padding: const EdgeInsets.only(right: 180.0),
                                 child: Text("Advertising"),
                               ),
                               Padding(

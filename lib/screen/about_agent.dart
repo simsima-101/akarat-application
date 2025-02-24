@@ -157,257 +157,274 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                 )
               ],
           ),
-          Padding(padding: const EdgeInsets.only(top: 15,left: 0.0,right: 195),
-          child: Text("Dina Marzouk Soffar",style: TextStyle(
-            fontSize: 20,color: Colors.black,letterSpacing: 0.5
-          ),),
+          Container(
+            margin: EdgeInsets.only(left: 0,top: 10,right: 120),
+            alignment: Alignment.centerLeft,
+            height: screenSize.height*0.05,
+            width: screenSize.width*0.6,
+           // color: Colors.grey,
+            child: Padding(padding:  EdgeInsets.only(top: 0,left: 0.0,right: 0),
+            child: Text("Dina Marzouk Soffar",style: TextStyle(
+              fontSize: 20,color: Colors.black,letterSpacing: 0.5
+            ),),
+            ),
           ),
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                    left: 20.0, right: 5.0, top: 20, bottom: 0),
-                child: Container(
-                 // width: 130,
-                  height: 35,
-                  padding: const EdgeInsets.only(top: 2,left: 8,right: 3),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(8.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          1.5,
-                          1.5,
+          Container(
+            margin: EdgeInsets.only(left: 15,right: 0),
+            height: screenSize.height*0.06,
+            alignment: Alignment.centerLeft,
+           // color: Colors.grey,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              children: [
+                Padding(
+                  padding:  EdgeInsets.only(left: 5.0, right: 5.0, top: 8, bottom: 8),
+                  child: Container(
+                    width: screenSize.width*0.26,
+                    height: 35,
+                    padding:  EdgeInsets.only(top: 2,left: 5,right: 1),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadiusDirectional.circular(8.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            1.5,
+                            1.5,
+                          ),
+                          blurRadius: 0.5,
+                          spreadRadius: 0.5,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.blue,
+                          offset: const Offset(0.5, 0.5),
+                          blurRadius: 0.5,
+                          spreadRadius: 0.5,
+                        ), //BoxShadow
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Padding(padding: const EdgeInsets.only(left: 1),
+                            child:   Icon(Icons.check_circle,color: Colors.white,size: 17,)
                         ),
-                        blurRadius: 0.5,
-                        spreadRadius: 0.5,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.blue,
-                        offset: const Offset(0.5, 0.5),
-                        blurRadius: 0.5,
-                        spreadRadius: 0.5,
-                      ), //BoxShadow
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Padding(padding: const EdgeInsets.only(left: 1),
-                          child:   Icon(Icons.check_circle,color: Colors.white,size: 17,)
-                      ),
-                      Padding(padding: const EdgeInsets.only(left: 1,right: 3),
-                          child:   Text("Prime Agent",style: TextStyle(
-                              letterSpacing: 0.5,color: Colors.white,fontSize: 12
-                          ),textAlign: TextAlign.center,)
-                      )
-                    ],
+                        Padding(padding: const EdgeInsets.only(left: 1,right: 3),
+                            child:   Text("Prime Agent",style: TextStyle(
+                                letterSpacing: 0.5,color: Colors.white,fontSize: 12
+                            ),textAlign: TextAlign.center,)
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                    left: 10.0, right: 5.0, top: 20, bottom: 0),
-                child: Container(
-                 // width: 130,
-                  height: 35,
-                  padding: const EdgeInsets.only(top: 2,left: 5,right: 3),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(8.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          1.5,
-                          1.5,
+                Padding(
+                  padding:  EdgeInsets.only(left: 5.0, right: 5.0, top: 8, bottom: 8),
+                  child: Container(
+                    width: screenSize.width*0.31,
+                    height: 35,
+                    padding: const EdgeInsets.only(top: 2,left: 5,right: 3),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadiusDirectional.circular(8.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            1.5,
+                            1.5,
+                          ),
+                          blurRadius: 0.5,
+                          spreadRadius: 0.5,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Color(0xFFEAD893),
+                          offset: const Offset(0.5, 0.5),
+                          blurRadius: 0.5,
+                          spreadRadius: 0.5,
+                        ), //BoxShadow
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Padding(padding: const EdgeInsets.only(left: 1),
+                            child:   Icon(Icons.stars,color: Colors.red,size: 17,)
                         ),
-                        blurRadius: 0.5,
-                        spreadRadius: 0.5,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Color(0xFFEAD893),
-                        offset: const Offset(0.5, 0.5),
-                        blurRadius: 0.5,
-                        spreadRadius: 0.5,
-                      ), //BoxShadow
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Padding(padding: const EdgeInsets.only(left: 1),
-                          child:   Icon(Icons.stars,color: Colors.red,size: 17,)
-                      ),
-                      Padding(padding: const EdgeInsets.only(left: 1,right: 3),
-                          child:   Text("Quality Listener",style: TextStyle(
-                              letterSpacing: 0.5,color: Colors.black,fontSize: 12
-                          ),textAlign: TextAlign.center,)
-                      )
-                    ],
+                        Padding(padding: const EdgeInsets.only(left: 1,right: 3),
+                            child:   Text("Quality Listener",style: TextStyle(
+                                letterSpacing: 0.5,color: Colors.black,fontSize: 12
+                            ),textAlign: TextAlign.center,)
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                    left: 10.0, right: 10.0, top: 20, bottom: 0),
-                child: Container(
-                 // width: 130,
-                  height: 35,
-                  padding: const EdgeInsets.only(top: 2,left: 5,right: 3),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(8.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          1.5,
-                          1.5,
+                Padding(
+                  padding:  EdgeInsets.only(left: 5.0, right: 5.0, top: 8, bottom: 8),
+                  child: Container(
+                    width: screenSize.width*0.35,
+                    height: 35,
+                    padding: const EdgeInsets.only(top: 2,left: 5,right: 1),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadiusDirectional.circular(8.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            1.5,
+                            1.5,
+                          ),
+                          blurRadius: 0.5,
+                          spreadRadius: 0.5,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Color(0xFFF5F5F5),
+                          offset: const Offset(0.5, 0.5),
+                          blurRadius: 0.5,
+                          spreadRadius: 0.5,
+                        ), //BoxShadow
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Padding(padding: const EdgeInsets.only(left: 1),
+                            child:   Icon(Icons.call_outlined,color: Colors.red,size: 17,)
                         ),
-                        blurRadius: 0.5,
-                        spreadRadius: 0.5,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Color(0xFFF5F5F5),
-                        offset: const Offset(0.5, 0.5),
-                        blurRadius: 0.5,
-                        spreadRadius: 0.5,
-                      ), //BoxShadow
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Padding(padding: const EdgeInsets.only(left: 1),
-                          child:   Icon(Icons.call_outlined,color: Colors.red,size: 17,)
-                      ),
-                      Padding(padding: const EdgeInsets.only(left: 1,right: 3),
-                          child:   Text("Responsive Broker",style: TextStyle(
-                              letterSpacing: 0.5,color: Colors.black,fontSize: 12
-                          ),textAlign: TextAlign.center,)
-                      )
-                    ],
+                        Padding(padding: const EdgeInsets.only(left: 1,right: 3),
+                            child:   Text("Responsive Broker",style: TextStyle(
+                                letterSpacing: 0.5,color: Colors.black,fontSize: 12
+                            ),textAlign: TextAlign.center,)
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          TabBar(
-            padding: const EdgeInsets.only(top: 20,left: 0,right: 120),
-            labelPadding: const EdgeInsets.symmetric(horizontal: 0,),
-            splashFactory: NoSplash.splashFactory,
-            indicatorWeight: 1.0,
-            labelColor: Colors.lightBlueAccent,
-            dividerColor: Colors.transparent,
-            indicatorColor: Colors.transparent,
-            tabAlignment: TabAlignment.center,
-            // onTap: (int index) => setState(() =>  screens[about_tb()]),
-            tabs: [
+          Container(
+            margin: const EdgeInsets.only(right: 10,top: 5),
+            height: screenSize.height*0.05,
+            //color: Colors.grey,
+            child: TabBar(
+              padding:  EdgeInsets.only(top: 0,left: 0,right: 60),
+              labelPadding: const EdgeInsets.symmetric(horizontal: 0,),
+              splashFactory: NoSplash.splashFactory,
+              indicatorWeight: 1.0,
+              labelColor: Colors.lightBlueAccent,
+              dividerColor: Colors.transparent,
+              indicatorColor: Colors.transparent,
+              tabAlignment: TabAlignment.center,
+              // onTap: (int index) => setState(() =>  screens[about_tb()]),
+              tabs: [
 
-              Container(
-                margin: const EdgeInsets.only(left: 20),
-                width: 80,
-                height: 30,
-                padding: const EdgeInsets.only(top: 5,),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadiusDirectional.circular(10.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.5,
-                        0.5,
-                      ),
-                      blurRadius: 1.0,
-                      spreadRadius: 0.5,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
-                ),
-                child: Text('About',textAlign: TextAlign.center,
+                Container(
+                  margin: const EdgeInsets.only(left: 0),
+                  width: screenSize.width*0.2,
+                  height: screenSize.height*0.035,
+                  padding: const EdgeInsets.only(top: 5,),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadiusDirectional.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey,
+                        offset: const Offset(
+                          0.5,
+                          0.5,
+                        ),
+                        blurRadius: 1.0,
+                        spreadRadius: 0.5,
+                      ), //BoxShadow
+                      BoxShadow(
+                        color: Colors.white,
+                        offset: const Offset(0.0, 0.0),
+                        blurRadius: 0.0,
+                        spreadRadius: 0.0,
+                      ), //BoxShadow
+                    ],
+                  ),
+                  child: Text('About',textAlign: TextAlign.center,
 
+                  ),
                 ),
-              ),
-              Container(
-                margin: const EdgeInsets.only(left: 20),
-                width: 80,
-                height: 30,
-                padding: const EdgeInsets.only(top: 5,),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadiusDirectional.circular(10.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.5,
-                        0.5,
-                      ),
-                      blurRadius: 1.0,
-                      spreadRadius: 0.5,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
+                Container(
+                  margin: const EdgeInsets.only(left: 20),
+                  width: screenSize.width*0.2,
+                  height: screenSize.height*0.035,
+                  padding: const EdgeInsets.only(top: 5,),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadiusDirectional.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey,
+                        offset: const Offset(
+                          0.5,
+                          0.5,
+                        ),
+                        blurRadius: 1.0,
+                        spreadRadius: 0.5,
+                      ), //BoxShadow
+                      BoxShadow(
+                        color: Colors.white,
+                        offset: const Offset(0.0, 0.0),
+                        blurRadius: 0.0,
+                        spreadRadius: 0.0,
+                      ), //BoxShadow
+                    ],
+                  ),
+                  child: Text('Properties',textAlign: TextAlign.center,
+                  ),
                 ),
-                child: Text('Properties',textAlign: TextAlign.center,
+                Container(
+                  margin: const EdgeInsets.only(left: 20),
+                  width: screenSize.width*0.2,
+                  height: screenSize.height*0.035,
+                  padding: const EdgeInsets.only(top: 5,),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadiusDirectional.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey,
+                        offset: const Offset(
+                          0.5,
+                          0.5,
+                        ),
+                        blurRadius: 1.0,
+                        spreadRadius: 0.5,
+                      ), //BoxShadow
+                      BoxShadow(
+                        color: Colors.white,
+                        offset: const Offset(0.0, 0.0),
+                        blurRadius: 0.0,
+                        spreadRadius: 0.0,
+                      ), //BoxShadow
+                    ],
+                  ),
+                  child: Text('Review',textAlign: TextAlign.center,
+                    // style: tabTextStyle(context)
+                  ),
                 ),
-              ),
-              Container(
-                margin: const EdgeInsets.only(left: 20),
-                width: 80,
-                height: 30,
-                padding: const EdgeInsets.only(top: 5,),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadiusDirectional.circular(10.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.5,
-                        0.5,
-                      ),
-                      blurRadius: 1.0,
-                      spreadRadius: 0.5,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
-                ),
-                child: Text('Review',textAlign: TextAlign.center,
-                  // style: tabTextStyle(context)
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
           SizedBox(
             height: screenSize.height*0.8,
             child: TabBarView(
               children: [
                 Container(
-                 // color: Colors.grey,
-                margin: const EdgeInsets.only(left: 15,right: 15,top: 10),
+                  //color: Colors.grey,
+                margin: const EdgeInsets.only(left: 20,right: 15,top: 10),
                 height: screenSize.height*0.8,
                 child:  Column(
                   children: [
                     //About details
                     Padding(
-                      padding: const EdgeInsets.only(top: 10, left: 0.0, right: 310),
+                      padding: const EdgeInsets.only(top: 10, left: 0.0, right: 300),
                       child: Text("About", style: TextStyle(
                           fontSize: 18, color: Colors.black, letterSpacing: 0.5
                       ),),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 10, left: 0.0, right: 300),
+                      padding: const EdgeInsets.only(top: 10, left: 0.0, right: 290),
                       child: Text("Language(s)", style: TextStyle(
                           fontSize: 10, color: Colors.grey, letterSpacing: 0.5
                       ),),
@@ -443,120 +460,125 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                       ),),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 20, left: 0.0, right: 310),
+                      padding: const EdgeInsets.only(top: 20, left: 0.0, right: 300),
                       child: Text("Properties", style: TextStyle(
                           fontSize: 10, color: Colors.grey, letterSpacing: 0.5
                       ),),
                     ),
-                    Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              left: 15.0, right: 5, top: 20, bottom: 0),
-                          child: Container(
-                            // width: 130,
-                              height: 35,
-                              padding: const EdgeInsets.only(
-                                  top: 5, left: 5, right: 10),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadiusDirectional.circular(8.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.red,
-                                    offset: const Offset(
-                                      0.3,
-                                      0.5,
-                                    ),
-                                    blurRadius: 0.5,
-                                    spreadRadius: 0.8,
-                                  ), //BoxShadow
-                                  BoxShadow(
-                                    color: Colors.white,
-                                    offset: const Offset(0.5, 0.5),
-                                    blurRadius: 0.5,
-                                    spreadRadius: 0.5,
-                                  ), //BoxShadow
-                                ],
-                              ),
+                    Container(
+                      margin: EdgeInsets.only(left: 2,right: 0,top: 5),
+                      height: screenSize.height*0.06,
+                      alignment: Alignment.centerLeft,
+                     // color: Colors.grey,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        shrinkWrap: true,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 2.0, right: 5, top: 8, bottom: 8),
+                            child: Container(
+                              // width: 130,
+                                height: 35,
+                                padding: const EdgeInsets.only(
+                                    top: 5, left: 5, right: 0),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadiusDirectional.circular(8.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.red,
+                                      offset: const Offset(
+                                        0.3,
+                                        0.5,
+                                      ),
+                                      blurRadius: 0.5,
+                                      spreadRadius: 0.8,
+                                    ), //BoxShadow
+                                    BoxShadow(
+                                      color: Colors.white,
+                                      offset: const Offset(0.5, 0.5),
+                                      blurRadius: 0.5,
+                                      spreadRadius: 0.5,
+                                    ), //BoxShadow
+                                  ],
+                                ),
 
-                              child: Row(
-                                children: [
-                                  Text("18 Properties for Rent", style: TextStyle(
-                                      letterSpacing: 0.5,
-                                      color: Colors.black,
-                                      fontSize: 13
-                                  ), textAlign: TextAlign.left,),
-                                  Padding(
-                                      padding: const EdgeInsets.only(left: 5, right: 5),
-                                      child: Image.asset("assets/images/arrow.png",
-                                        width: 15,
-                                        height: 15,
-                                        fit: BoxFit.contain,)
-                                  ),
-
-                                ],
-                              )
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              left: 10.0, right: 5.0, top: 20, bottom: 0),
-                          child: Container(
-                            // width: 130,
-                              height: 35,
-                              padding: const EdgeInsets.only(
-                                  top: 8, left: 5, right: 10),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadiusDirectional.circular(8.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.red,
-                                    offset: const Offset(
-                                      0.3,
-                                      0.5,
+                                child: Row(
+                                  children: [
+                                    Text("18 Properties for Rent", style: TextStyle(
+                                        letterSpacing: 0.5,
+                                        color: Colors.black,
+                                        fontSize: 13
+                                    ), textAlign: TextAlign.left,),
+                                    Padding(
+                                        padding: const EdgeInsets.only(left: 5, right: 5),
+                                        child: Image.asset("assets/images/arrow.png",
+                                          width: 15,
+                                          height: 15,
+                                          fit: BoxFit.contain,)
                                     ),
-                                    blurRadius: 0.5,
-                                    spreadRadius: 0.8,
-                                  ), //BoxShadow
-                                  BoxShadow(
-                                    color: Colors.white,
-                                    offset: const Offset(0.5, 0.5),
-                                    blurRadius: 0.5,
-                                    spreadRadius: 0.5,
-                                  ), //BoxShadow
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Text("18 Properties for Rent", style: TextStyle(
-                                      letterSpacing: 0.5,
-                                      color: Colors.black,
-                                      fontSize: 13
-                                  ), textAlign: TextAlign.left,),
-                                  Padding(
-                                      padding: const EdgeInsets.only(left: 5, right: 5),
-                                      child: Image.asset("assets/images/arrow.png",
-                                        width: 15,
-                                        height: 15,
-                                        fit: BoxFit.contain,)
-                                  ),
-                                ],
-                              )
+
+                                  ],
+                                )
+                            ),
                           ),
-                        ),
-                      ],
+                          Padding(
+                            padding: const EdgeInsets.only(left: 2.0, right: 5, top: 8, bottom: 8),
+                            child: Container(
+                              // width: 130,
+                                height: 35,
+                                padding: const EdgeInsets.only(top: 8, left: 5, right: 5,bottom: 8),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadiusDirectional.circular(8.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.red,
+                                      offset: const Offset(
+                                        0.3,
+                                        0.5,
+                                      ),
+                                      blurRadius: 0.5,
+                                      spreadRadius: 0.8,
+                                    ), //BoxShadow
+                                    BoxShadow(
+                                      color: Colors.white,
+                                      offset: const Offset(0.5, 0.5),
+                                      blurRadius: 0.5,
+                                      spreadRadius: 0.5,
+                                    ), //BoxShadow
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text("18 Properties for Rent", style: TextStyle(
+                                        letterSpacing: 0.5,
+                                        color: Colors.black,
+                                        fontSize: 13
+                                    ), textAlign: TextAlign.left,),
+                                    Padding(
+                                        padding: const EdgeInsets.only(left: 5, right: 5),
+                                        child: Image.asset("assets/images/arrow.png",
+                                          width: 15,
+                                          height: 15,
+                                          fit: BoxFit.contain,)
+                                    ),
+                                  ],
+                                )
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 20, left: 10.0, right: 290),
+                      padding: const EdgeInsets.only(top: 10, left: 5.0, right: 270),
                       child: Text("Description", style: TextStyle(
                           fontSize: 15, color: Colors.black, letterSpacing: 0.5
                       ),),
                     ),
                     Padding(
-                        padding: const EdgeInsets.only(top: 8, left: 19.0, right: 10),
+                        padding: const EdgeInsets.only(top: 8, left: 5.0, right: 5),
                         child: SizedBox(
-                          width: 400,
-                          height: 70,
+                          width: screenSize.width*0.9,
+                          height: screenSize.height*0.1,
                           child: Text(
                             "Having worked in the real estate sector over 11 years across Dubai"
                                 "hong kong and india,i come with a rich experience"
@@ -567,25 +589,25 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                         )
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 5, left: 5.0, right: 335),
+                      padding: const EdgeInsets.only(top: 5, left: 5.0, right: 320),
                       child: Text("BRN", style: TextStyle(
                           fontSize: 12, color: Colors.grey, letterSpacing: 0.5
                       ),),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 5, left: 10.0, right: 320),
+                      padding: const EdgeInsets.only(top: 5, left: 5.0, right: 300),
                       child: Text("40841", style: TextStyle(
                           fontSize: 15, color: Colors.black, letterSpacing: 0.5
                       ),),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 15, left: 10.0, right: 300),
+                      padding: const EdgeInsets.only(top: 15, left: 5.0, right: 280),
                       child: Text("Experience", style: TextStyle(
                           fontSize: 12, color: Colors.grey, letterSpacing: 0.5
                       ),),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 5, left: 10.0, right: 310),
+                      padding: const EdgeInsets.only(top: 5, left: 8.0, right: 290),
                       child: Text("5 Years", style: TextStyle(
                           fontSize: 15, color: Colors.black, letterSpacing: 0.5
                       ),),
@@ -651,7 +673,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                           ),
                         ),
                       ),
-                      Padding(padding: const EdgeInsets.only(top: 15,left: 35,right: 5),
+                      Padding(padding: const EdgeInsets.only(top: 15,left: 20,right: 5),
                         child: Image.asset("assets/images/filter.png",width: 20,height: 30,),
                       ),
                       Padding(padding: const EdgeInsets.only(top: 15,left: 5,right: 10),

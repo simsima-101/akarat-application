@@ -103,7 +103,7 @@ class _MyHomePageState extends State<HomeDemo> {
                   ],),
                 // Use a Material design search bar
                 child: TextField(
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.left,
                   controller: _searchController,
                   decoration: InputDecoration(
                     border: InputBorder.none,

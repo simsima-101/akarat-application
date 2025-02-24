@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:drawerdemo/screen/blog_detail.dart';
-import 'package:drawerdemo/screen/property_detail.dart';
 import 'package:flutter/material.dart';
 import '../model/api2model.dart';
 

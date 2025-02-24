@@ -45,7 +45,7 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
             child: Column(
                 children: <Widget>[
                   Container(
-                    height: 200,
+                    height: screenSize.height*0.2,
                     color: Color(0xFFF5F5F5),
                     child: Column(
                       children: [
@@ -277,7 +277,7 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                     ],
                   ),
                   Container(
-                      height: screenSize.height*0.8,
+                      height: double.infinity,
                       child: TabBarView(
                           children: [
                             Container(

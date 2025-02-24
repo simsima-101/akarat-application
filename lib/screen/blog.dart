@@ -5,7 +5,6 @@ import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:drawerdemo/utils/blogcardscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../utils/api2cardscreen.dart';
 
 void main(){
   runApp(const Blog());

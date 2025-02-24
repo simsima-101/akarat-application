@@ -113,10 +113,10 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                       ),
                     ],
                   ),
-                  Padding(padding: const EdgeInsets.only(top: 20,left: 15,right: 200),
+                  Padding(padding: const EdgeInsets.only(top: 20,left: 20,right: 190),
                   child: Container(
                     height: 32,
-                    width: 200,
+                   // width: 200,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadiusDirectional.circular(10.0),
                       boxShadow: [
@@ -218,7 +218,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
                         Container(
                           margin: const EdgeInsets.only(left: 10),
-                          width: 80,
+                          width: screenSize.width*0.2,
                           height: 30,
                           padding: const EdgeInsets.only(top: 5,),
                           decoration: BoxDecoration(
@@ -247,7 +247,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                         ),
                         Container(
                           margin: const EdgeInsets.only(left: 10),
-                          width: 80,
+                          width: screenSize.width*0.2,
                           height: 30,
                           padding: const EdgeInsets.only(top: 5,),
                           decoration: BoxDecoration(
@@ -416,7 +416,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                              ),
                              Padding(
                                padding: const EdgeInsets.only(
-                                   left: 5.0, right: 260.0, top: 20, bottom: 0),
+                                   left: 20, right: 250.0, top: 20, bottom: 0),
                                child: Container(
                                  width: 130,
                                  height: 35,
@@ -652,7 +652,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                          )
                         ),
                         Container(
-                          height: screenSize.height*0.4,
+                          height: double.infinity,
                           padding: const EdgeInsets.only(top: 0,left: 0),
                           child: Column(
                             children: [
@@ -715,7 +715,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 ],
                               ),
                               //Searchbar
-                              Padding(padding: const EdgeInsets.only(left: 5,top: 20,right: 225),
+                              Padding(padding: const EdgeInsets.only(left: 5,top: 20,right: 205),
                                 child: Text("Featured Agencies",style: TextStyle(fontWeight: FontWeight.bold,
                                   fontSize: 18,letterSpacing: 0.5,),textAlign: TextAlign.left,),
                               ),
@@ -730,7 +730,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 },
                                 child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
                                   child: Container(
-                                    height: 120,
+                                    height: screenSize.height*0.13,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadiusDirectional.circular(10.0),
                                       boxShadow: [
@@ -760,7 +760,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 },
                                 child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
                                   child: Container(
-                                    height: 120,
+                                    height: screenSize.height*0.13,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadiusDirectional.circular(10.0),
                                       boxShadow: [
@@ -790,7 +790,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 },
                                 child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
                                   child: Container(
-                                    height: 120,
+                                    height: screenSize.height*0.13,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadiusDirectional.circular(10.0),
                                       boxShadow: [
@@ -820,7 +820,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 },
                                 child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
                                   child: Container(
-                                    height: 120,
+                                    height: screenSize.height*0.13,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadiusDirectional.circular(10.0),
                                       boxShadow: [
