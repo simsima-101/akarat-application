@@ -10,12 +10,9 @@ import '../utils/api2cardscreen.dart';
 
 void main(){
   runApp(const FliterList());
-
 }
-
 class FliterList extends StatelessWidget {
   const FliterList({Key ? key}) : super (key: key);
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -30,24 +27,19 @@ class FliterListDemo extends StatefulWidget {
 }
 class _FliterListDemoState extends State<FliterListDemo> {
   int pageIndex = 0;
-
   final pages = [
     const Page1(),
     const Page2(),
     const Page3(),
     const Page4(),
   ];
-
   final TextEditingController _searchController = TextEditingController();
-
   List<Product> products = [];
-
   @override
   void initState() {
     super.initState();
     fetchProducts();
   }
-
   Future<void> fetchProducts() async {
     // you can replace your api link with this link
     final response = await http.get(Uri.parse('https://akarat.com/api/properties'));
@@ -57,10 +49,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
         products = jsonData.map((data) => Product.fromJson(data)).toList();
       });
     } else {
-      // Handle error if needed
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -568,22 +558,16 @@ class _FliterListDemoState extends State<FliterListDemo> {
              ListView.builder(
                scrollDirection: Axis.vertical,
                    physics: const ScrollPhysics(),
-                   // this give th length of item
                    itemCount: products.length,
                     shrinkWrap: true,
                    itemBuilder: (context, index) {
-                     // here we card the card widget
-                     // which is in utils folder
                      return ProductCard(product: products[index]);
                    },
                  ),
-
-                          ]),
+            ]),
       ),
-
     );
   }
-
   Container buildMyNavBar(BuildContext context) {
     return Container(
       height: 60,
@@ -678,14 +662,12 @@ class _FliterListDemoState extends State<FliterListDemo> {
     );
   }
 }
-
 class SwitchExample extends StatefulWidget {
   const SwitchExample({super.key});
 
   @override
   State<SwitchExample> createState() => _SwitchExampleState();
 }
-
 class _SwitchExampleState extends State<SwitchExample> {
   bool light = true;
 
@@ -724,7 +706,6 @@ class Page1 extends StatelessWidget {
     );
   }
 }
-
 class Page2 extends StatelessWidget {
   const Page2({Key? key}) : super(key: key);
 
@@ -745,7 +726,6 @@ class Page2 extends StatelessWidget {
     );
   }
 }
-
 class Page3 extends StatelessWidget {
   const Page3({Key? key}) : super(key: key);
 
@@ -766,7 +746,6 @@ class Page3 extends StatelessWidget {
     );
   }
 }
-
 class Page4 extends StatelessWidget {
   const Page4({Key? key}) : super(key: key);
 

@@ -673,7 +673,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                           ),
                         ),
                       ),
-                      Padding(padding: const EdgeInsets.only(top: 15,left: 20,right: 5),
+                      Padding(padding: const EdgeInsets.only(top: 15,left: 15,right: 0),
                         child: Image.asset("assets/images/filter.png",width: 20,height: 30,),
                       ),
                       Padding(padding: const EdgeInsets.only(top: 15,left: 5,right: 10),
@@ -802,17 +802,17 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                     child:  Column(
                         children: [
                           //About details
-                          Padding(padding: const EdgeInsets.only(top: 10,left: 5,right: 290),
+                          Padding(padding: const EdgeInsets.only(top: 10,left: 5,right: 280),
                             child: Text("Reviews",style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
                             ),textAlign: TextAlign.left,),
                           ),
-                          Padding(padding: const EdgeInsets.only(top: 15,left: 15,right: 15),
+                          Padding(padding: const EdgeInsets.only(top: 15,left: 5,right: 10),
                           child: Container(
                          //   width: 250,
-                            height: 120,
+                            height: screenSize.height*0.15,
                             padding: const EdgeInsets.only(top: 5),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadiusDirectional.circular(10.0),

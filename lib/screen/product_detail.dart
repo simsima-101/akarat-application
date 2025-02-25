@@ -1,30 +1,24 @@
+import 'dart:convert';
+import 'package:drawerdemo/model/api2model.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import '../model/productmodel.dart';
 
-void main(){
-  runApp(const Product_Detail());
-}
-class Product_Detail extends StatelessWidget {
-  const Product_Detail({super.key});
+
+class Product_Detail extends StatefulWidget {
+  Product_Detail({required this.data});
+  final String data;
+
 
   @override
-  Widget build(BuildContext context) {
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Product_DetailDemo(),
-    );
-  }
+  State<Product_Detail> createState() => _Product_DetailState();
 }
+class _Product_DetailState extends State<Product_Detail> {
 
-class Product_DetailDemo extends StatefulWidget {
-  @override
-  _Product_DetailDemoState createState() => _Product_DetailDemoState();
-}
-class _Product_DetailDemoState extends State<Product_DetailDemo> {
-  int pageIndex = 0;
+int pageIndex = 0;
 
   final pages = [
     const Page1(),
@@ -37,8 +31,26 @@ class _Product_DetailDemoState extends State<Product_DetailDemo> {
   void initState() {
     SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.manual, overlays: [SystemUiOverlay.bottom]);
-    super.initState();
+    fetchProducts();
   }
+    List<ProductModel> productmodel = [];
+     List<Product> product =[];
+     late final ProductModel productModel;
+
+
+
+    Future<void> fetchProducts() async {
+      // you can replace your api link with this link
+      final response = await http.get(Uri.parse('https://akarat.com/api/properties/4'));
+      if (response.statusCode == 200) {
+        List<dynamic> jsonData = json.decode(response.body);
+        setState(() {
+          productmodel = jsonData.map((data) => ProductModel.fromJson(data)).toList();
+        });
+      } else {
+        // Handle error if needed
+      }
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -211,8 +223,8 @@ class _Product_DetailDemoState extends State<Product_DetailDemo> {
                    // color: Colors.grey,
                     child: Row(
                       children: [
-                        Text(Get.arguments.toString()),
-                       /* Text("Townhouse",style: TextStyle(
+                        Text(widget.data),
+                        /*Text(data,style: TextStyle(
                           letterSpacing: 0.5
                         ),),*/
                         Padding(
@@ -991,9 +1003,9 @@ class _Product_DetailDemoState extends State<Product_DetailDemo> {
           IconButton(
             enableFeedback: false,
             onPressed: () {
-              setState(() {
+
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
-              });
+
             },
             icon: pageIndex == 0
                 ? const Icon(
@@ -1094,9 +1106,9 @@ class _Product_DetailDemoState extends State<Product_DetailDemo> {
           IconButton(
             enableFeedback: false,
             onPressed: () {
-              setState(() {
+
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-              });
+
             },
             icon: pageIndex == 3
                 ? const Icon(

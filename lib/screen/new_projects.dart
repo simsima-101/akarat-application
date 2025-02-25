@@ -174,7 +174,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                 children: <Widget>[
                 GestureDetector(
                 onTap: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> Product_Detail()));
+         //Navigator.push(context, MaterialPageRoute(builder: (context)=> Product_Detail(data: ,)));
           },
           child:   Container(
               margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
