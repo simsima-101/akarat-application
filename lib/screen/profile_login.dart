@@ -27,13 +27,14 @@ class Profile_LoginDemo extends StatefulWidget {
 class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
                   Container(
-                    height: 220,
+                    height: screenSize.height*0.25,
                     color: Color(0xFFF5F5F5),
                     child: Column(
                       children: [
@@ -186,8 +187,8 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                           padding: const EdgeInsets.only(
                               left: 15.0, right: 10.0, top: 20, bottom: 0),
                           child: Container(
-                              width: 170,
-                              height: 80,
+                              width: screenSize.width*0.35,
+                              height: screenSize.height*0.1,
                               padding: const EdgeInsets.only(top: 10),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadiusDirectional.circular(10.0),
@@ -236,8 +237,8 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                           padding: const EdgeInsets.only(
                               left: 5.0, right: 15.0, top:20.0, bottom: 0),
                           child: Container(
-                              width: 170,
-                              height: 80,
+                              width: screenSize.width*0.35,
+                              height: screenSize.height*0.1,
                               padding: const EdgeInsets.only(top: 10),
                               decoration: BoxDecoration(
 
@@ -282,233 +283,225 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                       ),
                     ],
                   ),
-                  Padding(padding: const EdgeInsets.only(top: 0,left: 15),
-                   /*child:  ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: 7,
-                        itemBuilder: (BuildContext context, int index) {
-                          return ListTile(
-                              leading: const Icon(Icons.list),
-                              trailing: const Text(
-                                "GFG",
-                                style: TextStyle(color: Colors.green, fontSize: 15),
-                              ),
-                              title: Text("List item $index"));
-                        }),*/
+                  Container(
+                    height: screenSize.height*0.5,
+                    color: Colors.grey,
+                    margin:const EdgeInsets.only(left: 20,right: 20,top: 20),
                     child: ListView(
-                      shrinkWrap: true,
-                      scrollDirection: Axis.vertical,
-                      children: [
-                        GestureDetector(
-                        onTap: (){
-                    //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
-                    },
-                    child:
-                        Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 38.0),
-                              child: Image.asset("assets/images/city.png",height: 25,),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 238.0),
-                              child: Text("City"),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
-                            )
-                          ],
-                        ),
-                        ),
-                        ),
-                        GestureDetector(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.vertical,
+                        children: [
+                          GestureDetector(
                           onTap: (){
                             //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
-                          },
-                          child:
-                            Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                            },
+                            child: Container(
+                              height: screenSize.height*0.04,
+                              color: Colors.white,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 38.0),
-                                    child: Image.asset("assets/images/city.png",height: 25,),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 175.0),
-                                    child: Text("Languages"),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0),
-                                    child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
-                                  )
-                                ],
-                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 38.0),
+                                  child: Image.asset("assets/images/city.png",height: 25,),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 238.0),
+                                  child: Text("City"),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                                )
+                              ],
                             ),
                           ),
-                        GestureDetector(
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> FindAgent()));
-                          },
-                          child:
-                            Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 38.0),
-                                    child: Image.asset("assets/images/city.png",height: 25,),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 210.0),
-                                    child: Text("Agent"),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0),
-                                    child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
-                                  )
-                                ],
+
+                          ),
+                          GestureDetector(
+                            onTap: (){
+                              //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                            },
+                            child:
+                              Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 38.0),
+                                      child: Image.asset("assets/images/city.png",height: 25,),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 175.0),
+                                      child: Text("Languages"),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 8.0),
+                                      child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                                    )
+                                  ],
+                                ),
                               ),
                             ),
+                          GestureDetector(
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=> FindAgent()));
+                            },
+                            child:
+                              Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 38.0),
+                                      child: Image.asset("assets/images/city.png",height: 25,),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 210.0),
+                                      child: Text("Agent"),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 8.0),
+                                      child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              ),
+                          GestureDetector(
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Blog()));
+                            },
+                            child:
+                          Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 38.0),
+                                  child: Image.asset("assets/images/city.png",height: 25,),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 210.0),
+                                  child: Text("Blogs"),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                                )
+                              ],
                             ),
-                        GestureDetector(
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Blog()));
-                          },
-                          child:
-                        Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 38.0),
-                                child: Image.asset("assets/images/city.png",height: 25,),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 210.0),
-                                child: Text("Blogs"),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
-                              )
-                            ],
                           ),
-                        ),
+                            ),
+                          GestureDetector(
+                            onTap: (){
+                              //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                            },
+                            child:
+                          Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 38.0),
+                                  child: Image.asset("assets/images/city.png",height: 25,),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 200.0),
+                                  child: Text("Support"),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                                )
+                              ],
+                            ),
                           ),
-                        GestureDetector(
-                          onTap: (){
-                            //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
-                          },
-                          child:
-                        Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 38.0),
-                                child: Image.asset("assets/images/city.png",height: 25,),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 200.0),
-                                child: Text("Support"),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
-                              )
-                            ],
                           ),
-                        ),
-                        ),
-                        GestureDetector(
-                          onTap: (){
-                            //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
-                          },
-                          child:
-                        Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 38.0),
-                                child: Image.asset("assets/images/city.png",height: 25,),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 200.0),
-                                child: Text("Call Us"),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
-                              )
-                            ],
+                          GestureDetector(
+                            onTap: (){
+                              //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                            },
+                            child:
+                          Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 38.0),
+                                  child: Image.asset("assets/images/city.png",height: 25,),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 200.0),
+                                  child: Text("Call Us"),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                                )
+                              ],
+                            ),
                           ),
-                        ),
-                        ),
-                        GestureDetector(
-                          onTap: (){
-                           // Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
-                          },
-                          child:
-                        Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 38.0),
-                                child: Image.asset("assets/images/city.png",height: 25,),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 100.0),
-                                child: Text("Terms And Conditions"),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
-                              )
-                            ],
                           ),
-                        ),
-                        ),
-                        GestureDetector(
-                          onTap: (){
-                           // Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
-                          },
-                          child:
-                        Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 38.0),
-                                child: Image.asset("assets/images/city.png",height: 25,),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 180.0),
-                                child: Text("Advertising"),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
-                              )
-                            ],
+                          GestureDetector(
+                            onTap: (){
+                             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                            },
+                            child:
+                          Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 38.0),
+                                  child: Image.asset("assets/images/city.png",height: 25,),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 100.0),
+                                  child: Text("Terms And Conditions"),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                                )
+                              ],
+                            ),
                           ),
-                        ),
-                        ),
-                      ],
-                    ),
+                          ),
+                          GestureDetector(
+                            onTap: (){
+                             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                            },
+                            child:
+                          Padding(padding: const EdgeInsets.only(left: 20,right: 10,top: 15),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 38.0),
+                                  child: Image.asset("assets/images/city.png",height: 25,),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 180.0),
+                                  child: Text("Advertising"),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Icon(Icons.arrow_forward_ios,color: Colors.red,),
+                                )
+                              ],
+                            ),
+                          ),
+                          ),
+                        ],
+                      ),
+                    //),
                   ),
 
 

@@ -1,5 +1,4 @@
 import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/product_detail.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 

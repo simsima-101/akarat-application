@@ -34,19 +34,21 @@ class ProductModel {
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
-      id: json['id'],
-      title: json['title'],
-      image: json['media'],
-      property_type: json['property_type'],
-      location: json['location'],
-      price: json['price'].toDouble(),
-       description: json['description'],
-      bathrooms: json['bathrooms'],
-      bedrooms: json['bedrooms'],
-      square_feet: json['square_feet'],
-      posted_on: json['posted_on'],
-      regulatory_info: Regulatory_Info.fromJson(json['regulatory_info']),
-      agent: Agent.fromJson(json['agent']),
+      id: json['id']as int? ??0,
+      title: json['title']as String? ??"No Title",
+      image: json['media'] as String? ?? "",
+      property_type: json['property_type'] as String? ?? "Unknown",
+      location: json['location'] as String? ?? "Unknown",
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      description: json['description'] as String? ?? "No Description",
+      bathrooms: json['bathrooms'] as int? ?? 0,
+      bedrooms: json['bedrooms'] as int? ?? 0,
+      square_feet: double.tryParse(json['square_feet'].toString()) ?? 0.0,
+      posted_on: json['posted_on'] as String? ?? "N/A",
+      regulatory_info: json['regulatory_info'] != null
+          ? Regulatory_Info.fromJson(json['regulatory_info'])
+          : Regulatory_Info(),
+      agent: json['agent'] != null ? Agent.fromJson(json['agent']) : Agent(),
 
       // rating: json['rating']['rate'].toDouble(),
     );
@@ -61,19 +63,19 @@ String whatsapp;
 String email;
 
 Agent({
-  required this.name,
-  required this.img,
-  required this.rating,
-  required this.whatsapp,
-  required this.email,
+   this.name="N/A",
+   this.img="N/A",
+   this.rating=0,
+   this.whatsapp="N/A",
+   this.email="N/A",
 });
 factory Agent.fromJson(Map<String, dynamic> json){
  return Agent(
-   name: json['name'],
-   img: json['img'],
-   rating: json['rating'],
-   whatsapp: json['whatsapp'],
-   email: json['email'],
+   name: json['name']as String? ?? "No Name",
+   img: json['img']as String? ?? "",
+   rating: json['rating']as int? ??0,
+   whatsapp: json['whatsapp']as String? ?? "Unknown",
+   email: json['email']as String? ?? "Unknown",
  ) ;
 }
 }
@@ -88,23 +90,23 @@ class Regulatory_Info {
 
 
   Regulatory_Info({
-    required this.reference,
-    required this.listed,
-    required this.brocker_license,
-    required this.zone_name,
-    required this.dld_permit_number,
-    required this.agent_license,
+     this.reference="N/A",
+     this.listed="N/A",
+     this.brocker_license="N/A",
+     this.zone_name="N/A",
+     this.dld_permit_number=0,
+     this.agent_license="N/A",
 
     //required this.rating,
   });
    factory Regulatory_Info.fromJson(Map<String, dynamic> json) {
      return Regulatory_Info(
-       reference: json['reference'],
-       listed: json['listed'],
-       brocker_license: json['broker_license'],
-       zone_name: json['zone_name'],
-       dld_permit_number: json['dld_permit_number'],
-       agent_license: json['agent_license'],
+       reference: json['reference']as String? ?? "Unknown",
+       listed: json['listed']as String? ?? "Unknown",
+       brocker_license: json['broker_license']as String? ?? "Unknown",
+       zone_name: json['zone_name']as String? ?? "Unknown",
+       dld_permit_number: json['dld_permit_number']as int? ??0,
+       agent_license: json['agent_license']as String? ?? "Unknown",
        // rating: json['rating']['rate'].toDouble(),
      );
    }

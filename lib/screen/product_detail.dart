@@ -11,41 +11,32 @@ import '../model/productmodel.dart';
 class Product_Detail extends StatefulWidget {
   Product_Detail({required this.data});
   final String data;
-
-
   @override
   State<Product_Detail> createState() => _Product_DetailState();
 }
 class _Product_DetailState extends State<Product_Detail> {
-
 int pageIndex = 0;
-
   final pages = [
     const Page1(),
     const Page2(),
     const Page3(),
     const Page4(),
   ];
-
+ ProductModel? productModels;
   @override
   void initState() {
     SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.manual, overlays: [SystemUiOverlay.bottom]);
-    fetchProducts();
+    fetchProducts(widget.data);
   }
-    List<ProductModel> productmodel = [];
-     List<Product> product =[];
-     late final ProductModel productModel;
 
-
-
-    Future<void> fetchProducts() async {
+    Future<void> fetchProducts(data) async {
       // you can replace your api link with this link
-      final response = await http.get(Uri.parse('https://akarat.com/api/properties/4'));
+      final response = await http.get(Uri.parse('https://akarat.com/api/properties/$data'));
+      Map<String,dynamic> jsonData=json.decode(response.body);
       if (response.statusCode == 200) {
-        List<dynamic> jsonData = json.decode(response.body);
         setState(() {
-          productmodel = jsonData.map((data) => ProductModel.fromJson(data)).toList();
+          productModels = ProductModel.fromJson(jsonData);
         });
       } else {
         // Handle error if needed
@@ -223,7 +214,7 @@ int pageIndex = 0;
                    // color: Colors.grey,
                     child: Row(
                       children: [
-                        Text(widget.data),
+                      //  Text(productModels!.title),
                         /*Text(data,style: TextStyle(
                           letterSpacing: 0.5
                         ),),*/
