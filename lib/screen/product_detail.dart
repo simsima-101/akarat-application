@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:drawerdemo/model/api2model.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
@@ -9,20 +10,20 @@ import '../model/productmodel.dart';
 
 
 class Product_Detail extends StatefulWidget {
-  Product_Detail({required this.data});
+  const Product_Detail({super.key, required this.data});
   final String data;
   @override
   State<Product_Detail> createState() => _Product_DetailState();
 }
 class _Product_DetailState extends State<Product_Detail> {
-int pageIndex = 0;
+  int pageIndex = 0;
   final pages = [
     const Page1(),
     const Page2(),
     const Page3(),
     const Page4(),
   ];
- ProductModel? productModels;
+  ProductModel? productModels;
   @override
   void initState() {
     SystemChrome.setEnabledSystemUIMode(
@@ -30,21 +31,44 @@ int pageIndex = 0;
     fetchProducts(widget.data);
   }
 
-    Future<void> fetchProducts(data) async {
-      // you can replace your api link with this link
-      final response = await http.get(Uri.parse('https://akarat.com/api/properties/$data'));
-      Map<String,dynamic> jsonData=json.decode(response.body);
-      if (response.statusCode == 200) {
-        setState(() {
-          productModels = ProductModel.fromJson(jsonData);
-        });
-      } else {
-        // Handle error if needed
-      }
+  Future<void> fetchProducts(data) async {
+    // you can replace your api link with this link
+    final response = await http.get(Uri.parse('https://akarat.com/api/properties/$data'));
+    Map<String,dynamic> jsonData=json.decode(response.body);
+    debugPrint("Status Code: ${response.statusCode}");
+
+
+
+
+    if (response.statusCode == 200) {
+      debugPrint("API Response: ${jsonData.toString()}");
+      debugPrint("API 200: ");
+      ProductModel parsedModel = ProductModel.fromJson(jsonData);
+      debugPrint("Parsed ProductModel: ${parsedModel.toString()}");
+      setState(() {
+        debugPrint("API setState: ");
+        String title = jsonData['title'] ?? 'No title';
+        debugPrint("API title: $title");
+
+        productModels = parsedModel;
+
+      });
+
+      debugPrint("productModels title_after: ${productModels!.title}");
+
+    } else {
+      // Handle error if needed
     }
+  }
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
+    if (productModels == null) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()), // Show loading state
+      );
+    }
     return Scaffold(
         backgroundColor: Colors.white,
         bottomNavigationBar: buildMyNavBar(context),
@@ -56,7 +80,7 @@ int pageIndex = 0;
                     children: <Widget>[
                       Padding(
                         padding: EdgeInsets.only(top: 0),
-                        child: Container(
+                        child: SizedBox(
                           height: 50,
                           width: double.infinity,
                           // color: Color(0xFFEEEEEE),
@@ -211,13 +235,13 @@ int pageIndex = 0;
                   Container(
                     height: 40,
                     margin: const EdgeInsets.only(left: 20,top: 10,right: 10,bottom: 0),
-                   // color: Colors.grey,
+                    // color: Colors.grey,
                     child: Row(
                       children: [
-                      //  Text(productModels!.title),
-                        /*Text(data,style: TextStyle(
+                        //  Text(productModels!.title),
+                        Text("Townhouse",style: TextStyle(
                           letterSpacing: 0.5
-                        ),),*/
+                        ),),
                         Padding(
                           padding: const EdgeInsets.only(
                               left: 10.0, right: 0.0, top: 0, bottom: 0),
@@ -263,16 +287,16 @@ int pageIndex = 0;
                     ),
                   ),
                   Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 10,bottom: 0),
-                  child:Row(
-                    children: [
-                      Text("3,100,100",style: TextStyle(
-                        fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
-                      ),),
-                      Text("  AED",style: TextStyle(
-                        fontSize: 19,letterSpacing: 0.5
-                      ),),
-                    ],
-                   )
+                      child:Row(
+                        children: [
+                          Text(productModels!.price.toString(),style: TextStyle(
+                              fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
+                          ),),
+                          Text("  AED",style: TextStyle(
+                              fontSize: 19,letterSpacing: 0.5
+                          ),),
+                        ],
+                      )
                   ),
                   Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 5,bottom: 0),
                       child:Row(
@@ -284,65 +308,61 @@ int pageIndex = 0;
                               fontSize: 19,letterSpacing: 0.5,fontWeight: FontWeight.bold
                           ),),
                           Text("  AED/month",style: TextStyle(
-                              fontSize: 17,letterSpacing: 0.5,
+                            fontSize: 17,letterSpacing: 0.5,
                           ),),
                         ],
                       )
                   ),
                   Container(
-                    margin: const EdgeInsets.only(left: 20,top: 5,right: 10),
-                    height: 40,
-                   // color: Colors.grey,
-                        child:Row(
-                          children: [
-                            Image.asset("assets/images/bed.png",height: 20,),
-                            Text("  2 beds   ",style: TextStyle(
-                                fontSize: 14,letterSpacing: 0.5
-                            ),),
-                            Image.asset("assets/images/bath.png",height: 20),
-                            Text(" 3 baths   ",style: TextStyle(
-                                fontSize: 14,letterSpacing: 0.5,
-                            ),),
-                            Image.asset("assets/images/messure.png",height: 20),
-                            Text(" 1410 sqft",style: TextStyle(
-                              fontSize: 14,letterSpacing: 0.5,
-                            ),),
-                          ],
-                        )
+                      margin: const EdgeInsets.only(left: 20,top: 5,right: 10),
+                      height: 40,
+                      // color: Colors.grey,
+                      child:Row(
+                        children: [
+                          Image.asset("assets/images/bed.png",height: 20,),
+                          Text(" "+ productModels!.bedrooms.toString()+" beds   ",style: TextStyle(
+                              fontSize: 14,letterSpacing: 0.5
+                          ),),
+                          Image.asset("assets/images/bath.png",height: 20),
+                          Text(" "+ productModels!.bathrooms.toString()+" baths   ",style: TextStyle(
+                            fontSize: 14,letterSpacing: 0.5,
+                          ),),
+                          Image.asset("assets/images/messure.png",height: 20),
+                          Text(" "+ productModels!.squareFeet.toString()+" sqft",style: TextStyle(
+                            fontSize: 14,letterSpacing: 0.5,
+                          ),),
+                        ],
+                      )
                   ),
                   Container(
-                    height: 70,
-                     // color: Colors.grey,
-                      padding: const EdgeInsets.only(left: 20,right: 0,top: 1,bottom: 0),
-                      child:
-                          Text("Brand New Building | Premium Quality | Call us Now!",style: TextStyle(
-                              fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
-                          ),),
+                    height: screenSize.height*0.08,
+                    // color: Colors.grey,
+                    padding: const EdgeInsets.only(left: 20,right: 0,top: 1,bottom: 0),
+                    child:
+                    Text(productModels!.title.toString(),style: TextStyle(
+                        fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
+                    ),),
 
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 5,left: 15,right: 0),
+                    padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
                     child: Container(
                       width: double.infinity,
-                      height: 100,
-                      // color: Colors.grey,
+                      height: screenSize.height*0.3,
+                       //color: Colors.grey,
                       margin: const EdgeInsets.only(left: 5,top: 5),
-                      child: Text("Azco Real Estate is thrilled to offer this spacious 2 "
-                          "Bedroom Apartment in AAA Residence located in Jumeirah"
-                          "village Circle,for rent. Offer this Spacious 2 Bedroom Apartment in AAA Residence located in "
-                          "Jumeirah village Circle,for rent."
-                          "....",
+                      child: Text(productModels!.description.toString(),
                         textAlign: TextAlign.left,style: TextStyle(
                             letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
                         ),),
                     ),
                   ),
                   Container(
-                    height: 40,
-                    width: 380,
-                    margin: const EdgeInsets.only(left: 20,right: 20,top: 20),
+                    height: screenSize.height*0.05,
+                    width: screenSize.width*0.9,
+                    margin: const EdgeInsets.only(left: 20,right: 20,top: 10),
                     padding: const EdgeInsets.only(top: 8),
-                   // color: Colors.grey,
+                    // color: Colors.grey,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadiusDirectional.circular(8.0),
                       boxShadow: [
@@ -363,9 +383,9 @@ int pageIndex = 0;
                         ), //BoxShadow
                       ],
                     ),
-                      child: Text("Show Full Description",textAlign: TextAlign.center,
+                    child: Text("Show Full Description",textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
+                          fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
                       ),),
                   ),
                   Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 20,bottom: 0),
@@ -374,8 +394,8 @@ int pageIndex = 0;
                           Text("Posted On:",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                           ),),
-                          Text("25th Jan 2025",style: TextStyle(
-                              fontSize: 14,letterSpacing: 0.5,
+                          Text(productModels!.postedOn.toString(),style: TextStyle(
+                            fontSize: 14,letterSpacing: 0.5,
                           ),),
                         ],
                       )
@@ -383,11 +403,11 @@ int pageIndex = 0;
                   Container(
                     height: 30,
                     width: 200,
-                   // color: Colors.grey,
+                    // color: Colors.grey,
                     margin: const EdgeInsets.only(left: 20,right: 200,top: 20,bottom: 0),
-                      child:Text("Property Details",style: TextStyle(
-                              fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                          ),),
+                    child:Text("Property Details",style: TextStyle(
+                        fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                    ),),
                   ),
                   Container(
                       margin: const EdgeInsets.only(left: 20,top: 0,right: 10),
@@ -477,8 +497,8 @@ int pageIndex = 0;
 
                   ),
                   Container(
-                    height: 40,
-                    width: 380,
+                    height: screenSize.height*0.05,
+                    width: screenSize.width*0.9,
                     margin: const EdgeInsets.only(left: 20,right: 20,top: 15),
                     padding: const EdgeInsets.only(top: 8),
                     // color: Colors.grey,
@@ -526,24 +546,24 @@ int pageIndex = 0;
                           children: [
                             Text("Project            "),
                             Text("Mag eye          ",style: TextStyle(
-                              fontWeight: FontWeight.bold
+                                fontWeight: FontWeight.bold
                             ),),
                             Text("Delivery Date  "),
                             Text("25th Jan 2025",style: TextStyle(
-                              fontWeight: FontWeight.bold
+                                fontWeight: FontWeight.bold
                             ),)
                           ],
                         ),
                         Padding(padding: const EdgeInsets.only(left: 70),
-                         child:  Column(
+                          child:  Column(
                             children: [
                               Text("Developer                               "),
                               Text("MAG Property Development",style: TextStyle(
-                                fontWeight: FontWeight.bold
+                                  fontWeight: FontWeight.bold
                               ),),
                               Text("Property type                         "),
                               Text("Townhouse,Apartment         ",style: TextStyle(
-                                fontWeight: FontWeight.bold
+                                  fontWeight: FontWeight.bold
                               ),)
                             ],
                           ),
@@ -551,53 +571,53 @@ int pageIndex = 0;
 
                       ],
                     ),
-                      ),
+                  ),
                   Container(
-                    height: 150,
+                    height: screenSize.height*0.17,
                     margin: const EdgeInsets.only(left: 20,right: 20,top: 20),
-                   // color: Colors.grey,
+                     color: Colors.grey,
                     child: Row(
                       spacing: 1,
                       children: [
-                        Container(
+                        SizedBox(
                           height: 150,
                           width: 170,
-                            child:   Image.asset("assets/images/image3.png",height: 100,
+                          child:   Image.asset("assets/images/image3.png",height: 100,
                             fit: BoxFit.fill,),
                         ),
 
                         Column(
                           children: [
                             Container(
-                              height: 25,
-                              margin: const EdgeInsets.only(top: 30,left: 0,right: 55),
-                              padding: const EdgeInsets.only(top: 4,left: 5,right: 0),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadiusDirectional.circular(8.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey,
-                                    offset: const Offset(
-                                      1.5,
-                                      1.5,
-                                    ),
-                                    blurRadius: 0.5,
-                                    spreadRadius: 0.5,
-                                  ), //BoxShadow
-                                  BoxShadow(
-                                    color: Colors.green,
-                                    offset: const Offset(0.5, 0.5),
-                                    blurRadius: 0.5,
-                                    spreadRadius: 0.5,
-                                  ), //BoxShadow
-                                ],
-                              ),
-                              child:
-                                  Padding(padding: const EdgeInsets.only(left: 1),
-                                      child:   Text("Completed    ",style: TextStyle(
-                                          letterSpacing: 0.5,color: Colors.white,fontSize: 12
-                                      ),textAlign: TextAlign.center,)
-                                  )
+                                height: 25,
+                                margin: const EdgeInsets.only(top: 30,left: 0,right: 55),
+                                padding: const EdgeInsets.only(top: 4,left: 5,right: 0),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadiusDirectional.circular(8.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey,
+                                      offset: const Offset(
+                                        1.5,
+                                        1.5,
+                                      ),
+                                      blurRadius: 0.5,
+                                      spreadRadius: 0.5,
+                                    ), //BoxShadow
+                                    BoxShadow(
+                                      color: Colors.green,
+                                      offset: const Offset(0.5, 0.5),
+                                      blurRadius: 0.5,
+                                      spreadRadius: 0.5,
+                                    ), //BoxShadow
+                                  ],
+                                ),
+                                child:
+                                Padding(padding: const EdgeInsets.only(left: 1),
+                                    child:   Text("Completed    ",style: TextStyle(
+                                        letterSpacing: 0.5,color: Colors.white,fontSize: 12
+                                    ),textAlign: TextAlign.center,)
+                                )
                             ),
                             Padding(padding: const EdgeInsets.only(top: 10),
                               child: Text("       MAG Property Development        ",style: TextStyle(
@@ -686,7 +706,7 @@ int pageIndex = 0;
                   Container(
                     height: 270,
                     margin: const EdgeInsets.only(left: 20,top: 15,right: 20),
-                   // color: Colors.grey,
+                    // color: Colors.grey,
                     child: Column(
                       children: [
                         Container(
@@ -714,20 +734,21 @@ int pageIndex = 0;
                               ), //BoxShadow
                             ],
                           ),
-                          child: Image.asset("assets/images/ag.png",
-                            width: 15,
-                            height: 15,
-                            fit: BoxFit.contain,),
+                          child: CachedNetworkImage( // this is to fetch the image
+                            imageUrl: (productModels!.media),
+                            fit: BoxFit.cover,
+                            height: 100,
+                          ),
                         ),
                         Padding(padding: const EdgeInsets.only(top: 10),
-                        child: Text("Mahateer Abbasi",style: TextStyle(
-                          fontWeight: FontWeight.bold,letterSpacing: 0.5
-                        ),),
+                          child: Text(productModels!.agent.name.toString(),style: TextStyle(
+                              fontWeight: FontWeight.bold,letterSpacing: 0.5
+                          ),),
                         ),
                         Row(
                           children: [
                             Padding(padding: const EdgeInsets.only(top: 5,left: 80),
-                            child: Text("5.0"),
+                              child: Text(productModels!.agent.rating.toString()),
                             ),
                             Padding(padding: const EdgeInsets.only(top: 5,left: 5),
                               child: Row(
@@ -741,7 +762,7 @@ int pageIndex = 0;
                               ),
                             ),
                             Padding(padding: const EdgeInsets.only(top: 5,left: 5),
-                              child: Text("2 ratings"),
+                              child: Text("ratings"),
                             ),
                           ],
                         ),
@@ -800,7 +821,7 @@ int pageIndex = 0;
                     ),
                   ),
                   Container(
-                    height: 260,
+                    height: screenSize.height*0.3,
                     width: double.infinity,
                     margin: const EdgeInsets.only(left: 18,right: 14,top: 20),
                     decoration: BoxDecoration(
@@ -833,11 +854,11 @@ int pageIndex = 0;
                         Row(
                           children: [
                             Padding(padding: const EdgeInsets.only(left: 5,top: 5),
-                            child: Text("Reference:",style: TextStyle(
-                              letterSpacing: 0.5,fontSize: 13
-                            ),),),
+                              child: Text("Reference:",style: TextStyle(
+                                  letterSpacing: 0.5,fontSize: 13
+                              ),),),
                             Padding(padding: const EdgeInsets.only(left: 65,top: 5),
-                              child: Text("DRGNKGF",style: TextStyle(
+                              child: Text(productModels!.regulatoryInfo.reference.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                             Padding(padding: const EdgeInsets.only(left: 10,top: 5),
@@ -845,7 +866,7 @@ int pageIndex = 0;
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                             Padding(padding: const EdgeInsets.only(left: 10,top: 5),
-                              child: Text("4 Days Ago",style: TextStyle(
+                              child: Text(productModels!.regulatoryInfo.listed.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                           ],
@@ -857,17 +878,18 @@ int pageIndex = 0;
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                             Padding(padding: const EdgeInsets.only(left: 27,top: 5),
-                              child: Text("4545222",style: TextStyle(
+                              child: Text(productModels!.regulatoryInfo.brokerLicense.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
-                            Padding(padding: const EdgeInsets.only(left: 20,top: 5),
-                              child: Text("Zone Name:",style: TextStyle(
+                            Padding(padding: const EdgeInsets.only(left: 15,top: 5),
+                              child: Text("Agent Licence:",style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
-                            Padding(padding: const EdgeInsets.only(left: 1,top: 5),
-                              child: Text("Gsdyjnn",style: TextStyle(
+                            Padding(padding: const EdgeInsets.only(left: 10,top: 5),
+                              child: Text(productModels!.regulatoryInfo.agentLicense.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
+
                           ],
                         ),
                         Row(
@@ -877,29 +899,23 @@ int pageIndex = 0;
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                             Padding(padding: const EdgeInsets.only(left: 1,top: 5),
-                              child: Text("48523",style: TextStyle(
+                              child: Text(productModels!.regulatoryInfo.dldPermitNumber.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
-                            Padding(padding: const EdgeInsets.only(left: 37,top: 5),
-                              child: Text("Zone Name:",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                            Padding(padding: const EdgeInsets.only(left: 5,top: 5),
-                              child: Text("478852365",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
+
                           ],
                         ),
                         Row(
                           children: [
                             Padding(padding: const EdgeInsets.only(left: 5,top: 5),
-                              child: Text("Agent Licence:",style: TextStyle(
+                              child: Text("Zone Name:",style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
-                            Padding(padding: const EdgeInsets.only(left: 40,top: 5),
-                              child: Text("47865",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
+                            Padding(padding: const EdgeInsets.only(left: 1,top: 5),
+                              child: Text(productModels!.regulatoryInfo.zoneName.toString(),overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  letterSpacing: 0.5,fontSize: 13,
+                                ),),),
                           ],
                         ),
                         Container(
@@ -909,7 +925,7 @@ int pageIndex = 0;
                           color: Colors.grey,
                         ),
                         Padding(padding: const EdgeInsets.only(top: 10),
-                        child: Text("OLD Permit Number",style: TextStyle(fontWeight: FontWeight.bold),),)
+                          child: Text("OLD Permit Number",style: TextStyle(fontWeight: FontWeight.bold),),)
                       ],
                     ),
                   ),
@@ -995,7 +1011,7 @@ int pageIndex = 0;
             enableFeedback: false,
             onPressed: () {
 
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
 
             },
             icon: pageIndex == 0
@@ -1098,7 +1114,7 @@ int pageIndex = 0;
             enableFeedback: false,
             onPressed: () {
 
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
 
             },
             icon: pageIndex == 3
@@ -1119,7 +1135,7 @@ int pageIndex = 0;
   }
 }
 class Page1 extends StatelessWidget {
-  const Page1({Key? key}) : super(key: key);
+  const Page1({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -1140,7 +1156,7 @@ class Page1 extends StatelessWidget {
 }
 
 class Page2 extends StatelessWidget {
-  const Page2({Key? key}) : super(key: key);
+  const Page2({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -1161,7 +1177,7 @@ class Page2 extends StatelessWidget {
 }
 
 class Page3 extends StatelessWidget {
-  const Page3({Key? key}) : super(key: key);
+  const Page3({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -1182,7 +1198,7 @@ class Page3 extends StatelessWidget {
 }
 
 class Page4 extends StatelessWidget {
-  const Page4({Key? key}) : super(key: key);
+  const Page4({super.key});
 
   @override
   Widget build(BuildContext context) {

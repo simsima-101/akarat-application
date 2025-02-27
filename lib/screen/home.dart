@@ -36,167 +36,79 @@ class _MyHomePageState extends State<HomeDemo> {
   ];
   final TextEditingController _searchController = TextEditingController();
 
+  Future<bool> _onWillPop() async {
+    return (await showDialog(
+      context: context,
+      builder: (context) => new AlertDialog(
+        backgroundColor: Colors.white,
+        title: new Text('Are you sure?'),
+        content: new Text('Do you want to exit an App'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: new Text('No',style: TextStyle(color: Colors.black,
+                fontWeight: FontWeight.bold),),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: new Text('Yes',style: TextStyle(color: Colors.black,
+                fontWeight: FontWeight.bold),),
+          ),
+        ],
+      ),
+    )) ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
-    return Scaffold(
-        bottomNavigationBar: buildMyNavBar(context),
-      //body: pages[pageIndex],
-      backgroundColor: Colors.white,
-       body:   SingleChildScrollView(
-        child: Column(
-          children: [
-            Row(
+    return WillPopScope(
+        onWillPop: _onWillPop,
+        child: Scaffold(
+          bottomNavigationBar: buildMyNavBar(context),
+          //body: pages[pageIndex],
+          backgroundColor: Colors.white,
+          body:   SingleChildScrollView(
+            child: Column(
               children: [
-                //logo 1
-                Container(
-                  alignment: Alignment.topCenter,
-                  margin: const EdgeInsets.only(top: 25,left:115),
-                  height: 40,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/images/app_icon.png'),
-                    ),
-                  ),
-                ),
-
-                //logo2
-                Container(
-                  alignment: Alignment.topCenter,
-                  margin: const EdgeInsets.only(top: 25),
-                  height: 80,
-                  width: 120,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/images/logo-text.png'),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            //Searchbar
-            Padding(
-              padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
-              child: Container(
-                width: 400,
-                height: 60,
-                padding: const EdgeInsets.only(top: 10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadiusDirectional.circular(15.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.3,
-                        0.3,
-                      ),
-                      blurRadius: 0.3,
-                      spreadRadius: 0.3,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],),
-                // Use a Material design search bar
-                child: TextField(
-                  textAlign: TextAlign.left,
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Search for a locality,area or city',
-                    hintStyle: TextStyle(color: Colors.grey),
-
-                    // Add a clear button to the search bar
-                    suffixIcon: IconButton(
-                      alignment: Alignment.center,
-                      icon: Icon(Icons.mic),
-                      onPressed: () => _searchController.clear(),
-                    ),
-
-                    // Add a search icon or button to the search bar
-                    prefixIcon: IconButton(
-                      alignment: Alignment.center,
-                      icon: Icon(Icons.search,color: Colors.red,),
-                      onPressed: () {
-                        // Perform the search here
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            //images gridview
-            Row(
-              children: [
-                //logo 1
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
-                  },
-                 child:  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 12.0, right: 5.0, top: 10, bottom: 0),
-
-                    child: Container(
-                        width: screenSize.width * 0.3,
-                      height: 100,
-                      padding: const EdgeInsets.only(top: 0),
+                Row(
+                  children: [
+                    //logo 1
+                    Container(
+                      alignment: Alignment.topCenter,
+                      margin: const EdgeInsets.only(top: 25,left:115),
+                      height: 40,
+                      width: 40,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(10.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
+                        image: DecorationImage(
+                          image: AssetImage('assets/images/app_icon.png'),
+                        ),
                       ),
-                    child:   Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset("assets/images/ak-rent-red.png"
-                            ,height: 40,),
-                          Padding(padding: const EdgeInsets.only(left: 30,right: 20,top: 5),
-                             child:  Text("Property For Rent",style:
-                              TextStyle(height: 1.2,
-                                  letterSpacing: 0.5,
-                                  fontSize: 12,fontWeight: FontWeight.bold
-                              ),),
-                          )
-                        ],
-                      )
                     ),
-                  ),
+
+                    //logo2
+                    Container(
+                      alignment: Alignment.topCenter,
+                      margin: const EdgeInsets.only(top: 25),
+                      height: 80,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/images/logo-text.png'),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                //logo2
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
-                  },
-                  child:
-                  Padding(
-                  padding: const EdgeInsets.only(
-                      left: 5.0, right: 5.0, top: 13.0, bottom: 0),
+                //Searchbar
+                Padding(
+                  padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
                   child: Container(
-                      width: screenSize.width * 0.3,
-                    height: 100,
+                    width: 400,
+                    height: 60,
                     padding: const EdgeInsets.only(top: 10),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(10.0),
+                      borderRadius: BorderRadiusDirectional.circular(15.0),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.grey,
@@ -213,495 +125,607 @@ class _MyHomePageState extends State<HomeDemo> {
                           blurRadius: 0.0,
                           spreadRadius: 0.0,
                         ), //BoxShadow
-                      ],
+                      ],),
+                    // Use a Material design search bar
+                    child: TextField(
+                      textAlign: TextAlign.left,
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Search for a locality,area or city',
+                        hintStyle: TextStyle(color: Colors.grey),
+
+                        // Add a clear button to the search bar
+                        suffixIcon: IconButton(
+                          alignment: Alignment.center,
+                          icon: Icon(Icons.mic),
+                          onPressed: () => _searchController.clear(),
+                        ),
+
+                        // Add a search icon or button to the search bar
+                        prefixIcon: IconButton(
+                          alignment: Alignment.center,
+                          icon: Icon(Icons.search,color: Colors.red,),
+                          onPressed: () {
+                            // Perform the search here
+                          },
+                        ),
+                      ),
                     ),
-                      child:   Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset("assets/images/ak-sale.png",height: 40,),
-                          Padding(padding: const EdgeInsets.only(left: 30,right: 20,top: 5),
-                            child:  Text("Property For Sale",style:
-                            TextStyle(height: 1.2,
-                                letterSpacing: 0.5,
-                                fontSize: 12,fontWeight: FontWeight.bold
-                            ),),
-                          )
-                        ],
-                      )
-                  ),
                   ),
                 ),
-                //logo2
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> New_Projects()));
-                  },
-                  child:
-                  Padding(
-                  padding: const EdgeInsets.only(
-                      left: 4.0, right: 5.0, top: 13.0, bottom: 0),
-                  child: Container(
-                      width: screenSize.width * 0.3,
-                    height: 100,
-                    padding: const EdgeInsets.only(top: 10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(10.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
+                //images gridview
+                Row(
+                  children: [
+                    //logo 1
+                    GestureDetector(
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                      },
+                      child:  Padding(
+                        padding: const EdgeInsets.only(
+                            left: 12.0, right: 5.0, top: 10, bottom: 0),
+
+                        child: Container(
+                            width: screenSize.width * 0.3,
+                            height: 100,
+                            padding: const EdgeInsets.only(top: 0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadiusDirectional.circular(10.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child:   Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset("assets/images/ak-rent-red.png"
+                                  ,height: 40,),
+                                Padding(padding: const EdgeInsets.only(left: 30,right: 20,top: 5),
+                                  child:  Text("Property For Rent",style:
+                                  TextStyle(height: 1.2,
+                                      letterSpacing: 0.5,
+                                      fontSize: 12,fontWeight: FontWeight.bold
+                                  ),),
+                                )
+                              ],
+                            )
+                        ),
+                      ),
                     ),
-                      child:   Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset("assets/images/ak-off-plan.png",height: 40,),
-                          Padding(padding: const EdgeInsets.only(left: 30,right: 20,top: 5),
-                            child:  Text("Off-Plan-Properties",style:
-                            TextStyle(height: 1.2,
-                                letterSpacing: 0.5,
-                                fontSize: 12,fontWeight: FontWeight.bold
-                            ),),
-                          )
-                        ],
-                      )
-                  ),
-                ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                //logo 1
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
-                  },
-                  child:
-                  Padding(
-                  padding: const EdgeInsets.only(
-                      left: 12.0, right: 5.0, top: 8, bottom: 0),
-                  child: Container(
-                      width: screenSize.width * 0.3,
-                    height: 100,
-                    padding: const EdgeInsets.only(top: 10),
-                    decoration: BoxDecoration(
-
-                      // image: DecorationImage(
-                      //   image: AssetImage("assets/images/04.png"),
-                      // ),
-                      borderRadius: BorderRadiusDirectional.circular(10.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
+                    //logo2
+                    GestureDetector(
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                      },
+                      child:
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 5.0, right: 5.0, top: 13.0, bottom: 0),
+                        child: Container(
+                            width: screenSize.width * 0.3,
+                            height: 100,
+                            padding: const EdgeInsets.only(top: 10),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadiusDirectional.circular(10.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child:   Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset("assets/images/ak-sale.png",height: 40,),
+                                Padding(padding: const EdgeInsets.only(left: 30,right: 20,top: 5),
+                                  child:  Text("Property For Sale",style:
+                                  TextStyle(height: 1.2,
+                                      letterSpacing: 0.5,
+                                      fontSize: 12,fontWeight: FontWeight.bold
+                                  ),),
+                                )
+                              ],
+                            )
+                        ),
+                      ),
                     ),
-                      child:   Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset("assets/images/commercial_new.png",height: 40,),
-                          Padding(padding: const EdgeInsets.only(left: 25,right: 20,top: 5),
-                            child:  Text("Commercial",style:
-                            TextStyle(height: 1.2,
-                                letterSpacing: 0.5,
-                                fontSize: 12,fontWeight: FontWeight.bold
-                            ),),
-                          )
-
-                        ],
-                      )
-                  ),
-                ),
-                ),
-                //logo2
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
-                  },
-                  child:
-                  Padding(
-                  padding: const EdgeInsets.only(
-                      left: 5.0, right: 5.0, top: 8, bottom: 0),
-                  child: Container(
-                      width: screenSize.width * 0.3,
-                    height: 100,
-                    padding: const EdgeInsets.only(top: 10),
-                    decoration: BoxDecoration(
-
-                      // image: DecorationImage(
-                      //   image: AssetImage("assets/images/05.png"),
-                      // ),
-                      borderRadius: BorderRadiusDirectional.circular(10.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
+                    //logo2
+                    GestureDetector(
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> New_Projects()));
+                      },
+                      child:
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 4.0, right: 5.0, top: 13.0, bottom: 0),
+                        child: Container(
+                            width: screenSize.width * 0.3,
+                            height: 100,
+                            padding: const EdgeInsets.only(top: 10),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadiusDirectional.circular(10.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child:   Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset("assets/images/ak-off-plan.png",height: 40,),
+                                Padding(padding: const EdgeInsets.only(left: 30,right: 20,top: 5),
+                                  child:  Text("Off-Plan-Properties",style:
+                                  TextStyle(height: 1.2,
+                                      letterSpacing: 0.5,
+                                      fontSize: 12,fontWeight: FontWeight.bold
+                                  ),),
+                                )
+                              ],
+                            )
+                        ),
+                      ),
                     ),
-                      child:   Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset("assets/images/city.png",height: 40,),
-                          Padding(padding: const EdgeInsets.only(left: 25,right: 20,top: 5),
-                            child:  Text("Apartments",style:
-                            TextStyle(height: 1.2,
-                                letterSpacing: 0.5,
-                                fontSize: 12,fontWeight: FontWeight.bold
-                            ),),
-                          )
-
-                        ],
-                      )
-                  ),
+                  ],
                 ),
-                ),
-                //logo2
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
-                  },
-                  child:
-                  Padding(
-                  padding: const EdgeInsets.only(
-                      left: 5.0, right: 5.0, top: 8, bottom: 0),
-                  child: Container(
-                      width: screenSize.width * 0.3,
-                    height: 100,
-                    padding: const EdgeInsets.only(top: 10),
-                    decoration: BoxDecoration(
+                Row(
+                  children: [
+                    //logo 1
+                    GestureDetector(
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                      },
+                      child:
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 12.0, right: 5.0, top: 8, bottom: 0),
+                        child: Container(
+                            width: screenSize.width * 0.3,
+                            height: 100,
+                            padding: const EdgeInsets.only(top: 10),
+                            decoration: BoxDecoration(
 
-                      // image: DecorationImage(
-                      //   image: AssetImage("assets/images/06.png"),
-                      // ),
-                      borderRadius: BorderRadiusDirectional.circular(10.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
+                              // image: DecorationImage(
+                              //   image: AssetImage("assets/images/04.png"),
+                              // ),
+                              borderRadius: BorderRadiusDirectional.circular(10.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child:   Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset("assets/images/commercial_new.png",height: 40,),
+                                Padding(padding: const EdgeInsets.only(left: 25,right: 20,top: 5),
+                                  child:  Text("Commercial",style:
+                                  TextStyle(height: 1.2,
+                                      letterSpacing: 0.5,
+                                      fontSize: 12,fontWeight: FontWeight.bold
+                                  ),),
+                                )
+
+                              ],
+                            )
+                        ),
+                      ),
                     ),
-                      child:   Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset("assets/images/villa-new.png",height: 40,),
-                          Padding(padding: const EdgeInsets.only(left: 25,right: 20,top: 5),
-                            child:  Text("Villas",style:
-                            TextStyle(height: 1.2,
-                                letterSpacing: 0.5,
-                                fontSize: 12,fontWeight: FontWeight.bold
-                            ),),
-                          )
+                    //logo2
+                    GestureDetector(
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                      },
+                      child:
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 5.0, right: 5.0, top: 8, bottom: 0),
+                        child: Container(
+                            width: screenSize.width * 0.3,
+                            height: 100,
+                            padding: const EdgeInsets.only(top: 10),
+                            decoration: BoxDecoration(
 
-                        ],
-                      )
-                  ),
+                              // image: DecorationImage(
+                              //   image: AssetImage("assets/images/05.png"),
+                              // ),
+                              borderRadius: BorderRadiusDirectional.circular(10.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child:   Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset("assets/images/city.png",height: 40,),
+                                Padding(padding: const EdgeInsets.only(left: 25,right: 20,top: 5),
+                                  child:  Text("Apartments",style:
+                                  TextStyle(height: 1.2,
+                                      letterSpacing: 0.5,
+                                      fontSize: 12,fontWeight: FontWeight.bold
+                                  ),),
+                                )
+
+                              ],
+                            )
+                        ),
+                      ),
+                    ),
+                    //logo2
+                    GestureDetector(
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                      },
+                      child:
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 5.0, right: 5.0, top: 8, bottom: 0),
+                        child: Container(
+                            width: screenSize.width * 0.3,
+                            height: 100,
+                            padding: const EdgeInsets.only(top: 10),
+                            decoration: BoxDecoration(
+
+                              // image: DecorationImage(
+                              //   image: AssetImage("assets/images/06.png"),
+                              // ),
+                              borderRadius: BorderRadiusDirectional.circular(10.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child:   Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset("assets/images/villa-new.png",height: 40,),
+                                Padding(padding: const EdgeInsets.only(left: 25,right: 20,top: 5),
+                                  child:  Text("Villas",style:
+                                  TextStyle(height: 1.2,
+                                      letterSpacing: 0.5,
+                                      fontSize: 12,fontWeight: FontWeight.bold
+                                  ),),
+                                )
+
+                              ],
+                            )
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                ),
-              ],
-            ),
-            //banner
+                //banner
                 Padding(
                   padding: const EdgeInsets.only(
                       left: 10.0, right: 10.0, top: 12.0, bottom: 0),
                   child:
                   Container(
                     width: screenSize.width * 1.0,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(10.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.3,
-                          0.3,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadiusDirectional.circular(10.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Padding(
+                            padding: const EdgeInsets.only(
+                                top: 10,left: 00,right: 5),
+                            child: Container(
+                              width: 200,
+                              height: 100,
+                              padding: const EdgeInsets.only(top: 10,left: 10,right: 00),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("New Projects            ",style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 18,fontWeight: FontWeight.bold
+                                  ),textAlign: TextAlign.left,),
+                                  Text("Discover more about the UAE "
+                                      "real estate market",style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                  ),
+                                    softWrap: true,)
+                                ],
+                              ),
+                            )
                         ),
-                        blurRadius: 0.3,
-                        spreadRadius: 0.3,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ],),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                         crossAxisAlignment: CrossAxisAlignment.center,
-                         children: [
-                      Padding(
-                          padding: const EdgeInsets.only(
-                          top: 10,left: 00,right: 5),
-                    child: Container(
-                    width: 200,
-                    height: 100,
-                    padding: const EdgeInsets.only(top: 10,left: 10,right: 00),
-                   child: Column(
-                     mainAxisAlignment: MainAxisAlignment.start,
-                     crossAxisAlignment: CrossAxisAlignment.start,
-                     children: [
-                       Text("New Projects            ",style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,fontWeight: FontWeight.bold
+                        Image.asset('assets/images/02.png',height: 145, width: screenSize.width * 0.36,),
+
+                      ],
+                    ),),),
+                //  Text
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          left: 15.0, right: 15.0, top: 10, bottom: 0),
+                      child:  Text("1,738 Projects",style: TextStyle(
+                        color: Colors.black,fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),textAlign: TextAlign.left,),
-                  Text("Discover more about the UAE "
-                      "real estate market",style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
-                      ),
-                    softWrap: true,)
-                     ],
-                   ),
-                )
-                            ),
-                Image.asset('assets/images/02.png',height: 145, width: screenSize.width * 0.36,),
-
-              ],
-            ),),),
-
-            //  Text
+                    ),
                     Row(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(
-                              left: 15.0, right: 15.0, top: 10, bottom: 0),
-                          child:  Text("1,738 Projects",style: TextStyle(
-                            color: Colors.black,fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),textAlign: TextAlign.left,),
-                        ),
-                        Row(
-                        children: [
-                          Padding(
                             padding: const EdgeInsets.only(
                                 left: 140.0, right: 10.0, top: 10, bottom: 0),
                             child:  Image.asset("assets/images/arrows 1.png")
-                          ),
+                        ),
 
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 2.0, right: 10.0, top: 10, bottom: 0),
-                            child:  Text("Featured",style: TextStyle(
-                              color: Colors.black,fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),textAlign: TextAlign.right,),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 2.0, right: 10.0, top: 10, bottom: 0),
+                          child:  Text("Featured",style: TextStyle(
+                            color: Colors.black,fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),textAlign: TextAlign.right,),
+                        ),
+                      ],
+                    )
+
+                  ],
+                ),
+                //Slider
+                ListView(
+                  padding: const EdgeInsets.only(top: 10),
+                  shrinkWrap: true,
+                  children: [
+                    CarouselSlider(
+                      items: [
+
+                        //1st Image of Slider
+                        Container(
+                          margin: EdgeInsets.all(0.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8.0),
+                            image: DecorationImage(
+                              image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                        ],
-                        )
+                        ),
+
+                        //2nd Image of Slider
+                        Container(
+                          margin: EdgeInsets.all(0.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8.0),
+                            image: DecorationImage(
+                              image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+
+                        //3rd Image of Slider
+                        Container(
+                          margin: EdgeInsets.all(0.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8.0),
+                            image: DecorationImage(
+                              image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+
+                        //4th Image of Slider
+                        Container(
+                          margin: EdgeInsets.all(0.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8.0),
+                            image: DecorationImage(
+                              image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+
+                        //5th Image of Slider
+                        Container(
+                          margin: EdgeInsets.all(0.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8.0),
+                            image: DecorationImage(
+                              image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
 
                       ],
-                    ),
-            //Slider
-            ListView(
-              padding: const EdgeInsets.only(top: 10),
-                shrinkWrap: true,
-                children: [
-                  CarouselSlider(
-                    items: [
-
-                      //1st Image of Slider
-                      Container(
-                        margin: EdgeInsets.all(0.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8.0),
-                          image: DecorationImage(
-                            image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                      //Slider Container properties
+                      options: CarouselOptions(
+                        height: 250.0,
+                        enlargeCenterPage: true,
+                        autoPlay: true,
+                        aspectRatio: 16 / 9,
+                        autoPlayCurve: Curves.fastOutSlowIn,
+                        enableInfiniteScroll: true,
+                        autoPlayAnimationDuration: Duration(milliseconds: 800),
+                        viewportFraction: 0.9,
                       ),
-
-                      //2nd Image of Slider
-                      Container(
-                        margin: EdgeInsets.all(0.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8.0),
-                          image: DecorationImage(
-                            image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-
-                      //3rd Image of Slider
-                      Container(
-                        margin: EdgeInsets.all(0.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8.0),
-                          image: DecorationImage(
-                            image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-
-                      //4th Image of Slider
-                      Container(
-                        margin: EdgeInsets.all(0.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8.0),
-                          image: DecorationImage(
-                            image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-
-                      //5th Image of Slider
-                      Container(
-                        margin: EdgeInsets.all(0.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8.0),
-                          image: DecorationImage(
-                            image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-
-                    ],
-                    //Slider Container properties
-                    options: CarouselOptions(
-                      height: 250.0,
-                      enlargeCenterPage: true,
-                      autoPlay: true,
-                      aspectRatio: 16 / 9,
-                      autoPlayCurve: Curves.fastOutSlowIn,
-                      enableInfiniteScroll: true,
-                      autoPlayAnimationDuration: Duration(milliseconds: 800),
-                      viewportFraction: 0.9,
-                    ),
-                  ),
-                ],
-              ),
-
-            //buttons
-            Padding(
-              padding: const EdgeInsets.only(top: 12,left: 10,right: 10),
-              child: Container(
-                width: 400,
-                height: 55,
-                padding: const EdgeInsets.only(top: 0),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadiusDirectional.circular(15.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.3,
-                        0.3,
-                      ),
-                      blurRadius: 0.3,
-                      spreadRadius: 0.3,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],),
-
-               child:  Row(
-                  children: [
-                    Padding(padding: const EdgeInsets.only(left: 30,top: 10,bottom: 10),
-                      child: ElevatedButton.icon(onPressed: (){},
-                          label: Text("call",style: TextStyle(
-                              color: Colors.black
-                          ),),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[50],
-                            alignment: Alignment.center,
-                            elevation: 1,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 40),
-                            textStyle: TextStyle(letterSpacing: 0.5,
-                                color: Colors.black,fontSize: 15,fontWeight: FontWeight.bold
-                            ),
-                          ),
-                          icon: Icon(Icons.call,color: Colors.red,)),
-                    ),
-                    // Text(product.description),
-                    Padding(padding: const EdgeInsets.only(left: 15,top: 10,bottom: 10),
-                      child: ElevatedButton.icon(onPressed: (){},
-                          label: Text("Watsapp",style: TextStyle(
-                              color: Colors.black
-                          ),),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[50],
-                            alignment: Alignment.center,
-                            elevation: 1,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 30),
-                            textStyle: TextStyle(letterSpacing: 0.5,
-                                color: Colors.black,fontSize: 12,fontWeight: FontWeight.bold
-                            ),
-                          ),
-                          icon: Icon(Icons.call,color: Colors.red,)),
                     ),
                   ],
                 ),
-              ),
+                //buttons
+                Padding(
+                  padding: const EdgeInsets.only(top: 12,left: 10,right: 10),
+                  child: Container(
+                    width: 400,
+                    height: 55,
+                    padding: const EdgeInsets.only(top: 0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadiusDirectional.circular(15.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],),
+
+                    child:  Row(
+                      children: [
+                        Padding(padding: const EdgeInsets.only(left: 30,top: 10,bottom: 10),
+                          child: ElevatedButton.icon(onPressed: (){},
+                              label: Text("call",style: TextStyle(
+                                  color: Colors.black
+                              ),),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.grey[50],
+                                alignment: Alignment.center,
+                                elevation: 1,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 40),
+                                textStyle: TextStyle(letterSpacing: 0.5,
+                                    color: Colors.black,fontSize: 15,fontWeight: FontWeight.bold
+                                ),
+                              ),
+                              icon: Icon(Icons.call,color: Colors.red,)),
+                        ),
+                        // Text(product.description),
+                        Padding(padding: const EdgeInsets.only(left: 15,top: 10,bottom: 10),
+                          child: ElevatedButton.icon(onPressed: (){},
+                              label: Text("Watsapp",style: TextStyle(
+                                  color: Colors.black
+                              ),),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.grey[50],
+                                alignment: Alignment.center,
+                                elevation: 1,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 30),
+                                textStyle: TextStyle(letterSpacing: 0.5,
+                                    color: Colors.black,fontSize: 12,fontWeight: FontWeight.bold
+                                ),
+                              ),
+                              icon: Icon(Icons.call,color: Colors.red,)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                //tab
+                SizedBox(
+                  height: 15,
+                  width: 25,
+                ),
+              ],
             ),
-          //tab
-            SizedBox(
-              height: 15,
-              width: 25,
-            ),
-            ],
-        ),
-        ),
-        );
+          ),
+        ));
+
   }
 
   Container buildMyNavBar(BuildContext context) {

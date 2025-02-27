@@ -1,0 +1,421 @@
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:drawerdemo/screen/home.dart';
+import 'package:drawerdemo/screen/profile_login.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+class About_Us extends StatelessWidget {
+
+  About_Us({super.key,});
+
+  int pageIndex = 0;
+  final pages = [
+    const Page1(),
+    const Page2(),
+    const Page3(),
+    const Page4(),
+  ];
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
+    return   WillPopScope(
+        child:  Scaffold(
+            backgroundColor: Colors.white,
+            bottomNavigationBar: buildMyNavBar(context),
+            body: SingleChildScrollView(
+                child: Column(
+                    children: <Widget>[
+                      Stack(
+                        // alignment: Alignment.topCenter,
+                        children: <Widget>[
+                          Padding(
+                            padding: EdgeInsets.only(top: 25),
+                            child: Container(
+                              height: screenSize.height*0.07,
+                              width: double.infinity,
+                              // color: Color(0xFFEEEEEE),
+                              child:   Row(
+                                children: [GestureDetector(
+                                  onTap: (){
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                                  },
+                                  child:   Container(
+                                    margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
+                                    height: 35,
+                                    width: 35,
+                                    padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadiusDirectional.circular(20.0),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey,
+                                          offset: const Offset(
+                                            0.0,
+                                            0.0,
+                                          ),
+                                          blurRadius: 0.1,
+                                          spreadRadius: 0.1,
+                                        ), //BoxShadow
+                                        BoxShadow(
+                                          color: Colors.white,
+                                          offset: const Offset(0.0, 0.0),
+                                          blurRadius: 0.0,
+                                          spreadRadius: 0.0,
+                                        ), //BoxShadow
+                                      ],
+                                    ),
+                                    child: Image.asset("assets/images/ar-left.png",
+                                      width: 15,
+                                      height: 15,
+                                      fit: BoxFit.contain,),
+                                  ),
+                                ),
+                                  SizedBox(
+                                    width: screenSize.width*0.27,
+                                  ),
+                                  Padding(padding: const EdgeInsets.all(8.0),
+                                    child: Text("About Us",style: TextStyle(
+                                        fontWeight: FontWeight.bold,fontSize: 20
+                                    ),),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      //Slider
+                      ListView(
+                        padding: const EdgeInsets.only(top: 8),
+                        shrinkWrap: true,
+                        children: [
+                          CarouselSlider(
+                            items: [
+                              //1st Image of Slider
+                              Container(
+                                margin: EdgeInsets.all(0.0),
+                                width: screenSize.width*0.9,
+                                height: screenSize.height*0.2,
+                                color: Colors.grey,
+                                child: Image.asset("assets/images/banner1.png",fit: BoxFit.fill,),
+                              ),
+                              Container(
+                                margin: EdgeInsets.all(0.0),
+                                width: screenSize.width*0.9,
+                                height: screenSize.height*0.2,
+                                color: Colors.grey,
+                                child: Image.asset("assets/images/banner2.png",fit: BoxFit.fill,),
+                              ),
+                              Container(
+                                margin: EdgeInsets.all(0.0),
+                                width: screenSize.width*0.9,
+                                height: screenSize.height*0.2,
+                                color: Colors.grey,
+                                child: Image.asset("assets/images/banner3.png",fit: BoxFit.fill,),
+                              ),
+
+                            ],
+                            //Slider Container properties
+                            options: CarouselOptions(
+                              height: screenSize.height*0.2,
+                              enlargeCenterPage: true,
+                              autoPlay: true,
+                              aspectRatio: 16 / 9,
+                              autoPlayCurve: Curves.fastOutSlowIn,
+                              enableInfiniteScroll: true,
+                              autoPlayAnimationDuration: Duration(milliseconds: 800),
+                              viewportFraction: 0.9,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 10,top: 20,right: 10),
+                        height: screenSize.height*0.03,
+                        //color: Colors.grey,
+                        child: Text("Akarat.com",style: TextStyle(
+                          fontSize: 25,fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),textAlign: TextAlign.center,),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(top: 15),
+                        height: screenSize.height*0.6,
+                        width: screenSize.width*0.9,
+                        // color: Colors.grey,
+                        child: Column(
+                          children: [
+                            Text("Welcome to Akarat.com, your trusted real estate partner in the UAE. "
+                                "We specialize in connecting buyers, sellers, and investors with the best property "
+                                "opportunities across the region.",style: TextStyle(
+                                fontSize: 16,letterSpacing: 0.5
+                            ),),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text("At Akarat.com, we blend cutting-edge technology with "
+                                  "deep market expertise to provide a seamless property search experience. Whether you're "
+                                  "looking for residential, commercial, or investment properties, our platform offers verified "
+                                  "listings, real-time market insights, and expert guidance to help you make informed decisions."
+                                ,style: TextStyle(
+                                    fontSize: 16,letterSpacing: 0.5
+                                ),),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text("Our mission is to simplify real estate transactions with transparency, efficiency, "
+                                  "and innovation. With a team of experienced professionals and a commitment to excellence, "
+                                  "we strive to be the go-to real estate portal for individuals and businesses alike."
+                                ,style: TextStyle(
+                                    fontSize: 16,letterSpacing: 0.5
+                                ),),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text("Start your real estate journey with Akarat.com today!",style: TextStyle(
+                                  fontSize: 16
+                              ),),
+                            )
+
+
+                          ],
+                        ),
+                      )
+                    ]
+                )
+            )
+        ),
+        onWillPop: () async {
+          Navigator.of(context).pop(true);
+          return true;
+        },
+    );
+
+
+
+  }
+  Container buildMyNavBar(BuildContext context) {
+    return Container(
+      height: 60,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
+
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+
+            },
+            icon: pageIndex == 0
+                ? const Icon(
+              Icons.home_filled,
+              color: Colors.red,
+              size: 35,
+            )
+                : const Icon(
+              Icons.home_outlined,
+              color: Colors.red,
+              size: 35,
+            ),
+          ),
+          Container(
+              margin: const EdgeInsets.only(left: 40),
+              height: 35,
+              width: 35,
+              padding: const EdgeInsets.only(top: 2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadiusDirectional.circular(20.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey,
+                    offset: const Offset(
+                      0.5,
+                      0.5,
+                    ),
+                    blurRadius: 1.0,
+                    spreadRadius: 0.5,
+                  ), //BoxShadow
+                  BoxShadow(
+                    color: Colors.white,
+                    offset: const Offset(0.0, 0.0),
+                    blurRadius: 0.0,
+                    spreadRadius: 0.0,
+                  ), //BoxShadow
+                ],
+              ),
+              child: Icon(Icons.favorite_border,color: Colors.red,)
+          ),
+
+          Container(
+              margin: const EdgeInsets.only(left: 1),
+              height: 35,
+              width: 35,
+              padding: const EdgeInsets.only(top: 2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadiusDirectional.circular(20.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey,
+                    offset: const Offset(
+                      0.5,
+                      0.5,
+                    ),
+                    blurRadius: 1.0,
+                    spreadRadius: 0.5,
+                  ), //BoxShadow
+                  BoxShadow(
+                    color: Colors.white,
+                    offset: const Offset(0.0, 0.0),
+                    blurRadius: 0.0,
+                    spreadRadius: 0.0,
+                  ), //BoxShadow
+                ],
+              ),
+              child: Icon(Icons.add_location_rounded,color: Colors.red,)
+
+          ),
+          Container(
+              margin: const EdgeInsets.only(left: 1,right: 40),
+              height: 35,
+              width: 35,
+              padding: const EdgeInsets.only(top: 2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadiusDirectional.circular(20.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey,
+                    offset: const Offset(
+                      0.5,
+                      0.5,
+                    ),
+                    blurRadius: 1.0,
+                    spreadRadius: 0.5,
+                  ), //BoxShadow
+                  BoxShadow(
+                    color: Colors.white,
+                    offset: const Offset(0.0, 0.0),
+                    blurRadius: 0.0,
+                    spreadRadius: 0.0,
+                  ), //BoxShadow
+                ],
+              ),
+              child: Icon(Icons.chat,color: Colors.red,)
+
+          ),
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
+
+           //   Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+
+            },
+            icon: pageIndex == 3
+                ? const Icon(
+              Icons.dehaze,
+              color: Colors.red,
+              size: 35,
+            )
+                : const Icon(
+              Icons.dehaze_outlined,
+              color: Colors.red,
+              size: 35,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+class Page1 extends StatelessWidget {
+  const Page1({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xffC4DFCB),
+      child: Center(
+        child: Text(
+          "Page Number 1",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 45,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class Page2 extends StatelessWidget {
+  const Page2({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xffC4DFCB),
+      child: Center(
+        child: Text(
+          "Page Number 2",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 45,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class Page3 extends StatelessWidget {
+  const Page3({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xffC4DFCB),
+      child: Center(
+        child: Text(
+          "Page Number 3",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 45,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class Page4 extends StatelessWidget {
+  const Page4({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xffC4DFCB),
+      child: Center(
+        child: Text(
+          "Page Number 4",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 45,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+}

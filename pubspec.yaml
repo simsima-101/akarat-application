@@ -91,6 +91,9 @@ flutter:
   - assets/images/residential.png
   - assets/images/villa-new.png
   - assets/images/city.png
+  - assets/images/banner1.png
+  - assets/images/banner2.png
+  - assets/images/banner3.png
   - assets/images/commercial_new.png
   - assets/images/ak-off-plan.png
   - assets/images/ak-rent-red.png
@@ -119,6 +122,16 @@ flutter:
   - assets/images/dot.png
   - assets/images/dis-like.png
   - assets/images/like.png
+  - assets/images/advertise.png
+  - assets/images/blog.png
+  - assets/images/cities.png
+  - assets/images/cookies.png
+  - assets/images/favourites.png
+  - assets/images/find-my-agent.png
+  - assets/images/languages.png
+  - assets/images/privacy-policy.png
+  - assets/images/support.png
+  - assets/images/terms-and-conditions.png
 
 #        -assets/images/image 2.png
 #        - assets/images/image3.png
