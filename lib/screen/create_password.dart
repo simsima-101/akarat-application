@@ -1,37 +1,74 @@
+import 'dart:convert';
+import 'package:drawerdemo/model/registermodel.dart';
 import 'package:drawerdemo/screen/emai_login.dart';
 import 'package:drawerdemo/screen/login.dart';
 import 'package:drawerdemo/screen/my_account.dart';
+import 'package:drawerdemo/utils/Validator.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-void main(){
-  runApp(const CreatePassword());
-
-}
-class CreatePassword extends StatelessWidget {
-  const CreatePassword({super.key});
-
+class CreatePassword extends StatefulWidget {
+  const CreatePassword({super.key, required this.data});
+  final String data;
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: CreatePasswordDemo(),
-    );
-  }
+  State<CreatePassword> createState() => _CreatePasswordState();
 }
-class CreatePasswordDemo extends StatefulWidget {
-  const CreatePasswordDemo({super.key});
-
-  @override
-  _CreatePasswordDemoState createState() => _CreatePasswordDemoState();
-}
-class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
+class _CreatePasswordState extends State<CreatePassword> {
 
   bool passwordVisible=false;
+  final myController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmpasswordController = TextEditingController();
+  String result = '';
+  String token = '';
+  RegisterModel? registermodel;
   @override
   void initState(){
     super.initState();
     passwordVisible=true;
   }
+
+  Future<void> registerUsers(data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://akarat.com/api/register'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          "name": myController.text,
+          "email": data,
+          "password": passwordController.text,
+          "password_confirmation": confirmpasswordController.text
+          // Add any other data you want to send in the body
+        }),
+      );
+
+      if (response.statusCode == 200) {
+       Map<String, dynamic> jsonData = json.decode(response.body);
+          registermodel = RegisterModel.fromJson(jsonData);
+          result=registermodel!.user.toString();
+          token=registermodel!.token.toString();
+          print("Registered Succesfully");
+       /*Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context){
+         return My_Account(
+           arguments: registermodel[index],
+         );
+       }));*/
+          Navigator.push(context, MaterialPageRoute(builder: (context) =>
+              My_Account(arguments: registermodel!)));
+      } else {
+        throw Exception("Registration failed");
+
+      }
+    } catch (e) {
+      setState(() {
+      print('Error: $e');
+      });
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +89,6 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                             child: Image.asset('assets/images/app_icon.png')),
                       ),
                     ),
-
                     //textlogo
                     Padding(
                       padding: const EdgeInsets.only(top:0),
@@ -63,7 +99,6 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                             child: Image.asset('assets/images/logo-text.png')),
                       ),
                     ),
-
                     Container(
                       height: 400,
                       width: double.infinity,
@@ -99,7 +134,7 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                     Navigator.push(context, MaterialPageRoute(builder: (context)=> EmaiLogin()));
                     },
                       child:
-                      Text("    Back",style: TextStyle(
+                      Text("Back",style: TextStyle(
                                 color: Colors.blue,
                                 fontSize: 17,
                               ),textAlign: TextAlign.left,),),
@@ -119,8 +154,6 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                               style: TextStyle(fontSize: 14,letterSpacing: 0.5),
                               softWrap: true,),
                           ),
-
-                          //google button
                           Padding(
                             padding: const EdgeInsets.only(
                                 left: 15, right: 15.0, top: 15, bottom: 0),
@@ -151,6 +184,7 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                               ),
                               child: TextField(
                                // obscureText: true,
+                                controller: myController,
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
                                   hintText: 'Name',hintStyle: TextStyle(color: Colors.grey)
@@ -188,8 +222,19 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                                 ],
                               ),
 
-                              child:   TextField(
+                              child:   TextFormField(
                                 obscureText: passwordVisible,
+                                controller: passwordController,
+                               validator: (value){
+                                 if(value!.isEmpty) {
+                                   return 'Empty';
+                                 }
+                                 else{
+                                   Validator.validatePassword(value ?? "");
+                                 }
+                                 return null;
+                               },
+                               // validator: (value) => Validator.validatePassword(value ?? ""),
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
                                 //  fillColor: Colors.white,
@@ -245,12 +290,22 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
                                 ],
                               ),
 
-                              child:   TextField(
+                              child:   TextFormField(
                                 obscureText: passwordVisible,
+                                controller: confirmpasswordController,
+                                validator: (value){
+                                  if(value!.isEmpty) {
+                                    return 'Empty';
+                                  }
+                                  if(value != passwordController.text) {
+                                    return 'Not Match';
+                                  }
+                                  return null;
+                                },
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
                                   fillColor: Colors.white,
-                                  hintText: '  Password',
+                                  hintText: ' Confirm Password',
                                   hintStyle: TextStyle(color: Colors.grey),
                                   suffixIcon: IconButton(
                                     icon: Icon(passwordVisible
@@ -305,7 +360,9 @@ class _CreatePasswordDemoState extends State<CreatePasswordDemo> {
 
                               child: InkWell(
                                   onTap: (){
-                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+                                    registerUsers(widget.data);
+                                    Center(child: CircularProgressIndicator());
+                                   // Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
                                   },
                                   child: Text('Create Account',textAlign: TextAlign.center,
                                     style: TextStyle(fontSize: 17,

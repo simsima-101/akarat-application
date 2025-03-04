@@ -1,9 +1,14 @@
 import 'package:drawerdemo/screen/about_us.dart';
+import 'package:drawerdemo/screen/advertising.dart';
 import 'package:drawerdemo/screen/blog.dart';
+import 'package:drawerdemo/screen/cookies.dart';
+import 'package:drawerdemo/screen/favorite.dart';
 import 'package:drawerdemo/screen/findagent.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/login.dart';
 import 'package:drawerdemo/screen/privacy.dart';
+import 'package:drawerdemo/screen/support.dart';
+import 'package:drawerdemo/screen/terms_condition.dart';
 import 'package:flutter/material.dart';
 
 void main(){
@@ -46,7 +51,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
             child: Column(
                 children: <Widget>[
                   Container(
-                    height: screenSize.height*0.25,
+                    height: screenSize.height*0.22,
                     color: Color(0xFFF5F5F5),
                     child: Column(
                       children: [
@@ -88,7 +93,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                             ),
                     ),
                             Container(
-                              margin: const EdgeInsets.only(left: 280,top: 35,bottom: 0),
+                              margin: const EdgeInsets.only(left: 280,top: 30,bottom: 0),
                               height: 35,
                               width: 35,
                               padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
@@ -122,12 +127,12 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                        Row(
                          children: [
                            Container(
-                             margin: const EdgeInsets.only(left: 50,top: 0,bottom: 0),
-                             height: 90,
-                             width: 90,
+                             margin: const EdgeInsets.only(left: 70,top: 0,bottom: 40),
+                             height: screenSize.height*0.08,
+                             width: screenSize.width*0.18,
                              padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
                              decoration: BoxDecoration(
-                               borderRadius: BorderRadiusDirectional.circular(50.0),
+                               borderRadius: BorderRadiusDirectional.circular(90.0),
                                boxShadow: [
                                  BoxShadow(
                                    color: Colors.grey,
@@ -152,14 +157,14 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                fit: BoxFit.contain,),
                            ),
                            Container(
-                             margin: const EdgeInsets.only(left: 5),
-                             height: 130,
-                             width: 180,
+                             margin: const EdgeInsets.only(left: 10),
+                             height: screenSize.height*0.14,
+                             width: screenSize.width*0.42,
                              // color: Colors.grey,
-                             padding: const EdgeInsets.only(left: 0,top: 5),
+                             padding: const EdgeInsets.only(left: 0,top: 0),
                              child:   Column(
                                  children: [
-                                   Padding(padding: const EdgeInsets.only(top: 0,left: 0,right: 70),
+                                   Padding(padding: const EdgeInsets.only(top: 0,left: 2,right: 60),
                                      child: Text("Hi there,",style: TextStyle(
                                        fontSize: 22,
                                        fontWeight: FontWeight.bold,
@@ -174,7 +179,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                        letterSpacing: 0.5,
                                      ),textAlign: TextAlign.left,),
                                    ),
-                                   Padding(padding: const EdgeInsets.only(top: 5,left: 0,right: 20),
+                                   Padding(padding: const EdgeInsets.only(top: 5,left: 10,right: 20),
                                    child: ElevatedButton(onPressed: (){
                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
                                    },style:
@@ -193,9 +198,9 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
 
                   ),
                  Container(
-                   height: screenSize.height*0.165,
-                   width: screenSize.width*0.8,
-                   margin: const EdgeInsets.only(left: 20,top: 20,right: 20),
+                   height: screenSize.height*0.15,
+                   width: screenSize.width*0.78,
+                   margin: const EdgeInsets.only(left: 20,top: 15,right: 20),
                    decoration: BoxDecoration(
                      borderRadius: BorderRadiusDirectional.circular(10.0),
                      boxShadow: [
@@ -219,32 +224,32 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                    child: Column(
                      children: [
                        Padding(
-                         padding: const EdgeInsets.all(8.0),
+                         padding: const EdgeInsets.all(5.0),
                          child: Text("Hurry!",style: TextStyle(
                            fontWeight: FontWeight.bold,fontSize: 25,color: Colors.red
                          ),),
                        ),
                        Padding(
-                         padding: const EdgeInsets.all(2.0),
+                         padding: const EdgeInsets.all(0.0),
                          child: Text("Enjoy a FREE Subscription for all of 2025",style: TextStyle(
                              fontWeight: FontWeight.bold,fontSize: 15,color: Colors.black
                          ),),
                        ),
                        Padding(
-                         padding: const EdgeInsets.all(8.0),
+                         padding: const EdgeInsets.all(5.0),
                          child: ElevatedButton(onPressed: (){
                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
                          },style:
                          ElevatedButton.styleFrom(backgroundColor: Colors.black,
                            shape: RoundedRectangleBorder(borderRadius:  BorderRadius.all(Radius.circular(8)),),),
-                             child: Text("Sign up Now!",style: TextStyle(color: Colors.white,fontSize: 12),)),
+                             child: Text("Sign up Now!",style: TextStyle(color: Colors.white,fontSize: 14),)),
                        ),
                      ],
                    ),
                  ),
                   Container(
                    // color: Colors.grey,
-                    height: screenSize.height*0.5,
+                    height: screenSize.height*0.55,
                     margin:const EdgeInsets.only(left: 20,right: 20,top: 0),
                     child: ListView(
                         shrinkWrap: true,
@@ -287,7 +292,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                           ),
                           GestureDetector(
                             onTap: (){
-                              //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Favorite()));
                             },
                             child: Container(
                               margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
@@ -408,7 +413,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                 children: [
                                   Padding(
                                     padding: const EdgeInsets.only(right: 0.0,left: 15),
-                                    child: Image.asset("assets/images/city.png",height: 25,),
+                                    child: Image.asset("assets/images/app_icon.png",height: 25,),
                                   ),
                                   SizedBox(
                                     width: screenSize.width*0.1,
@@ -465,7 +470,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                             ),
                           GestureDetector(
                             onTap: (){
-                              // Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                               Navigator.push(context, MaterialPageRoute(builder: (context)=> Advertising()));
                             },
                             child: Container(
                               margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
@@ -498,7 +503,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                           ),
                           GestureDetector(
                             onTap: (){
-                              //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Support()));
                             },
                             child: Container(
                               margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
@@ -564,7 +569,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                           ),
                           GestureDetector(
                             onTap: (){
-                              // Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                               Navigator.push(context, MaterialPageRoute(builder: (context)=> TermsCondition()));
                             },
                             child: Container(
                               margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
@@ -597,7 +602,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                           ),
                           GestureDetector(
                             onTap: (){
-                              // Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
+                               Navigator.push(context, MaterialPageRoute(builder: (context)=> Cookies()));
                             },
                             child: Container(
                               margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
@@ -605,7 +610,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                               child: Row(
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 15),
+                                    padding: const EdgeInsets.only(right: 0.0,left: 12),
                                     child: Image.asset("assets/images/cookies.png",height: 25,),
                                   ),
                                   SizedBox(
@@ -621,7 +626,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                     width: screenSize.width*0.39,
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.only(right: 8.0,left: 15),
+                                    padding: const EdgeInsets.only(right: 8.0,left: 20),
                                     child: Icon(Icons.arrow_forward_ios,color: Colors.red,size: 13,),
                                   )
                                 ],

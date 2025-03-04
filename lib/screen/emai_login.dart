@@ -248,7 +248,7 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
                     ),
                     child: InkWell(
                         onTap: (){
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> CreatePassword()));
+                         // Navigator.push(context, MaterialPageRoute(builder: (context)=> CreatePassword()));
                         },
                         child: Text('Log in',textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 17,

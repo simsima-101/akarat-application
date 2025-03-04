@@ -1,5 +1,6 @@
 import 'package:drawerdemo/screen/create_password.dart';
 import 'package:drawerdemo/screen/login.dart';
+import 'package:drawerdemo/utils/Validator.dart';
 import 'package:flutter/material.dart';
 
 void main(){
@@ -22,6 +23,7 @@ class LoginPageDemo extends StatefulWidget {
   _LoginPageDemoState createState() => _LoginPageDemoState();
 }
 class _LoginPageDemoState extends State<LoginPageDemo> {
+  final emailController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,7 +129,7 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
               ),
             ),
             ),
-     //facebook button
+          //facebook button
            Padding(
              padding: const EdgeInsets.only(
                  left: 15.0, right: 15.0, top: 15, bottom: 0),
@@ -170,8 +172,8 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
 
              ),
            ),
-     //  Text
-       Padding(
+          //  Text
+           Padding(
          padding: const EdgeInsets.only(
              left: 15.0, right: 15.0, top: 10, bottom: 0),
          child:  Text("or",style: TextStyle(
@@ -179,7 +181,7 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
            fontSize: 17,
          ),textAlign: TextAlign.center,),
        ),
-//edittext
+           //edittext
            Padding(
              padding: const EdgeInsets.only(
                  left: 15.0, right: 15.0, top: 10, bottom: 0),
@@ -207,8 +209,11 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
                    ), //BoxShadow
                  ],
                ),
-                 child: TextField(
-                  // obscureText: true,
+                 child: TextFormField(
+                   validator: (value) =>
+                       Validator.validateEmail(value ?? ""),
+                   controller: emailController,
+                   keyboardType: TextInputType.emailAddress,
                    decoration: InputDecoration(
                       /* border: OutlineInputBorder(
                        ),*/
@@ -220,9 +225,9 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
              ),
            ),
            //button
-       GestureDetector(
+            GestureDetector(
          onTap: (){
-           Navigator.push(context, MaterialPageRoute(builder: (context)=> CreatePassword()));
+           Navigator.push(context, MaterialPageRoute(builder: (context)=> CreatePassword(data: emailController.text)));
          },
          child:
            Padding(
@@ -262,8 +267,8 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
              ),
            ),
        ),
-          //text
-           Padding(
+            //text
+            Padding(
              padding: const EdgeInsets.only(
                  left:0.0,top: 15.0),
              child: Center(
@@ -291,7 +296,6 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
            ),
          ],
        ),
-
      ),
     ]))
     );
