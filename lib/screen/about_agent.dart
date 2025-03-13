@@ -1,30 +1,54 @@
+import 'dart:convert';
+
+import 'package:drawerdemo/model/agentdetaill.dart';
+import 'package:drawerdemo/model/agentsmodel.dart';
 import 'package:drawerdemo/screen/findagent.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-void main(){
-  runApp(const AboutAgent());
 
-}
-
-class AboutAgent extends StatelessWidget {
-  const AboutAgent({super.key});
-
+class AboutAgent extends StatefulWidget {
+  const AboutAgent({super.key, required this.data});
+  final String data;
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: AboutAgentDemo(),
-    );
-  }
+  State<AboutAgent> createState() => _AboutAgentState();
 }
-class AboutAgentDemo extends StatefulWidget {
-  @override
-  _AboutAgentDemoState createState() => _AboutAgentDemoState();
-}
-class _AboutAgentDemoState extends State<AboutAgentDemo> {
+class _AboutAgentState extends State<AboutAgent> {
+  AgentDetail? agentDetail;
     int pageIndex = 0;
+  @override
+  void initState() {
+    fetchProducts(widget.data);
+  }
+
+
+  Future<void> fetchProducts(data) async {
+    // you can replace your api link with this link
+    final response = await http.get(Uri.parse('https://akarat.com/api/agent/$data'));
+    Map<String,dynamic> jsonData=json.decode(response.body);
+    debugPrint("Status Code: ${response.statusCode}");
+    if (response.statusCode == 200) {
+      debugPrint("API Response: ${jsonData.toString()}");
+      debugPrint("API 200: ");
+      AgentDetail parsedModel = AgentDetail.fromJson(jsonData);
+      debugPrint("Parsed ProductModel: ${parsedModel.toString()}");
+      setState(() {
+        debugPrint("API setState: ");
+        String title = jsonData['title'] ?? 'No title';
+        debugPrint("API title: $title");
+        agentDetail = parsedModel;
+
+      });
+
+      debugPrint("productModels title_after: ${agentDetail!.name}");
+
+    } else {
+      // Handle error if needed
+    }
+  }
+
 
   final pages = [
     const Page1(),
@@ -36,6 +60,11 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
+    if (agentDetail == null) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()), // Show loading state
+      );
+    }
     return Scaffold(
         bottomNavigationBar: buildMyNavBar(context),
       backgroundColor: Colors.white,
@@ -150,9 +179,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                     ],
                   ),
                   child: CircleAvatar(
-                    backgroundColor: Colors.grey,
-                    child: Image.asset("assets/images/ag.png",
-                      ),
+                    backgroundImage: NetworkImage(agentDetail!.image),
                   ),
                 )
               ],
@@ -164,7 +191,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
             width: screenSize.width*0.6,
            // color: Colors.grey,
             child: Padding(padding:  EdgeInsets.only(top: 0,left: 0.0,right: 0),
-            child: Text("Dina Marzouk Soffar",style: TextStyle(
+            child: Text(agentDetail!.name,style: TextStyle(
               fontSize: 20,color: Colors.black,letterSpacing: 0.5
             ),),
             ),
@@ -429,11 +456,15 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                           fontSize: 10, color: Colors.grey, letterSpacing: 0.5
                       ),),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2, left: 0.0, right: 320),
-                      child: Text("dfgh ", style: TextStyle(
-                          fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                      ),),
+                    Container(
+                      height: 25,
+                      width: screenSize.width*0.9,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 2, left: 0.0, right: 0),
+                        child: Text(agentDetail!.language, style: TextStyle(
+                            fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                        ),),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 20, left: 0.0, right: 310),
@@ -441,11 +472,16 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                           fontSize: 10, color: Colors.grey, letterSpacing: 0.5
                       ),),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2, left: 0.0, right: 310),
-                      child: Text("About", style: TextStyle(
-                          fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                      ),),
+                    Container(
+                      height: 25,
+                      width: screenSize.width*0.9,
+                     // color: Colors.grey,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 5, left: 0.0, right: 0),
+                        child: Text(agentDetail!.expertise, style: TextStyle(
+                            fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                        ),),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 20, left: 0.0, right: 290),
@@ -453,11 +489,16 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                           fontSize: 10, color: Colors.grey, letterSpacing: 0.5
                       ),),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2, left: 0.0, right: 310),
-                      child: Text("About", style: TextStyle(
-                          fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                      ),),
+                    Container(
+                      height: 25,
+                      width: screenSize.width*0.9,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 2, left: 0.0, right: 310),
+                        child: Text(agentDetail!.service_area, style: TextStyle(
+                            fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                        ),
+                        ),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 20, left: 0.0, right: 300),
@@ -504,7 +545,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
 
                                 child: Row(
                                   children: [
-                                    Text("18 Properties for Rent", style: TextStyle(
+                                    Text("${agentDetail!.rent} Properties for Rent", style: TextStyle(
                                         letterSpacing: 0.5,
                                         color: Colors.black,
                                         fontSize: 13
@@ -549,7 +590,7 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                                 ),
                                 child: Row(
                                   children: [
-                                    Text("18 Properties for Rent", style: TextStyle(
+                                    Text("${agentDetail!.sale} Properties for Sale", style: TextStyle(
                                         letterSpacing: 0.5,
                                         color: Colors.black,
                                         fontSize: 13
@@ -578,11 +619,9 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                         padding: const EdgeInsets.only(top: 8, left: 5.0, right: 5),
                         child: SizedBox(
                           width: screenSize.width*0.9,
-                          height: screenSize.height*0.1,
+                          height: screenSize.height*0.15,
                           child: Text(
-                            "Having worked in the real estate sector over 11 years across Dubai"
-                                "hong kong and india,i come with a rich experience"
-                                " of different aspects of the property market....",
+                            agentDetail!.about,
                             style: TextStyle(
                                 fontSize: 13, color: Colors.grey, letterSpacing: 0.5
                             ),),
@@ -594,11 +633,15 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                           fontSize: 12, color: Colors.grey, letterSpacing: 0.5
                       ),),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 5, left: 5.0, right: 300),
-                      child: Text("40841", style: TextStyle(
-                          fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                      ),),
+                    Container(
+                      height: 25,
+                      width: screenSize.width*0.9,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 5, left: 5.0, right: 300),
+                        child: Text(agentDetail!.brn, style: TextStyle(
+                            fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                        ),),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 15, left: 5.0, right: 280),
@@ -606,11 +649,15 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
                           fontSize: 12, color: Colors.grey, letterSpacing: 0.5
                       ),),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 5, left: 8.0, right: 290),
-                      child: Text("5 Years", style: TextStyle(
-                          fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                      ),),
+                    Container(
+                      height: 25,
+                      width: screenSize.width*0.9,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 5, left: 8.0, right: 290),
+                        child: Text("${agentDetail!.experience} Years", style: TextStyle(
+                            fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                        ),),
+                      ),
                     ),
                     //ending about details
 
@@ -1058,10 +1105,6 @@ class _AboutAgentDemoState extends State<AboutAgentDemo> {
     );
   }
 }
-
-
-
-
 class Page1 extends StatelessWidget {
   const Page1({Key? key}) : super(key: key);
 
@@ -1082,7 +1125,6 @@ class Page1 extends StatelessWidget {
     );
   }
 }
-
 class Page2 extends StatelessWidget {
   const Page2({Key? key}) : super(key: key);
 
@@ -1103,7 +1145,6 @@ class Page2 extends StatelessWidget {
     );
   }
 }
-
 class Page3 extends StatelessWidget {
   const Page3({Key? key}) : super(key: key);
 
@@ -1124,7 +1165,6 @@ class Page3 extends StatelessWidget {
     );
   }
 }
-
 class Page4 extends StatelessWidget {
   const Page4({Key? key}) : super(key: key);
 

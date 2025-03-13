@@ -1,31 +1,53 @@
+import 'dart:convert';
+
+import 'package:drawerdemo/model/agency_detailModel.dart';
 import 'package:drawerdemo/screen/findagent.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-void main(){
-  runApp(const About_Agency());
 
-}
-
-class About_Agency extends StatelessWidget {
-  const About_Agency({super.key});
-
+class About_Agency extends StatefulWidget {
+  const About_Agency({super.key, required this.data});
+  final String data;
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: About_AgencyDemo(),
-    );
-  }
+  State<About_Agency> createState() => _About_AgencyState();
 }
-
-class About_AgencyDemo extends StatefulWidget {
-  @override
-  _About_AgencyDemoState createState() => _About_AgencyDemoState();
-}
-class _About_AgencyDemoState extends State<About_AgencyDemo> {
+class _About_AgencyState extends State<About_Agency> {
+  AgencyDetailmodel? agencyDetailmodel;
   int pageIndex = 0;
+  @override
+  void initState() {
+    fetchProducts(widget.data);
+  }
+
+
+  Future<void> fetchProducts(data) async {
+    // you can replace your api link with this link
+    final response = await http.get(Uri.parse('https://akarat.com/api/company/$data'));
+    Map<String,dynamic> jsonData=json.decode(response.body);
+    debugPrint("Status Code: ${response.statusCode}");
+    if (response.statusCode == 200) {
+      debugPrint("API Response: ${jsonData.toString()}");
+      debugPrint("API 200: ");
+      AgencyDetailmodel parsedModel = AgencyDetailmodel.fromJson(jsonData);
+      debugPrint("Parsed ProductModel: ${parsedModel.toString()}");
+      setState(() {
+        debugPrint("API setState: ");
+        String title = jsonData['title'] ?? 'No title';
+        debugPrint("API title: $title");
+        agencyDetailmodel = parsedModel;
+
+      });
+
+      debugPrint("productModels title_after: ${agencyDetailmodel!.name}");
+
+    } else {
+      // Handle error if needed
+    }
+  }
+
   final pages = [
     const Page1(),
     const Page2(),
@@ -76,15 +98,15 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                   ), //BoxShadow
                                 ],
                               ),
-                    child: GestureDetector(
-                      onTap: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => FindAgent()));
-                      },
-                              child: Image.asset("assets/images/ar-left.png",
-                                width: 15,
-                                height: 15,
-                                fit: BoxFit.contain,),
-                    ),
+                              child: GestureDetector(
+                                onTap: (){
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => FindAgent()));
+                                },
+                                        child: Image.asset("assets/images/ar-left.png",
+                                          width: 15,
+                                          height: 15,
+                                          fit: BoxFit.contain,),
+                              ),
                             ),
                             Container(
                               margin: const EdgeInsets.only(left: 280,top: 35,bottom: 15),
@@ -308,38 +330,12 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                           width: 400,
                                           height: 65,
                                           child: Text(
-                                            "Having worked in the real estate sector over 11 years across Dubai"
-                                                "hong kong and india,i come with a rich experience"
-                                                " of different aspects of the property market....",
+                                            agencyDetailmodel!.description.toString(),
                                             style: TextStyle(
                                                 fontSize: 13, color: Colors.black, letterSpacing: 0.5
                                             ),),
                                         )
                                     ),
-                                  /*  Padding(
-                                      padding: const EdgeInsets.only(top: 20, left: 0.0, right: 310),
-                                      child: Text("Expertise", style: TextStyle(
-                                          fontSize: 10, color: Colors.grey, letterSpacing: 0.5
-                                      ),),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 2, left: 0.0, right: 310),
-                                      child: Text("About", style: TextStyle(
-                                          fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                                      ),),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 20, left: 0.0, right: 290),
-                                      child: Text("Services Area", style: TextStyle(
-                                          fontSize: 10, color: Colors.grey, letterSpacing: 0.5
-                                      ),),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 2, left: 0.0, right: 310),
-                                      child: Text("About", style: TextStyle(
-                                          fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                                      ),),
-                                    ),*/
                                     Padding(
                                       padding: const EdgeInsets.only(top: 10, left: 15.0, right: 310),
                                       child: Text("Properties", style: TextStyle(
@@ -480,7 +476,7 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8, left: 15.0, right: 325),
-                                      child: Text(" 40841", style: TextStyle(
+                                      child: Text(agencyDetailmodel!.ded.toString(), style: TextStyle(
                                           fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
                                           height: 1.0
                                       ),),
@@ -493,7 +489,7 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8, left: 15.0, right: 325),
-                                      child: Text(" 23364", style: TextStyle(
+                                      child: Text(agencyDetailmodel!.rera.toString(), style: TextStyle(
                                           fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
                                           height: 1.0
                                       ),),
@@ -682,7 +678,7 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                 ],
                               ),
                             ),
-                            Container(
+                           /* Container(
                                 height: screenSize.height*0.8,
                                 //color: Colors.grey,
                                 margin: const EdgeInsets.only(left: 15,right: 15,top: 30),
@@ -780,7 +776,7 @@ class _About_AgencyDemoState extends State<About_AgencyDemo> {
                                       ),
                                     ]
                                 )
-                            ),
+                            ),*/
                             Container(
                                 height: screenSize.height*0.8,
                                // color: Colors.grey,

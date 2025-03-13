@@ -1,5 +1,6 @@
 import 'package:drawerdemo/screen/emai_login.dart';
 import 'package:drawerdemo/screen/login_page.dart';
+import 'package:drawerdemo/utils/Validator.dart';
 import 'package:flutter/material.dart';
 
 void main(){
@@ -23,6 +24,8 @@ class LoginDemo extends StatefulWidget {
   _LoginDemoState createState() => _LoginDemoState();
 }
 class _LoginDemoState extends State<LoginDemo> {
+  final emailController = TextEditingController();
+  final formkey =GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,39 +54,40 @@ class _LoginDemoState extends State<LoginDemo> {
               child: Image.asset('assets/images/logo-text.png')),
         ),
       ),
-
-        Container(
+        Form(
+          key: formkey,
+          child: Container(
           // color: Colors.white70,
-            height: 310,
-            width: double.infinity,
-            margin: const EdgeInsets.only(top: 30,left: 20,right: 20),
-            padding: const EdgeInsets.only(top: 15,bottom: 00),
-            // alignment: Alignment.bottomCenter,
-            //transform: Matrix4.rotationZ(0.1),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(10.0),
-               color: Color(0xFFF5F5F5),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey,
-                  offset: const Offset(
-                    0.0,
-                    0.0,
-                  ),
-                  blurRadius: 0.1,
-                  spreadRadius: 0.1,
-                ), //BoxShadow
-                BoxShadow(
-                  color: Colors.white,
-                  offset: const Offset(0.0, 0.0),
-                  blurRadius: 0.0,
-                  spreadRadius: 0.0,
-                ), //BoxShadow
-              ],
-               /* border: Border.all(
+          height: 310,
+          width: double.infinity,
+          margin: const EdgeInsets.only(top: 30,left: 20,right: 20),
+          padding: const EdgeInsets.only(top: 15,bottom: 00),
+          // alignment: Alignment.bottomCenter,
+          //transform: Matrix4.rotationZ(0.1),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadiusDirectional.circular(10.0),
+            color: Color(0xFFF5F5F5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey,
+                offset: const Offset(
+                  0.0,
+                  0.0,
+                ),
+                blurRadius: 0.1,
+                spreadRadius: 0.1,
+              ), //BoxShadow
+              BoxShadow(
+                color: Colors.white,
+                offset: const Offset(0.0, 0.0),
+                blurRadius: 0.0,
+                spreadRadius: 0.0,
+              ), //BoxShadow
+            ],
+            /* border: Border.all(
                     color: Color(0xFFEEEEEE))*/
-            ),
-            child: Column(
+          ),
+          child: Column(
               children: [
                 //welcome text
                 Text("Welcome to Akarat!",style: TextStyle(
@@ -124,8 +128,8 @@ class _LoginDemoState extends State<LoginDemo> {
                     child: Row(
                       children: [
                         Padding(padding: const EdgeInsets.only(left: 60,top: 0),
-                        child:  Image.asset("assets/images/gi.webp",height: 25,
-                          alignment: Alignment.center,) ,
+                          child:  Image.asset("assets/images/gi.webp",height: 25,
+                            alignment: Alignment.center,) ,
                         ),
                         Padding(padding: const EdgeInsets.only(left: 5,top: 0),
                           child:  Text("Continue with Google",style: TextStyle(fontWeight: FontWeight.bold),) ,
@@ -175,8 +179,20 @@ class _LoginDemoState extends State<LoginDemo> {
                         ), //BoxShadow
                       ],
                     ),
-                    child: TextField(
-                    //  obscureText: true,
+                    child: TextFormField(
+                      validator: (value) {
+                        if (value!.isEmpty || value == null) {
+                          return 'Please Enter EmailId';
+                        }
+                        else {
+                          value.toString().contains('email') == true &&
+                              RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value) == false;
+                        //  return 'This is not a valid email address.';
+                        }
+                        return null;
+                      },
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: 'Email',
@@ -186,46 +202,54 @@ class _LoginDemoState extends State<LoginDemo> {
                   ),
                 ),
                 //button
-          GestureDetector(
-              onTap: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> EmaiLogin()));
-              },
-               child:  Padding(
-                  padding: const EdgeInsets.only(
-                      left: 15.0, right: 15.0, top: 15, bottom: 0),
-                  child: Container(
-                    width: 300,
-                    height: 50,
-                    padding: const EdgeInsets.only(top: 15),
-                    decoration: BoxDecoration(
-                      color: Color(0xFFEEEEEE),
-                      borderRadius: BorderRadiusDirectional.circular(10.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
+                GestureDetector(
+                  onTap: (){
+                    /*  if(emailController.text.toString() == null){
+                  return 'Empty';
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> EmaiLogin(data: emailController.text)));
+                }*/if(formkey.currentState!.validate()){
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> EmaiLogin(data: emailController.text)));
+                    }
 
-                    child: Text("Continue",style: TextStyle(
-                      color: Colors.black,fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),textAlign: TextAlign.center,),
+                  },
+                  child:  Padding(
+                    padding: const EdgeInsets.only(
+                        left: 15.0, right: 15.0, top: 15, bottom: 0),
+                    child: Container(
+                      width: 300,
+                      height: 50,
+                      padding: const EdgeInsets.only(top: 15),
+                      decoration: BoxDecoration(
+                        color: Color(0xFFEEEEEE),
+                        borderRadius: BorderRadiusDirectional.circular(10.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            offset: const Offset(
+                              0.3,
+                              0.3,
+                            ),
+                            blurRadius: 0.3,
+                            spreadRadius: 0.3,
+                          ), //BoxShadow
+                          BoxShadow(
+                            color: Colors.white,
+                            offset: const Offset(0.0, 0.0),
+                            blurRadius: 0.0,
+                            spreadRadius: 0.0,
+                          ), //BoxShadow
+                        ],
+                      ),
+
+                      child: Text("Continue",style: TextStyle(
+                        color: Colors.black,fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),textAlign: TextAlign.center,),
+                    ),
                   ),
                 ),
-          ),
 
 
                 //text
@@ -251,7 +275,7 @@ class _LoginDemoState extends State<LoginDemo> {
                                   Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginPage()));
                                 },
                                 child: Text('Create new account', style: TextStyle(fontSize: 14, color: Colors.black,
-                                fontWeight: FontWeight.bold),)),
+                                    fontWeight: FontWeight.bold),)),
                           )
                         ],
                       ),
@@ -259,8 +283,9 @@ class _LoginDemoState extends State<LoginDemo> {
                   ),
 
                 ),
-  ]),
-        ),
+              ]),
+        ),),
+
 ],
 
     )

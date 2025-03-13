@@ -1,21 +1,22 @@
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:drawerdemo/model/api2model.dart';
+import 'package:drawerdemo/model/fdetailmodel.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import '../model/productmodel.dart';
 
 
-class Product_Detail extends StatefulWidget {
-  const Product_Detail({super.key, required this.data});
+
+class Featured_Detail extends StatefulWidget {
+  const Featured_Detail({super.key, required this.data});
   final String data;
   @override
-  State<Product_Detail> createState() => _Product_DetailState();
+  State<Featured_Detail> createState() => _Featured_DetailState();
 }
-class _Product_DetailState extends State<Product_Detail> {
+class _Featured_DetailState extends State<Featured_Detail> {
   int pageIndex = 0;
   final pages = [
     const Page1(),
@@ -23,7 +24,7 @@ class _Product_DetailState extends State<Product_Detail> {
     const Page3(),
     const Page4(),
   ];
-  ProductModel? productModels;
+  Featured_DetailModel? featured_detailModel;
   @override
   void initState() {
     SystemChrome.setEnabledSystemUIMode(
@@ -33,23 +34,23 @@ class _Product_DetailState extends State<Product_Detail> {
 
   Future<void> fetchProducts(data) async {
     // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/properties/$data'));
+    final response = await http.get(Uri.parse('https://akarat.com/api/featured-properties/$data'));
     Map<String,dynamic> jsonData=json.decode(response.body);
     debugPrint("Status Code: ${response.statusCode}");
     if (response.statusCode == 200) {
       debugPrint("API Response: ${jsonData.toString()}");
       debugPrint("API 200: ");
-      ProductModel parsedModel = ProductModel.fromJson(jsonData);
+      Featured_DetailModel parsedModel = Featured_DetailModel.fromJson(jsonData);
       debugPrint("Parsed ProductModel: ${parsedModel.toString()}");
       setState(() {
         debugPrint("API setState: ");
         String title = jsonData['title'] ?? 'No title';
         debugPrint("API title: $title");
-        productModels = parsedModel;
+        featured_detailModel = parsedModel;
 
       });
 
-      debugPrint("productModels title_after: ${productModels!.title}");
+      debugPrint("productModels title_after: ${featured_detailModel!.data!.title.toString()}");
 
     } else {
       // Handle error if needed
@@ -59,7 +60,7 @@ class _Product_DetailState extends State<Product_Detail> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
-    if (productModels == null) {
+    if (featured_detailModel == null) {
       return Scaffold(
         body: Center(child: CircularProgressIndicator()), // Show loading state
       );
@@ -217,11 +218,46 @@ class _Product_DetailState extends State<Product_Detail> {
                           shrinkWrap: true,
                           scrollDirection: Axis.vertical,
                           children: <Widget>[
-                            CachedNetworkImage( // this is to fetch the image
-                              imageUrl: (productModels!.media[0]),
-                              fit: BoxFit.cover,
-                              height: 100,
+                             CachedNetworkImage( // this is to fetch the image
+                              imageUrl: (featured_detailModel!.data!.media![0].originalUrl.toString()),
+                              //fit: BoxFit.cover,
+                             // height: 100,
                             ),
+                            CachedNetworkImage( // this is to fetch the image
+                              imageUrl: (featured_detailModel!.data!.media![1].originalUrl.toString()),
+                              //fit: BoxFit.cover,
+                              // height: 100,
+                            ),
+                            CachedNetworkImage( // this is to fetch the image
+                              imageUrl: (featured_detailModel!.data!.media![2].originalUrl.toString()),
+                              //fit: BoxFit.cover,
+                              // height: 100,
+                            ),
+                            CachedNetworkImage( // this is to fetch the image
+                              imageUrl: (featured_detailModel!.data!.media![3].originalUrl.toString()),
+                              //fit: BoxFit.cover,
+                              // height: 100,
+                            ),
+                            CachedNetworkImage( // this is to fetch the image
+                              imageUrl: (featured_detailModel!.data!.media![4].originalUrl.toString()),
+                              //fit: BoxFit.cover,
+                              // height: 100,
+                            ),
+                            CachedNetworkImage( // this is to fetch the image
+                              imageUrl: (featured_detailModel!.data!.media![5].originalUrl.toString()),
+                              //fit: BoxFit.cover,
+                              // height: 100,
+                            ),
+                            CachedNetworkImage( // this is to fetch the image
+                              imageUrl: (featured_detailModel!.data!.media![6].originalUrl.toString()),
+                              //fit: BoxFit.cover,
+                              // height: 100,
+                            ),
+                           /* CachedNetworkImage( // this is to fetch the image
+                              imageUrl: (featured_detailModel!.data!.media![7].originalUrl.toString()),
+                              //fit: BoxFit.cover,
+                              // height: 100,
+                            ),*/
                           ]
                       )
                   ) ,
@@ -233,8 +269,8 @@ class _Product_DetailState extends State<Product_Detail> {
                       children: [
                         //  Text(productModels!.title),
                         Text("Townhouse",style: TextStyle(
-                        // Text("Townhouse",style: TextStyle(
-                          letterSpacing: 0.5
+                          // Text("Townhouse",style: TextStyle(
+                            letterSpacing: 0.5
                         ),),
                         Padding(
                           padding: const EdgeInsets.only(
@@ -283,7 +319,7 @@ class _Product_DetailState extends State<Product_Detail> {
                   Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 10,bottom: 0),
                       child:Row(
                         children: [
-                          Text(productModels!.price.toString(),style: TextStyle(
+                          Text(featured_detailModel!.data!.price.toString(),style: TextStyle(
                               fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
                           ),),
                           Text("  AED",style: TextStyle(
@@ -314,15 +350,15 @@ class _Product_DetailState extends State<Product_Detail> {
                       child:Row(
                         children: [
                           Image.asset("assets/images/bed.png",height: 20,),
-                          Text(" "+ productModels!.bedrooms.toString()+" beds   ",style: TextStyle(
+                          Text(" "+ featured_detailModel!.data!.bedrooms.toString()+" beds   ",style: TextStyle(
                               fontSize: 14,letterSpacing: 0.5
                           ),),
                           Image.asset("assets/images/bath.png",height: 20),
-                          Text(" "+ productModels!.bathrooms.toString()+" baths   ",style: TextStyle(
+                          Text(" "+ featured_detailModel!.data!.bathrooms.toString()+" baths   ",style: TextStyle(
                             fontSize: 14,letterSpacing: 0.5,
                           ),),
                           Image.asset("assets/images/messure.png",height: 20),
-                          Text(" "+ productModels!.squareFeet.toString()+" sqft",style: TextStyle(
+                          Text(" "+ featured_detailModel!.data!.squareFeet.toString()+" sqft",style: TextStyle(
                             fontSize: 14,letterSpacing: 0.5,
                           ),),
                         ],
@@ -333,7 +369,7 @@ class _Product_DetailState extends State<Product_Detail> {
                     // color: Colors.grey,
                     padding: const EdgeInsets.only(left: 20,right: 0,top: 1,bottom: 0),
                     child:
-                    Text(productModels!.title.toString(),style: TextStyle(
+                    Text(featured_detailModel!.data!.title.toString(),style: TextStyle(
                         fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
                     ),),
 
@@ -343,9 +379,9 @@ class _Product_DetailState extends State<Product_Detail> {
                     child: Container(
                       width: double.infinity,
                       height: screenSize.height*0.3,
-                       //color: Colors.grey,
+                      //color: Colors.grey,
                       margin: const EdgeInsets.only(left: 5,top: 5),
-                      child: Text(productModels!.description.toString(),
+                      child: Text(featured_detailModel!.data!.description.toString(),
                         textAlign: TextAlign.left,style: TextStyle(
                             letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
                         ),),
@@ -382,18 +418,18 @@ class _Product_DetailState extends State<Product_Detail> {
                           fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
                       ),),
                   ),
-                  Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 20,bottom: 0),
+                /*  Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 20,bottom: 0),
                       child:Row(
                         children: [
                           Text("Posted On:",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                           ),),
-                          Text(productModels!.postedOn.toString(),style: TextStyle(
+                          Text(featured_detailModel!.data!.postedOn.toString(),style: TextStyle(
                             fontSize: 14,letterSpacing: 0.5,
                           ),),
                         ],
                       )
-                  ),
+                  ),*/
                   Container(
                     height: 30,
                     width: 200,
@@ -569,7 +605,7 @@ class _Product_DetailState extends State<Product_Detail> {
                   Container(
                     height: screenSize.height*0.17,
                     margin: const EdgeInsets.only(left: 20,right: 20,top: 20),
-                     color: Colors.grey,
+                    color: Colors.grey,
                     child: Row(
                       spacing: 1,
                       children: [
@@ -729,17 +765,17 @@ class _Product_DetailState extends State<Product_Detail> {
                             ],
                           ),
                           child: CachedNetworkImage( // this is to fetch the image
-                            imageUrl: (productModels!.media),
+                            imageUrl: (featured_detailModel!.data!.media![0].originalUrl.toString()),
                             fit: BoxFit.cover,
                             height: 100,
                           ),
                         ),
-                        Padding(padding: const EdgeInsets.only(top: 10),
+                       /* Padding(padding: const EdgeInsets.only(top: 10),
                           child: Text(productModels!.agent.name.toString(),style: TextStyle(
                               fontWeight: FontWeight.bold,letterSpacing: 0.5
                           ),),
-                        ),
-                        Row(
+                        ),*/
+                      /*  Row(
                           children: [
                             Padding(padding: const EdgeInsets.only(top: 5,left: 80),
                               child: Text(productModels!.agent.rating.toString()),
@@ -759,8 +795,8 @@ class _Product_DetailState extends State<Product_Detail> {
                               child: Text("ratings"),
                             ),
                           ],
-                        ),
-                        Row(
+                        ),*/
+                      /*  Row(
                           children: [
                             Padding(padding: const EdgeInsets.only(top: 5,left: 50),
                               child: Text("Response time"),
@@ -769,8 +805,8 @@ class _Product_DetailState extends State<Product_Detail> {
                               child: Text("within 5 minutes"),
                             ),
                           ],
-                        ),
-                        Row(
+                        ),*/
+                      /*  Row(
                           children: [
                             Padding(padding: const EdgeInsets.only(top: 5,left: 50),
                               child: Text("Closed Deals"),
@@ -779,8 +815,8 @@ class _Product_DetailState extends State<Product_Detail> {
                               child: Text("17"),
                             ),
                           ],
-                        ),
-                        Container(
+                        ),*/
+                       /* Container(
                           height: 35,
                           width: 220,
                           margin: const EdgeInsets.only(left: 15,right: 10,top: 15),
@@ -810,11 +846,11 @@ class _Product_DetailState extends State<Product_Detail> {
                             style: TextStyle(
                                 letterSpacing: 0.5,fontSize: 13,fontWeight: FontWeight.bold
                             ),),
-                        ),
+                        ),*/
                       ],
                     ),
                   ),
-                  Container(
+                 /* Container(
                     height: screenSize.height*0.3,
                     width: double.infinity,
                     margin: const EdgeInsets.only(left: 18,right: 14,top: 20),
@@ -922,8 +958,8 @@ class _Product_DetailState extends State<Product_Detail> {
                           child: Text("OLD Permit Number",style: TextStyle(fontWeight: FontWeight.bold),),)
                       ],
                     ),
-                  ),
-                  Container(
+                  ),*/
+                 /* Container(
                     height: 30,
                     width: double.infinity,
                     // color: Colors.grey,
@@ -931,55 +967,6 @@ class _Product_DetailState extends State<Product_Detail> {
                     child:Text("Recommended Properties",style: TextStyle(
                         fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                     ),),
-                  ),
-                  /*Padding(padding: const EdgeInsets.only(top: 10,left: 20,right: 0),
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 0,top: 0,right: 0),
-                      height: 200,
-                      child: ListView(
-                        padding: const EdgeInsets.only(right: 10),
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                      Card(
-                        color: Colors.grey,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 5.0,top: 1,right: 5),
-                        child: Column(
-                          children: [
-                            AspectRatio(
-                                aspectRatio: 1.5,
-                            child: Image.asset("assets/images/image 1.png",
-                              fit: BoxFit.cover,
-                              height: 100,),
-                            ),
-                            Padding(padding: const EdgeInsets.only(top: 5),
-                              child: ListTile(
-                                title: Text("AED 134677",style: TextStyle(
-                                    fontWeight: FontWeight.bold,fontSize: 18,height: 1.4
-                                ),),
-                              ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Padding(padding: const EdgeInsets.only(left: 1,right: 5,top: 0),
-                                  child:  Image.asset("assets/images/map.png",height: 14,),
-                                ),
-                                Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                  child: Text("sdfghjkgsdfghjxcvbnmdfghj",style: TextStyle(
-                                      fontWeight: FontWeight.bold,fontSize: 13,height: 1.4,
-                                      overflow: TextOverflow.visible
-                                  ),),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        ),
-                      )
-                        ],
-                      ),
-                    ),
                   ),*/
 
                   SizedBox(height: 100,)

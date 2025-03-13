@@ -1,10 +1,10 @@
 class RegisterModel {
   String? message;
-  String? user;
+  String? name;
   String? email;
   String? token;
 
-  RegisterModel({this.message, this.user, this.email, this.token});
+  RegisterModel({this.message, this.name, this.email, this.token});
 
  /* factory RegisterModel.fromJson(Map<String, dynamic> json) {
     return RegisterModel(
@@ -16,7 +16,7 @@ class RegisterModel {
   }*/
   RegisterModel.fromJson(Map<String, dynamic> json) {
     message = json['message'];
-    user = json['user'];
+    name = json['name'];
     email = json['email'];
     token = json['token'];
   }
@@ -24,7 +24,7 @@ class RegisterModel {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['message'] = this.message;
-    data['user'] = this.user;
+    data['name'] = this.name;
     data['email'] = this.email;
     data['token'] = this.token;
     return data;

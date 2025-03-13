@@ -1,8 +1,15 @@
+import 'dart:convert';
+
+import 'package:drawerdemo/model/agencymodel.dart';
+import 'package:drawerdemo/model/agentsmodel.dart';
 import 'package:drawerdemo/screen/about_agency.dart';
 import 'package:drawerdemo/screen/about_agent.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
+import 'package:drawerdemo/utils/agencyCardScreen.dart';
+import 'package:drawerdemo/utils/agentcardscreen.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main(){
   runApp(const FindAgent());
@@ -25,7 +32,8 @@ class FindAgentDemo extends StatefulWidget {
   _FindAgentDemoState createState() => _FindAgentDemoState();
 }
 class _FindAgentDemoState extends State<FindAgentDemo> {
-
+  List<AgentsModel> agentsmodel = [];
+  List<AgencyModel> agentcymodel = [];
   int pageIndex = 0;
 
   final pages = [
@@ -34,28 +42,60 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     const Page3(),
     const Page4(),
   ];
+  @override
+  void initState() {
+    super.initState();
+    agentfetch();
+    agencyfetch();
+  }
+
+  Future<void> agentfetch() async {
+
+    // you can replace your api link with this link
+
+    final response = await http.get(Uri.parse('https://akarat.com/api/agents'));
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = json.decode(response.body);
+      setState(() {
+        agentsmodel = jsonData.map((data) => AgentsModel.fromJson(data)).toList();
+      });
+    } else {
+    }
+  }
+  Future<void> agencyfetch() async {
+
+    // you can replace your api link with this link
+
+    final response = await http.get(Uri.parse('https://akarat.com/api/companies'));
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = json.decode(response.body);
+      setState(() {
+        agentcymodel = jsonData.map((data) => AgencyModel.fromJson(data)).toList();
+      });
+    } else {
+    }
+  }
+
 
   final TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
-
         bottomNavigationBar: buildMyNavBar(context),
         backgroundColor: Colors.white,
-        body: DefaultTabController(
-        length: 2,
+        body:DefaultTabController(
+          length: 2,
         child: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
                   Row(
                     children: [
-            GestureDetector(
-                onTap: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-        },
-          child:
-                      Container(
+                       GestureDetector(
+                        onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                        },
+                          child: Container(
                         alignment: Alignment.topCenter,
                         margin: const EdgeInsets.only(top: 40,left:5),
                         height: 30,
@@ -107,7 +147,8 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                         decoration: BoxDecoration(
 
                         ),
-                       child: Text("Find My Agent",style: TextStyle(
+                       // child: Text(agentsmodel.em,style: TextStyle(
+                      child: Text("Find My Agent",style: TextStyle(
                          color: Colors.black,letterSpacing: 0.5,fontSize: 18,fontWeight: FontWeight.bold
                        ),),
                       ),
@@ -148,73 +189,6 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                       tabAlignment: TabAlignment.center,
                       // onTap: (int index) => setState(() => selectedColor),
                       tabs: [
-                        /* Padding(
-                        padding: const EdgeInsets.only(
-                            left: 0.0, right: 145.0, top: 10, bottom: 0),
-                        child: Container(
-                          width: 200,
-                          height: 40,
-                          padding: const EdgeInsets.only(top: 2),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadiusDirectional.circular(8.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey,
-                                offset: const Offset(
-                                  0.5,
-                                  0.5,
-                                ),
-                                blurRadius: 0.5,
-                                spreadRadius: 0.5,
-                              ), //BoxShadow
-                              BoxShadow(
-                                color: Colors.white,
-                                offset: const Offset(0.5, 0.5),
-                                blurRadius: 0.5,
-                                spreadRadius: 0.5,
-                              ), //BoxShadow
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                margin: const EdgeInsets.only(left: 5),
-                                width: 70,
-                                height: 30,
-                                padding: const EdgeInsets.only(top: 5,left: 10),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(8.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.5,
-                                        0.5,
-                                      ),
-                                      blurRadius: 0.5,
-                                      spreadRadius: 0.5,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.blue,
-                                      offset: const Offset(0.5, 0.5),
-                                      blurRadius: 0.5,
-                                      spreadRadius: 0.5,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Text("Agents",style: TextStyle(
-                                    letterSpacing: 0.5,color: Colors.white
-                                ),),
-                              ),
-                              Padding(padding: const EdgeInsets.only(left: 20),
-                                  child:   Text("Agencies",style: TextStyle(
-                                    letterSpacing: 0.5,
-                                  ),textAlign: TextAlign.center,)
-                              )
-                            ],
-                          ),
-                        ),
-                      ),*/
 
                         Container(
                           margin: const EdgeInsets.only(left: 10),
@@ -279,378 +253,316 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                   ),
                   ),
                   SizedBox(
-                    height: screenSize.height*0.8,
+                    height: screenSize.height,
                     child: TabBarView(
                       children: [
-                        Container(
-                          height: screenSize.height*0.8,
-                         child: Column(
-                           children: [
-                             Padding(
-                               padding: const EdgeInsets.only(top: 15,left: 10,right: 20),
-                               child: Container(
-                                 margin: const EdgeInsets.symmetric(vertical: 1),
-                                 height: 35,
-                                 child: ListView(
-                                   scrollDirection: Axis.horizontal,
-                                   children: <Widget>[
-                                     //items
-                                     //buy
-                                     Padding(
-                                       padding: const EdgeInsets.only(top: 10,left: 10,right: 15),
-                                       child:  Container(
-                                         width: 70,
-                                         height: 10,
-                                         padding: const EdgeInsets.only(top: 2,),
-                                         decoration: BoxDecoration(
-                                             borderRadius: BorderRadiusDirectional.circular(6.0),
-                                             boxShadow: [
-                                               BoxShadow(
-                                                 color: Colors.grey,
-                                                 offset: const Offset(
-                                                   0.5,
-                                                   0.5,
-                                                 ),
-                                                 blurRadius: 1.0,
-                                                 spreadRadius: 0.5,
-                                               ), //BoxShadow
-                                               BoxShadow(
-                                                 color: Colors.white,
-                                                 offset: const Offset(0.0, 0.0),
-                                                 blurRadius: 0.0,
-                                                 spreadRadius: 0.0,
-                                               ), //BoxShadow
-                                             ]),
-                                         child:
-                                         Text("Buy",textAlign: TextAlign.center,style:
-                                         TextStyle(letterSpacing: 0.5)),
+                         /*SizedBox(
+                              height: screenSize.height,*/
+                             /* child: Column(
+                                children: [*/
+                                  Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 15,left: 10,right: 20),
+                                        child: Container(
+                                          margin: const EdgeInsets.symmetric(vertical: 1),
+                                          height: 35,
+                                          child: ListView(
+                                            scrollDirection: Axis.horizontal,
+                                            children: <Widget>[
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 10,left: 10,right: 15),
+                                                child:  Container(
+                                                  width: 70,
+                                                  height: 10,
+                                                  padding: const EdgeInsets.only(top: 2,),
+                                                  decoration: BoxDecoration(
+                                                      borderRadius: BorderRadiusDirectional.circular(6.0),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: Colors.grey,
+                                                          offset: const Offset(
+                                                            0.5,
+                                                            0.5,
+                                                          ),
+                                                          blurRadius: 1.0,
+                                                          spreadRadius: 0.5,
+                                                        ), //BoxShadow
+                                                        BoxShadow(
+                                                          color: Colors.white,
+                                                          offset: const Offset(0.0, 0.0),
+                                                          blurRadius: 0.0,
+                                                          spreadRadius: 0.0,
+                                                        ), //BoxShadow
+                                                      ]),
+                                                  child:
+                                                  Text("Buy",textAlign: TextAlign.center,style:
+                                                  TextStyle(letterSpacing: 0.5)),
 
-                                       ),
-                                     ),
-                                     //buy
-                                     Padding(
-                                       padding: const EdgeInsets.only(top: 10),
-                                       child:  Container(
-                                         width: 90,
-                                         height: 10,
-                                         padding: const EdgeInsets.only(top: 2,),
-                                         decoration: BoxDecoration(
-                                             borderRadius: BorderRadiusDirectional.circular(6.0),
-                                             boxShadow: [
-                                               BoxShadow(
-                                                 color: Colors.grey,
-                                                 offset: const Offset(
-                                                   0.5,
-                                                   0.5,
-                                                 ),
-                                                 blurRadius: 1.0,
-                                                 spreadRadius: 0.5,
-                                               ), //BoxShadow
-                                               BoxShadow(
-                                                 color: Colors.white,
-                                                 offset: const Offset(0.0, 0.0),
-                                                 blurRadius: 0.0,
-                                                 spreadRadius: 0.0,
-                                               ), //BoxShadow
-                                             ]),
-                                         child:  Text(" Rent",textAlign: TextAlign.center,
-                                             style:
-                                             TextStyle(letterSpacing: 0.5)),
-                                       ),
-                                     ),
-                                   ],
-                                 ),
-                               ),
-                             ),
-                             //Searchbar
-                             Padding(
-                               padding: const EdgeInsets.only(top: 20,left: 20,right: 20),
-                               child: Container(
-                                 width: screenSize.width*1.0,
-                                 height: screenSize.height*0.07,
-                                 padding: const EdgeInsets.only(top: 12),
-                                 decoration: BoxDecoration(
-                                   borderRadius: BorderRadiusDirectional.circular(15.0),
-                                   boxShadow: [
-                                     BoxShadow(
-                                       color: Colors.red,
-                                       offset: const Offset(
-                                         0.5,
-                                         0.5,
-                                       ),
-                                       blurRadius: 1.0,
-                                       spreadRadius: 0.5,
-                                     ), //BoxShadow
-                                     BoxShadow(
-                                       color: Colors.white,
-                                       offset: const Offset(0.0, 0.0),
-                                       blurRadius: 0.0,
-                                       spreadRadius: 0.0,
-                                     ), //BoxShadow
-                                   ],),
-                                 // Use a Material design search bar
-                                 child: TextField(
-                                   controller: _searchController,
-                                   decoration: InputDecoration(
-                                     border: InputBorder.none,
-                                     hintText: 'Search for a locality,area or city',
-                                     hintStyle: TextStyle(color: Colors.grey,fontSize: 15,
-                                         letterSpacing: 0.5),
+                                                ),
+                                              ),
+                                              //buy
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 10),
+                                                child:  Container(
+                                                  width: 90,
+                                                  height: 10,
+                                                  padding: const EdgeInsets.only(top: 2,),
+                                                  decoration: BoxDecoration(
+                                                      borderRadius: BorderRadiusDirectional.circular(6.0),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: Colors.grey,
+                                                          offset: const Offset(
+                                                            0.5,
+                                                            0.5,
+                                                          ),
+                                                          blurRadius: 1.0,
+                                                          spreadRadius: 0.5,
+                                                        ), //BoxShadow
+                                                        BoxShadow(
+                                                          color: Colors.white,
+                                                          offset: const Offset(0.0, 0.0),
+                                                          blurRadius: 0.0,
+                                                          spreadRadius: 0.0,
+                                                        ), //BoxShadow
+                                                      ]),
+                                                  child:  Text(" Rent",textAlign: TextAlign.center,
+                                                      style:
+                                                      TextStyle(letterSpacing: 0.5)),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
 
-                                     // Add a clear button to the search bar
-                                     suffixIcon: IconButton(
-                                       icon: Icon(Icons.mic),
-                                       onPressed: () => _searchController.clear(),
-                                     ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 20,left: 20,right: 20),
+                                    child: Container(
+                                      width: screenSize.width*1.0,
+                                      height: screenSize.height*0.07,
+                                      padding: const EdgeInsets.only(top: 12),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadiusDirectional.circular(15.0),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.red,
+                                            offset: const Offset(
+                                              0.5,
+                                              0.5,
+                                            ),
+                                            blurRadius: 1.0,
+                                            spreadRadius: 0.5,
+                                          ), //BoxShadow
+                                          BoxShadow(
+                                            color: Colors.white,
+                                            offset: const Offset(0.0, 0.0),
+                                            blurRadius: 0.0,
+                                            spreadRadius: 0.0,
+                                          ), //BoxShadow
+                                        ],),
+                                      // Use a Material design search bar
+                                      child: TextField(
+                                        controller: _searchController,
+                                        decoration: InputDecoration(
+                                          border: InputBorder.none,
+                                          hintText: 'Search for a locality,area or city',
+                                          hintStyle: TextStyle(color: Colors.grey,fontSize: 15,
+                                              letterSpacing: 0.5),
 
-                                     // Add a search icon or button to the search bar
-                                     prefixIcon: IconButton(
-                                       icon: Icon(Icons.search,color: Colors.red,),
-                                       onPressed: () {
-                                         // Perform the search here
-                                       },
-                                     ),
-                                   ),
-                                 ),
-                               ),
-                             ),
-                             Padding(
-                               padding: const EdgeInsets.only(
-                                   left: 20, right: 250.0, top: 20, bottom: 0),
-                               child: Container(
-                                 width: 130,
-                                 height: 35,
-                                 padding: const EdgeInsets.only(top: 2,left: 5,right: 0),
-                                 decoration: BoxDecoration(
-                                   borderRadius: BorderRadiusDirectional.circular(8.0),
-                                   boxShadow: [
-                                     BoxShadow(
-                                       color: Colors.grey,
-                                       offset: const Offset(
-                                         1.5,
-                                         1.5,
-                                       ),
-                                       blurRadius: 0.5,
-                                       spreadRadius: 0.5,
-                                     ), //BoxShadow
-                                     BoxShadow(
-                                       color: Colors.blue,
-                                       offset: const Offset(0.5, 0.5),
-                                       blurRadius: 0.5,
-                                       spreadRadius: 0.5,
-                                     ), //BoxShadow
-                                   ],
-                                 ),
-                                 child: Row(
-                                   children: [
-                                     Padding(padding: const EdgeInsets.only(left: 5),
-                                         child:   Icon(Icons.check_circle,color: Colors.white,)
-                                     ),
-                                     Padding(padding: const EdgeInsets.only(left: 5),
-                                         child:   Text("Prime Agent",style: TextStyle(
-                                             letterSpacing: 0.5,color: Colors.white
-                                         ),textAlign: TextAlign.center,)
-                                     )
-                                   ],
-                                 ),
-                               ),
-                             ),
+                                          // Add a clear button to the search bar
+                                          suffixIcon: IconButton(
+                                            icon: Icon(Icons.mic),
+                                            onPressed: () => _searchController.clear(),
+                                          ),
 
-                             Padding(padding: const EdgeInsets.only(left: 20,top: 20),
-                               child: Text("Explore agents with a proven track record of high response rates "
-                                   "and Authentic listings.",style: TextStyle(
-                                 letterSpacing: 0.5,
-                               ),),
-                             ),
-                             Padding(
-                               padding: const EdgeInsets.only(top: 10,left: 10,right: 10),
-                               child: Container(
-                                 margin: const EdgeInsets.symmetric(vertical: 1),
-                                 height: 35,
-                                 child: ListView(
-                                   scrollDirection: Axis.horizontal,
-                                   children: <Widget>[
-                                     //items
-                                     //buy
-                                     Padding(
-                                       padding: const EdgeInsets.only(top: 10,left: 10),
-                                       child:  Container(
-                                         width: 70,
-                                         height: 10,
-                                         padding: const EdgeInsets.only(top: 2,),
-                                         decoration: BoxDecoration(
-                                           /*shape: BoxShape.rectangle,
-                                  border: Border.all(
-                                    width: 0,
-                                  ),*/
-                                             borderRadius: BorderRadiusDirectional.circular(6.0),
-                                             boxShadow: [
-                                               BoxShadow(
-                                                 color: Colors.grey,
-                                                 offset: const Offset(
-                                                   0.5,
-                                                   0.5,
-                                                 ),
-                                                 blurRadius: 1.0,
-                                                 spreadRadius: 0.5,
-                                               ), //BoxShadow
-                                               BoxShadow(
-                                                 color: Colors.white,
-                                                 offset: const Offset(0.0, 0.0),
-                                                 blurRadius: 0.0,
-                                                 spreadRadius: 0.0,
-                                               ), //BoxShadow
-                                             ]),
-                                         child:
-                                         Text("Dubai",textAlign: TextAlign.center,style:
-                                         TextStyle(letterSpacing: 0.5)),
+                                          // Add a search icon or button to the search bar
+                                          prefixIcon: IconButton(
+                                            icon: Icon(Icons.search,color: Colors.red,),
+                                            onPressed: () {
+                                              // Perform the search here
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 20, right: 250.0, top: 20, bottom: 0),
+                                    child: Container(
+                                      width: 130,
+                                      height: 35,
+                                      padding: const EdgeInsets.only(top: 2,left: 5,right: 0),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadiusDirectional.circular(8.0),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey,
+                                            offset: const Offset(
+                                              1.5,
+                                              1.5,
+                                            ),
+                                            blurRadius: 0.5,
+                                            spreadRadius: 0.5,
+                                          ), //BoxShadow
+                                          BoxShadow(
+                                            color: Colors.blue,
+                                            offset: const Offset(0.5, 0.5),
+                                            blurRadius: 0.5,
+                                            spreadRadius: 0.5,
+                                          ), //BoxShadow
+                                        ],
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Padding(padding: const EdgeInsets.only(left: 5),
+                                              child:   Icon(Icons.check_circle,color: Colors.white,)
+                                          ),
+                                          Padding(padding: const EdgeInsets.only(left: 5),
+                                              child:   Text("Prime Agent",style: TextStyle(
+                                                  letterSpacing: 0.5,color: Colors.white
+                                              ),textAlign: TextAlign.center,)
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(padding: const EdgeInsets.only(left: 20,top: 20),
+                                    child: Text("Explore agents with a proven track record of high response rates "
+                                        "and Authentic listings.",style: TextStyle(
+                                      letterSpacing: 0.5,
+                                    ),),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 10,left: 10,right: 10),
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(vertical: 1),
+                                      height: 35,
+                                      child: ListView(
+                                        scrollDirection: Axis.horizontal,
+                                        children: <Widget>[
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 10,left: 10),
+                                            child:  Container(
+                                              width: 70,
+                                              height: 10,
+                                              padding: const EdgeInsets.only(top: 2,),
+                                              decoration: BoxDecoration(
+                                                  borderRadius: BorderRadiusDirectional.circular(6.0),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey,
+                                                      offset: const Offset(
+                                                        0.5,
+                                                        0.5,
+                                                      ),
+                                                      blurRadius: 1.0,
+                                                      spreadRadius: 0.5,
+                                                    ), //BoxShadow
+                                                    BoxShadow(
+                                                      color: Colors.white,
+                                                      offset: const Offset(0.0, 0.0),
+                                                      blurRadius: 0.0,
+                                                      spreadRadius: 0.0,
+                                                    ), //BoxShadow
+                                                  ]),
+                                              child:
+                                              Text("Dubai",textAlign: TextAlign.center,style:
+                                              TextStyle(letterSpacing: 0.5)),
 
-                                       ),
-                                     ),
-                                     //all residential
-                                     Container(
-                                       width: 10,
-                                     ),
-                                     //buy
-                                     Padding(
-                                       padding: const EdgeInsets.only(top: 10),
-                                       child:  Container(
-                                         width: 90,
-                                         height: 10,
-                                         padding: const EdgeInsets.only(top: 2,),
-                                         decoration: BoxDecoration(
-                                           /*shape: BoxShape.rectangle,
-                                  border: Border.all(
-                                    width: 0,
-                                  ),*/
-                                             borderRadius: BorderRadiusDirectional.circular(6.0),
-                                             boxShadow: [
-                                               BoxShadow(
-                                                 color: Colors.grey,
-                                                 offset: const Offset(
-                                                   0.5,
-                                                   0.5,
-                                                 ),
-                                                 blurRadius: 1.0,
-                                                 spreadRadius: 0.5,
-                                               ), //BoxShadow
-                                               BoxShadow(
-                                                 color: Colors.white,
-                                                 offset: const Offset(0.0, 0.0),
-                                                 blurRadius: 0.0,
-                                                 spreadRadius: 0.0,
-                                               ), //BoxShadow
-                                             ]),
-                                         child:  Text(" Abu Dhabi",textAlign: TextAlign.center,
-                                             style:
-                                             TextStyle(letterSpacing: 0.5)),
-                                       ),
-                                     ),
-                                     Container(
-                                       width: 10,
-                                     ),
-                                     //buy
-                                     Padding(
-                                       padding: const EdgeInsets.only(top: 10),
-                                       child:  Container(
-                                         width: 90,
-                                         height: 10,
-                                         padding: const EdgeInsets.only(top: 2,),
-                                         decoration: BoxDecoration(
-                                           /*shape: BoxShape.rectangle,
-                                  border: Border.all(
-                                    width: 0,
-                                  ),*/
-                                             borderRadius: BorderRadiusDirectional.circular(6.0),
-                                             boxShadow: [
-                                               BoxShadow(
-                                                 color: Colors.grey,
-                                                 offset: const Offset(
-                                                   0.5,
-                                                   0.5,
-                                                 ),
-                                                 blurRadius: 1.0,
-                                                 spreadRadius: 0.5,
-                                               ), //BoxShadow
-                                               BoxShadow(
-                                                 color: Colors.white,
-                                                 offset: const Offset(0.0, 0.0),
-                                                 blurRadius: 0.0,
-                                                 spreadRadius: 0.0,
-                                               ), //BoxShadow
-                                             ]),
-                                         child:  Text(" Sharjah",textAlign: TextAlign.center,
-                                             style:
-                                             TextStyle(letterSpacing: 0.5)),
-                                       ),
-                                     ),
-                                   ],
-                                 ),
-                               ),
-                             ),
-                             GestureDetector(
-                               onTap: (){
-                                 Navigator.push(context, MaterialPageRoute(builder: (context)=> AboutAgent()));
-                               },
-                               child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
-                                 child: Container(
-                                   height: 120,
-                                   decoration: BoxDecoration(
-                                     borderRadius: BorderRadiusDirectional.circular(10.0),
-                                     boxShadow: [
-                                       BoxShadow(
-                                         color: Colors.grey,
-                                         offset: const Offset(
-                                           0.5,
-                                           0.5,
-                                         ),
-                                         blurRadius: 1.0,
-                                         spreadRadius: 0.5,
-                                       ), //BoxShadow
-                                       BoxShadow(
-                                         color: Colors.white,
-                                         offset: const Offset(0.0, 0.0),
-                                         blurRadius: 0.0,
-                                         spreadRadius: 0.0,
-                                       ), //BoxShadow
-                                     ],
-                                   ),
-                                 ),
-                               ),
-                             ),
-                             GestureDetector(
-                               onTap: (){
-                                 Navigator.push(context, MaterialPageRoute(builder: (context)=> AboutAgent()));
-                               },
-                               child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
-                                 child: Container(
-                                   height: 120,
-                                   decoration: BoxDecoration(
-                                     borderRadius: BorderRadiusDirectional.circular(10.0),
-                                     boxShadow: [
-                                       BoxShadow(
-                                         color: Colors.grey,
-                                         offset: const Offset(
-                                           0.5,
-                                           0.5,
-                                         ),
-                                         blurRadius: 1.0,
-                                         spreadRadius: 0.5,
-                                       ), //BoxShadow
-                                       BoxShadow(
-                                         color: Colors.white,
-                                         offset: const Offset(0.0, 0.0),
-                                         blurRadius: 0.0,
-                                         spreadRadius: 0.0,
-                                       ), //BoxShadow
-                                     ],
-                                   ),
-                                 ),
-                               ),
-                             ),
-                           ],
-                         )
-                        ),
+                                            ),
+                                          ),
+                                          //all residential
+                                          Container(
+                                            width: 10,
+                                          ),
+                                          //buy
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 10),
+                                            child:  Container(
+                                              width: 90,
+                                              height: 10,
+                                              padding: const EdgeInsets.only(top: 2,),
+                                              decoration: BoxDecoration(
+                                                  borderRadius: BorderRadiusDirectional.circular(6.0),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey,
+                                                      offset: const Offset(
+                                                        0.5,
+                                                        0.5,
+                                                      ),
+                                                      blurRadius: 1.0,
+                                                      spreadRadius: 0.5,
+                                                    ), //BoxShadow
+                                                    BoxShadow(
+                                                      color: Colors.white,
+                                                      offset: const Offset(0.0, 0.0),
+                                                      blurRadius: 0.0,
+                                                      spreadRadius: 0.0,
+                                                    ), //BoxShadow
+                                                  ]),
+                                              child:  Text(" Abu Dhabi",textAlign: TextAlign.center,
+                                                  style:
+                                                  TextStyle(letterSpacing: 0.5)),
+                                            ),
+                                          ),
+                                          Container(
+                                            width: 10,
+                                          ),
+                                          //buy
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 10),
+                                            child:  Container(
+                                              width: 90,
+                                              height: 10,
+                                              padding: const EdgeInsets.only(top: 2,),
+                                              decoration: BoxDecoration(
+                                                  borderRadius: BorderRadiusDirectional.circular(6.0),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey,
+                                                      offset: const Offset(
+                                                        0.5,
+                                                        0.5,
+                                                      ),
+                                                      blurRadius: 1.0,
+                                                      spreadRadius: 0.5,
+                                                    ), //BoxShadow
+                                                    BoxShadow(
+                                                      color: Colors.white,
+                                                      offset: const Offset(0.0, 0.0),
+                                                      blurRadius: 0.0,
+                                                      spreadRadius: 0.0,
+                                                    ), //BoxShadow
+                                                  ]),
+                                              child:  Text(" Sharjah",textAlign: TextAlign.center,
+                                                  style:
+                                                  TextStyle(letterSpacing: 0.5)),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  ListView.builder(
+                                      scrollDirection: Axis.vertical,
+                                      physics: const ScrollPhysics(),
+                                      itemCount: agentsmodel.length,
+                                      shrinkWrap: true,
+                                      itemBuilder: (context, index) {
+                                        return Agentcardscreen(agentsModel: agentsmodel[index]);
+                                      },
+                                    ),
+                                    ],
+                                  ),
+                                /*],
+                              )*/
+                         // ),
+
+                        //AGENCIES
                         Container(
                           height: double.infinity,
                           padding: const EdgeInsets.only(top: 0,left: 0),
@@ -661,9 +573,9 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                   Padding(
                                     padding: const EdgeInsets.only(top: 20,left: 20,right: 10),
                                     child: Container(
-                                      width: 250,
-                                      height: 50,
-                                      padding: const EdgeInsets.only(top: 5),
+                                      width: screenSize.width*0.6,
+                                      height: screenSize.height*0.05,
+                                      padding: const EdgeInsets.only(top: 1),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadiusDirectional.circular(10.0),
                                         boxShadow: [
@@ -724,125 +636,15 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                     " and authentic listings.",style: TextStyle(
                                   fontSize: 15,letterSpacing: 0.5,),textAlign: TextAlign.left,),
                               ),
-                              GestureDetector(
-                                onTap: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Agency()));
+                              ListView.builder(
+                                scrollDirection: Axis.vertical,
+                                physics: const ScrollPhysics(),
+                                itemCount: agentcymodel.length,
+                                shrinkWrap: true,
+                                itemBuilder: (context, index) {
+                                  return Agencycardscreen(agencyModel: agentcymodel[index]);
                                 },
-                                child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
-                                  child: Container(
-                                    height: screenSize.height*0.13,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadiusDirectional.circular(10.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          offset: const Offset(
-                                            0.5,
-                                            0.5,
-                                          ),
-                                          blurRadius: 1.0,
-                                          spreadRadius: 0.5,
-                                        ), //BoxShadow
-                                        BoxShadow(
-                                          color: Colors.white,
-                                          offset: const Offset(0.0, 0.0),
-                                          blurRadius: 0.0,
-                                          spreadRadius: 0.0,
-                                        ), //BoxShadow
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Agency()));
-                                },
-                                child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
-                                  child: Container(
-                                    height: screenSize.height*0.13,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadiusDirectional.circular(10.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          offset: const Offset(
-                                            0.5,
-                                            0.5,
-                                          ),
-                                          blurRadius: 1.0,
-                                          spreadRadius: 0.5,
-                                        ), //BoxShadow
-                                        BoxShadow(
-                                          color: Colors.white,
-                                          offset: const Offset(0.0, 0.0),
-                                          blurRadius: 0.0,
-                                          spreadRadius: 0.0,
-                                        ), //BoxShadow
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Agency()));
-                                },
-                                child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
-                                  child: Container(
-                                    height: screenSize.height*0.13,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadiusDirectional.circular(10.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          offset: const Offset(
-                                            0.5,
-                                            0.5,
-                                          ),
-                                          blurRadius: 1.0,
-                                          spreadRadius: 0.5,
-                                        ), //BoxShadow
-                                        BoxShadow(
-                                          color: Colors.white,
-                                          offset: const Offset(0.0, 0.0),
-                                          blurRadius: 0.0,
-                                          spreadRadius: 0.0,
-                                        ), //BoxShadow
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Agency()));
-                                },
-                                child:  Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 20),
-                                  child: Container(
-                                    height: screenSize.height*0.13,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadiusDirectional.circular(10.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          offset: const Offset(
-                                            0.5,
-                                            0.5,
-                                          ),
-                                          blurRadius: 1.0,
-                                          spreadRadius: 0.5,
-                                        ), //BoxShadow
-                                        BoxShadow(
-                                          color: Colors.white,
-                                          offset: const Offset(0.0, 0.0),
-                                          blurRadius: 0.0,
-                                          spreadRadius: 0.0,
-                                        ), //BoxShadow
-                                      ],
-                                    ),
-                                  ),
-                                ),
+
                               ),
                             ],
                           )
@@ -850,6 +652,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                       ],
                     ),
                   ),
+
                 ]
             )
         ),

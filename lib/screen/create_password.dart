@@ -47,16 +47,15 @@ class _CreatePasswordState extends State<CreatePassword> {
       if (response.statusCode == 200) {
        Map<String, dynamic> jsonData = json.decode(response.body);
           registermodel = RegisterModel.fromJson(jsonData);
-          result=registermodel!.user.toString();
-          token=registermodel!.token.toString();
+          result=registermodel!.name.toString();
+          token=registermodel!.email.toString();
           print("Registered Succesfully");
        /*Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context){
          return My_Account(
            arguments: registermodel[index],
          );
        }));*/
-          Navigator.push(context, MaterialPageRoute(builder: (context) =>
-              My_Account(arguments: registermodel!)));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account(result: result,token: token)));
       } else {
         throw Exception("Registration failed");
 
@@ -131,7 +130,7 @@ class _CreatePasswordState extends State<CreatePassword> {
                             children: [
                       GestureDetector(
                       onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> EmaiLogin()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> EmaiLogin(data: widget.data,)));
                     },
                       child:
                       Text("Back",style: TextStyle(
@@ -182,7 +181,17 @@ class _CreatePasswordState extends State<CreatePassword> {
                                   ), //BoxShadow
                                 ],
                               ),
-                              child: TextField(
+                              child: TextFormField(
+                                validator: (value) {
+                                  if (value!.isEmpty || value == null) {
+                                    return 'Please Enter Name';
+                                  }
+                                  else {
+                                    Validator.validateEmail(value);
+                                  }
+                                  return
+                                    null;
+                                },
                                // obscureText: true,
                                 controller: myController,
                                 decoration: InputDecoration(
@@ -226,8 +235,8 @@ class _CreatePasswordState extends State<CreatePassword> {
                                 obscureText: passwordVisible,
                                 controller: passwordController,
                                validator: (value){
-                                 if(value!.isEmpty) {
-                                   return 'Empty';
+                                 if(value!.isEmpty || value == null) {
+                                   return 'Please Enter Password';
                                  }
                                  else{
                                    Validator.validatePassword(value ?? "");
@@ -294,8 +303,8 @@ class _CreatePasswordState extends State<CreatePassword> {
                                 obscureText: passwordVisible,
                                 controller: confirmpasswordController,
                                 validator: (value){
-                                  if(value!.isEmpty) {
-                                    return 'Empty';
+                                  if(value!.isEmpty || value == null) {
+                                    return 'Please Enter Password';
                                   }
                                   if(value != passwordController.text) {
                                     return 'Not Match';

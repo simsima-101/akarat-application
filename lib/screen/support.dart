@@ -1,5 +1,7 @@
 import 'dart:async';
-
+import 'dart:convert';
+import 'package:drawerdemo/model/contactmodel.dart';
+import 'package:http/http.dart' as http;
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +15,11 @@ class Support extends StatefulWidget {
 }
 
 class _SupportState extends State<Support> {
-
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final phoneController = TextEditingController();
+  final subjectController = TextEditingController();
+  final messageController = TextEditingController();
   int pageIndex = 0;
   final pages = [
     const Page1(),
@@ -21,6 +27,40 @@ class _SupportState extends State<Support> {
     const Page3(),
     const Page4(),
   ];
+  ContactModel? contactModel;
+  String result = '';
+  Future<void> sendMessage() async {
+    try {
+      final response = await http.post(Uri.parse('https://akarat.com/api/contact'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          "name": nameController.text,
+          "email": emailController.text,
+          "phone":phoneController.text,
+          "subject":subjectController.text,
+          "message": messageController.text
+          // Add any other data you want to send in the body
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        Map<String, dynamic> jsonData = json.decode(response.body);
+        contactModel = ContactModel.fromJson(jsonData);
+       result= contactModel!.message.toString();
+      // Text(result);
+        Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+      } else {
+        throw Exception("Registration failed");
+
+      }
+    } catch (e) {
+      setState(() {
+        print('Error: $e');
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -160,9 +200,21 @@ class _SupportState extends State<Support> {
                                 ), //BoxShadow
                               ],
                             ),
-                            child: TextField(
+                            child: TextFormField(
+                              validator: (value) {
+                                if (value!.isEmpty || value == null) {
+                                  return 'Please Enter Your Name';
+                                }
+                                else {
+
+                                }
+                                return null;
+                              },
+                              controller: nameController,
+                              keyboardType: TextInputType.name,
                               decoration: InputDecoration(
                                 border: InputBorder.none,
+                               // hintText: 'Email',
                               ),
                               textAlign: TextAlign.left,
                             ),
@@ -198,9 +250,23 @@ class _SupportState extends State<Support> {
                                 ), //BoxShadow
                               ],
                             ),
-                            child: TextField(
+                            child: TextFormField(
+                              validator: (value) {
+                                if (value!.isEmpty || value == null) {
+                                  return 'Please Enter EmailId';
+                                }
+                                else {
+                                  value.toString().contains('email') == true &&
+                                      RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value) == false;
+                                  //  return 'This is not a valid email address.';
+                                }
+                                return null;
+                              },
+                              controller: emailController,
+                              keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
                                 border: InputBorder.none,
+                               // hintText: 'Email',
                               ),
                               textAlign: TextAlign.left,
                             ),
@@ -236,9 +302,21 @@ class _SupportState extends State<Support> {
                                 ), //BoxShadow
                               ],
                             ),
-                            child: TextField(
+                            child: TextFormField(
+                              validator: (value) {
+                                if (value!.isEmpty || value == null) {
+                                  return 'Please Enter Phone Number';
+                                }
+                                else {
+
+                                }
+                                return null;
+                              },
+                              controller: phoneController,
+                              keyboardType: TextInputType.number,
                               decoration: InputDecoration(
                                 border: InputBorder.none,
+                               // hintText: 'Email',
                               ),
                               textAlign: TextAlign.left,
                             ),
@@ -274,9 +352,21 @@ class _SupportState extends State<Support> {
                                 ), //BoxShadow
                               ],
                             ),
-                            child: TextField(
+                            child: TextFormField(
+                              validator: (value) {
+                                if (value!.isEmpty || value == null) {
+                                  return 'Please Enter Subject';
+                                }
+                                else {
+
+                                }
+                                return null;
+                              },
+                              controller: subjectController,
+                              keyboardType: TextInputType.text,
                               decoration: InputDecoration(
                                 border: InputBorder.none,
+                                // hintText: 'Email',
                               ),
                               textAlign: TextAlign.left,
                             ),
@@ -312,10 +402,29 @@ class _SupportState extends State<Support> {
                                 ), //BoxShadow
                               ],
                             ),
-                            child: TextField(
+                           /* child: TextField(
                               maxLines: 3,
                               decoration: InputDecoration(
                                 border: InputBorder.none,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),*/
+                            child: TextFormField(
+                              maxLines: 3,
+                              validator: (value) {
+                                if (value!.isEmpty || value == null) {
+                                  return 'Please Enter Message Here';
+                                }
+                                else {
+
+                                }
+                                return null;
+                              },
+                              controller: messageController,
+                              keyboardType: TextInputType.multiline,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                // hintText: 'Email',
                               ),
                               textAlign: TextAlign.left,
                             ),
@@ -327,6 +436,7 @@ class _SupportState extends State<Support> {
                           child: Padding(padding: const EdgeInsets.only(top: 40,left: 10,right: 20),
                             child: ElevatedButton(
                                 onPressed: (){
+                                  sendMessage();
                              // Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
                             },style:
                             ElevatedButton.styleFrom(

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:drawerdemo/model/api2model.dart';
+import 'package:drawerdemo/model/blogmodel.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:drawerdemo/utils/blogcardscreen.dart';
@@ -36,24 +37,28 @@ class _BlogDemoState extends State<BlogDemo> {
 
 
 
-  List<Product> products = [];
+  BlogModel? blogModel;
 
   @override
   void initState() {
     super.initState();
-    fetchProducts();
+    getFilesApi();
   }
 
-  Future<void> fetchProducts() async {
-    // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/properties'));
+  Future<void> getFilesApi() async {
+    final response = await http.get(Uri.parse(
+        "https://akarat.com/api/featured-properties"));
+    var data = jsonDecode(response.body);
     if (response.statusCode == 200) {
-      List<dynamic> jsonData = json.decode(response.body);
+      BlogModel feature= BlogModel.fromJson(data);
+
       setState(() {
-        products = jsonData.map((data) => Product.fromJson(data)).toList();
+        blogModel = feature ;
+
       });
+
     } else {
-      // Handle error if needed
+      //return FeaturedModel.fromJson(data);
     }
   }
 
@@ -193,12 +198,12 @@ class _BlogDemoState extends State<BlogDemo> {
            scrollDirection: Axis.vertical,
            physics: const ScrollPhysics(),
            // this give th length of item
-           itemCount: products.length,
+          // itemCount: products.length,
            shrinkWrap: true,
            itemBuilder: (context, index) {
              // here we card the card widget
              // which is in utils folder
-             return Blogcardscreen(product: products[index]);
+           //  return Blogcardscreen(product: products[index]);
            },
          ),
          Container(

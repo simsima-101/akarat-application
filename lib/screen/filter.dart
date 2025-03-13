@@ -1,10 +1,15 @@
+import 'dart:convert';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:drawerdemo/model/amenities.dart';
 import 'package:drawerdemo/screen/home.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
+import 'package:drawerdemo/utils/Amenitiescardscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_core/core.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
-
+import 'package:http/http.dart' as http;
 import 'filter_list.dart';
 
 void main(){
@@ -31,28 +36,63 @@ class FilterDemo extends StatefulWidget {
 }
 class _FilterDemoState extends State<FilterDemo> {
   late bool isSelected = true;
-  final double _min = 5.0;
-  final double _max = 60.0;
-  final SfRangeValues _values = SfRangeValues(12.5, 30.5);
+   double start = 12.0;
+   double startarea = 2000.0;
+   double endarea = 4500.0;
+   double end = 30.0;
+   SfRangeValues _values = SfRangeValues(12.0 ,30.0);
+   SfRangeValues _valuesArea = SfRangeValues(2000.0 ,4500.0);
   late RangeController _rangeController;
-
+  late RangeController _rangeControllerarea;
+  final agenciesController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _rangeController = RangeController(
-        start: _values.start,
-        end: _values.end);
+        start: start.toString(),
+        end: end.toString());
+    _rangeControllerarea = RangeController(
+        start: startarea.toString(),
+        end: endarea.toString());
+    fetchAmenities();
   }
-
+  List<Amenities> amenities = [];
   @override
   void dispose() {
     _rangeController.dispose();
+    _rangeControllerarea.dispose();
     super.dispose();
   }
-
-
-
+final List _product = [
+'Properties',
+'New Projects',
+'Buy',
+'Rent',
+];
+  final List _category = [
+    'All Residential',
+    'Apartment',
+    'Villa',
+    'Townhouse',
+  ];
+  final List _bedroom = [
+    'studio', '1', '2', '3','4','5','6','7','8','9+'
+  ];
+  final List _bathroom = [
+    '1', '2', '3','4','5','6+'
+  ];
+  final List _ftype = [
+    'All', 'Furnished', 'Unfurnished'
+  ];
+  final List _amnities = [
+    'Maids Room', 'Study', 'Central A/C Heating',
+    'Balcony', 'Private Garden'
+  ];
+  final List _rent = [
+    'Yearly', 'Bi-Yearly', 'Quarterly'
+        'Monthly'
+  ];
   final List<Data> chartData = <Data>[
     Data(x: 5.0, y: 15.45),
     Data(x: 6.0, y: 10.44),
@@ -111,6 +151,54 @@ class _FilterDemoState extends State<FilterDemo> {
     Data(x: 59.0, y: 60.7),
     Data(x: 60.0, y: 53.7),
   ];
+  final List<Dataarea> chartDataarea = <Dataarea>[
+    Dataarea(x: 500.0, y: 1500.45),
+    Dataarea(x: 600.0, y: 1000.44),
+    Dataarea(x: 700.0, y: 3800.12),
+    Dataarea(x: 800.0, y: 1800.9),
+    Dataarea(x: 900.0, y: 2200.8),
+    Dataarea(x: 1000.0, y:1900.7),
+    Dataarea(x: 1100.0, y: 3600.11),
+    Dataarea(x: 1200.0, y: 1200.5),
+    Dataarea(x: 1300.0, y: 1300.7),
+    Dataarea(x: 1400.0, y: 2000.8),
+    Dataarea(x: 1500.0, y: 3300.7),
+    Dataarea(x: 1600.0, y: 3400.7),
+    Dataarea(x: 1700.0, y: 1700.7),
+    Dataarea(x: 1800.0, y: 2200.7),
+    Dataarea(x: 1900.0, y: 1900.7),
+    Dataarea(x: 2000.0, y: 2200.7),
+    Dataarea(x: 2100.0, y: 2000.7),
+    Dataarea(x: 2200.0, y: 4400.7),
+    Dataarea(x: 2300.0, y: 4500.7),
+    Dataarea(x: 2400.0, y: 4000.7),
+    Dataarea(x: 2500.0, y: 1500.7),
+    Dataarea(x: 2600.0, y: 2600.7),
+    Dataarea(x: 2700.0, y: 1400.7),
+    Dataarea(x: 2800.0, y: 2000.7),
+    Dataarea(x: 2900.0, y: 4100.7),
+    Dataarea(x: 3000.0, y: 1300.7),
+    Dataarea(x: 3100.0, y: 1300.7),
+    Dataarea(x: 3200.0, y: 3400.0),
+    Dataarea(x: 3300.0, y: 2500.5),
+    Dataarea(x: 3400.0, y: 4100.5),
+    Dataarea(x: 3500.0, y: 1300.7),
+    Dataarea(x: 3600.0, y: 1300.7),
+    Dataarea(x: 3700.0, y: 1300.7),
+    Dataarea(x: 3800.0, y: 4500.7),
+    Dataarea(x: 3900.0, y: 1300.7),
+    Dataarea(x: 4000.0, y: 1300.7),
+    Dataarea(x: 4100.0, y: 4200.7),
+    Dataarea(x: 4200.0, y: 1300.7),
+    Dataarea(x: 4300.0, y: 4400.7),
+    Dataarea(x: 4400.0, y: 1300.7),
+    Dataarea(x: 4500.0, y: 2000.7),
+    Dataarea(x: 4600.0, y: 4400.7),
+    Dataarea(x: 4700.0, y: 1550.7),
+    Dataarea(x: 4800.0, y: 1600.7),
+    Dataarea(x: 4900.0, y: 3300.7),
+    Dataarea(x: 5000.0, y: 2400.7),
+  ];
 
   int pageIndex = 0;
   final pages = [
@@ -119,6 +207,41 @@ class _FilterDemoState extends State<FilterDemo> {
     const Page3(),
     const Page4(),
   ];
+String myData = ' ';
+String category = ' ';
+String bedroom = ' ';
+String bathroom = ' ';
+String ftype = ' ';
+String amnities = ' ';
+String rent = ' ';
+String min_price = '';
+String max_price = ' ';
+
+
+  Future<void> showResult() async {
+    // you can replace your api link with this link
+    final response = await http.get(Uri.parse('http://akarat.com/api/filters?search=$_searchController&amenities=$amnities&'
+        'category=$category&furnished_status=$ftype&bedrooms=$bedroom&'
+        'min_price=$min_price&max_price=$max_price&payment_period=$rent&square_feet=1200&bathrooms=$bathroom&purpose=$myData'));
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = json.decode(response.body);
+      setState(() {
+       // products = jsonData.map((data) => Product.fromJson(data)).toList();
+      });
+    } else {
+    }
+  }
+
+  Future<void> fetchAmenities() async {
+    final response = await http.get(Uri.parse("https://akarat.com/api/amenities"));
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = json.decode(response.body);
+      setState(() {
+        amenities = jsonData.map((data) => Amenities.fromJson(data)).toList();
+      });
+    } else {
+    }
+  }
 
   final TextEditingController _searchController = TextEditingController();
   @override
@@ -182,143 +305,193 @@ class _FilterDemoState extends State<FilterDemo> {
           ),
           //properties
           Padding(
-            padding: const EdgeInsets.only(top: 10,left: 15,right: 10),
+            padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
               child: Container(
+                //color: Colors.grey,
                 height: 40,
-                child: ListView(
+               child:  ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const ScrollPhysics(),
+                  itemCount: _product.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                   // Colors.grey;
+                   return Container(
+                     alignment: Alignment.topLeft,
+                      // color: selectedIndex == index ? Colors.amber : Colors.transparent,
+                    margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                  //  width: screenSize.width * 0.25,
+                   // height: 20,
+                       padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
+                       decoration: BoxDecoration(
+                    borderRadius: BorderRadiusDirectional.circular(6.0),
+                    boxShadow: [
+                    BoxShadow(
+                    color: Colors.grey,
+                    offset: const Offset(
+                    0.3,
+                    0.3,
+                    ),
+                    blurRadius: 0.3,
+                    spreadRadius: 0.3,
+                    ), //BoxShadow
+                    BoxShadow(
+                    //color:myData == index ? Colors.amber : Colors.transparent,
+                    color: Colors.white,
+                    offset: const Offset(0.0, 0.0),
+                    blurRadius: 0.0,
+                    spreadRadius: 0.0,
+                    ), //BoxShadow
+                    ],
+                    ),
+                    child: GestureDetector(
+                     child:   Center(
+                       child: Text(_product[index],style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                     ),
+                      onTap: (){
+                        setState(() {
+                          if(isSelected=true) {
+                            myData = _product[index];
+                          }
+                        });
+                      },
+                    )
+                    );
+                  },
+                ),
+               /* child: ListView(
                   scrollDirection: Axis.horizontal,
                   shrinkWrap: true,
                   children: [
-                    Container(
-                      margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                      width: screenSize.width * 0.2,
-                      height: 30,
-                      padding: const EdgeInsets.only(top: 5,left: 0,right: 1),
-                      decoration: BoxDecoration(
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5,left: 0,right: 1),
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text(" Properties  ",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
                       ),
-                      child: Text(" Properties  ",
-                        style: TextStyle(color: Colors.black,
-                            letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,),
-                    ),
-
-                    Container(
-                      margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                      width: screenSize.width * 0.3,
-                      height: 30,
-                      padding: const EdgeInsets.only(top: 5),
-                      decoration: BoxDecoration(
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.3,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("New projects",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
                       ),
-                      child: Text("New projects",
-                        style: TextStyle(color: Colors.black,
-                            letterSpacing: 0.5,
-                            fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                      width: screenSize.width * 0.2,
-                      height: 30,
-                      padding: const EdgeInsets.only(top: 5),
-                      decoration: BoxDecoration(
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("Buy",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
                       ),
-                      child: Text("Buy",
-                        style: TextStyle(color: Colors.black,
-                            letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,),
-                    ),
-
-                    Container(
-                      margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                      width: screenSize.width * 0.2,
-                      height: 30,
-                      padding: const EdgeInsets.only(top: 5),
-                      decoration: BoxDecoration(
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("Rent",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
                       ),
-                      child: Text("Rent",
-                        style: TextStyle(color: Colors.black,
-                            letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,),
-                    ),
                   ],
-                  ),
+                  ),*/
               )
             ),
           //Searchbar
           Padding(
-            padding: const EdgeInsets.only(top: 15,left: 10,right: 10),
+            padding: const EdgeInsets.only(top: 15,left: 15,right: 10),
             child: Container(
               width: 400,
               height: 60,
@@ -556,133 +729,187 @@ class _FilterDemoState extends State<FilterDemo> {
         ),
           //category
           Padding(
-              padding: const EdgeInsets.only(top: 10,left: 15,right: 5),
+              padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
               child: Container(
+                //color: Colors.grey,
                 height: 40,
-                child: ListView(
-                  shrinkWrap: true,
+                child:  ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                      width: screenSize.width * 0.3,
-                      height: 30,
-                      padding: const EdgeInsets.only(top: 5),
-                      decoration: BoxDecoration(
+                  physics: const ScrollPhysics(),
+                  itemCount: _category.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    // Colors.grey;
+                    return Container(
+                      // color: selectedIndex == index ? Colors.amber : Colors.transparent,
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                       // width: screenSize.width * 0.25,
+                        // height: 20,
+                        padding: const EdgeInsets.only(top: 0,left: 5,right: 5),
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
-                      ),
-                      child: Text("All Residential",
-                        style: TextStyle(color: Colors.black,
-                            letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,),
-                    ),
-
-                    Container(
-                      margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                      width: screenSize.width * 0.25,
-                      height: 30,
-                      padding: const EdgeInsets.only(top: 5),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
-                      ),
-                      child: Text("Apartment",
-                        style: TextStyle(color: Colors.black,letterSpacing: 0.5
-                        ,fontWeight: FontWeight.bold),textAlign: TextAlign.center,),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                      width: screenSize.width * 0.2,
-                      height: 30,
-                      padding: const EdgeInsets.only(top: 5),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
-                      ),
-                      child: Text("Villa",
-                        style: TextStyle(color: Colors.black,
-                            letterSpacing: 0.5,fontWeight: FontWeight.bold),textAlign: TextAlign.center,),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                      width: screenSize.width * 0.25,
-                      height: 30,
-                      padding: const EdgeInsets.only(top: 5),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
-                      ),
-                      child: Text("Townhouse",
-                        style: TextStyle(color: Colors.black,letterSpacing: 0.5,
-                        fontWeight: FontWeight.bold),textAlign: TextAlign.center,),
-                    ),
-                  ],
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              //color:myData == index ? Colors.amber : Colors.transparent,
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: GestureDetector(
+                          child:   Center(
+                            child: Text(_category[index],style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                          ),
+                          onTap: (){
+                            setState(() {
+                              if(isSelected=true) {
+                                category = _category[index];
+                              }
+                            });
+                          },
+                        )
+                    );
+                  },
                 ),
+                /* child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  shrinkWrap: true,
+                  children: [
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5,left: 0,right: 1),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text(" Properties  ",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.3,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("New projects",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("Buy",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("Rent",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                  ],
+                  ),*/
               )
           ),
           Row(
@@ -727,17 +954,8 @@ class _FilterDemoState extends State<FilterDemo> {
                     ), //BoxShadow
                   ],
                 ),
-                child: TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    /* border: OutlineInputBorder(
-                       ),*/
-                    border: InputBorder.none,
-                    hintText: '0',hintStyle: TextStyle(
-                      color: Colors.grey,fontSize: 15)
-                  ),
-                  textAlign: TextAlign.left,
-                ),
+                child: Text(min_price)
+
               ),
               Container(
                 width: 30,
@@ -775,17 +993,7 @@ class _FilterDemoState extends State<FilterDemo> {
                     ), //BoxShadow
                   ],
                 ),
-                child: TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    /* border: OutlineInputBorder(
-                       ),*/
-                    border: InputBorder.none,
-                    hintText: '0',hintStyle: TextStyle(
-                      color: Colors.grey,fontSize: 15)
-                  ),
-                  textAlign: TextAlign.left,
-                ),
+                child: Text(max_price)
               ),
               ]
         )
@@ -793,12 +1001,20 @@ class _FilterDemoState extends State<FilterDemo> {
           //rangeslider
           Padding(padding: const EdgeInsets.only(top: 25.0,left: 1,bottom: 15),
             child: SfRangeSelector(
-              min: _min,
-              max: _max,
+              min: 5.0,
+              max: 60.0,
               interval: 1,
               enableTooltip: true,
               shouldAlwaysShowTooltip: true,
               initialValues: _values,
+             onChanged: (value) {
+                setState(() {
+                  _values=SfRangeValues(value.start, value.end);
+                  min_price=value.start.toStringAsFixed(2);
+                  max_price=value.end.toStringAsFixed(2);
+                });
+
+             },
               child: SizedBox(
                 height: 60,
                 width: 400,
@@ -806,7 +1022,7 @@ class _FilterDemoState extends State<FilterDemo> {
                   backgroundColor: Colors.transparent,
                   plotAreaBorderColor: Colors.transparent,
                   margin: const EdgeInsets.all(0),
-                  primaryXAxis: NumericAxis(minimum: _min, maximum: _max,
+                  primaryXAxis: NumericAxis(minimum: 5.0, maximum: 60.0,
                     isVisible: false,),
                   primaryYAxis: NumericAxis(isVisible: false),
                   plotAreaBorderWidth: 0,
@@ -843,7 +1059,8 @@ class _FilterDemoState extends State<FilterDemo> {
           Row(
             children: [
               Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
-                child:  Text("Bedrooms",
+                // child:  Text(_values.start.toStringAsFixed(2),
+               child:  Text("Bedrooms",
                   style: TextStyle(
                       color: Colors.black,fontSize: 18.0,
                       letterSpacing: 0.5,fontWeight: FontWeight.w500),
@@ -853,284 +1070,194 @@ class _FilterDemoState extends State<FilterDemo> {
           ),
           //studio
           Padding(
-              padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
-              child: Row(
-                // mainAxisAlignment: MainAxisAlignment.center,
-                // crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 60,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
+              padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
+              child: Container(
+                //color: Colors.grey,
+               // width: 60,
+                height: 40,
+                child:  ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const ScrollPhysics(),
+                  itemCount: _bedroom.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    // Colors.grey;
+                    return Container(
+                      // color: selectedIndex == index ? Colors.amber : Colors.transparent,
+                        margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
+                       // width: screenSize.width * 0.25,
+                        // height: 20,
+                        padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              //color:myData == index ? Colors.amber : Colors.transparent,
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: GestureDetector(
+                          child:   Center(
+                            child: Text(_bedroom[index],style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
                           ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Studio",
-                      style: TextStyle(color: Colors.black,letterSpacing: 0.5),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 27,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("1",
-                      style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 27,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("2",
-                      style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 27,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("3",
-                      style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 27,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("4",
-                      style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 27,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("5",
-                      style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 27,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("6",
-                      style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 27,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("7",
-                      style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 27,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("8+",
-                      style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-                  ),
-                ],
+                          onTap: (){
+                            setState(() {
+                              if(isSelected=true) {
+                                bedroom = _bedroom[index];
+                              }
+                            });
+                          },
+                        )
+                    );
+                  },
+                ),
+                /* child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  shrinkWrap: true,
+                  children: [
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5,left: 0,right: 1),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text(" Properties  ",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.3,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("New projects",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("Buy",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("Rent",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                  ],
+                  ),*/
               )
           ),
           Row(
   children: [
     Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
+      // child:  Text(bedroom,
       child:  Text("Bathrooms",
         style: TextStyle(
             color: Colors.black,fontSize: 18.0,fontWeight: FontWeight.w500,
@@ -1140,191 +1267,191 @@ class _FilterDemoState extends State<FilterDemo> {
   ],
 ),
           Padding(
-        padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
-        child: Row(
-            // mainAxisAlignment: MainAxisAlignment.start,
-            // crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 27,
-                height: 30,
-                padding: const EdgeInsets.only(top: 5),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(6.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.3,
-                        0.3,
-                      ),
-                      blurRadius: 0.3,
-                      spreadRadius: 0.3,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
+              padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
+              child: Container(
+                //color: Colors.grey,
+                // width: 60,
+                alignment: Alignment.topLeft,
+                height: 40,
+                child:  ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const ScrollPhysics(),
+                  itemCount: _bathroom.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    // Colors.grey;
+                    return Container(
+                      // color: selectedIndex == index ? Colors.amber : Colors.transparent,
+                        margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
+                        // width: screenSize.width * 0.25,
+                        // height: 20,
+                        padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              //color:myData == index ? Colors.amber : Colors.transparent,
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: GestureDetector(
+                          child:   Center(
+                            child: Text(_bathroom[index],style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                          ),
+                          onTap: (){
+                            setState(() {
+                              if(isSelected=true) {
+                                bathroom = _bathroom[index];
+                              }
+                            });
+                          },
+                        )
+                    );
+                  },
                 ),
-                child: Text("1",
-                  style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-              ),
-              Container(
-                width: 10,
-              ),
-              Container(
-                width: 27,
-                height: 30,
-                padding: const EdgeInsets.only(top: 5),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(6.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.3,
-                        0.3,
+                /* child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  shrinkWrap: true,
+                  children: [
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5,left: 0,right: 1),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text(" Properties  ",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
                       ),
-                      blurRadius: 0.3,
-                      spreadRadius: 0.3,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
-                ),
-                child: Text("2",
-                  style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-              ),
-              Container(
-                width: 10,
-              ),
-              Container(
-                width: 27,
-                height: 30,
-                padding: const EdgeInsets.only(top: 5),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(6.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.3,
-                        0.3,
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.3,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("New projects",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
                       ),
-                      blurRadius: 0.3,
-                      spreadRadius: 0.3,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
-                ),
-                child: Text("3",
-                  style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-              ),
-              Container(
-                width: 10,
-              ),
-              Container(
-                width: 27,
-                height: 30,
-                padding: const EdgeInsets.only(top: 5),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(6.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.3,
-                        0.3,
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("Buy",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
                       ),
-                      blurRadius: 0.3,
-                      spreadRadius: 0.3,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
-                ),
-                child: Text("4",
-                  style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-              ),
-              Container(
-                width: 10,
-              ),
-              Container(
-                width: 27,
-                height: 30,
-                padding: const EdgeInsets.only(top: 5),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(6.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.3,
-                        0.3,
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("Rent",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
                       ),
-                      blurRadius: 0.3,
-                      spreadRadius: 0.3,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
                   ],
-                ),
-                child: Text("5",
-                  style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-              ),
-              Container(
-                width: 10,
-              ),
-              Container(
-                width: 27,
-                height: 30,
-                padding: const EdgeInsets.only(top: 5),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(6.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.3,
-                        0.3,
-                      ),
-                      blurRadius: 0.3,
-                      spreadRadius: 0.3,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
-                ),
-                child: Text("6+",
-                  style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
-              ),
-              ]
-        ),
-      ),
+                  ),*/
+              )
+          ),
           //area
           Row(
             children: [
@@ -1368,17 +1495,7 @@ class _FilterDemoState extends State<FilterDemo> {
                           ), //BoxShadow
                         ],
                       ),
-                      child: TextField(
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          /* border: OutlineInputBorder(
-                       ),*/
-                          border: InputBorder.none,
-                          hintText: '0',hintStyle: TextStyle(
-                            color: Colors.grey,fontSize: 15)
-                        ),
-                        textAlign: TextAlign.left,
-                      ),
+                      child: Text(_valuesArea.start.toStringAsFixed(2) )
                     ),
                     Container(
                       width: 35,
@@ -1416,17 +1533,7 @@ class _FilterDemoState extends State<FilterDemo> {
                           ), //BoxShadow
                         ],
                       ),
-                      child: TextField(
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          /* border: OutlineInputBorder(
-                       ),*/
-                          border: InputBorder.none,
-                          hintText: '0',hintStyle: TextStyle(color: Colors.grey,
-                            fontSize: 15)
-                        ),
-                        textAlign: TextAlign.left,
-                      ),
+                      child: Text(_valuesArea.end.toStringAsFixed(2) )
                     ),
                   ]
               )
@@ -1434,36 +1541,42 @@ class _FilterDemoState extends State<FilterDemo> {
           //rangeslider
           Padding(padding: const EdgeInsets.only(top: 25.0,left: 1,bottom: 15),
            child: SfRangeSelector(
-             min: _min,
-             max: _max,
-             interval: 1,
+             min: 1000.0,
+             max: 5000.0,
+             interval: 5,
              enableTooltip: true,
              shouldAlwaysShowTooltip: true,
-             initialValues: _values,
+             initialValues: _valuesArea,
+             onChanged: (value) {
+               setState(() {
+                 _valuesArea=SfRangeValues(value.start, value.end);
+               });
+
+             },
              child: SizedBox(
                height: 70,
                width: 400,
                child: SfCartesianChart(
                  plotAreaBorderColor: Colors.transparent,
                  margin: const EdgeInsets.all(0),
-                 primaryXAxis: NumericAxis(minimum: _min, maximum: _max,
+                 primaryXAxis: NumericAxis(minimum: 1000.0, maximum: 5000.0,
                    isVisible: false,),
                  primaryYAxis: NumericAxis(isVisible: false),
                  plotAreaBorderWidth: 0,
                  plotAreaBackgroundColor: Colors.transparent,
-                 series: <ColumnSeries<Data, double>>[
-                   ColumnSeries<Data, double>(
+                 series: <ColumnSeries<Dataarea, double>>[
+                   ColumnSeries<Dataarea, double>(
                      trackColor: Colors.transparent,
                      // color: Color.fromARGB(255, 126, 184, 253),
-                     dataSource: chartData,
+                     dataSource: chartDataarea,
                      selectionBehavior: SelectionBehavior(
                        unselectedOpacity: 0,
-                       selectedOpacity: 1.5,unselectedColor: Colors.transparent,
-                       selectionController: _rangeController,
+                       selectedOpacity: 0.0,unselectedColor: Colors.transparent,
+                       selectionController: _rangeControllerarea,
                      ),
-                     xValueMapper: (Data sales, int index) => sales.x,
-                     yValueMapper: (Data sales, int index) => sales.y,
-                     pointColorMapper: (Data sales, int index) {
+                     xValueMapper: (Dataarea sales, int index) => sales.x,
+                     yValueMapper: (Dataarea sales, int index) => sales.y,
+                     pointColorMapper: (Dataarea sales, int index) {
                        return const Color.fromRGBO(0, 178, 206, 1);
                      },
                      // color: const Color.fromRGBO(255, 255, 255, 0),
@@ -1492,100 +1605,186 @@ class _FilterDemoState extends State<FilterDemo> {
   ],
 ),
           Padding(
-              padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
-              child: Row(
-                children: [
-                  Container(
-                    width: 60,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
+              padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
+              child: Container(
+                //color: Colors.grey,
+                // width: 60,
+                alignment: Alignment.topLeft,
+                height: 40,
+                child:  ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const ScrollPhysics(),
+                  itemCount: _ftype.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    // Colors.grey;
+                    return Container(
+                        margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
+                        padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              //color:myData == index ? Colors.amber : Colors.transparent,
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: GestureDetector(
+                          child:   Center(
+                            child: Text(_ftype[index],style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
                           ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("All",
-                      style: TextStyle(color: Colors.black
-                      ,letterSpacing: 0.5),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 80,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Furnished",
-                      style: TextStyle(color: Colors.grey,
-                          letterSpacing: 0.5),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 100,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Unfurnished",
-                      style: TextStyle(color: Colors.grey,
-                          letterSpacing: 0.5),textAlign: TextAlign.center,),
-                  ),
-                ],
+                          onTap: (){
+                            setState(() {
+                              if(isSelected=true) {
+                                ftype = _ftype[index];
+                              }
+                            });
+                          },
+                        )
+                    );
+                  },
+                ),
+                /* child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  shrinkWrap: true,
+                  children: [
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5,left: 0,right: 1),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text(" Properties  ",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.3,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("New projects",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("Buy",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("Rent",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                  ],
+                  ),*/
               )
           ),
           //Amenities
@@ -1601,330 +1800,67 @@ class _FilterDemoState extends State<FilterDemo> {
     ),
   ],
 ),
-          Padding(padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
-            child: Container(
-             // margin: const EdgeInsets.symmetric(vertical: 1),
-              height: 40,
-             // color: Colors.grey,
-             child: ListView(
-               shrinkWrap: true,
-               scrollDirection: Axis.horizontal,
-               children: [
-                 Container(
-                   margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                   height: 30,
-                   padding: const EdgeInsets.only(top: 5,left:0,right: 2),
-                   decoration: BoxDecoration(
-                     borderRadius: BorderRadiusDirectional.circular(6.0),
-                     boxShadow: [
-                       BoxShadow(
-                         color: Colors.grey,
-                         offset: const Offset(
-                           0.3,
-                           0.3,
-                         ),
-                         blurRadius: 0.3,
-                         spreadRadius: 0.3,
-                       ), //BoxShadow
-                       BoxShadow(
-                         color: Colors.white,
-                         offset: const Offset(0.0, 0.0),
-                         blurRadius: 0.0,
-                         spreadRadius: 0.0,
-                       ), //BoxShadow
-                     ],),
-                   child: Text("  Maids Room  ",
-                     style: TextStyle(color: Colors.black,
-                         letterSpacing: 0.5),textAlign: TextAlign.center,),
-                 ),
-                 Container(
-                   margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                   height: 30,
-                   padding: const EdgeInsets.only(top: 5,left: 0,right: 2),
-                   decoration: BoxDecoration(
-                     borderRadius: BorderRadiusDirectional.circular(6.0),
-                     boxShadow: [
-                       BoxShadow(
-                         color: Colors.grey,
-                         offset: const Offset(
-                           0.3,
-                           0.3,
-                         ),
-                         blurRadius: 0.3,
-                         spreadRadius: 0.3,
-                       ), //BoxShadow
-                       BoxShadow(
-                         color: Colors.white,
-                         offset: const Offset(0.0, 0.0),
-                         blurRadius: 0.0,
-                         spreadRadius: 0.0,
-                       ), //BoxShadow
-                     ],),
-                   child: Text(" Study ",
-                     style: TextStyle(color: Colors.black,
-                         letterSpacing: 0.5),textAlign: TextAlign.center,),
-                 ),
-                 Container(
-                   margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                   height: 30,
-                   padding: const EdgeInsets.only(top: 5,left: 0,right: 2),
-                   decoration: BoxDecoration(
-                     borderRadius: BorderRadiusDirectional.circular(6.0),
-                     boxShadow: [
-                       BoxShadow(
-                         color: Colors.grey,
-                         offset: const Offset(
-                           0.3,
-                           0.3,
-                         ),
-                         blurRadius: 0.3,
-                         spreadRadius: 0.3,
-                       ), //BoxShadow
-                       BoxShadow(
-                         color: Colors.white,
-                         offset: const Offset(0.0, 0.0),
-                         blurRadius: 0.0,
-                         spreadRadius: 0.0,
-                       ), //BoxShadow
-                     ],),
-                   child: Text(" Central A/C & Heating ",
-                     style: TextStyle(color: Colors.black,
-                         letterSpacing: 0.5),textAlign: TextAlign.center,),
-                 ),
-                 Container(
-                   margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                   height: 30,
-                   padding: const EdgeInsets.only(top: 5,left: 0,right: 2),
-                   decoration: BoxDecoration(
-                     borderRadius: BorderRadiusDirectional.circular(6.0),
-                     boxShadow: [
-                       BoxShadow(
-                         color: Colors.grey,
-                         offset: const Offset(
-                           0.3,
-                           0.3,
-                         ),
-                         blurRadius: 0.3,
-                         spreadRadius: 0.3,
-                       ), //BoxShadow
-                       BoxShadow(
-                         color: Colors.white,
-                         offset: const Offset(0.0, 0.0),
-                         blurRadius: 0.0,
-                         spreadRadius: 0.0,
-                       ), //BoxShadow
-                     ],),
-                   child: Text(" Balcony ",
-                     style: TextStyle(color: Colors.black,
-                         letterSpacing: 0.5),textAlign: TextAlign.center,),
-                 ),
-                 Container(
-                   margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                   height: 30,
-                   padding: const EdgeInsets.only(top: 5,left: 0,right: 2),
-                   decoration: BoxDecoration(
-                     borderRadius: BorderRadiusDirectional.circular(6.0),
-                     boxShadow: [
-                       BoxShadow(
-                         color: Colors.grey,
-                         offset: const Offset(
-                           0.3,
-                           0.3,
-                         ),
-                         blurRadius: 0.3,
-                         spreadRadius: 0.3,
-                       ), //BoxShadow
-                       BoxShadow(
-                         color: Colors.white,
-                         offset: const Offset(0.0, 0.0),
-                         blurRadius: 0.0,
-                         spreadRadius: 0.0,
-                       ), //BoxShadow
-                     ],),
-                   child: Text(" Private Garden ",
-                     style: TextStyle(color: Colors.black,
-                         letterSpacing: 0.5),textAlign: TextAlign.center,),
-                 ),
-               ],
-             ),
-             /* child: ListView(
-                shrinkWrap: true,
-                scrollDirection: Axis.horizontal,
-                children: <Widget>[
-                  Container(
-                    width: double.infinity,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
+          Padding(
+              padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
+              child: Container(
+                //color: Colors.grey,
+                // width: 60,
+                alignment: Alignment.topLeft,
+                height: 40,
+                child:  ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const ScrollPhysics(),
+                  itemCount: amenities.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    return Container(
+                        margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
+                        padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              //color:myData == index ? Colors.amber : Colors.transparent,
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: GestureDetector(
+                          child:   Row(
+                            children: [
+                              CachedNetworkImage(imageUrl: amenities[index].icon.toString()),
+                              Text(amenities[index].title.toString(),style: TextStyle(color: Colors.black,
+                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                            ],
                           ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],),
-                    child: Text("Maids Room",
-                      style: TextStyle(color: Colors.black,
-                          letterSpacing: 0.5),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 70,
-                    height: 30,
-                     padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Study",
-                      style: TextStyle(color: Colors.black,
-                          letterSpacing: 0.5),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 150,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Central A/C & Heating",
-                      style: TextStyle(color: Colors.black,
-                          letterSpacing: 0.5),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 70,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Balcony",
-                      style: TextStyle(color: Colors.black,
-                          letterSpacing: 0.5),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 100,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Private Garden",
-                      style: TextStyle(color: Colors.black,
-                          letterSpacing: 0.5),textAlign: TextAlign.center,),
-                  ),
+                          onTap: (){
+                            setState(() {
+                              if(isSelected=true) {
+                                amnities = amenities[index].id.toString();
+                              }
+                            });
+                          },
+                        )
+                    );
+                    // return Amenitiescardscreen(amenities: amenities[index]);
+                  },
+                ),
 
-                ],
-              ),*/
-            ),
-
+              )
           ),
-         /* Row(
-  children: [
-    Padding(
-      padding: const EdgeInsets.only(
-          left: 15.0, top: 5, bottom: 0),
-      child:  Text("View all",style: TextStyle(
-        color: Colors.blue,fontSize: 11
 
-      ),textAlign: TextAlign.left,),
-    ),
-    Padding(
-        padding: const EdgeInsets.only(
-            left: 1.0, right: 10.0, top: 5, bottom: 0),
-       child: Icon(Icons.arrow_forward_outlined,color: Colors.red,size: 15,),
-    ),
-  ],
-),*/
           //real estate
           Row(
             children: [
@@ -1968,6 +1904,7 @@ class _FilterDemoState extends State<FilterDemo> {
                 ),
                 child: TextField(
                   textAlignVertical: TextAlignVertical.center,
+                 controller: agenciesController,
                  // obscureText: true,
                   decoration: InputDecoration(
                     /* border: OutlineInputBorder(
@@ -1996,133 +1933,189 @@ class _FilterDemoState extends State<FilterDemo> {
             ],
           ),
           Padding(
-              padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
-              child: Row(
-               // mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 60,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
+              padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
+              child: Container(
+                //color: Colors.grey,
+                // width: 60,
+                alignment: Alignment.topLeft,
+                height: 40,
+                child:  ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const ScrollPhysics(),
+                  itemCount: _rent.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    // Colors.grey;
+                    return Container(
+                      // color: selectedIndex == index ? Colors.amber : Colors.transparent,
+                        margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
+                        // width: screenSize.width * 0.25,
+                        // height: 20,
+                        padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              //color:myData == index ? Colors.amber : Colors.transparent,
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: GestureDetector(
+                          child:   Center(
+                            child: Text(_rent[index],style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
                           ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Yearly",
-                      style: TextStyle(color: Colors.black,
-                          letterSpacing: 0.5),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 80,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Bi-Yearly",
-                      style: TextStyle(color: Colors.black,
-                          letterSpacing: 0.5),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 85,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Quarterly",
-                      style: TextStyle(color: Colors.black,
-                          letterSpacing: 0.5),textAlign: TextAlign.center,),
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                  Container(
-                    width: 80,
-                    height: 30,
-                    padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Monthly",
-                      style: TextStyle(color: Colors.black,
-                          letterSpacing: 0.5),textAlign: TextAlign.center,),
-                  ),
-                ],
+                          onTap: (){
+                            setState(() {
+                              if(isSelected=true) {
+                                rent = _rent[index];
+                              }
+                            });
+                          },
+                        )
+                    );
+                  },
+                ),
+                /* child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  shrinkWrap: true,
+                  children: [
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5,left: 0,right: 1),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text(" Properties  ",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.3,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("New projects",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("Buy",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                        width: screenSize.width * 0.2,
+                        height: 30,
+                        padding: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: const Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ), //BoxShadow
+                          ],
+                        ),
+                        child: Text("Rent",
+                          style: TextStyle(color: Colors.black,
+                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,),
+                      ),
+                  ],
+                  ),*/
               )
           ),
           Container(
@@ -2130,7 +2123,8 @@ class _FilterDemoState extends State<FilterDemo> {
           ),
           GestureDetector(
   onTap: (){
-    Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
+    showResult();
+   // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
   },
   child:  Padding(
     padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15,right: 15),
@@ -2350,6 +2344,11 @@ class Page4 extends StatelessWidget {
 }
 class Data {
   Data({required this.x, required this.y});
+  final double x;
+  final double y;
+}
+class Dataarea {
+  Dataarea({required this.x, required this.y});
   final double x;
   final double y;
 }

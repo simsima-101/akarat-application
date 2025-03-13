@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:drawerdemo/model/amenities.dart';
 import 'package:drawerdemo/model/api2model.dart';
 import 'package:drawerdemo/screen/blog.dart';
 import 'package:drawerdemo/screen/home.dart';
@@ -35,10 +36,12 @@ class _FliterListDemoState extends State<FliterListDemo> {
   ];
   final TextEditingController _searchController = TextEditingController();
   List<Product> products = [];
+
   @override
   void initState() {
     super.initState();
     fetchProducts();
+
   }
   Future<void> fetchProducts() async {
     // you can replace your api link with this link
@@ -51,6 +54,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
     } else {
     }
   }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

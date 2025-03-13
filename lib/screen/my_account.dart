@@ -1,3 +1,4 @@
+import 'package:drawerdemo/model/loginmodel.dart';
 import 'package:drawerdemo/model/registermodel.dart';
 import 'package:drawerdemo/screen/about_us.dart';
 import 'package:drawerdemo/screen/advertising.dart';
@@ -13,8 +14,14 @@ import 'package:flutter/material.dart';
 
 
 class My_Account extends StatefulWidget {
-   My_Account({super.key, required this.arguments}) ;
-    RegisterModel arguments;
+   My_Account({super.key, required this.result,this.token}) ;
+  // LoginModel arguments;
+
+  var result;
+
+  var token;
+
+   // RegisterModel arguments;
    @override
    State<My_Account> createState() => _My_AccountState();
 }
@@ -36,7 +43,8 @@ class _My_AccountState extends State<My_Account> {
             child: Column(
                 children: <Widget>[
                   Container(
-                    height: 200,
+                    height: screenSize.height*0.2,
+                  // color: Colors.grey,
                     color: Color(0xFFF5F5F5),
                     child: Column(
                       children: [
@@ -82,8 +90,8 @@ class _My_AccountState extends State<My_Account> {
                           children: [
                             Container(
                               margin: const EdgeInsets.only(left: 65,top: 8,bottom: 0),
-                              height: 110,
-                              width: 110,
+                              height: screenSize.height*0.11,
+                              width: screenSize.width*0.25,
                               padding: const EdgeInsets.only(top: 0,left: 0,right: 0,bottom: 0),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadiusDirectional.circular(60.0),
@@ -112,21 +120,21 @@ class _My_AccountState extends State<My_Account> {
                             ),
                             Container(
                                 margin: const EdgeInsets.only(left: 5),
-                                height: 70,
-                                width: 170,
+                                height: screenSize.height*0.1,
+                                width: screenSize.width*0.45,
                                 // color: Colors.grey,
                                 padding: const EdgeInsets.only(left: 0,top: 10),
                                 child:   Column(
                                   children: [
                                     Padding(padding: const EdgeInsets.only(top: 0,left: 0,right: 20),
-                                      child: Text(widget.arguments.user.toString(),style: TextStyle(
+                                      child: Text(widget.result,style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                         letterSpacing: 0.5,
                                       ),textAlign: TextAlign.left,),
                                     ),
                                     Padding(padding: const EdgeInsets.only(top: 0,left: 10,right: 15),
-                                      child: Text(widget.arguments.email.toString(),style: TextStyle(
+                                      child: Text(widget.token,style: TextStyle(
                                         fontSize: 12,
                                         // fontWeight: FontWeight.bold,
                                         letterSpacing: 0.5,

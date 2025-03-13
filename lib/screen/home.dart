@@ -1,8 +1,15 @@
+import 'dart:convert';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:drawerdemo/model/featuredmodel.dart';
+import 'package:drawerdemo/screen/featured_detail.dart';
 import 'package:drawerdemo/screen/filter.dart';
 import 'package:drawerdemo/screen/new_projects.dart';
+import 'package:drawerdemo/screen/product_detail.dart';
 import 'package:drawerdemo/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -35,7 +42,13 @@ class _MyHomePageState extends State<HomeDemo> {
     const Page4(),
   ];
   final TextEditingController _searchController = TextEditingController();
+  FeaturedModel? featuredModel;
 
+  @override
+  void initState() {
+    super.initState();
+    getFilesApi();
+  }
   Future<bool> _onWillPop() async {
     return (await showDialog(
       context: context,
@@ -57,6 +70,24 @@ class _MyHomePageState extends State<HomeDemo> {
         ],
       ),
     )) ?? false;
+  }
+
+
+  Future<void> getFilesApi() async {
+    final response = await http.get(Uri.parse(
+        "https://akarat.com/api/featured-properties"));
+    var data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      FeaturedModel feature= FeaturedModel.fromJson(data);
+
+      setState(() {
+        featuredModel = feature ;
+
+      });
+
+    } else {
+      //return FeaturedModel.fromJson(data);
+    }
   }
 
   @override
@@ -566,90 +597,116 @@ class _MyHomePageState extends State<HomeDemo> {
                   ],
                 ),
                 //Slider
-                ListView(
-                  padding: const EdgeInsets.only(top: 10),
+                ListView.builder(
+                  scrollDirection: Axis.vertical,
+                  physics: const ScrollPhysics(),
+                  itemCount: featuredModel!.data!.length,
                   shrinkWrap: true,
-                  children: [
-                    CarouselSlider(
-                      items: [
+                  itemBuilder: (context, index) {
+                    if(featuredModel== null){
+                      return Scaffold(
+                      body: Center(child: CircularProgressIndicator()), // Show loading state
+                    );
+                    }
+                    return SingleChildScrollView(
+                        child: GestureDetector(
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => Featured_Detail(data: '${featuredModel!.data![index].id}')));
+                          },
+                          child : Card(
+                            color: Colors.white,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 5.0,top: 1,right: 5),
+                              child: Column(
+                                // spacing: 5,// this is the coloumn
+                                children: [
+                                  AspectRatio(
+                                    aspectRatio: 1.6,
+                                    // this is the ratio
+                                    child: CachedNetworkImage( // this is to fetch the image
+                                      imageUrl: (featuredModel!.data![index].media![index].originalUrl.toString()),
+                                      fit: BoxFit.cover,
+                                      height: 100,
+                                    ),
+                                  ),
+                                  Padding(padding: const EdgeInsets.only(top: 5),
+                                    child: ListTile(
+                                      title: Text(featuredModel!.data![index].title.toString(),style: TextStyle(
+                                          fontWeight: FontWeight.bold,fontSize: 15,height: 1.4
+                                      ),),
+                                      subtitle: Text('${featuredModel!.data![index].price} AED',style: TextStyle(
+                                          fontWeight: FontWeight.bold,fontSize: 18,height: 1.8
+                                      ),),
+                                    ),
+                                  ),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 0),
+                                        child:  Image.asset("assets/images/map.png",height: 14,),
+                                      ),
+                                      Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
+                                        child: Text(featuredModel!.data![index].location.toString(),style: TextStyle(
+                                            fontWeight: FontWeight.bold,fontSize: 13,height: 1.4,
+                                            overflow: TextOverflow.visible
+                                        ),),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Padding(padding: const EdgeInsets.only(left: 30,top: 10,bottom: 15),
+                                        child: ElevatedButton.icon(onPressed: (){},
+                                            label: Text("call",style: TextStyle(
+                                                color: Colors.black
+                                            ),),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.grey[50],
+                                              alignment: Alignment.center,
+                                              elevation: 1,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                              padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 40),
+                                              textStyle: TextStyle(letterSpacing: 0.5,
+                                                  color: Colors.black,fontSize: 15,fontWeight: FontWeight.bold
+                                              ),
+                                            ),
+                                            icon: Icon(Icons.call,color: Colors.red,)),
+                                      ),
+                                      // Text(product.description),
+                                      Padding(padding: const EdgeInsets.only(left: 15,top: 10,bottom: 15),
+                                        child: ElevatedButton.icon(onPressed: (){},
+                                            label: Text("Watsapp",style: TextStyle(
+                                                color: Colors.black
+                                            ),),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.grey[50],
+                                              alignment: Alignment.center,
+                                              elevation: 1,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                              padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 30),
+                                              textStyle: TextStyle(letterSpacing: 0.5,
+                                                  color: Colors.black,fontSize: 12,fontWeight: FontWeight.bold
+                                              ),
+                                            ),
+                                            icon: Icon(Icons.call,color: Colors.red,)),
+                                      ),
+                                    ],
+                                  ),
 
-                        //1st Image of Slider
-                        Container(
-                          margin: EdgeInsets.all(0.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8.0),
-                            image: DecorationImage(
-                              image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
-                              fit: BoxFit.cover,
+                                ],
+                              ),
                             ),
-                          ),
-                        ),
 
-                        //2nd Image of Slider
-                        Container(
-                          margin: EdgeInsets.all(0.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8.0),
-                            image: DecorationImage(
-                              image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
-                              fit: BoxFit.cover,
-                            ),
                           ),
-                        ),
 
-                        //3rd Image of Slider
-                        Container(
-                          margin: EdgeInsets.all(0.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8.0),
-                            image: DecorationImage(
-                              image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
+                        )
 
-                        //4th Image of Slider
-                        Container(
-                          margin: EdgeInsets.all(0.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8.0),
-                            image: DecorationImage(
-                              image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-
-                        //5th Image of Slider
-                        Container(
-                          margin: EdgeInsets.all(0.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8.0),
-                            image: DecorationImage(
-                              image: NetworkImage('http://photo.16pic.com/00/38/88/16pic_3888084_b.jpg'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-
-                      ],
-                      //Slider Container properties
-                      options: CarouselOptions(
-                        height: 250.0,
-                        enlargeCenterPage: true,
-                        autoPlay: true,
-                        aspectRatio: 16 / 9,
-                        autoPlayCurve: Curves.fastOutSlowIn,
-                        enableInfiniteScroll: true,
-                        autoPlayAnimationDuration: Duration(milliseconds: 800),
-                        viewportFraction: 0.9,
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
                 //buttons
-                Padding(
+               /* Padding(
                   padding: const EdgeInsets.only(top: 12,left: 10,right: 10),
                   child: Container(
                     width: 400,
@@ -715,7 +772,7 @@ class _MyHomePageState extends State<HomeDemo> {
                       ],
                     ),
                   ),
-                ),
+                ),*/
                 //tab
                 SizedBox(
                   height: 15,

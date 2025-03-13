@@ -9,6 +9,11 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if(product == null){
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()), // Show loading state
+      );
+    }
     return SingleChildScrollView(
       child: GestureDetector(
         onTap: (){
@@ -41,9 +46,10 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                   Row(
-                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Padding(padding: const EdgeInsets.only(left: 1,right: 5,top: 0),
+                      Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 0),
                         child:  Image.asset("assets/images/map.png",height: 14,),
                       ),
                       Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),

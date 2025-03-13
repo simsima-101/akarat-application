@@ -1,38 +1,69 @@
+import 'dart:convert';
+
+import 'package:drawerdemo/model/loginmodel.dart';
+import 'package:drawerdemo/model/registermodel.dart';
 import 'package:drawerdemo/screen/create_password.dart';
 import 'package:drawerdemo/screen/login.dart';
 import 'package:drawerdemo/screen/login_page.dart';
+import 'package:drawerdemo/screen/my_account.dart';
+import 'package:drawerdemo/utils/Validator.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-void main(){
-  runApp(const EmaiLogin());
-
-}
-class EmaiLogin extends StatelessWidget {
-  const EmaiLogin({Key ? key}) : super (key: key);
-
+class EmaiLogin extends StatefulWidget {
+  const EmaiLogin({super.key, required this.data});
+  final String data;
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: EmaiLoginDemo(),
-    );
-  }
+  State<EmaiLogin> createState() => _EmaiLoginState();
 }
-class EmaiLoginDemo extends StatefulWidget {
-  @override
-  _EmaiLoginDemoState createState() => _EmaiLoginDemoState();
-}
-class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
+class _EmaiLoginState extends State<EmaiLogin> {
 
   bool passwordVisible=false;
+  final passwordController = TextEditingController();
   @override
   void initState(){
     super.initState();
     passwordVisible=true;
   }
+RegisterModel? registerModel;
+  LoginModel? loginModel;
+  String result = '';
+  String token = '';
+  Future<void> loginUsers(data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://akarat.com/api/login'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          "email": data,
+          "password": passwordController.text,
+          // Add any other data you want to send in the body
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = json.decode(response.body);
+        loginModel = LoginModel.fromJson(jsonData);
+        result=loginModel!.name.toString();
+        token=loginModel!.email.toString();
+        print("Registered Succesfully");
+        Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account(result: result,token: token)));
+      } else {
+        throw Exception("Registration failed");
+
+      }
+    } catch (e) {
+      setState(() {
+        print('Error: $e');
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -45,8 +76,8 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
         padding: const EdgeInsets.only(top: 150.0),
     child: Center(
     child: SizedBox(
-    width: 150,
-    height: 55,
+    width: screenSize.width*0.3,
+    height: screenSize.height*0.06,
     child: Image.asset('assets/images/app_icon.png')),
     ),
     ),
@@ -55,14 +86,14 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
     padding: const EdgeInsets.only(top:5),
     child: Center(
     child: SizedBox(
-    width: 150,
-    height: 40,
+        width: screenSize.width*0.5,
+        height: screenSize.height*0.05,
     child: Image.asset('assets/images/logo-text.png')),
     ),
     ),
 
           Container(
-            height: 340,
+            height: screenSize.height*0.36,
             width: double.infinity,
             margin: const EdgeInsets.only(top: 25,left: 20,right: 20),
             padding: const EdgeInsets.only(top: 15,bottom: 00),
@@ -123,9 +154,9 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
                   padding: const EdgeInsets.only(
                       left: 14, right: 14.0, top: 15, bottom: 0),
                   child: Container(
-                    width: 350,
-                    height: 50,
-                    padding: const EdgeInsets.only(top: 5),
+                    width: screenSize.width*0.9,
+                    height: screenSize.height*0.05,
+                    padding: const EdgeInsets.only(top: 2,left: 8),
                     decoration: BoxDecoration(
 
                       borderRadius: BorderRadiusDirectional.circular(10.0),
@@ -149,23 +180,22 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
                     ),
                     child: Row(
                       children: [
-                        Text("    neethupbaby95@gmail.com",style:
+                        Text(    widget.data,style:
                         TextStyle(color: Colors.grey),),
                         Container(
-                          width: 100,
+                          width: screenSize.width*0.35
                         ),
                         Icon(Icons.check,color: Colors.green,)
                       ],
                     ),
                   ),
                 ),
-                //facebook button
                 Padding(
                   padding: const EdgeInsets.only(
                       left: 14.0, right: 14.0, top: 15, bottom: 0),
                   child: Container(
-                    width: 350,
-                    height: 50,
+                    width: screenSize.width*0.9,
+                    height: screenSize.height*0.05,
                     padding: const EdgeInsets.only(top: 5,left: 8),
                     decoration: BoxDecoration(
 
@@ -189,31 +219,42 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
                       ],
                     ),
 
-                      child:   TextField(
-                        obscureText: passwordVisible,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            fillColor: Colors.white,
-                            hintText: '   Password',
-                            hintStyle: TextStyle(color: Colors.grey),
-                            suffixIcon: IconButton(
-                              icon: Icon(passwordVisible
-                                  ? Icons.visibility
-                                  : Icons.visibility_off),
-                              onPressed: () {
-                                setState(
-                                      () {
-                                    passwordVisible = !passwordVisible;
-                                  },
-                                );
+                    child:   TextFormField(
+                      obscureText: passwordVisible,
+                      controller: passwordController,
+                      validator: (value){
+                        if(value!.isEmpty) {
+                          return 'Empty';
+                        }
+                        else{
+                          Validator.validatePassword(value ?? "");
+                        }
+                        return null;
+                      },
+                      // validator: (value) => Validator.validatePassword(value ?? ""),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        //  fillColor: Colors.white,
+                        hintText: '  Password',
+                        hintStyle: TextStyle(color: Colors.grey),
+                        suffixIcon: IconButton(
+                          icon: Icon(passwordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off),
+                          onPressed: () {
+                            setState(
+                                  () {
+                                passwordVisible = !passwordVisible;
                               },
-                            ),
-                            alignLabelWithHint: false,
-                           // filled: true,
-                          ),
-                        keyboardType: TextInputType.visiblePassword,
-                        textInputAction: TextInputAction.done,
-                          ),
+                            );
+                          },
+                        ),
+                        alignLabelWithHint: false,
+                        // filled: true,
+                      ),
+                      keyboardType: TextInputType.visiblePassword,
+                      textInputAction: TextInputAction.done,
+                    ),
                         ),
 
                   ),
@@ -222,9 +263,9 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
                   padding: const EdgeInsets.only(
                       left: 14.0, right: 14.0, top: 15, bottom: 0),
                   child: Container(
-                    width: 350,
-                    height: 50,
-                    padding: const EdgeInsets.only(top: 13),
+                    width: screenSize.width*0.9,
+                    height: screenSize.height*0.05,
+                    padding: const EdgeInsets.only(top: 10),
                     decoration: BoxDecoration(
                       color: Colors.blue,
                       borderRadius: BorderRadiusDirectional.circular(10.0),
@@ -248,6 +289,7 @@ class _EmaiLoginDemoState extends State<EmaiLoginDemo> {
                     ),
                     child: InkWell(
                         onTap: (){
+                          loginUsers(widget.data);
                          // Navigator.push(context, MaterialPageRoute(builder: (context)=> CreatePassword()));
                         },
                         child: Text('Log in',textAlign: TextAlign.center,
