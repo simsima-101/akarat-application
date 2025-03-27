@@ -1,0 +1,2 @@
+C:/akarat-app/android/app/.cxx/Debug/2f516a6k/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/akarat-app/android/app/.cxx/Debug/2f516a6k/armeabi-v7a/CMakeFiles/rebuild_cache.dir

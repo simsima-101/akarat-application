@@ -1,0 +1,2 @@
+C:/projects/akarat-app/android/app/.cxx/Debug/z734k4j3/x86/CMakeFiles/edit_cache.dir
+C:/projects/akarat-app/android/app/.cxx/Debug/z734k4j3/x86/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,3 @@
+C:/akarat-app/android/app/.cxx/Debug/2f516a6k/x86/CMakeFiles/CMakeTmp/CMakeFiles/cmTC_bc21d.dir
+C:/akarat-app/android/app/.cxx/Debug/2f516a6k/x86/CMakeFiles/CMakeTmp/CMakeFiles/edit_cache.dir
+C:/akarat-app/android/app/.cxx/Debug/2f516a6k/x86/CMakeFiles/CMakeTmp/CMakeFiles/rebuild_cache.dir
