@@ -1,6 +1,6 @@
-import 'package:drawerdemo/screen/create_password.dart';
-import 'package:drawerdemo/screen/login.dart';
-import 'package:drawerdemo/utils/Validator.dart';
+import 'package:Akarat/screen/create_password.dart';
+import 'package:Akarat/screen/login.dart';
+import 'package:Akarat/utils/Validator.dart';
 import 'package:flutter/material.dart';
 
 void main(){

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class FeaturedModel {
   bool? success;
   String? message;
@@ -32,8 +34,8 @@ class Data {
   String? title;
   String? price;
   String? address;
-  String? phoneNumber;
-  String? whatsapp;
+  Null? phoneNumber;
+  Null? whatsapp;
   String? location;
   String? description;
   String? paymentPeriod;
@@ -66,8 +68,8 @@ class Data {
     title = json['title'];
     price = json['price'];
     address = json['address'];
-    phoneNumber = json['phone_number']!= null ? (json['whatsapp'] ) : null;
-    whatsapp = json['whatsapp']!= null ? (json['whatsapp'] ) : null;
+    phoneNumber = json['phone_number'];
+    whatsapp = json['whatsapp'];
     location = json['location'];
     description = json['description'];
     paymentPeriod = json['payment_period'];
@@ -90,8 +92,8 @@ class Data {
     data['title'] = this.title;
     data['price'] = this.price;
     data['address'] = this.address;
-    data['phone_number'] = this.phoneNumber = null;
-    data['whatsapp'] = this.whatsapp = null;
+    data['phone_number'] = this.phoneNumber;
+    data['whatsapp'] = this.whatsapp;
     data['location'] = this.location;
     data['description'] = this.description;
     data['payment_period'] = this.paymentPeriod;

@@ -1,12 +1,21 @@
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/profile_login.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/my_account.dart';
+import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class About_Us extends StatelessWidget {
+import '../utils/fav_login.dart';
+import '../utils/fav_logout.dart';
+import '../utils/shared_preference_manager.dart';
+
+class About_Us extends StatefulWidget {
 
   About_Us({super.key,});
+  @override
+  State<About_Us> createState() => _About_UsState();
+}
+class _About_UsState extends State<About_Us> {
 
   int pageIndex = 0;
   final pages = [
@@ -16,7 +25,27 @@ class About_Us extends StatelessWidget {
     const Page4(),
   ];
 
+  String token = '';
+  String email = '';
+  String result = '';
+  bool isDataRead = false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
 
+  @override
+  void initState() {
+    readData();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +69,15 @@ class About_Us extends StatelessWidget {
                               child:   Row(
                                 children: [GestureDetector(
                                   onTap: (){
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
-                                  },
+                                  setState(() {
+                                    if(token == ''){
+                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                                    }
+                                    else{
+                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+
+                                    }
+                                  });                                  },
                                   child:   Container(
                                     margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
                                     height: 35,
@@ -232,7 +268,7 @@ class About_Us extends StatelessWidget {
               margin: const EdgeInsets.only(left: 40),
               height: 35,
               width: 35,
-              padding: const EdgeInsets.only(top: 2),
+              padding: const EdgeInsets.only(top: 0,right: 5,bottom: 5),
               decoration: BoxDecoration(
                 borderRadius: BorderRadiusDirectional.circular(20.0),
                 boxShadow: [
@@ -253,7 +289,21 @@ class About_Us extends StatelessWidget {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.favorite_border,color: Colors.red,)
+            child: IconButton(
+                padding: EdgeInsets.only(left: 5,top: 7),
+                onPressed: (){
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Logout()));
+                }
+                else if(token.isNotEmpty){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Login()));
+                }
+              });
+            }, icon: Icon(Icons.favorite_border,color: Colors.red,)
+            ),
+
+            /*  child: Icon(Icons.favorite_border,color: Colors.red,)*/
           ),
 
           Container(
@@ -315,9 +365,13 @@ class About_Us extends StatelessWidget {
           IconButton(
             enableFeedback: false,
             onPressed: () {
+              if(token == ''){
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+              }
+              else{
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
-           //   Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-
+              }
             },
             icon: pageIndex == 3
                 ? const Icon(

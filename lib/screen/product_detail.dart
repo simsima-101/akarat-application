@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:drawerdemo/model/api2model.dart';
-import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/profile_login.dart';
+import 'package:Akarat/model/api2model.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -49,7 +49,7 @@ class _Product_DetailState extends State<Product_Detail> {
 
       });
 
-      debugPrint("productModels title_after: ${productModels!.title}");
+      debugPrint("productModels title_after: ${productModels!.data!.title.toString()}");
 
     } else {
       // Handle error if needed
@@ -211,18 +211,21 @@ class _Product_DetailState extends State<Product_Detail> {
                     ],
                   ),
                   Container(
-                      height: 550,
+                      height: screenSize.height*0.5,
                       margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                      child:  ListView(
-                          shrinkWrap: true,
-                          scrollDirection: Axis.vertical,
-                          children: <Widget>[
-                            CachedNetworkImage( // this is to fetch the image
-                              imageUrl: (productModels!.media[0]),
-                              fit: BoxFit.cover,
-                              height: 100,
-                            ),
-                          ]
+                      child:  ListView.builder(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.vertical,
+                        physics: const ScrollPhysics(),
+                        itemCount: productModels?.data?.media?.length ?? 0,
+                        itemBuilder: (BuildContext context, int index) {
+                          return CachedNetworkImage( // this is to fetch the image
+                            imageUrl: (productModels!.data!.media![index].originalUrl.toString()),
+                            //fit: BoxFit.cover,
+                            // height: 100,
+                          );
+                        },
+
                       )
                   ) ,
                   Container(
@@ -232,7 +235,7 @@ class _Product_DetailState extends State<Product_Detail> {
                     child: Row(
                       children: [
                         //  Text(productModels!.title),
-                        Text("Townhouse",style: TextStyle(
+                        Text(productModels!.data!.location.toString(),style: TextStyle(
                         // Text("Townhouse",style: TextStyle(
                           letterSpacing: 0.5
                         ),),
@@ -283,7 +286,7 @@ class _Product_DetailState extends State<Product_Detail> {
                   Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 10,bottom: 0),
                       child:Row(
                         children: [
-                          Text(productModels!.price.toString(),style: TextStyle(
+                          Text(productModels!.data!.price.toString(),style: TextStyle(
                               fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
                           ),),
                           Text("  AED",style: TextStyle(
@@ -292,7 +295,8 @@ class _Product_DetailState extends State<Product_Detail> {
                         ],
                       )
                   ),
-                  Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 5,bottom: 0),
+                 /* Padding(
+                      padding: const EdgeInsets.only(left: 20,right: 0,top: 5,bottom: 0),
                       child:Row(
                         children: [
                           Text("Est.Mortgage:",style: TextStyle(
@@ -306,7 +310,7 @@ class _Product_DetailState extends State<Product_Detail> {
                           ),),
                         ],
                       )
-                  ),
+                  ),*/
                   Container(
                       margin: const EdgeInsets.only(left: 20,top: 5,right: 10),
                       height: 40,
@@ -314,17 +318,32 @@ class _Product_DetailState extends State<Product_Detail> {
                       child:Row(
                         children: [
                           Image.asset("assets/images/bed.png",height: 20,),
-                          Text(" "+ productModels!.bedrooms.toString()+" beds   ",style: TextStyle(
-                              fontSize: 14,letterSpacing: 0.5
-                          ),),
-                          Image.asset("assets/images/bath.png",height: 20),
-                          Text(" "+ productModels!.bathrooms.toString()+" baths   ",style: TextStyle(
-                            fontSize: 14,letterSpacing: 0.5,
-                          ),),
-                          Image.asset("assets/images/messure.png",height: 20),
-                          Text(" "+ productModels!.squareFeet.toString()+" sqft",style: TextStyle(
-                            fontSize: 14,letterSpacing: 0.5,
-                          ),),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 3.0),
+                            child: Text('${productModels!.data!.bedrooms}  beds',style: TextStyle(
+                                fontSize: 14,letterSpacing: 0.5
+                            ),),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 3.0),
+                            child: Image.asset("assets/images/bath.png",height: 20),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 3.0),
+                            child: Text('${productModels!.data!.bathrooms}  baths',style: TextStyle(
+                              fontSize: 14,letterSpacing: 0.5,
+                            ),),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 3.0),
+                            child: Image.asset("assets/images/messure.png",height: 20),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 3.0),
+                            child: Text('${productModels!.data!.squareFeet}  sqft',style: TextStyle(
+                              fontSize: 14,letterSpacing: 0.5,
+                            ),),
+                          ),
                         ],
                       )
                   ),
@@ -333,7 +352,7 @@ class _Product_DetailState extends State<Product_Detail> {
                     // color: Colors.grey,
                     padding: const EdgeInsets.only(left: 20,right: 0,top: 1,bottom: 0),
                     child:
-                    Text(productModels!.title.toString(),style: TextStyle(
+                    Text(productModels!.data!.title.toString(),style: TextStyle(
                         fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
                     ),),
 
@@ -342,55 +361,66 @@ class _Product_DetailState extends State<Product_Detail> {
                     padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
                     child: Container(
                       width: double.infinity,
-                      height: screenSize.height*0.3,
+                      height: screenSize.height*0.2,
                        //color: Colors.grey,
                       margin: const EdgeInsets.only(left: 5,top: 5),
-                      child: Text(productModels!.description.toString(),
-                        textAlign: TextAlign.left,style: TextStyle(
-                            letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
+                      child:  ListView(
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                      children: <Widget>[
+                         Text(productModels!.data!.description.toString(),
+                          textAlign: TextAlign.left,style: TextStyle(
+                              letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
+                          ),),
+                        ]
+                      )
+
+                    ),
+                  ),
+                 /* Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      height: screenSize.height*0.05,
+                      width: screenSize.width*0.9,
+                      margin: const EdgeInsets.only(left: 20,right: 20,top: 10),
+                      padding: const EdgeInsets.only(top: 8),
+                      // color: Colors.grey,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadiusDirectional.circular(8.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.red,
+                            offset: const Offset(
+                              0.0,
+                              0.0,
+                            ),
+                            blurRadius: 0.0,
+                            spreadRadius: 0.3,
+                          ), //BoxShadow
+                          BoxShadow(
+                            color: Colors.white,
+                            offset: const Offset(0.0, 0.0),
+                            blurRadius: 0.0,
+                            spreadRadius: 0.0,
+                          ), //BoxShadow
+                        ],
+                      ),
+                      child: Text("Show Full Description",textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
                         ),),
                     ),
-                  ),
-                  Container(
-                    height: screenSize.height*0.05,
-                    width: screenSize.width*0.9,
-                    margin: const EdgeInsets.only(left: 20,right: 20,top: 10),
-                    padding: const EdgeInsets.only(top: 8),
-                    // color: Colors.grey,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(8.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.red,
-                          offset: const Offset(
-                            0.0,
-                            0.0,
-                          ),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Show Full Description",textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
-                      ),),
-                  ),
-                  Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 20,bottom: 0),
+                  ),*/
+                  Padding(
+                      padding: const EdgeInsets.only(left: 20,right: 0,top: 20,bottom: 0),
                       child:Row(
                         children: [
                           Text("Posted On:",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                           ),),
-                          Text(productModels!.postedOn.toString(),style: TextStyle(
+                         /* Text(productModels!.data!.pos.toString(),style: TextStyle(
                             fontSize: 14,letterSpacing: 0.5,
-                          ),),
+                          ),),*/
                         ],
                       )
                   ),
@@ -410,21 +440,42 @@ class _Product_DetailState extends State<Product_Detail> {
                       child:Row(
                         children: [
                           Image.asset("assets/images/Residential__1.png",height: 15,),
-                          Text("  Apartment   ",style: TextStyle(
-                              fontSize: 14,letterSpacing: 0.5
-                          ),),
-                          Image.asset("assets/images/bed.png",height: 15,),
-                          Text("  2 beds   ",style: TextStyle(
-                              fontSize: 14,letterSpacing: 0.5
-                          ),),
-                          Image.asset("assets/images/bath.png",height: 15),
-                          Text(" 3 baths   ",style: TextStyle(
-                            fontSize: 14,letterSpacing: 0.5,
-                          ),),
-                          Image.asset("assets/images/messure.png",height: 15),
-                          Text(" 1410 sqft",style: TextStyle(
-                            fontSize: 14,letterSpacing: 0.5,
-                          ),),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Text(productModels!.data!.propertyType.toString(),style: TextStyle(
+                                fontSize: 14,letterSpacing: 0.5
+                            ),),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Image.asset("assets/images/bed.png",height: 15,),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Text('${productModels!.data!.bedrooms} beds',style: TextStyle(
+                                fontSize: 14,letterSpacing: 0.5
+                            ),),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Image.asset("assets/images/bath.png",height: 15),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Text('${productModels!.data!.bathrooms} baths',style: TextStyle(
+                              fontSize: 14,letterSpacing: 0.5,
+                            ),),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Image.asset("assets/images/messure.png",height: 15),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Text('${productModels!.data!.squareFeet} sqft',style: TextStyle(
+                              fontSize: 14,letterSpacing: 0.5,
+                            ),),
+                          ),
                         ],
                       )
                   ),
@@ -438,59 +489,109 @@ class _Product_DetailState extends State<Product_Detail> {
                     ),),
                   ),
                   Container(
-                      margin: const EdgeInsets.only(left: 15,top: 0,right: 1),
+                      margin: const EdgeInsets.only(left: 20,top: 0,right: 1),
                       padding: const EdgeInsets.only(top: 5),
-                      height: 60,
+                      height: screenSize.height*0.11,
                       // color: Colors.grey,
                       child:Column(
-                        spacing: 10,
+                        spacing: 15,
                         children: [
                           Row(
+                            spacing: 5,
                             children: [
-                              Image.asset("assets/images/Residential__1.png",height: 13,),
-                              Text(" Swimming Pool ",style: TextStyle(
-                                  fontSize: 12,letterSpacing: 0.5
-                              ),),
-                              Image.asset("assets/images/bed.png",height: 13,),
-                              Text(" Balcony/Terrace ",style: TextStyle(
-                                  fontSize: 12,letterSpacing: 0.5
-                              ),),
-                              Image.asset("assets/images/bath.png",height: 13),
-                              Text(" Barbeque Area ",style: TextStyle(
-                                fontSize: 12,letterSpacing: 0.5,
-                              ),),
+                              Image.asset("assets/images/Residential__1.png",height: 15,),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Text(" Swimming Pool ",style: TextStyle(
+                                    fontSize: 14,letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Image.asset("assets/images/bed.png",height: 15,),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Text(" Balcony/Terrace ",style: TextStyle(
+                                    fontSize: 14,letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Image.asset("assets/images/bed.png",height: 15,),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Text(" Gym ",style: TextStyle(
+                                    fontSize: 14,letterSpacing: 0.5
+                                ),),
+                              ),
                             ],
                           ),
+                              Row(
+                                spacing: 5,
+                                children: [
+                                  Image.asset("assets/images/bath.png",height: 15),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 3.0),
+                                    child: Text(" Barbeque Area ",style: TextStyle(
+                                      fontSize: 14,letterSpacing: 0.5,
+                                    ),),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Image.asset("assets/images/Residential__1.png",height: 15,),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 3.0),
+                                    child: Text(" Elevators ",style: TextStyle(
+                                        fontSize: 14,letterSpacing: 0.5
+                                    ),),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Image.asset("assets/images/bath.png",height: 15),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 3.0),
+                                    child: Text("Parking Space ",style: TextStyle(
+                                      fontSize: 14,letterSpacing: 0.5,
+                                    ),),
+                                  ),
+                                ],
+                              ),
+
+
                           Row(
-                            //spacing: 10,
+                            spacing: 5,
                             children: [
-                              Image.asset("assets/images/Residential__1.png",height: 13,),
-                              Text(" Elevators ",style: TextStyle(
-                                  fontSize: 12,letterSpacing: 0.5
-                              ),),
-                              Image.asset("assets/images/bed.png",height: 13,),
-                              Text(" Gym ",style: TextStyle(
-                                  fontSize: 12,letterSpacing: 0.5
-                              ),),
-                              Image.asset("assets/images/bath.png",height: 13),
-                              Text("Parking Space ",style: TextStyle(
-                                fontSize: 12,letterSpacing: 0.5,
-                              ),),
-                              Image.asset("assets/images/messure.png",height: 13),
-                              Text("Pet Allowed ",style: TextStyle(
-                                fontSize: 12,letterSpacing: 0.5,
-                              ),),
-                              Image.asset("assets/images/messure.png",height: 13),
-                              Text("Security ",style: TextStyle(
-                                fontSize: 12,letterSpacing: 0.5,
-                              ),),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Image.asset("assets/images/messure.png",height: 15),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Text("Pet Allowed ",style: TextStyle(
+                                  fontSize: 14,letterSpacing: 0.5,
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Image.asset("assets/images/messure.png",height: 15),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Text("Security ",style: TextStyle(
+                                  fontSize: 14,letterSpacing: 0.5,
+                                ),),
+                              ),
                             ],
-                          )
+                          ),
                         ],
                       )
 
                   ),
-                  Container(
+                /*  Container(
                     height: screenSize.height*0.05,
                     width: screenSize.width*0.9,
                     margin: const EdgeInsets.only(left: 20,right: 20,top: 15),
@@ -520,7 +621,7 @@ class _Product_DetailState extends State<Product_Detail> {
                       style: TextStyle(
                           fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
                       ),),
-                  ),
+                  ),*/
                   Container(
                     height: 30,
                     width: 200,
@@ -531,7 +632,7 @@ class _Product_DetailState extends State<Product_Detail> {
                     ),),
                   ),
                   Container(
-                    height: 80,
+                    height: screenSize.height*0.12,
                     margin: const EdgeInsets.only(left: 20,right: 20,top: 10),
                     // color: Colors.grey,
                     child: Row(
@@ -539,26 +640,44 @@ class _Product_DetailState extends State<Product_Detail> {
                         Column(
                           children: [
                             Text("Project            "),
-                            Text("Mag eye          ",style: TextStyle(
-                                fontWeight: FontWeight.bold
-                            ),),
-                            Text("Delivery Date  "),
-                            Text("25th Jan 2025",style: TextStyle(
-                                fontWeight: FontWeight.bold
-                            ),)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4.0),
+                              child: Text("Mag eye          ",style: TextStyle(
+                                  fontWeight: FontWeight.bold
+                              ),),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10.0),
+                              child: Text("Delivery Date  "),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4.0),
+                              child: Text("25th Jan 2025",style: TextStyle(
+                                  fontWeight: FontWeight.bold
+                              ),),
+                            )
                           ],
                         ),
                         Padding(padding: const EdgeInsets.only(left: 70),
                           child:  Column(
                             children: [
                               Text("Developer                               "),
-                              Text("MAG Property Development",style: TextStyle(
-                                  fontWeight: FontWeight.bold
-                              ),),
-                              Text("Property type                         "),
-                              Text("Townhouse,Apartment         ",style: TextStyle(
-                                  fontWeight: FontWeight.bold
-                              ),)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text("MAG Property Development",style: TextStyle(
+                                    fontWeight: FontWeight.bold
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10.0),
+                                child: Text("Property type                         "),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text("Townhouse,Apartment         ",style: TextStyle(
+                                    fontWeight: FontWeight.bold
+                                ),),
+                              )
                             ],
                           ),
                         ),
@@ -569,7 +688,7 @@ class _Product_DetailState extends State<Product_Detail> {
                   Container(
                     height: screenSize.height*0.17,
                     margin: const EdgeInsets.only(left: 20,right: 20,top: 20),
-                     color: Colors.grey,
+                    // color: Colors.grey,
                     child: Row(
                       spacing: 1,
                       children: [
@@ -618,36 +737,39 @@ class _Product_DetailState extends State<Product_Detail> {
                                   fontSize: 10,fontWeight: FontWeight.bold
                               ),),
                             ),
-                            Container(
-                              height: 30,
-                              width: 145,
-                              margin: const EdgeInsets.only(left: 15,right: 10,top: 15),
-                              padding: const EdgeInsets.only(top: 8),
-                              // color: Colors.grey,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadiusDirectional.circular(8.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.red,
-                                    offset: const Offset(
-                                      0.0,
-                                      0.0,
-                                    ),
-                                    blurRadius: 0.0,
-                                    spreadRadius: 0.3,
-                                  ), //BoxShadow
-                                  BoxShadow(
-                                    color: Colors.white,
-                                    offset: const Offset(0.0, 0.0),
-                                    blurRadius: 0.0,
-                                    spreadRadius: 0.0,
-                                  ), //BoxShadow
-                                ],
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                height: screenSize.height*0.04,
+                                width: screenSize.width*0.4,
+                               // margin: const EdgeInsets.only(left: 15,right: 10,top: 15),
+                                padding: const EdgeInsets.only(top: 8),
+                                // color: Colors.grey,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadiusDirectional.circular(8.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.red,
+                                      offset: const Offset(
+                                        0.5,
+                                        0.5,
+                                      ),
+                                      blurRadius: 0.3,
+                                      spreadRadius: 0.3,
+                                    ), //BoxShadow
+                                    BoxShadow(
+                                      color: Colors.white,
+                                      offset: const Offset(0.0, 0.0),
+                                      blurRadius: 0.0,
+                                      spreadRadius: 0.0,
+                                    ), //BoxShadow
+                                  ],
+                                ),
+                                child: Text("View All Project Details",textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      letterSpacing: 0.5,fontSize: 11,fontWeight: FontWeight.bold
+                                  ),),
                               ),
-                              child: Text("View All Project Details",textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    letterSpacing: 0.5,fontSize: 11,fontWeight: FontWeight.bold
-                                ),),
                             ),
                           ],
                         )
@@ -728,21 +850,21 @@ class _Product_DetailState extends State<Product_Detail> {
                               ), //BoxShadow
                             ],
                           ),
-                          child: CachedNetworkImage( // this is to fetch the image
-                            imageUrl: (productModels!.media),
+                         /* child: CachedNetworkImage( // this is to fetch the image
+                            imageUrl: (productModels!.data!.media.toString()),
                             fit: BoxFit.cover,
                             height: 100,
-                          ),
+                          ),*/
                         ),
                         Padding(padding: const EdgeInsets.only(top: 10),
-                          child: Text(productModels!.agent.name.toString(),style: TextStyle(
+                          child: Text(productModels!.data!.agent.toString(),style: TextStyle(
                               fontWeight: FontWeight.bold,letterSpacing: 0.5
                           ),),
                         ),
                         Row(
                           children: [
                             Padding(padding: const EdgeInsets.only(top: 5,left: 80),
-                              child: Text(productModels!.agent.rating.toString()),
+                             // child: Text(productModels!.agent.rating.toString()),
                             ),
                             Padding(padding: const EdgeInsets.only(top: 5,left: 5),
                               child: Row(
@@ -782,7 +904,7 @@ class _Product_DetailState extends State<Product_Detail> {
                         ),
                         Container(
                           height: 35,
-                          width: 220,
+                          width: screenSize.width*0.5,
                           margin: const EdgeInsets.only(left: 15,right: 10,top: 15),
                           padding: const EdgeInsets.only(top: 8),
                           // color: Colors.grey,
@@ -792,10 +914,10 @@ class _Product_DetailState extends State<Product_Detail> {
                               BoxShadow(
                                 color: Colors.red,
                                 offset: const Offset(
-                                  0.0,
-                                  0.0,
+                                  0.5,
+                                  0.5,
                                 ),
-                                blurRadius: 0.0,
+                                blurRadius: 0.5,
                                 spreadRadius: 0.3,
                               ), //BoxShadow
                               BoxShadow(
@@ -806,7 +928,7 @@ class _Product_DetailState extends State<Product_Detail> {
                               ), //BoxShadow
                             ],
                           ),
-                          child: Text("See Agents Properties(16)",textAlign: TextAlign.center,
+                          child: Text("See Agents Properties",textAlign: TextAlign.center,
                             style: TextStyle(
                                 letterSpacing: 0.5,fontSize: 13,fontWeight: FontWeight.bold
                             ),),
@@ -824,10 +946,10 @@ class _Product_DetailState extends State<Product_Detail> {
                         BoxShadow(
                           color: Colors.grey,
                           offset: const Offset(
-                            0.0,
-                            0.0,
+                            0.5,
+                            0.5,
                           ),
-                          blurRadius: 0.0,
+                          blurRadius: 0.5,
                           spreadRadius: 0.3,
                         ), //BoxShadow
                         BoxShadow(
@@ -840,10 +962,15 @@ class _Product_DetailState extends State<Product_Detail> {
                     ),
                     child: Column(
                       children: [
-                        Padding(padding: const EdgeInsets.only(left: 0,top: 5,right: 160),
-                          child: Text("Regulatory Information  ",style: TextStyle(
-                              fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                          ),textAlign: TextAlign.left,),
+                        Row(
+                          children: [
+                            Padding(padding: const EdgeInsets.only(left: 5,top: 5,right: 0),
+                              child: Text("Regulatory Information  ",style: TextStyle(
+                                  fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                              ),textAlign: TextAlign.left,),
+                            ),
+                            Text("")
+                          ],
                         ),
                         Row(
                           children: [
@@ -852,7 +979,7 @@ class _Product_DetailState extends State<Product_Detail> {
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                             Padding(padding: const EdgeInsets.only(left: 65,top: 5),
-                              child: Text(productModels!.regulatoryInfo.reference.toString(),style: TextStyle(
+                              child: Text(productModels!.data!.regulatoryInfo!.reference.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                             Padding(padding: const EdgeInsets.only(left: 10,top: 5),
@@ -860,7 +987,7 @@ class _Product_DetailState extends State<Product_Detail> {
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                             Padding(padding: const EdgeInsets.only(left: 10,top: 5),
-                              child: Text(productModels!.regulatoryInfo.listed.toString(),style: TextStyle(
+                              child: Text(productModels!.data!.regulatoryInfo!.listed.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                           ],
@@ -872,7 +999,7 @@ class _Product_DetailState extends State<Product_Detail> {
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                             Padding(padding: const EdgeInsets.only(left: 27,top: 5),
-                              child: Text(productModels!.regulatoryInfo.brokerLicense.toString(),style: TextStyle(
+                              child: Text(productModels!.data!.regulatoryInfo!.brokerLicense.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                             Padding(padding: const EdgeInsets.only(left: 15,top: 5),
@@ -880,7 +1007,7 @@ class _Product_DetailState extends State<Product_Detail> {
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                             Padding(padding: const EdgeInsets.only(left: 10,top: 5),
-                              child: Text(productModels!.regulatoryInfo.agentLicense.toString(),style: TextStyle(
+                              child: Text(productModels!.data!.regulatoryInfo!.agentLicense.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
 
@@ -893,7 +1020,7 @@ class _Product_DetailState extends State<Product_Detail> {
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                             Padding(padding: const EdgeInsets.only(left: 1,top: 5),
-                              child: Text(productModels!.regulatoryInfo.dldPermitNumber.toString(),style: TextStyle(
+                              child: Text(productModels!.data!.regulatoryInfo!.dldPermitNumber.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
 
@@ -906,7 +1033,7 @@ class _Product_DetailState extends State<Product_Detail> {
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                             Padding(padding: const EdgeInsets.only(left: 1,top: 5),
-                              child: Text(productModels!.regulatoryInfo.zoneName.toString(),overflow: TextOverflow.ellipsis,
+                              child: Text(productModels!.data!.regulatoryInfo!.zoneName.toString(),overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13,
                                 ),),),
@@ -914,9 +1041,10 @@ class _Product_DetailState extends State<Product_Detail> {
                         ),
                         Container(
                           margin: const EdgeInsets.only(top: 10),
-                          height: 90,
+                          height: screenSize.height*0.1,
                           width: 110,
-                          color: Colors.grey,
+                         // color: Colors.grey,
+                          child: Image.asset("assets/images/dld.png",fit: BoxFit.fill,),
                         ),
                         Padding(padding: const EdgeInsets.only(top: 10),
                           child: Text("OLD Permit Number",style: TextStyle(fontWeight: FontWeight.bold),),)
@@ -932,54 +1060,216 @@ class _Product_DetailState extends State<Product_Detail> {
                         fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                     ),),
                   ),
-                  /*Padding(padding: const EdgeInsets.only(top: 10,left: 20,right: 0),
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 0,top: 0,right: 0),
-                      height: 200,
-                      child: ListView(
-                        padding: const EdgeInsets.only(right: 10),
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                      Card(
-                        color: Colors.grey,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 5.0,top: 1,right: 5),
-                        child: Column(
-                          children: [
-                            AspectRatio(
-                                aspectRatio: 1.5,
-                            child: Image.asset("assets/images/image 1.png",
-                              fit: BoxFit.cover,
-                              height: 100,),
-                            ),
-                            Padding(padding: const EdgeInsets.only(top: 5),
-                              child: ListTile(
-                                title: Text("AED 134677",style: TextStyle(
-                                    fontWeight: FontWeight.bold,fontSize: 18,height: 1.4
-                                ),),
-                              ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Padding(padding: const EdgeInsets.only(left: 1,right: 5,top: 0),
-                                  child:  Image.asset("assets/images/map.png",height: 14,),
+                 /* Container(
+                    height: screenSize.height*0.3,
+                    margin: const EdgeInsets.only(left: 20),
+                   // color: Colors.grey,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                        physics: const ScrollPhysics(),
+                        itemCount: productModels?.data?.recommendedProperties?.length ?? 0,
+                        shrinkWrap: true,
+                        itemBuilder: (context,index){
+                          return SingleChildScrollView(
+                              child: GestureDetector(
+                                onTap: (){
+                                  String id = productModels!.data!.recommendedProperties![index].id.toString();
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                                      Product_Detail(data: id)));
+                                },
+                                child : Padding(
+                                  padding: const EdgeInsets.only(top: 0.0,left: 10,right: 10),
+                                  child: Card(
+                                    color: Colors.white,
+                                    borderOnForeground: true,
+                                    shadowColor: Colors.white,
+                                    elevation: 10,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(left: 5.0,top: 0,right: 5),
+                                      child: Column(
+                                        // spacing: 5,// this is the coloumn
+                                        children: [
+                                          Padding(
+                                              padding: const EdgeInsets.only(top: 0.0),
+                                              child:ClipRRect(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  child: Stack(
+                                                      children: [
+                                                        AspectRatio(
+                                                          aspectRatio: 1.6,
+                                                          // this is the ratio
+                                                          child: CachedNetworkImage( // this is to fetch the image
+                                                            imageUrl: (productModels!.data!.recommendedProperties![index].media![index].originalUrl.toString()),
+                                                            fit: BoxFit.fill,
+                                                          ),
+                                                        ),
+
+
+
+
+                                                       *//* Positioned(
+                                                          top: 5,
+                                                          right: 10,
+                                                          child: Container(
+                                                            margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
+                                                            height: 35,
+                                                            width: 35,
+                                                            padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
+                                                            decoration: BoxDecoration(
+                                                              borderRadius: BorderRadiusDirectional.circular(20.0),
+                                                              boxShadow: [
+                                                                BoxShadow(
+                                                                  color: Colors.grey,
+                                                                  offset: const Offset(
+                                                                    0.3,
+                                                                    0.3,
+                                                                  ),
+                                                                  blurRadius: 0.3,
+                                                                  spreadRadius: 0.3,
+                                                                ), //BoxShadow
+                                                                BoxShadow(
+                                                                  color: Colors.white,
+                                                                  offset: const Offset(0.0, 0.0),
+                                                                  blurRadius: 0.0,
+                                                                  spreadRadius: 0.0,
+                                                                ), //BoxShadow
+                                                              ],
+                                                            ),
+                                                            // child: Positioned(
+                                                            // child: Icon(Icons.favorite_border,color: Colors.red,),)
+                                                            child: IconButton(
+                                                              padding: EdgeInsets.only(left: 5,top: 7),
+                                                              alignment: Alignment.center,
+                                                              icon: Icon(
+                                                                isFavorited ? Icons.favorite : Icons.favorite_border,
+                                                                color: isFavorited ? Colors.red : Colors.red,
+                                                              ),
+                                                              onPressed: () {
+                                                                setState(() {
+                                                                  property_id=searchModel!.data![index].id;
+
+                                                         if(token == ''){
+                                                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
+                                                                  }
+                                                                  else{
+                                                                    toggledApi(token,property_id);
+                                                                  }
+                                                                  isFavorited = !isFavorited;
+                                                                });
+                                                              },
+                                                            ),
+                                                            //)
+                                                          ),
+                                                        ),*//*
+                                                      ]
+                                                  )
+                                              )
+                                          ),
+
+                                          Padding(padding: const EdgeInsets.only(top: 5),
+                                            child: ListTile(
+                                              title: Padding(
+                                                padding: const EdgeInsets.only(top: 5.0,bottom: 5),
+                                                child: Text(productModels!.data!.recommendedProperties![index].title.toString(),
+                                                  style: TextStyle(
+                                                      fontSize: 16,height: 1.4
+                                                  ),),
+                                              ),
+                                              subtitle: Text('${productModels!.data!.recommendedProperties![index].price}',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
+                                                ),),
+                                            ),
+                                          ),
+                                          Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            children: [
+                                              Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 0,bottom: 10),
+                                                child:  Image.asset("assets/images/map.png",height: 14,),
+                                              ),
+                                              Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
+                                                child: Text(productModels!.data!.recommendedProperties![index].address.toString(),style: TextStyle(
+                                                    fontSize: 13,height: 1.4,
+                                                    overflow: TextOverflow.visible
+                                                ),),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 5),
+                                                child: Image.asset("assets/images/bed.png",height: 13,),
+                                              ),
+                                              Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
+                                                  child: Text(productModels!.data!.recommendedProperties![index].bedrooms.toString())
+                                              ),
+                                             *//* Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
+                                                child: Image.asset("assets/images/bath.png",height: 13,),
+                                              ),
+                                              Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
+                                                  child: Text(productModels!.data!.recommendedProperties![index]..toString())
+                                              ),*//*
+                                              Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
+                                                child: Image.asset("assets/images/messure.png",height: 13,),
+                                              ),
+                                              Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
+                                                  child: Text(productModels!.data!.recommendedProperties![index].squareFeet.toString())
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Padding(padding: const EdgeInsets.only(left: 30,top: 20,bottom: 15),
+                                                child: ElevatedButton.icon(onPressed: (){},
+                                                    label: Text("call",style: TextStyle(
+                                                        color: Colors.black
+                                                    ),),
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.grey[50],
+                                                      alignment: Alignment.center,
+                                                      elevation: 1,
+                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                      padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 40),
+                                                      textStyle: TextStyle(letterSpacing: 0.5,
+                                                          color: Colors.black,fontSize: 15,fontWeight: FontWeight.bold
+                                                      ),
+                                                    ),
+                                                    icon: Icon(Icons.call,color: Colors.red,)),
+                                              ),
+                                              // Text(product.description),
+                                              Padding(padding: const EdgeInsets.only(left: 15,top: 20,bottom: 15),
+                                                child: ElevatedButton.icon(onPressed: (){},
+                                                    label: Text("Watsapp",style: TextStyle(
+                                                        color: Colors.black
+                                                    ),),
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.grey[50],
+                                                      alignment: Alignment.center,
+                                                      elevation: 1,
+                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                      padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 30),
+                                                      textStyle: TextStyle(letterSpacing: 0.5,
+                                                          color: Colors.black,fontSize: 12,fontWeight: FontWeight.bold
+                                                      ),
+                                                    ),
+                                                    icon: Image.asset("assets/images/whats.png",height: 20,)
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                        ],
+                                      ),
+                                    ),
+
+                                  ),
                                 ),
-                                Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                  child: Text("sdfghjkgsdfghjxcvbnmdfghj",style: TextStyle(
-                                      fontWeight: FontWeight.bold,fontSize: 13,height: 1.4,
-                                      overflow: TextOverflow.visible
-                                  ),),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        ),
-                      )
-                        ],
-                      ),
-                    ),
+
+                              )
+
+                          );
+                        }),
                   ),*/
 
                   SizedBox(height: 100,)
@@ -1073,7 +1363,7 @@ class _Product_DetailState extends State<Product_Detail> {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.call_outlined,color: Colors.green,)
+              child: Image.asset("assets/images/whats.png",height: 20,)
 
           ),
           Container(

@@ -1,14 +1,17 @@
 import 'dart:convert';
 
-import 'package:drawerdemo/model/loginmodel.dart';
-import 'package:drawerdemo/model/registermodel.dart';
-import 'package:drawerdemo/screen/create_password.dart';
-import 'package:drawerdemo/screen/login.dart';
-import 'package:drawerdemo/screen/login_page.dart';
-import 'package:drawerdemo/screen/my_account.dart';
-import 'package:drawerdemo/utils/Validator.dart';
+import 'package:Akarat/model/loginmodel.dart';
+import 'package:Akarat/model/registermodel.dart';
+import 'package:Akarat/screen/create_password.dart';
+import 'package:Akarat/screen/login.dart';
+import 'package:Akarat/screen/login_page.dart';
+import 'package:Akarat/screen/my_account.dart';
+import 'package:Akarat/utils/Validator.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../utils/shared_preference_manager.dart';
 
 class EmaiLogin extends StatefulWidget {
   const EmaiLogin({super.key, required this.data});
@@ -19,6 +22,8 @@ class EmaiLogin extends StatefulWidget {
 class _EmaiLoginState extends State<EmaiLogin> {
 
   bool passwordVisible=false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
   final passwordController = TextEditingController();
   @override
   void initState(){
@@ -29,6 +34,8 @@ RegisterModel? registerModel;
   LoginModel? loginModel;
   String result = '';
   String token = '';
+  String email = '';
+  bool isDataSaved = false;
   Future<void> loginUsers(data) async {
     try {
       final response = await http.post(
@@ -47,9 +54,20 @@ RegisterModel? registerModel;
         Map<String, dynamic> jsonData = json.decode(response.body);
         loginModel = LoginModel.fromJson(jsonData);
         result=loginModel!.name.toString();
-        token=loginModel!.email.toString();
+         token=loginModel!.token.toString();
+        email=loginModel!.email.toString();
         print("Registered Succesfully");
-        Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account(result: result,token: token)));
+        isDataSaved
+            ? const Text('Data Saved!')
+            : const Text('Data Not Saved!');
+        // Call the addStringToPref method and pass the string value
+        prefManager.addStringToPref(token);
+        prefManager.addStringToPrefemail(email);
+        prefManager.addStringToPrefresult(result);
+        setState(() {
+          isDataSaved = true;
+        });
+        Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
       } else {
         throw Exception("Registration failed");
 

@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:drawerdemo/model/contactmodel.dart';
+import 'package:Akarat/model/contactmodel.dart';
+import 'package:Akarat/screen/my_account.dart';
+import 'package:Akarat/utils/shared_preference_manager.dart';
 import 'package:http/http.dart' as http;
-import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/profile_login.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 
 class Support extends StatefulWidget {
@@ -27,8 +29,34 @@ class _SupportState extends State<Support> {
     const Page3(),
     const Page4(),
   ];
-  ContactModel? contactModel;
+
+  String token = '';
+  String email = '';
   String result = '';
+  bool isDataRead = false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
+
+  @override
+  void initState() {
+    readData();
+    super.initState();
+  }
+
+
+
+
+  ContactModel? contactModel;
+  //String result = '';
   Future<void> sendMessage() async {
     try {
       final response = await http.post(Uri.parse('https://akarat.com/api/contact'),
@@ -48,7 +76,7 @@ class _SupportState extends State<Support> {
       if (response.statusCode == 201) {
         Map<String, dynamic> jsonData = json.decode(response.body);
         contactModel = ContactModel.fromJson(jsonData);
-       result= contactModel!.message.toString();
+      // result= contactModel!.message.toString();
       // Text(result);
         Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
       } else {
@@ -104,8 +132,15 @@ class _SupportState extends State<Support> {
                             child:   Row(
                               children: [GestureDetector(
                                 onTap: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
-                                },
+                                  setState(() {
+                                    if(token == ''){
+                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                                    }
+                                    else{
+                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+
+                                    }
+                                  });                                },
                                 child:   Container(
                                   margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
                                   height: 35,
@@ -577,8 +612,15 @@ class _SupportState extends State<Support> {
             enableFeedback: false,
             onPressed: () {
 
-              //   Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+setState(() {
+  if(token == ''){
+    Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+  }
+  else{
+    Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
+  }
+});
             },
             icon: pageIndex == 3
                 ? const Icon(

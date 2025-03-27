@@ -1,11 +1,13 @@
 import 'dart:convert';
-import 'package:drawerdemo/model/registermodel.dart';
-import 'package:drawerdemo/screen/emai_login.dart';
-import 'package:drawerdemo/screen/login.dart';
-import 'package:drawerdemo/screen/my_account.dart';
-import 'package:drawerdemo/utils/Validator.dart';
+import 'package:Akarat/model/registermodel.dart';
+import 'package:Akarat/screen/emai_login.dart';
+import 'package:Akarat/screen/login.dart';
+import 'package:Akarat/screen/my_account.dart';
+import 'package:Akarat/utils/Validator.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
+import '../utils/shared_preference_manager.dart';
 
 class CreatePassword extends StatefulWidget {
   const CreatePassword({super.key, required this.data});
@@ -21,7 +23,11 @@ class _CreatePasswordState extends State<CreatePassword> {
   final confirmpasswordController = TextEditingController();
   String result = '';
   String token = '';
+  String email = '';
   RegisterModel? registermodel;
+  bool isDataSaved = false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
   @override
   void initState(){
     super.initState();
@@ -48,14 +54,23 @@ class _CreatePasswordState extends State<CreatePassword> {
        Map<String, dynamic> jsonData = json.decode(response.body);
           registermodel = RegisterModel.fromJson(jsonData);
           result=registermodel!.name.toString();
-          token=registermodel!.email.toString();
+          token=registermodel!.token.toString();
+          email=registermodel!.email.toString();
           print("Registered Succesfully");
        /*Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context){
          return My_Account(
            arguments: registermodel[index],
          );
        }));*/
-          Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account(result: result,token: token)));
+       isDataSaved
+           ? const Text('Data Saved!')
+           : const Text('Data Not Saved!');
+       // Call the addStringToPref method and pass the string value
+       prefManager.addStringToPref(token);
+       setState(() {
+         isDataSaved = true;
+       });
+          Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
       } else {
         throw Exception("Registration failed");
 
@@ -391,7 +406,7 @@ class _CreatePasswordState extends State<CreatePassword> {
                           children: [
                             Padding(
                               padding: const EdgeInsets.only(left: 62),
-                              child: Text('Not registered yet? ',style: TextStyle(
+                              child: Text('Already registered? ',style: TextStyle(
                                 color: Color(0xFF424242),fontSize: 13,
                               ),),
                             ),

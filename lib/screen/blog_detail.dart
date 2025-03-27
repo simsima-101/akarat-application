@@ -1,28 +1,25 @@
 
-import 'package:drawerdemo/screen/blog.dart';
-import 'package:drawerdemo/screen/home.dart';
+import 'dart:convert';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:Akarat/model/blogdetailmodel.dart';
+import 'package:Akarat/screen/blog.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/my_account.dart';
+import 'package:Akarat/screen/profile_login.dart';
+import 'package:Akarat/utils/shared_preference_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-void main(){
-  runApp(const Blog_Detail());
-}
-
-class Blog_Detail extends StatelessWidget {
-  const Blog_Detail({Key ? key}) : super (key: key);
+class Blog_Detail extends StatefulWidget {
+  const Blog_Detail({super.key, required this.data});
+  final String data;
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Blog_DetailDemo(),
-    );
-  }
+  State<Blog_Detail> createState() => _Blog_DetailDemoState();
 }
-class Blog_DetailDemo extends StatefulWidget {
-  @override
-  _Blog_DetailDemoState createState() => _Blog_DetailDemoState();
-}
-class _Blog_DetailDemoState extends State<Blog_DetailDemo> {
+
+class _Blog_DetailDemoState extends State<Blog_Detail> {
 
   int pageIndex = 0;
   final pages = [
@@ -30,8 +27,65 @@ class _Blog_DetailDemoState extends State<Blog_DetailDemo> {
     const Page4(),
   ];
 
+
+  String token = '';
+  String email = '';
+  String result = '';
+  bool isDataRead = false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
+
+  BlogDetailModel? blogDetailModel;
+  @override
+  void initState() {
+readData();
+    fetchProducts(widget.data);
+  }
+
+
+  Future<void> fetchProducts(data) async {
+    // you can replace your api link with this link
+    final response = await http.get(Uri.parse('https://akarat.com/api/blog/$data'));
+    Map<String,dynamic> jsonData=json.decode(response.body);
+    debugPrint("Status Code: ${response.statusCode}");
+    if (response.statusCode == 200) {
+      debugPrint("API Response: ${jsonData.toString()}");
+      debugPrint("API 200: ");
+      BlogDetailModel parsedModel = BlogDetailModel.fromJson(jsonData);
+      debugPrint("Parsed ProductModel: ${parsedModel.toString()}");
+      setState(() {
+        debugPrint("API setState: ");
+        String title = jsonData['title'] ?? 'No title';
+        debugPrint("API title: $title");
+        blogDetailModel = parsedModel;
+
+      });
+
+      debugPrint("productModels title_after: ${blogDetailModel!.data!.readingTime.toString()}");
+
+    } else {
+      // Handle error if needed
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
+    if (blogDetailModel == null) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()), // Show loading state
+      );
+    }
     return Scaffold(
         backgroundColor: Colors.white,
         bottomNavigationBar: buildMyNavBar(context),
@@ -94,7 +148,8 @@ class _Blog_DetailDemoState extends State<Blog_DetailDemo> {
 
             ],
           ),
-        ),),
+        ),
+      ),
       Padding(
         padding: const EdgeInsets.only(top: 10.0),
         child: Container(
@@ -122,74 +177,60 @@ class _Blog_DetailDemoState extends State<Blog_DetailDemo> {
               ]),
           child: Row(
             children: [
-              Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
+              /*Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
                 child: Icon(Icons.search_rounded,color: Colors.red,size: 40,),
-              ), Padding(padding: const EdgeInsets.only(left: 55,top: 0,right: 0),
+              ),*/ Padding(padding: const EdgeInsets.only(left: 20,top: 0,right: 0),
                   child: Image.asset("assets/images/app_icon.png",height: 35,)
               ), Padding(padding: const EdgeInsets.only(left: 5,top: 0,right: 0),
                   child: Image.asset("assets/images/logo-text.png",height: 30,)
-              ), Padding(padding: const EdgeInsets.only(left: 75,top: 0,right: 10),
+              ), /*Padding(padding: const EdgeInsets.only(left: 75,top: 0,right: 10),
                 child: Icon(Icons.dehaze,color: Colors.red,size: 40,),
-              ),
+              ),*/
             ],
           ),
         ),
       ),
-      Padding(
-        padding: const EdgeInsets.only(top: 10),
-        child: Container(
-          height: 30,
-          width: double.infinity,
-          child: Row(
-            children: [
-              Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
-                child: Image.asset("assets/images/map.png",height: 15,),
-              ),
-              Padding(padding: const EdgeInsets.only(left: 5,top: 0,right: 0),
-                  child: Text("Dubai")
-              ),
-              Padding(padding: const EdgeInsets.only(left: 220,top: 0,right: 0),
-                child: Image.asset("assets/images/calender.png",height: 20,),
-              ),
-              Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
-                child: Text("30.01.2025"),
-              ),
-            ],
-          ),
-        ),
-      ),
-      Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 10,bottom: 0),
+      Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 20,bottom: 0),
       child: Container(
-        height: 220,
+        height: screenSize.height*0.25,
           width: double.infinity,
-          child: Image.asset("assets/images/image 4.png",fit: BoxFit.fill,)),
+          child: CachedNetworkImage( // this is to fetch the image
+            imageUrl: (blogDetailModel!.data!.image.toString()),
+            fit: BoxFit.fill,
+
+          ),),
       ),
       Padding(padding: const EdgeInsets.only(left: 10,right: 0,top: 10),
       child: Container(
-        height: 80,
-        width: double.infinity,
-       // color: Colors.grey,
+        height: screenSize.height*0.07,
+        width: screenSize.width*1,
+      // color: Colors.grey,
         child: Column(
           children: [
-            Text("Top Buildings to rent studios in Jumeirah Village Circle (JVC)",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,fontSize: 18
-            ),),
+            Row(
+              children: [
+                Text(blogDetailModel!.data!.translations!.en!.title.toString(),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,fontSize: 18
+                ),textAlign: TextAlign.left,),
+                Text(""),
+              ],
+            ),
             Row(
               children: [
                 Padding(padding: const EdgeInsets.only(left: 5,top: 10,right: 0,bottom: 0),
                   child: Image.asset("assets/images/dot.png",height: 8,)
-                ), Padding(padding: const EdgeInsets.only(left: 5,top: 8,right: 0,bottom: 0),
-                  child: Text("6 min read",style: TextStyle(
+                ), Padding(padding: const EdgeInsets.only(left: 10,top: 8,right: 0,bottom: 0),
+                  child: Text(blogDetailModel!.data!.readingTime.toString(),style: TextStyle(
                     fontSize: 12,color: Colors.grey
                   ),)
-                ), Padding(padding: const EdgeInsets.only(left: 15,top: 10,right: 0,bottom: 0),
+                ), Padding(padding: const EdgeInsets.only(left: 50,top: 10,right: 0,bottom: 0),
                   child: Image.asset("assets/images/dot.png",height: 10,)
-                ), Padding(padding: const EdgeInsets.only(left: 5,top: 10,right: 0,bottom: 0),
-                    child: Text("Published:31.01.2025",style: TextStyle(
+                ), Padding(padding: const EdgeInsets.only(left: 10,top: 10,right: 0,bottom: 0),
+                    child: Text("Published:"+blogDetailModel!.data!.publishedDate.toString(),style: TextStyle(
                         fontSize: 12,color: Colors.grey
                     ),)
-                ), Padding(padding: const EdgeInsets.only(left: 105,top: 10,right: 0,bottom: 0),
+                ), Padding(padding: const EdgeInsets.only(left: 50,top: 10,right: 0,bottom: 0),
                   child: Image.asset("assets/images/like.png",height: 12,)
                 ), Padding(padding: const EdgeInsets.only(left: 5,top: 10,right: 0,bottom: 0),
                   child: Image.asset("assets/images/dis-like.png",height: 12,)
@@ -200,26 +241,23 @@ class _Blog_DetailDemoState extends State<Blog_DetailDemo> {
         ),
       ),
       ),
-      Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
+      Padding(padding: const EdgeInsets.only(left: 15,right: 10,top: 10),
       child: Text("The Future of Real Estate: How Akarat is Transforming property search in the UAE",style:
         TextStyle(
           fontSize: 14,letterSpacing: 0.5,fontWeight: FontWeight.bold
         ),),
       ),
-      Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
+      Padding(padding: const EdgeInsets.only(left: 15,right: 10,top: 10),
       child: Container(
-        height: 150,
+        height: screenSize.height*0.5,
         width: double.infinity,
-       // color: Colors.grey,
-        child: Text("The UAE's real estate market is booming,offering endless opportunities for buyers,sellers and "
-            "investors,with the rise of digital platforms, property hunting has become more accessible and "
-            "efficient than even. Akarat is at the forefront of this transformation providing "
-            "an innovative property search experience tailored to the modern real estate markets. ",style: TextStyle(
+        //color: Colors.grey,
+        child: Text(blogDetailModel!.data!.translations!.en!.description.toString(),style: TextStyle(
           letterSpacing: 0.5
         ),),
       ),
       ),
-      Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
+    /*  Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
         child: Container(
           height: 150,
           width: double.infinity,
@@ -231,8 +269,8 @@ class _Blog_DetailDemoState extends State<Blog_DetailDemo> {
               letterSpacing: 0.5
           ),),
         ),
-      ),
-      Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
+      ),*/
+     /* Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
         child: Container(
           height: 250,
           width: double.infinity,
@@ -264,11 +302,15 @@ class _Blog_DetailDemoState extends State<Blog_DetailDemo> {
             ],
           )
         ),
-      ),
-      SizedBox(
-        height: 200,
-      ),
-      Container(
+      ),*/
+SizedBox(
+  height: screenSize.height*0.1,
+)
+
+      ]
+    )
+    ),
+      bottomSheet: Container(
         height: 50,
         width: double.infinity,
         margin: const EdgeInsets.only(left: 10,right: 10,top: 10,bottom: 10),
@@ -325,9 +367,6 @@ class _Blog_DetailDemoState extends State<Blog_DetailDemo> {
           ],
         ),
       ),
-      ]
-    )
-    )
     );
   }
 
@@ -342,7 +381,6 @@ class _Blog_DetailDemoState extends State<Blog_DetailDemo> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(
             enableFeedback: false,
@@ -363,23 +401,32 @@ class _Blog_DetailDemoState extends State<Blog_DetailDemo> {
               size: 35,
             ),
           ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
+          Padding(
+            padding: const EdgeInsets.only(left: 290.0),
+            child: IconButton(
+              enableFeedback: false,
+              alignment: Alignment.bottomRight,
+              onPressed: () {
 
-              // Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                if(isDataRead == true){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
 
-            },
-            icon: pageIndex == 3
-                ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
+                }
+              },
+              icon: pageIndex == 3
+                  ? const Icon(
+                Icons.dehaze,
+                color: Colors.red,
+                size: 35,
+              )
+                  : const Icon(
+                Icons.dehaze_outlined,
+                color: Colors.red,
+                size: 35,
+              ),
             ),
           ),
         ],

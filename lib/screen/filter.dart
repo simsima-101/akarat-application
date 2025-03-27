@@ -1,10 +1,13 @@
 import 'dart:convert';
 
+import 'package:Akarat/model/propertytypemodel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:drawerdemo/model/amenities.dart';
-import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/profile_login.dart';
-import 'package:drawerdemo/utils/Amenitiescardscreen.dart';
+import 'package:Akarat/model/amenities.dart';
+import 'package:Akarat/model/filtermodel.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/profile_login.dart';
+import 'package:Akarat/utils/Amenitiescardscreen.dart';
+import 'package:Akarat/utils/api2cardscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_core/core.dart';
@@ -12,39 +15,40 @@ import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:http/http.dart' as http;
 import 'filter_list.dart';
 
-void main(){
-  runApp(const Filter());
-
-}
 
 class Filter extends StatelessWidget {
-  const Filter({super.key});
+  final dynamic data;
+  const Filter({super.key,required this.data});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: FilterDemo(),
+      home: FilterDemo(data: data,),
     );
   }
 }
 class FilterDemo extends StatefulWidget {
-  const FilterDemo({super.key});
+  final dynamic data;
+
+  const FilterDemo({super.key,required this.data});
 
   @override
   _FilterDemoState createState() => _FilterDemoState();
 }
 class _FilterDemoState extends State<FilterDemo> {
   late bool isSelected = true;
-   double start = 12.0;
+   double start = 3000.0;
    double startarea = 2000.0;
    double endarea = 4500.0;
-   double end = 30.0;
-   SfRangeValues _values = SfRangeValues(12.0 ,30.0);
+   double end = 5000.0;
+   SfRangeValues _values = SfRangeValues(3000.0 ,5000.0);
    SfRangeValues _valuesArea = SfRangeValues(2000.0 ,4500.0);
   late RangeController _rangeController;
   late RangeController _rangeControllerarea;
   final agenciesController = TextEditingController();
+
+  late FilterModel filterModel;
 
   @override
   void initState() {
@@ -56,6 +60,10 @@ class _FilterDemoState extends State<FilterDemo> {
         start: startarea.toString(),
         end: endarea.toString());
     fetchAmenities();
+    selectedproduct = 0; // Select first item initially
+    purpose = _product[0]; // Set initial purpose
+
+    propertyApi(widget.data);
   }
   List<Amenities> amenities = [];
   @override
@@ -65,10 +73,11 @@ class _FilterDemoState extends State<FilterDemo> {
     super.dispose();
   }
 final List _product = [
-'Properties',
-'New Projects',
-'Buy',
-'Rent',
+  'Rent',
+  'Buy',
+  'New Projects',
+'Commercial'
+
 ];
   final List _category = [
     'All Residential',
@@ -90,66 +99,49 @@ final List _product = [
     'Balcony', 'Private Garden'
   ];
   final List _rent = [
-    'Yearly', 'Bi-Yearly', 'Quarterly'
+    'Yearly', 'Bi-Yearly', 'Quarterly',
         'Monthly'
   ];
   final List<Data> chartData = <Data>[
-    Data(x: 5.0, y: 15.45),
-    Data(x: 6.0, y: 10.44),
-    Data(x: 7.0, y: 38.12),
-    Data(x: 8.0, y: 18.9),
-    Data(x: 9.0, y: 22.8),
-    Data(x: 10.0, y:19.7),
-    Data(x: 11.0, y: 36.11),
-    Data(x: 12.0, y: 12.5),
-    Data(x: 13.0, y: 13.7),
-    Data(x: 14.0, y: 20.8),
-    Data(x: 15.0, y: 33.7),
-    Data(x: 16.0, y: 34.7),
-    Data(x: 17.0, y: 17.7),
-    Data(x: 18.0, y: 22.7),
-    Data(x: 19.0, y: 19.7),
-    Data(x: 20.0, y: 22.7),
-    Data(x: 21.0, y: 20.7),
-    Data(x: 22.0, y: 44.7),
-    Data(x: 23.0, y: 45.7),
-    Data(x: 24.0, y: 40.7),
-    Data(x: 25.0, y: 15.7),
-    Data(x: 26.0, y: 26.7),
-    Data(x: 27.0, y: 14.7),
-    Data(x: 28.0, y: 20.7),
-    Data(x: 29.0, y: 41.7),
-    Data(x: 30.0, y: 13.7),
-    Data(x: 31.0, y: 13.7),
-    Data(x: 32.0, y: 34.0),
-    Data(x: 33.0, y: 25.5),
-    Data(x: 34.0, y: 41.5),
-    Data(x: 35.0, y: 13.7),
-    Data(x: 36.0, y: 13.7),
-    Data(x: 37.0, y: 13.7),
-    Data(x: 38.0, y: 45.7),
-    Data(x: 39.0, y: 13.7),
-    Data(x: 40.0, y: 13.7),
-    Data(x: 41.0, y: 42.7),
-    Data(x: 42.0, y: 13.7),
-    Data(x: 43.0, y: 44.7),
-    Data(x: 44.0, y: 13.7),
-    Data(x: 45.0, y: 20.7),
-    Data(x: 46.0, y: 44.7),
-    Data(x: 47.0, y: 55.7),
-    Data(x: 48.0, y: 60.7),
-    Data(x: 49.0, y: 33.7),
-    Data(x: 50.0, y: 24.7),
-    Data(x: 51.0, y: 27.7),
-    Data(x: 52.0, y: 35.7),
-    Data(x: 53.0, y: 36.7),
-    Data(x: 54.0, y: 39.7),
-    Data(x: 55.0, y: 25.7),
-    Data(x: 56.0, y: 13.7),
-    Data(x: 57.0, y: 40.7),
-    Data(x: 58.0, y: 56.7),
-    Data(x: 59.0, y: 60.7),
-    Data(x: 60.0, y: 53.7),
+    Data(x: 500.0, y: 1500.45),
+    Data(x: 750.0, y: 6000.45),
+    Data(x: 1000.0, y:3000.7),
+    Data(x: 1250.0, y:3000.7),
+    Data(x: 1500.0, y: 1500.7),
+    Data(x: 1750.0, y: 1500.7),
+    Data(x: 2000.0, y: 9000.7),
+    Data(x: 2250.0, y: 9000.7),
+    Data(x: 2500.0, y: 6000.7),
+    Data(x: 2750.0, y: 6000.7),
+    Data(x: 3000.0, y: 2500.7),
+    Data(x: 3250.0, y: 2500.7),
+    Data(x: 3500.0, y: 5000.7),
+    Data(x: 3750.0, y: 5000.7),
+    Data(x: 4000.0, y: 8000.7),
+    Data(x: 4250.0, y: 8000.7),
+    Data(x: 4500.0, y: 2000.7),
+    Data(x: 4750.0, y: 2000.7),
+    Data(x: 5000.0, y: 4000.7),
+    Data(x: 5250.0, y: 4000.7),
+    Data(x: 5500.0, y: 8000.7),
+    Data(x: 5750.0, y: 8000.7),
+    Data(x: 6000.0, y: 5500.7),
+    Data(x: 6250.0, y: 5500.7),
+    Data(x: 6500.0, y: 3000.7),
+    Data(x: 6750.0, y: 3000.7),
+    Data(x: 7000.0, y: 7500.7),
+    Data(x: 7250.0, y: 7500.7),
+    Data(x: 7500.0, y: 10000.7),
+    Data(x: 7750.0, y: 10000.7),
+    Data(x: 8000.0, y: 6000.7),
+    Data(x: 8250.0, y: 6000.7),
+    Data(x: 8500.0, y: 9000.7),
+    Data(x: 8750.0, y: 9000.7),
+    Data(x: 9000.0, y: 6500.7),
+    Data(x: 9250.0, y: 6500.7),
+    Data(x: 9500.0, y: 7500.7),
+    Data(x: 9750.0, y: 7500.7),
+    Data(x: 10000.0, y: 3000.7),
   ];
   final List<Dataarea> chartDataarea = <Dataarea>[
     Dataarea(x: 500.0, y: 1500.45),
@@ -207,30 +199,69 @@ final List _product = [
     const Page3(),
     const Page4(),
   ];
-String myData = ' ';
+  int? selectedIndex; // Holds the index of the selected container
+  int? selectedtype; // Holds the index of the selected container
+  int? selectedproduct = 0; // Holds the index of the selected container
+  int? selectedcategory; // Holds the index of the selected container
+  int? selectedbedroom; // Holds the index of the selected container
+  int? selectedbathroom; // Holds the index of the selected container
+  int? selectedamenities; // Holds the index of the selected container
+  // int? selectedamenities; // Holds the index of the selected container
+  int? selectedrent; // Holds the index of the selected container
+String purpose = ' ';
 String category = ' ';
 String bedroom = ' ';
 String bathroom = ' ';
 String ftype = ' ';
 String amnities = ' ';
+String property_type= ' ';
 String rent = ' ';
 String min_price = '';
 String max_price = ' ';
-
+String min_sqrfeet = ' ';
+String max_sqrfeet = ' ';
+  Set<int> selectedIndexes = {};
+  PropertyTypeModel? propertyTypeModel;
 
   Future<void> showResult() async {
     // you can replace your api link with this link
-    final response = await http.get(Uri.parse('http://akarat.com/api/filters?search=$_searchController&amenities=$amnities&'
-        'category=$category&furnished_status=$ftype&bedrooms=$bedroom&'
-        'min_price=$min_price&max_price=$max_price&payment_period=$rent&square_feet=1200&bathrooms=$bathroom&purpose=$myData'));
+    final response = await http.get(Uri.parse('https://akarat.com/api/filters?'
+        'search=&amenities=[$selectedIndexes]&property_type=$property_type'
+        '&furnished_status=$ftype&bedrooms=$bedroom&min_price=$min_price'
+        '&max_price=$max_price&payment_period=$rent&min_square_feet=$min_sqrfeet'
+        '&max_square_feet=$max_sqrfeet&bathrooms=$bathroom&purpose=$purpose'));
+    var data = jsonDecode(response.body);
     if (response.statusCode == 200) {
-      List<dynamic> jsonData = json.decode(response.body);
+      FilterModel feature= FilterModel.fromJson(data);
+
       setState(() {
-       // products = jsonData.map((data) => Product.fromJson(data)).toList();
+        filterModel = feature ;
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterList(filterModel: filterModel,)));
+
       });
     } else {
     }
   }
+
+
+
+  Future<void> propertyApi(purpose) async {
+    final response = await http.get(Uri.parse(
+        "https://akarat.com/api/property-types/$purpose"));
+    var data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      PropertyTypeModel feature= PropertyTypeModel.fromJson(data);
+
+      setState(() {
+        propertyTypeModel = feature ;
+
+      });
+
+    } else {
+      //return FeaturedModel.fromJson(data);
+    }
+  }
+
 
   Future<void> fetchAmenities() async {
     final response = await http.get(Uri.parse("https://akarat.com/api/amenities"));
@@ -249,859 +280,226 @@ String max_price = ' ';
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
       bottomNavigationBar: buildMyNavBar(context),
-        backgroundColor: Colors.white,
-        body: SingleChildScrollView(
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
         child: Column(
-        children: <Widget>[
-          //filter
-          Padding(
-            padding: const EdgeInsets.only(top: 30,left: 0,right: 0),
-            child: Container(
-              margin: const EdgeInsets.only(left: 10,right: 10),
-             // color: Colors.grey,
-              width: screenSize.width * 1.0,
-              height: 50,
-              padding: const EdgeInsets.only(top: 5),
-            child: Row(
-              spacing: 10,
-              children: [
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> HomeDemo()));
-                  },
-                  child:  Icon(Icons.close,color: Colors.red,),
-                ),
+            children: <Widget>[
+              //filter
+              Padding(
+                padding: const EdgeInsets.only(top: 30,left: 0,right: 0),
+                child: Container(
+                    margin: const EdgeInsets.only(left: 20,right: 10),
+                    // color: Colors.grey,
+                    width: screenSize.width * 1.0,
+                    height: 50,
+                    padding: const EdgeInsets.only(top: 5),
+                    child: Row(
+                      spacing: 15,
+                      children: [
+                        GestureDetector(
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> HomeDemo()));
+                          },
+                          child:  Icon(Icons.close,color: Colors.red,),
+                        ),
 
 
-                Padding(
-                  padding: const EdgeInsets.only(left: 100.0),
-                  child: Text("Filters",textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.black,fontSize: 20.0,fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5),),
-                ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 100.0),
+                          child: Text("Filters",textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: Colors.black,fontSize: 20.0,fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5),),
+                        ),
 
-            GestureDetector(
-              onTap: (){
-               // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
-                Navigator.pushReplacement(
-                  context,
-                  PageRouteBuilder(
-                    transitionDuration: Duration.zero,
-                    pageBuilder: (_, __, ___) => Filter(),
-                  ),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(left: 100.0),
-                child: Text("Reset",textAlign: TextAlign.right,
-                    style: TextStyle(color: Colors.red,fontSize: 16.0,fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,),),
-              ),
-            ),
-              ],
-            )
-            ),
-          ),
-          //properties
-          Padding(
-            padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
-              child: Container(
-                //color: Colors.grey,
-                height: 40,
-               child:  ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const ScrollPhysics(),
-                  itemCount: _product.length,
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                   // Colors.grey;
-                   return Container(
-                     alignment: Alignment.topLeft,
-                      // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                    margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                  //  width: screenSize.width * 0.25,
-                   // height: 20,
-                       padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
-                       decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(6.0),
-                    boxShadow: [
-                    BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                    0.3,
-                    0.3,
-                    ),
-                    blurRadius: 0.3,
-                    spreadRadius: 0.3,
-                    ), //BoxShadow
-                    BoxShadow(
-                    //color:myData == index ? Colors.amber : Colors.transparent,
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                    ), //BoxShadow
-                    ],
-                    ),
-                    child: GestureDetector(
-                     child:   Center(
-                       child: Text(_product[index],style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
-                     ),
-                      onTap: (){
-                        setState(() {
-                          if(isSelected=true) {
-                            myData = _product[index];
-                          }
-                        });
-                      },
+                        GestureDetector(
+                          onTap: (){
+                            // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
+                            Navigator.pushReplacement(
+                              context,
+                              PageRouteBuilder(
+                                transitionDuration: Duration.zero,
+                                pageBuilder: (_, __, ___) => Filter(data: purpose,),
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 100.0),
+                            child: Text("Reset",textAlign: TextAlign.right,
+                              style: TextStyle(color: Colors.red,fontSize: 16.0,fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,),),
+                          ),
+                        ),
+                      ],
                     )
-                    );
-                  },
                 ),
-               /* child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  shrinkWrap: true,
-                  children: [
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5,left: 0,right: 1),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
+              ),
+              //properties
+              Padding(
+                  padding: const EdgeInsets.only(top: 10,left: 15,right: 10),
+                  child: Container(
+                    //color: Colors.grey,
+                    height: 50,
+                    child:  ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const ScrollPhysics(),
+                      itemCount: _product.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        // Colors.grey;
+                        return Container(
+                            alignment: Alignment.topLeft,
+                            // color: selectedIndex == index ? Colors.amber : Colors.transparent,
+                            margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                            //  width: screenSize.width * 0.25,
+                            // height: 20,
+                            padding: const EdgeInsets.only(top: 0,left: 15,right: 15),
+                            decoration: BoxDecoration(
+                              color: selectedproduct == index ? Colors.blueAccent : Colors.white,
+                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+
+                            child: GestureDetector(
+                              child:   Center(
+                                child: Text(_product[index],style: TextStyle(
+                                  //color: Colors.black,
+                                  color: selectedproduct == index ? Colors.white : Colors.black,
+                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
                               ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text(" Properties  ",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.3,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("New projects",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("Buy",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("Rent",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                  ],
-                  ),*/
-              )
-            ),
-          //Searchbar
-          Padding(
-            padding: const EdgeInsets.only(top: 15,left: 15,right: 10),
-            child: Container(
-              width: 400,
-              height: 60,
-              padding: const EdgeInsets.only(top: 13),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(15.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.red,
-                    offset: const Offset(
-                      0.3,
-                      0.3,
+                              onTap: (){
+                                setState(() {
+                                //  if(isSelected=true) {
+                                  selectedproduct = index;
+                                  purpose = _product[index];
+                                  propertyApi(purpose);
+                                    //  Color(0xFF212121);
+                                //  }
+                                });
+                              },
+                            )
+                        );
+                      },
                     ),
-                    blurRadius: 0.3,
-                    spreadRadius: 0.3,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
+                  )
+              ),
+              //Searchbar
+              Padding(
+                padding: const EdgeInsets.only(top: 20,left: 15,right: 10),
+                child: Container(
+                  width: screenSize.width*0.9,
+                  height: screenSize.height*0.07,
+                  padding: const EdgeInsets.only(top: 13),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadiusDirectional.circular(15.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red,
+                        offset: const Offset(
+                          0.3,
+                          0.3,
+                        ),
+                        blurRadius: 0.3,
+                        spreadRadius: 0.3,
+                      ), //BoxShadow
+                      BoxShadow(
+                        color: Colors.white,
+                        offset: const Offset(0.0, 0.0),
+                        blurRadius: 0.0,
+                        spreadRadius: 0.0,
+                      ), //BoxShadow
+                    ],
+                  ),
+                  // Use a Material design search bar
+                  child: TextField(
+                    textAlign: TextAlign.left,
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Search for a locality,area or city',
+                      hintStyle: TextStyle(color: Colors.grey,fontSize: 15,
+                          letterSpacing: 0.5),
+
+                      // Add a clear button to the search bar
+                      suffixIcon: IconButton(
+                        alignment: Alignment.topLeft,
+                        icon: Icon(Icons.mic),
+                        onPressed: () => _searchController.clear(),
+                      ),
+
+                      // Add a search icon or button to the search bar
+                      prefixIcon: IconButton(
+                        alignment: Alignment.topLeft,
+                        icon: Icon(Icons.search,color: Colors.red,),
+                        onPressed: () {
+                          // Perform the search here
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              //property type
+              Row(
+                children: [
+                  Padding(padding: const EdgeInsets.only(top: 25.0,left: 20,bottom: 15),
+                      // child:  Text(purpose,
+                      child:  Text("Property Type",
+                        style: TextStyle(
+                            color: Colors.black,fontSize: 18.0,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.5),
+                        textAlign: TextAlign.left,)
+                  ),
                 ],
               ),
-              // Use a Material design search bar
-              child: TextField(
-                textAlign: TextAlign.left,
-                controller: _searchController,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: 'Search for a locality,area or city',
-                  hintStyle: TextStyle(color: Colors.grey,fontSize: 15,
-                      letterSpacing: 0.5),
-
-                  // Add a clear button to the search bar
-                  suffixIcon: IconButton(
-                    alignment: Alignment.topLeft,
-                    icon: Icon(Icons.mic),
-                    onPressed: () => _searchController.clear(),
-                  ),
-
-                  // Add a search icon or button to the search bar
-                  prefixIcon: IconButton(
-                    alignment: Alignment.topLeft,
-                    icon: Icon(Icons.search,color: Colors.red,),
-                    onPressed: () {
-                      // Perform the search here
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ),
-          //property type
-          Row(
-            children: [
-              Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
-                  child:  Text("Property Type",
-                    style: TextStyle(
-                        color: Colors.black,fontSize: 18.0,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.5),
-                    textAlign: TextAlign.left,)
-              ),
-            ],
-          ),
-          //images gridview
-          Row(
-            children: [
-              //logo 1
-              GestureDetector(
-                onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
-                },
-                child: Padding(
-                padding: const EdgeInsets.only(
-                    left: 15.0, right: 5.0, top: 5, bottom: 0),
-                child: Container(
-                    width: screenSize.width * 0.3,
-                  height: 100,
-                  padding: const EdgeInsets.only(top: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(10.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.3,
-                          0.3,
-                        ),
-                        blurRadius: 0.3,
-                        spreadRadius: 0.3,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ],
-                  ),
-                    child:   Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset("assets/images/Residential__1.png",height: 40,),
-                        Padding(padding: const EdgeInsets.only(left: 25,right: 20,top: 5),
-                          child:  Text("Residential",style:
-                          TextStyle(height: 1.2,
-                              letterSpacing: 0.5,
-                              fontSize: 12,fontWeight: FontWeight.bold
-                          ),),
-                        )
-
-                      ],
-                    )
-                ),
-              ),
-              ),
-
-              //logo2
-              GestureDetector(
-                onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
-                },
-                child: Padding(
-                padding: const EdgeInsets.only(
-                    left: 3.0, right: 5.0, top:5.0, bottom: 0),
-                child: Container(
-                    width: screenSize.width * 0.3,
-                  height: 100,
-                  padding: const EdgeInsets.only(top: 10),
-                  decoration: BoxDecoration(
-
-                    // image: DecorationImage(
-                    //   image: AssetImage("assets/images/02.png"),
-                    // ),
-                    borderRadius: BorderRadiusDirectional.circular(10.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.3,
-                          0.3,
-                        ),
-                        blurRadius: 0.3,
-                        spreadRadius: 0.3,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ],
-                  ),
-                    child:   Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset("assets/images/commercial_new.png",height: 40,),
-                        Padding(padding: const EdgeInsets.only(left: 25,right: 20,top: 5),
-                          child:  Text("Commercial",style:
-                          TextStyle(height: 1.2,
-                              letterSpacing: 0.5,
-                              fontSize: 12,fontWeight: FontWeight.bold
-                          ),),
-                        )
-
-                      ],
-                    )
-                ),
-              ),
-              ),
-              //logo2
-              GestureDetector(
-                onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
-                },
-                child:Padding(
-                padding: const EdgeInsets.only(
-                    left: 3.0, right: 5.0, top: 5.0, bottom: 0),
-                child: Container(
-                    width: screenSize.width * 0.3,
-                  height: 100,
-                  padding: const EdgeInsets.only(top: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(10.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.3,
-                          0.3,
-                        ),
-                        blurRadius: 0.3,
-                        spreadRadius: 0.3,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ],
-                  ),
-                    child:   Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset("assets/images/rooms_stand.png",height: 40,),
-                        Padding(padding: const EdgeInsets.only(left: 25,right: 20,top: 5),
-                          child:  Text("Rooms",style:
-                          TextStyle(height: 1.2,
-                              letterSpacing: 0.5,
-                              fontSize: 12,fontWeight: FontWeight.bold
-                          ),),
-                        ),
-                      ],
-                    )
-                ),
-              ),
-              ),
-            ],
-          ),
-          //text
-          Row(
-          children: [
-            Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
-              child:  Text("Residential Categories",
-                style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18.0,fontWeight: FontWeight.w500,
-                    letterSpacing: 0.5),
-                textAlign: TextAlign.left,),
-            ),
-          ],
-        ),
-          //category
-          Padding(
-              padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
-              child: Container(
-                //color: Colors.grey,
-                height: 40,
-                child:  ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const ScrollPhysics(),
-                  itemCount: _category.length,
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                    // Colors.grey;
-                    return Container(
-                      // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                       // width: screenSize.width * 0.25,
-                        // height: 20,
-                        padding: const EdgeInsets.only(top: 0,left: 5,right: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              //color:myData == index ? Colors.amber : Colors.transparent,
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: GestureDetector(
-                          child:   Center(
-                            child: Text(_category[index],style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
-                          ),
-                          onTap: (){
-                            setState(() {
-                              if(isSelected=true) {
-                                category = _category[index];
-                              }
-                            });
-                          },
-                        )
-                    );
-                  },
-                ),
-                /* child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  shrinkWrap: true,
-                  children: [
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5,left: 0,right: 1),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text(" Properties  ",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.3,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("New projects",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("Buy",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("Rent",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                  ],
-                  ),*/
-              )
-          ),
-          Row(
-            children: [
-              Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
-                child:  Text("Price range",
-                  style: TextStyle(
-                      color: Colors.black,fontSize: 18.0,
-                      letterSpacing: 0.5,
-                  fontWeight: FontWeight.w500),
-                  textAlign: TextAlign.left,),
-              ),
-            ],
-          ),
-          Padding(
-        padding: const EdgeInsets.only(top: 10,left: 15,right: 10),
-        child: Row(
-            // mainAxisAlignment: MainAxisAlignment.center,
-            // crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-               Container(
-                width: 135,
-                height: 35,
-                padding: const EdgeInsets.only(top: 5,left: 5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadiusDirectional.circular(6.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.3,
-                        0.3,
-                      ),
-                      blurRadius: 0.3,
-                      spreadRadius: 0.3,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
-                ),
-                child: Text(min_price)
-
-              ),
               Container(
-                width: 30,
-              ),
-              Padding(padding: const EdgeInsets.only(top: 5),
-                child:  Text("to",
-                  style: TextStyle(
-                      color: Colors.black,fontSize: 15.0),
-                  textAlign: TextAlign.left,),
-              ),
-              Container(
-                width: 35,
-              ),
-              Container(
-                width: 135,
-                height: 35,
-                padding: const EdgeInsets.only(top: 5,left: 5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadiusDirectional.circular(6.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.3,
-                        0.3,
-                      ),
-                      blurRadius: 0.3,
-                      spreadRadius: 0.3,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
-                ),
-                child: Text(max_price)
-              ),
-              ]
-        )
-      ),
-          //rangeslider
-          Padding(padding: const EdgeInsets.only(top: 25.0,left: 1,bottom: 15),
-            child: SfRangeSelector(
-              min: 5.0,
-              max: 60.0,
-              interval: 1,
-              enableTooltip: true,
-              shouldAlwaysShowTooltip: true,
-              initialValues: _values,
-             onChanged: (value) {
-                setState(() {
-                  _values=SfRangeValues(value.start, value.end);
-                  min_price=value.start.toStringAsFixed(2);
-                  max_price=value.end.toStringAsFixed(2);
-                });
+                margin: const EdgeInsets.only(left: 15,right: 5),
+                height: screenSize.height*0.1,
+             //  width: screenSize.width*0.5,
+               // color: Colors.grey,
+                child:  ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const ScrollPhysics(),
+                  itemCount: propertyTypeModel?.data?.length ?? 0,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    return Container(
+                        margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
+                        padding: const EdgeInsets.only(top: 0,left: 5,right: 10),
+                        decoration: BoxDecoration(
+                          color: selectedtype == index ? Colors.blueAccent : Colors.white,
+                         // color: selectedIndexes.contains(index) ? Colors.grey : Colors.white,
+                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: const Offset(
+                                0.3,
+                                0.3,
+                              ),
+                              blurRadius: 0.3,
+                              spreadRadius: 0.3,
+                            ), //BoxShadow
+                            BoxShadow(
 
-             },
-              child: SizedBox(
-                height: 60,
-                width: 400,
-                child: SfCartesianChart(
-                  backgroundColor: Colors.transparent,
-                  plotAreaBorderColor: Colors.transparent,
-                  margin: const EdgeInsets.all(0),
-                  primaryXAxis: NumericAxis(minimum: 5.0, maximum: 60.0,
-                    isVisible: false,),
-                  primaryYAxis: NumericAxis(isVisible: false),
-                  plotAreaBorderWidth: 0,
-                  plotAreaBackgroundColor: Colors.transparent,
-                  series: <ColumnSeries<Data, double>>[
-                    ColumnSeries<Data, double>(
-                      trackColor: Colors.transparent,
-                       //color: Color.fromARGB(255, 126, 184, 253),
-                      //opacity: 0.5,
-                      dataSource: chartData,
-                      selectionBehavior: SelectionBehavior(
-                        unselectedOpacity: 0.0,
-                        selectedColor: Colors.transparent,
-                        selectedOpacity: 0.0,unselectedColor: Colors.transparent,
-                        selectionController: _rangeController,
-                      ),
-                      xValueMapper: (Data sales, int index) => sales.x,
-                      yValueMapper: (Data sales, int index) => sales.y,
-                      pointColorMapper: (Data sales, int index) {
-                        return const Color.fromARGB(255, 126, 184, 253);
-                      },
-                      // color: const Color.fromRGBO(255, 255, 255, 0),
-                      dashArray: const <double>[5, 3],
-                      // borderColor: const Color.fromRGBO(194, 194, 194, 1),
-                      animationDuration: 0,
-                      borderWidth: 0,
-                      //opacity: 0.5,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Row(
-            children: [
-              Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
-                // child:  Text(_values.start.toStringAsFixed(2),
-               child:  Text("Bedrooms",
-                  style: TextStyle(
-                      color: Colors.black,fontSize: 18.0,
-                      letterSpacing: 0.5,fontWeight: FontWeight.w500),
-                  textAlign: TextAlign.left,),
-              ),
-            ],
-          ),
-          //studio
-          Padding(
-              padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
-              child: Container(
-                //color: Colors.grey,
-               // width: 60,
-                height: 40,
-                child:  ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const ScrollPhysics(),
-                  itemCount: _bedroom.length,
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                    // Colors.grey;
-                    return Container(
-                      // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                        margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                       // width: screenSize.width * 0.25,
-                        // height: 20,
-                        padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              //color:myData == index ? Colors.amber : Colors.transparent,
                               color: Colors.white,
                               offset: const Offset(0.0, 0.0),
                               blurRadius: 0.0,
@@ -1110,746 +508,28 @@ String max_price = ' ';
                           ],
                         ),
                         child: GestureDetector(
-                          child:   Center(
-                            child: Text(_bedroom[index],style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
-                          ),
-                          onTap: (){
-                            setState(() {
-                              if(isSelected=true) {
-                                bedroom = _bedroom[index];
-                              }
-                            });
-                          },
-                        )
-                    );
-                  },
-                ),
-                /* child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  shrinkWrap: true,
-                  children: [
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5,left: 0,right: 1),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text(" Properties  ",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.3,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("New projects",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("Buy",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("Rent",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                  ],
-                  ),*/
-              )
-          ),
-          Row(
-  children: [
-    Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
-      // child:  Text(bedroom,
-      child:  Text("Bathrooms",
-        style: TextStyle(
-            color: Colors.black,fontSize: 18.0,fontWeight: FontWeight.w500,
-            letterSpacing: 0.5),
-        textAlign: TextAlign.left,),
-    ),
-  ],
-),
-          Padding(
-              padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
-              child: Container(
-                //color: Colors.grey,
-                // width: 60,
-                alignment: Alignment.topLeft,
-                height: 40,
-                child:  ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const ScrollPhysics(),
-                  itemCount: _bathroom.length,
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                    // Colors.grey;
-                    return Container(
-                      // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                        margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                        // width: screenSize.width * 0.25,
-                        // height: 20,
-                        padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              //color:myData == index ? Colors.amber : Colors.transparent,
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: GestureDetector(
-                          child:   Center(
-                            child: Text(_bathroom[index],style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
-                          ),
-                          onTap: (){
-                            setState(() {
-                              if(isSelected=true) {
-                                bathroom = _bathroom[index];
-                              }
-                            });
-                          },
-                        )
-                    );
-                  },
-                ),
-                /* child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  shrinkWrap: true,
-                  children: [
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5,left: 0,right: 1),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text(" Properties  ",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.3,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("New projects",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("Buy",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("Rent",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                  ],
-                  ),*/
-              )
-          ),
-          //area
-          Row(
-            children: [
-              Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
-                child:  Text("Area/Size",
-                  style: TextStyle(
-                      color: Colors.black,fontSize: 18.0,
-                      letterSpacing: 0.5,
-                  fontWeight: FontWeight.w500),
-                  textAlign: TextAlign.left,),
-              ),
-            ],
-          ),
-          Padding(
-              padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
-              child: Row(
-                  // mainAxisAlignment: MainAxisAlignment.center,
-                  // crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 135,
-                      height: 35,
-                      padding: const EdgeInsets.only(top: 5,left: 5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
-                      ),
-                      child: Text(_valuesArea.start.toStringAsFixed(2) )
-                    ),
-                    Container(
-                      width: 35,
-                    ),
-                    Padding(padding: const EdgeInsets.only(top: 5),
-                      child:  Text("to",
-                        style: TextStyle(
-                            color: Colors.black,fontSize: 15.0),
-                        textAlign: TextAlign.left,),
-                    ),
-                    Container(
-                      width: 35,
-                    ),
-                    Container(
-                      width: 135,
-                      height: 35,
-                      padding: const EdgeInsets.only(top: 5,left: 5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
-                      ),
-                      child: Text(_valuesArea.end.toStringAsFixed(2) )
-                    ),
-                  ]
-              )
-          ),
-          //rangeslider
-          Padding(padding: const EdgeInsets.only(top: 25.0,left: 1,bottom: 15),
-           child: SfRangeSelector(
-             min: 1000.0,
-             max: 5000.0,
-             interval: 5,
-             enableTooltip: true,
-             shouldAlwaysShowTooltip: true,
-             initialValues: _valuesArea,
-             onChanged: (value) {
-               setState(() {
-                 _valuesArea=SfRangeValues(value.start, value.end);
-               });
-
-             },
-             child: SizedBox(
-               height: 70,
-               width: 400,
-               child: SfCartesianChart(
-                 plotAreaBorderColor: Colors.transparent,
-                 margin: const EdgeInsets.all(0),
-                 primaryXAxis: NumericAxis(minimum: 1000.0, maximum: 5000.0,
-                   isVisible: false,),
-                 primaryYAxis: NumericAxis(isVisible: false),
-                 plotAreaBorderWidth: 0,
-                 plotAreaBackgroundColor: Colors.transparent,
-                 series: <ColumnSeries<Dataarea, double>>[
-                   ColumnSeries<Dataarea, double>(
-                     trackColor: Colors.transparent,
-                     // color: Color.fromARGB(255, 126, 184, 253),
-                     dataSource: chartDataarea,
-                     selectionBehavior: SelectionBehavior(
-                       unselectedOpacity: 0,
-                       selectedOpacity: 0.0,unselectedColor: Colors.transparent,
-                       selectionController: _rangeControllerarea,
-                     ),
-                     xValueMapper: (Dataarea sales, int index) => sales.x,
-                     yValueMapper: (Dataarea sales, int index) => sales.y,
-                     pointColorMapper: (Dataarea sales, int index) {
-                       return const Color.fromRGBO(0, 178, 206, 1);
-                     },
-                     // color: const Color.fromRGBO(255, 255, 255, 0),
-                     dashArray: const <double>[5, 3],
-                     // borderColor: const Color.fromRGBO(194, 194, 194, 1),
-                     animationDuration: 0,
-                     borderWidth: 0,
-                     //opacity: 0.5,
-                   ),
-                 ],
-               ),
-             ),
-           ),
-          ),
-          //furnished
-          Row(
-  children: [
-    Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
-      child:  Text("Furnished Type",
-        style: TextStyle(
-            color: Colors.black,fontSize: 18.0,
-            letterSpacing: 0.5,
-        fontWeight: FontWeight.w500),
-        textAlign: TextAlign.left,),
-    ),
-  ],
-),
-          Padding(
-              padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
-              child: Container(
-                //color: Colors.grey,
-                // width: 60,
-                alignment: Alignment.topLeft,
-                height: 40,
-                child:  ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const ScrollPhysics(),
-                  itemCount: _ftype.length,
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                    // Colors.grey;
-                    return Container(
-                        margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                        padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              //color:myData == index ? Colors.amber : Colors.transparent,
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: GestureDetector(
-                          child:   Center(
-                            child: Text(_ftype[index],style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
-                          ),
-                          onTap: (){
-                            setState(() {
-                              if(isSelected=true) {
-                                ftype = _ftype[index];
-                              }
-                            });
-                          },
-                        )
-                    );
-                  },
-                ),
-                /* child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  shrinkWrap: true,
-                  children: [
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5,left: 0,right: 1),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text(" Properties  ",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.3,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("New projects",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("Buy",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("Rent",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                  ],
-                  ),*/
-              )
-          ),
-          //Amenities
-          Row(
-  children: [
-    Padding(padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15),
-      child:  Text("Amenities",
-        style: TextStyle(
-            color: Colors.black,fontSize: 18.0,
-            letterSpacing: 0.5,
-        fontWeight: FontWeight.w500),
-        textAlign: TextAlign.left,),
-    ),
-  ],
-),
-          Padding(
-              padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
-              child: Container(
-                //color: Colors.grey,
-                // width: 60,
-                alignment: Alignment.topLeft,
-                height: 40,
-                child:  ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const ScrollPhysics(),
-                  itemCount: amenities.length,
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                    return Container(
-                        margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                        padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              //color:myData == index ? Colors.amber : Colors.transparent,
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: GestureDetector(
-                          child:   Row(
+                          child:   Column(
                             children: [
-                              CachedNetworkImage(imageUrl: amenities[index].icon.toString()),
-                              Text(amenities[index].title.toString(),style: TextStyle(color: Colors.black,
-                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                              Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: CachedNetworkImage(
+                                  imageUrl: propertyTypeModel!.data![index].icon.toString(),height: 10,),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(1.0),
+                                child: Text(propertyTypeModel!.data![index].name.toString(),
+                                  style: TextStyle(
+                                    color: selectedtype == index ? Colors.white : Colors.black,
+                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),
+                                  textAlign: TextAlign.center,),
+                              ),
                             ],
                           ),
                           onTap: (){
                             setState(() {
-                              if(isSelected=true) {
-                                amnities = amenities[index].id.toString();
-                              }
+                              selectedtype = index;
+                                property_type = propertyTypeModel!.data![index].name.toString();
+                              // }
                             });
                           },
                         )
@@ -1857,316 +537,865 @@ String max_price = ' ';
                     // return Amenitiescardscreen(amenities: amenities[index]);
                   },
                 ),
-
-              )
-          ),
-
-          //real estate
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                    top: 25.0,left: 15,bottom: 15),
-                child:  Text("Real Estate Agencies",style: TextStyle(
-                  color: Colors.black,letterSpacing: 0.5,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 18
-
-                ),textAlign: TextAlign.left,),
               ),
-            ],
-          ),
-          Padding(
-        padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
-            child:   Container(
-                width: 400,
-                height: 35,
-                padding: const EdgeInsets.only(top: 0,left: 15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadiusDirectional.circular(6.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.3,
-                        0.3,
-                      ),
-                      blurRadius: 0.3,
-                      spreadRadius: 0.3,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
-                ),
-                child: TextField(
-                  textAlignVertical: TextAlignVertical.center,
-                 controller: agenciesController,
-                 // obscureText: true,
-                  decoration: InputDecoration(
-                    /* border: OutlineInputBorder(
-                       ),*/
-                    border: InputBorder.none,
-                    hintText: '   eg.dubizzle properties',hintStyle: TextStyle(
-                      color: Colors.grey,fontSize: 15,
-                      letterSpacing: 0.5)
+              //text
+              Row(
+                children: [
+                  Padding(padding: const EdgeInsets.only(top: 25.0,left: 20,bottom: 15),
+                    // child:  Text(property_type,
+                    child:  Text("Residential Categories",
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,fontWeight: FontWeight.w500,
+                          letterSpacing: 0.5),
+                      textAlign: TextAlign.left,),
                   ),
-                  textAlign: TextAlign.left,
-
-                ),
+                ],
               ),
-      ),
-          Row(
-            children: [
+              //category
               Padding(
-                padding: const EdgeInsets.only(
-                    top: 25.0,left: 15,bottom: 15),
-                child:  Text("Rent is paid",style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,letterSpacing: 0.5
-                ),textAlign: TextAlign.left,),
-              ),
-            ],
-          ),
-          Padding(
-              padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
-              child: Container(
-                //color: Colors.grey,
-                // width: 60,
-                alignment: Alignment.topLeft,
-                height: 40,
-                child:  ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const ScrollPhysics(),
-                  itemCount: _rent.length,
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                    // Colors.grey;
-                    return Container(
-                      // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                        margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                        // width: screenSize.width * 0.25,
-                        // height: 20,
-                        padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              //color:myData == index ? Colors.amber : Colors.transparent,
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: GestureDetector(
-                          child:   Center(
-                            child: Text(_rent[index],style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
-                          ),
-                          onTap: (){
-                            setState(() {
-                              if(isSelected=true) {
-                                rent = _rent[index];
-                              }
-                            });
-                          },
-                        )
-                    );
-                  },
-                ),
-                /* child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  shrinkWrap: true,
-                  children: [
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5,left: 0,right: 1),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text(" Properties  ",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.3,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("New projects",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("Buy",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
-                        width: screenSize.width * 0.2,
-                        height: 30,
-                        padding: const EdgeInsets.only(top: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ],
-                        ),
-                        child: Text("Rent",
-                          style: TextStyle(color: Colors.black,
-                              letterSpacing: 0.5,fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,),
-                      ),
-                  ],
-                  ),*/
-              )
-          ),
-          Container(
-            height: 150,
-          ),
-          GestureDetector(
-  onTap: (){
-    showResult();
-   // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
-  },
-  child:  Padding(
-    padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15,right: 15),
-    child:   Container(
-      // color: Colors.red,
-      width: 400,
-      height: 45,
-      // color: Colors.red,
-      padding: const EdgeInsets.only(top: 10,left: 0),
-      decoration: BoxDecoration(
-        color: Colors.red,
-        borderRadius: BorderRadiusDirectional.circular(6.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey,
-            offset: const Offset(
-              0.3,
-              0.3,
-            ),
-            blurRadius: 0.3,
-            spreadRadius: 0.3,
-          ), //BoxShadow
-          BoxShadow(
-            color: Colors.white,
-            offset: const Offset(0.0, 0.0),
-            blurRadius: 0.0,
-            spreadRadius: 0.0,
-          ), //BoxShadow
-        ],),
-      child: Text("Showing 112,765 Results",style: TextStyle(
+                  padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
+                  child: Container(
+                    //color: Colors.grey,
+                    height: 50,
+                    child:  ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const ScrollPhysics(),
+                      itemCount: _category.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        // Colors.grey;
+                        return Container(
+                          // color: selectedIndex == index ? Colors.amber : Colors.transparent,
+                            margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                            // width: screenSize.width * 0.25,
+                            // height: 20,
+                            padding: const EdgeInsets.only(top: 0,left: 5,right: 5),
+                            decoration: BoxDecoration(
+                              color: selectedcategory == index ? Colors.blueAccent : Colors.white,
+                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
 
-          color: Colors.white,letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 15
-      ),textAlign: TextAlign.center,),
-    ),
-  ),
-),
-          Container(
-            height: 10,
-          ),
-          ]),
-        ),
-        );
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child: GestureDetector(
+                              child:   Center(
+                                child: Text(_category[index],
+                                  style: TextStyle(
+                                    color: selectedcategory == index ? Colors.white : Colors.black,
+                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                              ),
+                              onTap: (){
+                                setState(() {
+                                 // if(isSelected=true) {
+                                  selectedcategory = index;
+                                    category = _category[index];
+                                 // }
+                                });
+                              },
+                            )
+                        );
+                      },
+                    ),
+                  )
+              ),
+              Row(
+                children: [
+                  Padding(padding: const EdgeInsets.only(top: 25.0,left: 20,bottom: 15),
+                    child:  Text("Price range",
+                      style: TextStyle(
+                          color: Colors.black,fontSize: 18.0,
+                          letterSpacing: 0.5,
+                          fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.left,),
+                  ),
+                ],
+              ),
+              Padding(
+                  padding: const EdgeInsets.only(top: 10,left: 20,right: 10),
+                  child: Row(
+                    // mainAxisAlignment: MainAxisAlignment.center,
+                    // crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                            width: 135,
+                            height: 35,
+                            padding: const EdgeInsets.only(top: 5,left: 5),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child: Text(_values.start.toStringAsFixed(2))
+
+                        ),
+                        Container(
+                          width: 30,
+                        ),
+                        Padding(padding: const EdgeInsets.only(top: 5),
+                          child:  Text("to",
+                            style: TextStyle(
+                                color: Colors.black,fontSize: 15.0),
+                            textAlign: TextAlign.left,),
+                        ),
+                        Container(
+                          width: 35,
+                        ),
+                        Container(
+                            width: 135,
+                            height: 35,
+                            padding: const EdgeInsets.only(top: 5,left: 5),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child: Text(_values.end.toStringAsFixed(2))
+                        ),
+                      ]
+                  )
+              ),
+              //rangeslider
+              Padding(
+                padding: const EdgeInsets.only(top: 25.0,left: 1,bottom: 0),
+                child: SfRangeSelector(
+                  min: 500.0,
+                  max: 10000.0,
+                  interval: 500,
+                  enableTooltip: true,
+                  shouldAlwaysShowTooltip: true,
+                  initialValues: _values,
+                  onChanged: (value) {
+                    setState(() {
+                      _values=SfRangeValues(value.start, value.end);
+                      min_price=value.start.toStringAsFixed(2);
+                      max_price=value.end.toStringAsFixed(2);
+                    });
+
+                  },
+                  child: SizedBox(
+                    height: 60,
+                    width: 400,
+                    child: SfCartesianChart(
+                      backgroundColor: Colors.transparent,
+                      plotAreaBorderColor: Colors.transparent,
+                      margin: const EdgeInsets.all(0),
+                      primaryXAxis: NumericAxis(minimum: 500.0, maximum: 10000.0,
+                        isVisible: false,),
+                      primaryYAxis: NumericAxis(isVisible: false),
+                      plotAreaBorderWidth: 0,
+                      plotAreaBackgroundColor: Colors.transparent,
+                      series: <ColumnSeries<Data, double>>[
+                        ColumnSeries<Data, double>(
+                          trackColor: Colors.transparent,
+                          //color: Color.fromARGB(255, 126, 184, 253),
+                          //opacity: 0.5,
+                          dataSource: chartData,
+                          selectionBehavior: SelectionBehavior(
+                            unselectedOpacity: 0.0,
+                            selectedColor: Colors.transparent,
+                            selectedOpacity: 0.0,unselectedColor: Colors.transparent,
+                            selectionController: _rangeController,
+                          ),
+                          xValueMapper: (Data sales, int index) => sales.x,
+                          yValueMapper: (Data sales, int index) => sales.y,
+                          pointColorMapper: (Data sales, int index) {
+                            return const Color.fromARGB(255, 126, 184, 253);
+                          },
+                          // color: const Color.fromRGBO(255, 255, 255, 0),
+                          dashArray: const <double>[5, 3],
+                          // borderColor: const Color.fromRGBO(194, 194, 194, 1),
+                          animationDuration: 0,
+                          borderWidth: 0,
+                          //opacity: 0.5,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Padding(padding: const EdgeInsets.only(top: 15.0,left: 20,bottom: 15),
+                    // child:  Text(_values.start.toStringAsFixed(2),
+                    child:  Text("Bedrooms",
+                      style: TextStyle(
+                          color: Colors.black,fontSize: 18.0,
+                          letterSpacing: 0.5,fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.left,),
+                  ),
+                ],
+              ),
+              //studio
+              Padding(
+                  padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
+                  child: Container(
+                    //color: Colors.grey,
+                    // width: 60,
+                    height: 50,
+                    child:  ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const ScrollPhysics(),
+                      itemCount: _bedroom.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        // Colors.grey;
+                        return Container(
+                          // color: selectedIndex == index ? Colors.amber : Colors.transparent,
+                            margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
+                            // width: screenSize.width * 0.25,
+                            // height: 20,
+                            padding: const EdgeInsets.only(top: 0,left: 15,right: 15),
+                            decoration: BoxDecoration(
+                              color: selectedbedroom == index ? Colors.blueAccent : Colors.white,
+                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child: GestureDetector(
+                              child:   Center(
+                                child: Text(_bedroom[index],
+                                  style: TextStyle(
+                                    color: selectedbedroom == index ? Colors.white : Colors.black,
+                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                              ),
+                              onTap: (){
+                                setState(() {
+                                //  if(isSelected=true) {
+                                  selectedbedroom = index;
+                                    bedroom = _bedroom[index];
+                                //  }
+                                });
+                              },
+                            )
+                        );
+                      },
+                    ),
+                  )
+              ),
+              Row(
+                children: [
+                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 15),
+                    // child:  Text(bedroom,
+                    child:  Text("Bathrooms",
+                      style: TextStyle(
+                          color: Colors.black,fontSize: 18.0,fontWeight: FontWeight.w500,
+                          letterSpacing: 0.5),
+                      textAlign: TextAlign.left,),
+                  ),
+                ],
+              ),
+              Padding(
+                  padding: const EdgeInsets.only(top: 0,left: 17,right: 10),
+                  child: Container(
+                    //color: Colors.grey,
+                    // width: 60,
+                    alignment: Alignment.topLeft,
+                    height: 50,
+                    child:  ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const ScrollPhysics(),
+                      itemCount: _bathroom.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        // Colors.grey;
+                        return Container(
+                          // color: selectedIndex == index ? Colors.amber : Colors.transparent,
+                            margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
+                            // width: screenSize.width * 0.25,
+                            // height: 20,
+                            padding: const EdgeInsets.only(top: 0,left: 15,right: 15),
+                            decoration: BoxDecoration(
+                              color: selectedbathroom == index ? Colors.blueAccent : Colors.white,
+                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child: GestureDetector(
+                              child:   Center(
+                                child: Text(_bathroom[index],
+                                  style: TextStyle(
+                                    color: selectedbathroom == index ? Colors.white : Colors.black,
+                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                              ),
+                              onTap: (){
+                                setState(() {
+                                //  if(isSelected=true) {
+                                  selectedbathroom = index;
+                                    bathroom = _bathroom[index];
+                                 // }
+                                });
+                              },
+                            )
+                        );
+                      },
+                    ),
+                  )
+              ),
+              //area
+              Row(
+                children: [
+                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 15),
+                    child:  Text("Area/Size",
+                      style: TextStyle(
+                          color: Colors.black,fontSize: 18.0,
+                          letterSpacing: 0.5,
+                          fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.left,),
+                  ),
+                ],
+              ),
+              Padding(
+                  padding: const EdgeInsets.only(top: 5,left: 20,right: 10),
+                  child: Row(
+                    // mainAxisAlignment: MainAxisAlignment.center,
+                    // crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                            width: 135,
+                            height: 35,
+                            padding: const EdgeInsets.only(top: 5,left: 5),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child: Text(_valuesArea.start.toStringAsFixed(2) )
+                        ),
+                        Container(
+                          width: 35,
+                        ),
+                        Padding(padding: const EdgeInsets.only(top: 5),
+                          child:  Text("to",
+                            style: TextStyle(
+                                color: Colors.black,fontSize: 15.0),
+                            textAlign: TextAlign.left,),
+                        ),
+                        Container(
+                          width: 35,
+                        ),
+                        Container(
+                            width: 135,
+                            height: 35,
+                            padding: const EdgeInsets.only(top: 5,left: 5),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child: Text(_valuesArea.end.toStringAsFixed(2) )
+                        ),
+                      ]
+                  )
+              ),
+              //rangeslider
+              Padding(
+                padding: const EdgeInsets.only(top: 25.0,left: 1,bottom: 0),
+                child: SfRangeSelector(
+                  min: 1000.0,
+                  max: 5000.0,
+                  interval: 500,
+                  enableTooltip: true,
+                  shouldAlwaysShowTooltip: true,
+                  initialValues: _valuesArea,
+                  onChanged: (value) {
+                    setState(() {
+                      _valuesArea=SfRangeValues(value.start, value.end);
+                      min_sqrfeet=value.start.toStringAsFixed(2);
+                      max_sqrfeet=value.end.toStringAsFixed(2);
+                    });
+
+                  },
+                  child: SizedBox(
+                    height: 70,
+                    width: 400,
+                    child: SfCartesianChart(
+                      plotAreaBorderColor: Colors.transparent,
+                      margin: const EdgeInsets.all(0),
+                      primaryXAxis: NumericAxis(minimum: 1000.0, maximum: 5000.0,
+                        isVisible: false,),
+                      primaryYAxis: NumericAxis(isVisible: false),
+                      plotAreaBorderWidth: 0,
+                      plotAreaBackgroundColor: Colors.transparent,
+                      series: <ColumnSeries<Dataarea, double>>[
+                        ColumnSeries<Dataarea, double>(
+                          trackColor: Colors.transparent,
+                          // color: Color.fromARGB(255, 126, 184, 253),
+                          dataSource: chartDataarea,
+                          selectionBehavior: SelectionBehavior(
+                            unselectedOpacity: 0,
+                            selectedOpacity: 0.0,unselectedColor: Colors.transparent,
+                            selectionController: _rangeControllerarea,
+                          ),
+                          xValueMapper: (Dataarea sales, int index) => sales.x,
+                          yValueMapper: (Dataarea sales, int index) => sales.y,
+                          pointColorMapper: (Dataarea sales, int index) {
+                            return const Color.fromRGBO(0, 178, 206, 1);
+                          },
+                          // color: const Color.fromRGBO(255, 255, 255, 0),
+                          dashArray: const <double>[5, 3],
+                          // borderColor: const Color.fromRGBO(194, 194, 194, 1),
+                          animationDuration: 0,
+                          borderWidth: 0,
+                          //opacity: 0.5,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              //furnished
+              Row(
+                children: [
+                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 15),
+                    child:  Text("Furnished Type",
+                      style: TextStyle(
+                          color: Colors.black,fontSize: 18.0,
+                          letterSpacing: 0.5,
+                          fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.left,),
+                  ),
+                ],
+              ),
+              Padding(
+                  padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
+                  child: Container(
+                    alignment: Alignment.topLeft,
+                    height: 50,
+                    child:  ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const ScrollPhysics(),
+                      itemCount: _ftype.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        // Colors.grey;
+                        return Container(
+                          margin: const EdgeInsets.all(5),
+                          padding: const EdgeInsets.only(top: 0, left: 15, right: 15),
+                          decoration: BoxDecoration(
+                            color: selectedIndex == index ? Colors.blueAccent : Colors.white, // Change color if selected
+                            borderRadius: BorderRadius.circular(6.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: const Offset(0.3, 0.3),
+                                blurRadius: 0.3,
+                                spreadRadius: 0.3,
+                              ),
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: const Offset(0.0, 0.0),
+                                blurRadius: 0.0,
+                                spreadRadius: 0.0,
+                              ),
+                            ],
+                          ),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                selectedIndex = index; // Update selected index
+                                ftype = _ftype[index]; // Update selected value
+                              });
+                            },
+                            child: Center(
+                              child: Text(
+                                _ftype[index],
+                                style: TextStyle(
+                                  color: selectedIndex == index ? Colors.white : Colors.black,
+                                  letterSpacing: 0.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+              ),
+              //Amenities
+              Row(
+                children: [
+                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 15),
+                    child:  Text("Amenities",
+                      style: TextStyle(
+                          color: Colors.black,fontSize: 18.0,
+                          letterSpacing: 0.5,
+                          fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.left,),
+                  ),
+                ],
+              ),
+              Padding(
+                  padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
+                  child: Container(
+                    //color: Colors.grey,
+                    // width: 60,
+                    alignment: Alignment.topLeft,
+                    height: 50,
+                    child:  ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const ScrollPhysics(),
+                      itemCount: amenities.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        return Container(
+                            margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
+                            padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
+                            decoration: BoxDecoration(
+                              color: selectedIndexes.contains(index) ? Colors.blueAccent : Colors.white,
+                              // color: selectedamenities == index ? Colors.grey : Colors.white,
+                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child: GestureDetector(
+                              child:   Row(
+                                spacing: 5,
+                                children: [
+                                   Padding(
+                                     padding: const EdgeInsets.all(2.0),
+                                     child: CachedNetworkImage(imageUrl: amenities[index].icon.toString(),height: 15,),
+                                   ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(1.0),
+                                    child: Text(amenities[index].title.toString(),
+                                      style: TextStyle(
+                                        color: selectedIndexes.contains(index) ? Colors.white : Colors.black,
+                                      letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                                  ),
+                                ],
+                              ),
+                              onTap: (){
+                                setState(() {
+                                 // if(isSelected=true) {
+                                  if (selectedIndexes.contains(index)) {
+                                    selectedIndexes.remove(index);
+                                  } else {
+                                    selectedIndexes.add(index);
+                                  }
+                                  // selectedamenities = index;
+                                  //   amnities = amenities[index].title.toString();
+                                 // }
+                                });
+                              },
+                            )
+                        );
+                        // return Amenitiescardscreen(amenities: amenities[index]);
+                      },
+                    ),
+
+                  )
+              ),
+              //real estate
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        top: 20.0,left: 20,bottom: 15),
+                    // child:  Text(selectedIndexes.toString(),style: TextStyle(
+                    child:  Text("Real Estate Agencies",style: TextStyle(
+                        color: Colors.black,letterSpacing: 0.5,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18
+
+                    ),textAlign: TextAlign.left,),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
+                child:   Container(
+                  width: screenSize.width*0.9,
+                  height: 50,
+                  padding: const EdgeInsets.only(top: 0,left: 10,bottom: 5),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadiusDirectional.circular(6.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey,
+                        offset: const Offset(
+                          0.3,
+                          0.3,
+                        ),
+                        blurRadius: 0.3,
+                        spreadRadius: 0.3,
+                      ), //BoxShadow
+                      BoxShadow(
+                        color: Colors.white,
+                        offset: const Offset(0.0, 0.0),
+                        blurRadius: 0.0,
+                        spreadRadius: 0.0,
+                      ), //BoxShadow
+                    ],
+                  ),
+                  child: TextField(
+                    textAlignVertical: TextAlignVertical.center,
+                    controller: agenciesController,
+                    // obscureText: true,
+                    decoration: InputDecoration(
+                      /* border: OutlineInputBorder(
+                       ),*/
+                        border: InputBorder.none,
+                        hintText: '   eg.dubizzle properties',hintStyle: TextStyle(
+                        color: Colors.grey,fontSize: 15,
+                        letterSpacing: 0.5)
+                    ),
+                    textAlign: TextAlign.left,
+
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        top: 20.0,left: 20,bottom: 15),
+                    child:  Text("Rent is paid",style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,letterSpacing: 0.5
+                    ),textAlign: TextAlign.left,),
+                  ),
+                ],
+              ),
+              Padding(
+                  padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
+                  child: Container(
+                    //color: Colors.grey,
+                    // width: 60,
+                    alignment: Alignment.topLeft,
+                    height: 50,
+                    child:  ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const ScrollPhysics(),
+                      itemCount: _rent.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        // Colors.grey;
+                        return Container(
+                          // color: selectedIndex == index ? Colors.amber : Colors.transparent,
+                            margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
+                            // width: screenSize.width * 0.25,
+                            // height: 20,
+                            padding: const EdgeInsets.only(top: 0,left: 15,right: 15),
+                            decoration: BoxDecoration(
+                              color: selectedrent == index ? Colors.blueAccent : Colors.white,
+                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    0.3,
+                                    0.3,
+                                  ),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ), //BoxShadow
+                                BoxShadow(
+
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
+                              ],
+                            ),
+                            child: GestureDetector(
+                              child:   Center(
+                                child: Text(_rent[index],
+                                  style: TextStyle(
+                                    color: selectedrent == index ? Colors.white : Colors.black,
+                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                              ),
+                              onTap: (){
+                                setState(() {
+                                 // if(isSelected=true) {
+                                  selectedrent = index;
+                                    rent = _rent[index];
+                                 // }
+                                });
+                              },
+                            )
+                        );
+                      },
+                    ),
+                  )
+              ),
+              Container(
+                height: 150,
+              ),
+              GestureDetector(
+                onTap: (){
+                  showResult();
+                  // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
+                },
+                child:  Padding(
+                  padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15,right: 15),
+                  child:   Container(
+                    // color: Colors.red,
+                    width: screenSize.width*0.9,
+                    height: 45,
+                    // color: Colors.red,
+                    padding: const EdgeInsets.only(top: 10,left: 0),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadiusDirectional.circular(6.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],),
+                    child: Text("Showing 112,765 Results",style: TextStyle(
+
+                        color: Colors.white,letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 15
+                    ),textAlign: TextAlign.center,),
+                  ),
+                ),
+              ),
+              Container(
+                height: 10,
+              ),
+            ]),
+      ),
+    ) ;
+
   }
 Container buildMyNavBar(BuildContext context) {
   return Container(

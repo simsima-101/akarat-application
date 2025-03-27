@@ -1,6 +1,6 @@
-import 'package:drawerdemo/screen/emai_login.dart';
-import 'package:drawerdemo/screen/login_page.dart';
-import 'package:drawerdemo/utils/Validator.dart';
+import 'package:Akarat/screen/emai_login.dart';
+import 'package:Akarat/screen/login_page.dart';
+import 'package:Akarat/utils/Validator.dart';
 import 'package:flutter/material.dart';
 
 void main(){

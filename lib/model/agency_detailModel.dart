@@ -11,6 +11,7 @@ class AgencyDetailmodel {
   String? statusId;
   String? ded;
   String? rera;
+  String? image;
 
   AgencyDetailmodel(
       {this.id,
@@ -24,7 +25,9 @@ class AgencyDetailmodel {
         this.location,
         this.statusId,
         this.ded,
-        this.rera});
+        this.rera,
+        this.image
+      });
 
   AgencyDetailmodel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -39,6 +42,7 @@ class AgencyDetailmodel {
     statusId = json['status_id'];
     ded = json['ded'];
     rera = json['rera'];
+    image = json['image'];
   }
 
   Map<String, dynamic> toJson() {
@@ -55,6 +59,7 @@ class AgencyDetailmodel {
     data['status_id'] = this.statusId;
     data['ded'] = this.ded;
     data['rera'] = this.rera;
+    data['image'] = this.image;
     return data;
   }
 }

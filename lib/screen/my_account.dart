@@ -1,25 +1,31 @@
-import 'package:drawerdemo/model/loginmodel.dart';
-import 'package:drawerdemo/model/registermodel.dart';
-import 'package:drawerdemo/screen/about_us.dart';
-import 'package:drawerdemo/screen/advertising.dart';
-import 'package:drawerdemo/screen/blog.dart';
-import 'package:drawerdemo/screen/cookies.dart';
-import 'package:drawerdemo/screen/favorite.dart';
-import 'package:drawerdemo/screen/findagent.dart';
-import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/privacy.dart';
-import 'package:drawerdemo/screen/support.dart';
-import 'package:drawerdemo/screen/terms_condition.dart';
+import 'dart:convert';
+
+import 'package:Akarat/model/loginmodel.dart';
+import 'package:Akarat/model/registermodel.dart';
+import 'package:Akarat/screen/about_us.dart';
+import 'package:Akarat/screen/advertising.dart';
+import 'package:Akarat/screen/blog.dart';
+import 'package:Akarat/screen/cookies.dart';
+import 'package:Akarat/screen/favorite.dart';
+import 'package:Akarat/screen/findagent.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/privacy.dart';
+import 'package:Akarat/screen/profile_login.dart';
+import 'package:Akarat/screen/support.dart';
+import 'package:Akarat/screen/terms_condition.dart';
+import 'package:Akarat/utils/fav_login.dart';
+import 'package:Akarat/utils/fav_logout.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../utils/shared_preference_manager.dart';
 
 
 class My_Account extends StatefulWidget {
-   My_Account({super.key, required this.result,this.token}) ;
+   My_Account({super.key,}) ;
   // LoginModel arguments;
 
-  var result;
-
-  var token;
 
    // RegisterModel arguments;
    @override
@@ -33,6 +39,73 @@ class _My_AccountState extends State<My_Account> {
     const Page3(),
     const Page4(),
   ];
+  String token = '';
+  String email = '';
+  String result = '';
+  bool isDataRead = false;
+  bool isDataSaved = true;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
+
+  @override
+  void initState() {
+    readData();
+    super.initState();
+  }
+
+
+
+  Future<void> logoutAPI(data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://akarat.com/api/logout'),
+        headers: <String, String>{'Authorization':'Bearer $data',
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+      if (response.statusCode == 200) {
+        print("logout Succesfully");
+        prefManager.addStringToPref("");
+        prefManager.addStringToPrefemail("");
+        prefManager.addStringToPrefresult("");
+        setState(() {
+          isDataSaved = false;
+          isDataRead = false;
+        });
+       /* isDataSaved
+            ? const Text('Data Saved!')
+            : const Text('Data Not Saved!');
+        // Call the addStringToPref method and pass the string value
+        prefManager.addStringToPref("");
+        prefManager.addStringToPrefemail("");
+        prefManager.addStringToPrefresult("");
+        setState(() {
+          isDataSaved = false;
+        });*/
+
+        Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+      } else {
+        throw Exception("logout failed");
+
+      }
+    } catch (e) {
+      setState(() {
+        print('Error: $e');
+      });
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
@@ -43,7 +116,7 @@ class _My_AccountState extends State<My_Account> {
             child: Column(
                 children: <Widget>[
                   Container(
-                    height: screenSize.height*0.2,
+                    height: screenSize.height*0.22,
                   // color: Colors.grey,
                     color: Color(0xFFF5F5F5),
                     child: Column(
@@ -75,12 +148,20 @@ class _My_AccountState extends State<My_Account> {
                                   ), //BoxShadow
                                 ],
                               ),
+                    child: GestureDetector(
+                      onTap: (){
+                        setState(() {
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+                        });
+                      },
                               child: Image.asset("assets/images/ar-left.png",
                                 width: 15,
                                 height: 15,
                                 fit: BoxFit.contain,),
+                    ),
                             ),
                             Padding(padding: const EdgeInsets.only(left: 20,top: 30),
+                            // child: Text(result,style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),
                             child: Text("My Account",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),
                             ) ,
                             )
@@ -89,7 +170,7 @@ class _My_AccountState extends State<My_Account> {
                         Row(
                           children: [
                             Container(
-                              margin: const EdgeInsets.only(left: 65,top: 8,bottom: 0),
+                              margin: const EdgeInsets.only(left: 30,top: 8,bottom: 0),
                               height: screenSize.height*0.11,
                               width: screenSize.width*0.25,
                               padding: const EdgeInsets.only(top: 0,left: 0,right: 0,bottom: 0),
@@ -113,32 +194,56 @@ class _My_AccountState extends State<My_Account> {
                                   ), //BoxShadow
                                 ],
                               ),
-                             /* child: Image.asset("assets/images/ag.png",
-                                width: 15,
-                                height: 15,
-                                fit: BoxFit.contain,),*/
+                              child: Image.asset("assets/images/avatar.png",
+                                fit: BoxFit.fill,height: 10,),
                             ),
                             Container(
-                                margin: const EdgeInsets.only(left: 5),
-                                height: screenSize.height*0.1,
-                                width: screenSize.width*0.45,
+                                margin: const EdgeInsets.only(left: 15,top: 5),
+                                height: screenSize.height*0.13,
+                                width: screenSize.width*0.4,
                                 // color: Colors.grey,
-                                padding: const EdgeInsets.only(left: 0,top: 10),
+                                padding: const EdgeInsets.only(left: 15,top: 10),
                                 child:   Column(
                                   children: [
-                                    Padding(padding: const EdgeInsets.only(top: 0,left: 0,right: 20),
-                                      child: Text(widget.result,style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.5,
-                                      ),textAlign: TextAlign.left,),
+                                    Row(
+                                      children: [
+                                        Padding(padding: const EdgeInsets.only(top: 0,left: 0,right: 0),
+                                          child: Text(result,style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.5,
+                                          ),textAlign: TextAlign.left,),
+                                        ),
+                                        Text("")
+                                      ],
                                     ),
-                                    Padding(padding: const EdgeInsets.only(top: 0,left: 10,right: 15),
-                                      child: Text(widget.token,style: TextStyle(
-                                        fontSize: 12,
-                                        // fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.5,
-                                      ),textAlign: TextAlign.left,),
+                                    Row(
+                                      children: [
+                                        Padding(padding: const EdgeInsets.only(top: 0,left: 0,right: 0),
+                                          child: Text(email,style: TextStyle(
+                                            fontSize: 12,
+                                            // fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.5,
+                                          ),textAlign: TextAlign.left,),
+                                        ),
+                                        Text("")
+
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Padding(padding: const EdgeInsets.only(top: 2,left: 0,right: 0),
+                                          child: ElevatedButton(onPressed: (){
+                                            logoutAPI(token);
+                                           // Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
+                                          },style:
+                                          ElevatedButton.styleFrom(backgroundColor: Colors.blue,
+                                            shape: RoundedRectangleBorder(borderRadius:  BorderRadius.all(Radius.circular(8)),),),
+                                              child: Text("Logout",style: TextStyle(color: Colors.white,fontSize: 12),)),
+                                        ),
+                                        Text("")
+
+                                      ],
                                     ),
                                   ],
                                 )
@@ -195,7 +300,14 @@ class _My_AccountState extends State<My_Account> {
                         ),
                         GestureDetector(
                           onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Favorite()));
+                            if(isDataRead == true){
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Login()));
+                            }
+                            else{
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Logout()));
+
+                            }
+                          //  Navigator.push(context, MaterialPageRoute(builder: (context)=> Favorite()));
                           },
                           child: Container(
                             margin: const EdgeInsets.only(left: 10,top: 0,right: 5),

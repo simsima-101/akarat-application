@@ -1,12 +1,25 @@
-import 'package:drawerdemo/screen/filter_list.dart';
-import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/profile_login.dart';
+import 'dart:convert';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:Akarat/model/propertymodel.dart';
+import 'package:Akarat/screen/filter_list.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/new_projects.dart';
+import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
-class Property_Detail extends StatelessWidget {
+class Property_Detail extends StatefulWidget {
+  Property_Detail({super.key, required this.data});
   final String data;
-   Property_Detail({super.key, required this.data});
+
+  @override
+  State<Property_Detail> createState() => _Property_DetailState();
+}
+
+class _Property_DetailState extends State<Property_Detail> {
+
   int pageIndex = 0;
   final pages = [
     const Page1(),
@@ -19,9 +32,44 @@ class Property_Detail extends StatelessWidget {
   void initState() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom]);
    // super.initState();
+    fetchProducts(widget.data);
   }
+
+  ProjectDetailModel? projectDetailModel;
+
+  Future<void> fetchProducts(data) async {
+    // you can replace your api link with this link
+    final response = await http.get(Uri.parse('https://akarat.com/api/new-projects/$data'));
+    Map<String,dynamic> jsonData=json.decode(response.body);
+    debugPrint("Status Code: ${response.statusCode}");
+    if (response.statusCode == 200) {
+      debugPrint("API Response: ${jsonData.toString()}");
+      debugPrint("API 200: ");
+      ProjectDetailModel parsedModel = ProjectDetailModel.fromJson(jsonData);
+      debugPrint("Parsed ProductModel: ${parsedModel.toString()}");
+      setState(() {
+        debugPrint("API setState: ");
+        String title = jsonData['title'] ?? 'No title';
+        debugPrint("API title: $title");
+        projectDetailModel = parsedModel;
+
+      });
+
+      debugPrint("productModels title_after: ${projectDetailModel!.data!.title.toString()}");
+
+    } else {
+      // Handle error if needed
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
+    if (projectDetailModel == null) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()), // Show loading state
+      );
+    }
     return Scaffold(
         backgroundColor: Colors.white,
         bottomNavigationBar: buildMyNavBar(context),
@@ -66,7 +114,7 @@ class Property_Detail extends StatelessWidget {
                                 ),
                                 child: GestureDetector(
                                   onTap: (){
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => FliterList()));
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => New_Projects()));
                                   },
                                   child: Image.asset("assets/images/ar-left.png",
                                     width: 15,
@@ -143,29 +191,30 @@ class Property_Detail extends StatelessWidget {
                     ],
                   ),
                   Container(
-                                height: 550,
+                                height: screenSize.height*0.4,
                                  margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                 child:  ListView(
-                                shrinkWrap: true,
-                                scrollDirection: Axis.vertical,
-                                children: <Widget>[
-                                  Image.asset("assets/images/image 2.png",fit: BoxFit.fill,),
-                                  Image.asset("assets/images/image 2.png",fit: BoxFit.fill,),
-                                  Image.asset("assets/images/image 2.png",fit: BoxFit.fill,),
-                                  Image.asset("assets/images/image 2.png",fit: BoxFit.fill,),
-                                  Image.asset("assets/images/image 2.png",fit: BoxFit.fill,),
-                                  Image.asset("assets/images/image 2.png",fit: BoxFit.fill,),
-                                  Image.asset("assets/images/image 2.png",fit: BoxFit.fill,),
-        ]
-    )
-) ,
+                      child:  ListView.builder(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.vertical,
+                        physics: const ScrollPhysics(),
+                        itemCount: projectDetailModel?.data?.media?.length ?? 0,
+                        itemBuilder: (BuildContext context, int index) {
+                          return CachedNetworkImage( // this is to fetch the image
+                            imageUrl: (projectDetailModel!.data!.media![index].originalUrl.toString()),
+                            //fit: BoxFit.cover,
+                            // height: 100,
+                          );
+                        },
+
+                      )
+                  ) ,
                   Padding(padding: const EdgeInsets.only(top: 23,left: 15,right: 0),
                   child: Container(
                     width: double.infinity,
                     height: 30,
                    // color: Colors.grey,
                     margin: const EdgeInsets.only(left: 5,top: 5),
-                    child: Text(data,textAlign: TextAlign.left,style: TextStyle(
+                    child: Text(projectDetailModel!.data!.title.toString(),textAlign: TextAlign.left,style: TextStyle(
                         fontSize: 23,fontWeight: FontWeight.bold,letterSpacing: 0.5
                     ),),
                   ),
@@ -183,7 +232,7 @@ class Property_Detail extends StatelessWidget {
                             textAlign: TextAlign.left,style: TextStyle(
                                 letterSpacing: 0.5,fontSize: 15,fontWeight: FontWeight.bold
                             ),),
-                          Text(" AED 12,750",
+                          Text('AED ${projectDetailModel!.data!.price}',
                             textAlign: TextAlign.left,style: TextStyle(
                                 letterSpacing: 0.5,fontSize: 18,fontWeight: FontWeight.bold
                             ),),
@@ -193,16 +242,13 @@ class Property_Detail extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 5,left: 15,right: 0),
+                    padding: const EdgeInsets.only(top: 0,left: 15,right: 0),
                     child: Container(
                       width: double.infinity,
-                      height: 100,
+                      height: screenSize.height*0.35,
                      // color: Colors.grey,
-                      margin: const EdgeInsets.only(left: 5,top: 5),
-                      child: Text("Azco Real Estate is thrilled to offer this spacious 2 "
-                          "Bedroom Apartment in AAA Residence located in Jumeirah"
-                          "village Circle,for rent. Offer this Spacious 2 Bedroom Apartment in AAA Residence located in "
-                          "Jumeirah village Circle,for rent.",
+                      margin: const EdgeInsets.only(left: 5,top: 0),
+                      child: Text(projectDetailModel!.data!.description.toString(),
                         textAlign: TextAlign.left,style: TextStyle(
                           letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
                       ),),
@@ -211,8 +257,8 @@ class Property_Detail extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 15,left: 15,right: 15),
                     child: Container(
-                      width: 500,
-                      height: 130,
+                      width: screenSize.width*1,
+                      height: screenSize.height*0.13,
                       margin: const EdgeInsets.only(left: 5,top: 5),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(15.0),
@@ -236,8 +282,9 @@ class Property_Detail extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Padding(padding: const EdgeInsets.only(left: 40,right: 0,top: 0,bottom: 0),
-                          child: Container(
+                          Padding(
+                            padding: const EdgeInsets.only(left: 40,right: 0,top: 0,bottom: 0),
+                            child: Container(
                             margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
                             width: 100,
                             height: 50,
@@ -301,40 +348,59 @@ class Property_Detail extends StatelessWidget {
                             letterSpacing: 0.5,color: Colors.grey,fontSize: 12,
                           ),textAlign: TextAlign.left,),
                         ),
-                        Padding(padding: const EdgeInsets.only(left: 0,top: 5,right: 32),
-                          child: Text("December 2026",style: TextStyle(
-                            letterSpacing: 0.5,fontWeight: FontWeight.bold,
-                          ),textAlign: TextAlign.left,),
+                        Row(
+                          children: [
+                            Padding(padding: const EdgeInsets.only(left: 8,top: 5,right: 0),
+                              child: Text(projectDetailModel!.data!.deliveryDate.toString(),style: TextStyle(
+                                letterSpacing: 0.5,fontWeight: FontWeight.bold,
+                              ),textAlign: TextAlign.left,),
+                            ),
+                            Text("")
+                          ],
                         ),
                         Padding(padding: const EdgeInsets.only(left: 5,top: 5,right: 60),
                           child: Text("Property Type",style: TextStyle(
                             letterSpacing: 0.5,color: Colors.grey,fontSize: 12,
                           ),textAlign: TextAlign.left,),
                         ),
-                        Padding(padding: const EdgeInsets.only(left: 0,top: 5,right: 67),
-                          child: Text("Apartment",style: TextStyle(
-                            letterSpacing: 0.5,fontWeight: FontWeight.bold
-                          ),textAlign: TextAlign.left,),
+                        Row(
+                          children: [
+                            Padding(padding: const EdgeInsets.only(left: 8,top: 5,right: 0),
+                              child: Text(projectDetailModel!.data!.propertyType.toString(),style: TextStyle(
+                                letterSpacing: 0.5,fontWeight: FontWeight.bold
+                              ),textAlign: TextAlign.left,),
+                            ),
+                            Text("")
+                          ],
                         ),
-                        Padding(padding: const EdgeInsets.only(left: 0,top: 5,right: 60),
+                        Padding(padding: const EdgeInsets.only(left: 0,top: 5,right: 53),
                           child: Text("Payment Plan",style: TextStyle(
                             letterSpacing: 0.5,color: Colors.grey,fontSize: 12,
                           ),textAlign: TextAlign.left,),
                         ),
-                        Padding(padding: const EdgeInsets.only(left: 0,top: 5,right: 115),
-                          child: Text("Yes",style: TextStyle(
-                            letterSpacing: 0.5,fontWeight: FontWeight.bold,
-                          ),textAlign: TextAlign.left,),
+                        Row(
+                          children: [
+                            Padding(padding: const EdgeInsets.only(left: 8,top: 5,right: 0),
+                              child: Text(projectDetailModel!.data!.paymentPlan.toString(),style: TextStyle(
+                                letterSpacing: 0.5,fontWeight: FontWeight.bold,
+                              ),textAlign: TextAlign.left,),
+                            ),
+                            Text("")
+                          ],
                         ),
                         Padding(padding: const EdgeInsets.only(left: 0,top: 5,right: 43),
                           child: Text("Government Fee",style: TextStyle(
                             letterSpacing: 0.5,color: Colors.grey,fontSize: 12,
                           ),textAlign: TextAlign.left,),
                         ),
-                        Padding(padding: const EdgeInsets.only(left: 0,top: 5,right: 115),
-                          child: Text("4%",style: TextStyle(
-                            letterSpacing: 0.5,fontWeight: FontWeight.bold,
-                          ),textAlign: TextAlign.left,),
+                        Row(
+                          children: [
+                            Padding(padding: const EdgeInsets.only(left: 8,top: 5,right: 0),
+                              child: Text('${projectDetailModel!.data!.governmentFee}%',style: TextStyle(
+                                letterSpacing: 0.5,fontWeight: FontWeight.bold,
+                              ),textAlign: TextAlign.left,),
+                            ),
+                          ],
                         ),
                         Padding(padding: const EdgeInsets.only(left: 0,top: 20,right: 20),
                           child: Text("Payment Plan",style: TextStyle(
@@ -379,7 +445,7 @@ class Property_Detail extends StatelessWidget {
                              // color: Colors.grey,
                               child: Column(
                                 children: [
-                                  Text("20%",style: TextStyle(
+                                  Text('${projectDetailModel!.data!.downPayment} %',style: TextStyle(
                                       fontSize: 30,
                                       fontWeight: FontWeight.bold,letterSpacing: 0.5
                                   ),textAlign: TextAlign.center,),
@@ -428,7 +494,7 @@ class Property_Detail extends StatelessWidget {
                         // color: Colors.grey,
                         child: Column(
                           children: [
-                            Text("60%",style: TextStyle(
+                            Text('${projectDetailModel!.data!.duringConstruction} %',style: TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.bold,letterSpacing: 0.5
                             ),textAlign: TextAlign.center,),
@@ -477,7 +543,7 @@ class Property_Detail extends StatelessWidget {
                         // color: Colors.grey,
                         child: Column(
                           children: [
-                            Text("20%",style: TextStyle(
+                            Text('${projectDetailModel!.data!.onHandover} %',style: TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.bold,letterSpacing: 0.5
                             ),textAlign: TextAlign.center,),
@@ -529,7 +595,7 @@ class Property_Detail extends StatelessWidget {
                             child: Text("Project Announcement")
                         ),
                         Padding(padding: const EdgeInsets.only(top: 10),
-                            child: Text("01.01.2025",style: TextStyle(
+                            child: Text(projectDetailModel!.data!.projectAnnouncement.toString(),style: TextStyle(
                               fontWeight: FontWeight.bold
                             ),)
                         ),
@@ -537,7 +603,8 @@ class Property_Detail extends StatelessWidget {
                             child: Text("Construction Started")
                         ),
                         Padding(padding: const EdgeInsets.only(top: 10),
-                            child: Text("21.01.2025",style: TextStyle(
+                            child: Text(projectDetailModel!.data!.constructionStarted.toString(),
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold
                             ),)
                         ),
@@ -545,7 +612,8 @@ class Property_Detail extends StatelessWidget {
                             child: Text("Expected Completion")
                         ),
                         Padding(padding: const EdgeInsets.only(top: 10,bottom: 10),
-                            child: Text("21.01.2025",style: TextStyle(
+                            child: Text(projectDetailModel!.data!.expectedCompletion.toString(),
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold
                             ),)
                         ),
@@ -558,7 +626,8 @@ class Property_Detail extends StatelessWidget {
                       letterSpacing: 0.5,
                     ),textAlign: TextAlign.left,),
                   ),
-                  Padding(padding: const EdgeInsets.only(top: 5,left: 0,right: 270),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5,left: 0,right: 270),
                     child: Text("Apartments",style: TextStyle(
                       letterSpacing: 0.5,
                     ),textAlign: TextAlign.left,),
@@ -749,16 +818,13 @@ class Property_Detail extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 1,left: 15,right: 0),
+                    padding: const EdgeInsets.only(top: 0,left: 15,right: 0),
                     child: Container(
                       width: double.infinity,
-                      height: 100,
-                      // color: Colors.grey,
-                      margin: const EdgeInsets.only(left: 5,top: 5),
-                      child: Text("Azco Real Estate is thrilled to offer this spacious 2 "
-                          "Bedroom Apartment in AAA Residence located in Jumeirah"
-                          "village Circle,for rent. Offer this Spacious 2 Bedroom Apartment in AAA Residence located in "
-                          "Jumeirah village Circle,for rent.",
+                      height: screenSize.height*0.35,
+                       //color: Colors.grey,
+                      margin: const EdgeInsets.only(left: 5,top: 0),
+                      child: Text(projectDetailModel!.data!.description.toString(),
                         textAlign: TextAlign.left,style: TextStyle(
                             letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
                         ),),

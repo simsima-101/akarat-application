@@ -1,15 +1,26 @@
 import 'dart:async';
-import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/login.dart';
-import 'package:drawerdemo/screen/profile_login.dart';
+import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:Akarat/model/favoritemodel.dart';
+import 'package:Akarat/model/togglemodel.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/login.dart';
+import 'package:Akarat/screen/profile_login.dart';
+import 'package:Akarat/utils/fav_login.dart';
+import 'package:Akarat/utils/fav_logout.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../utils/shared_preference_manager.dart';
 
 class Favorite extends StatefulWidget {
-  Favorite({super.key,});
+  Favorite({super.key,}) ;
 
 
   @override
-  State<StatefulWidget> createState() => new _FavoriteState();
+  State<Favorite> createState() => new _FavoriteState();
 }
 
 class _FavoriteState extends State<Favorite> {
@@ -21,10 +32,39 @@ class _FavoriteState extends State<Favorite> {
     const Page3(),
     const Page4(),
   ];
+  String token = '';
+  String email = '';
+  String result = '';
+  bool isDataRead = false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    readData();
+   // toggleAPI(token);
+  }
 
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
+    if(token == ''){
+      return Fav_Logout() ;
+    }
+    else if(token.isNotEmpty){
+      return Fav_Login();
+    }
+
     return Scaffold(
         backgroundColor: Colors.white,
         bottomNavigationBar: buildMyNavBar(context),
@@ -103,6 +143,7 @@ class _FavoriteState extends State<Favorite> {
                                     width: screenSize.width*0.28,
                                   ),
                                   Padding(padding: const EdgeInsets.all(8.0),
+                                    // child: Text(widget.token,style: TextStyle(
                                     child: Text("Saved",style: TextStyle(
                                         fontWeight: FontWeight.bold,fontSize: 20
                                     ),),
@@ -192,238 +233,7 @@ class _FavoriteState extends State<Favorite> {
                                           ),
                                      ],
                                      ),
-                                    ),
-                    SizedBox(
-                                        height: screenSize.height*0.75,
-                                        child: TabBarView(
-                                            children: [
-                                              Container(
-                                               // color: Colors.grey,
-                                                  margin: const EdgeInsets.only(left: 20,right: 15,top: 10),
-                                                  height: screenSize.height*0.2,
-                                                  child:  Column(
-                                                    children: [
-                                                      Container(
-                                                        margin: const EdgeInsets.all(8.0),
-                                                        height: screenSize.height*0.03,
-                                                        width: screenSize.width*0.9,
-                                                        //color: Colors.white,
-                                                        child: Text("Want to keep track of all your searches?",textAlign: TextAlign.center
-                                                          ,style: TextStyle(
-                                                          fontSize: 16,fontWeight: FontWeight.bold,letterSpacing: 0.5
-                                                        ),),
-                                                      ),
-                                                      Container(
-                                                        margin: const EdgeInsets.all(0.0),
-                                                        height: screenSize.height*0.03,
-                                                        width: screenSize.width*0.9,
-                                                        //color: Colors.white,
-                                                        child: Text("Save your searches at one place by signing up",textAlign: TextAlign.center
-                                                          ,style: TextStyle(
-                                                              fontSize: 13,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                                                          ),),
-                                                      ),
-                                                      Container(
-                                                        width: screenSize.width*0.9,
-                                                        height: screenSize.height*0.08,
-                                                        child: Padding(padding: const EdgeInsets.only(top: 20,left: 10,right: 20),
-                                                          child: ElevatedButton(
-                                                              onPressed: (){
-                                                                // Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                                                              },style:
-                                                          ElevatedButton.styleFrom(
-                                                            backgroundColor: Colors.blue,
-                                                            shape: RoundedRectangleBorder(
-                                                              borderRadius:  BorderRadius.all(
-                                                                  Radius.circular(8)),),),
-                                                              child: Text("Sign Up",
-                                                                style: TextStyle(color: Colors.white,
-                                                                    fontSize: 15),)),
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding: const EdgeInsets.only(
-                                                            left: 15.0, right: 15.0, top: 10, bottom: 0),
-                                                        child:  Text("or",style: TextStyle(
-                                                          color: Colors.grey,
-                                                          fontSize: 17,
-                                                        ),textAlign: TextAlign.center,),
-                                                      ),
-                                                      //google button
-                                                      Padding(
-                                                        padding: const EdgeInsets.only(
-                                                            left: 15.0, right: 20.0, top: 10, bottom: 0),
-                                                        child: Container(
-                                                          width: screenSize.width*0.9,
-                                                          height: 50,
-                                                          padding: const EdgeInsets.only(top: 5),
-                                                          decoration: BoxDecoration(
-                                                            borderRadius: BorderRadiusDirectional.circular(10.0),
-                                                            boxShadow: [
-                                                              BoxShadow(
-                                                                color: Colors.grey,
-                                                                offset: const Offset(
-                                                                  0.3,
-                                                                  0.3,
-                                                                ),
-                                                                blurRadius: 0.3,
-                                                                spreadRadius: 0.3,
-                                                              ), //BoxShadow
-                                                              BoxShadow(
-                                                                color: Colors.white,
-                                                                offset: const Offset(0.0, 0.0),
-                                                                blurRadius: 0.0,
-                                                                spreadRadius: 0.0,
-                                                              ), //BoxShadow
-                                                            ],
-                                                          ),
-                                                          child: Row(
-                                                            children: [
-                                                              Padding(padding: const EdgeInsets.only(left: 60,top: 0),
-                                                                child:  Image.asset("assets/images/gi.webp",height: 25,
-                                                                  alignment: Alignment.center,) ,
-                                                              ),
-                                                              Padding(padding: const EdgeInsets.only(left: 5,top: 0),
-                                                                child:  Text("Continue with Google",style: TextStyle(fontWeight: FontWeight.bold),) ,
-                                                              )
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      //facebook button
-                                                      Padding(
-                                                        padding: const EdgeInsets.only(
-                                                            left: 15.0, right: 20.0, top: 15, bottom: 0),
-                                                        child: Container(
-                                                          width: screenSize.width*0.9,
-                                                          height: 50,
-                                                          padding: const EdgeInsets.only(top: 5),
-                                                          decoration: BoxDecoration(
-                                                            borderRadius: BorderRadiusDirectional.circular(10.0),
-                                                            boxShadow: [
-                                                              BoxShadow(
-                                                                color: Colors.grey,
-                                                                offset: const Offset(
-                                                                  0.3,
-                                                                  0.3,
-                                                                ),
-                                                                blurRadius: 0.3,
-                                                                spreadRadius: 0.3,
-                                                              ), //BoxShadow
-                                                              BoxShadow(
-                                                                color: Colors.white,
-                                                                offset: const Offset(0.0, 0.0),
-                                                                blurRadius: 0.0,
-                                                                spreadRadius: 0.0,
-                                                              ), //BoxShadow
-                                                            ],
-                                                          ),
-                                                          child: Row(
-                                                            children: [
-                                                              Padding(padding: const EdgeInsets.only(left: 60,top: 0),
-                                                                child:  Image.asset("assets/images/blog.png",height: 20,
-                                                                  alignment: Alignment.center,) ,
-                                                              ),
-                                                              Padding(padding: const EdgeInsets.only(left: 5,top: 0),
-                                                                child:  Text("Continue with Facebook",style: TextStyle(fontWeight: FontWeight.bold),) ,
-                                                              )
-
-                                                            ],
-                                                          ),
-
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        height: screenSize.height*0.33,
-                                                      ),
-                                                      Container(
-                                                        margin: const EdgeInsets.all(8.0),
-                                                        height: screenSize.height*0.04,
-                                                        width: screenSize.width*0.8,
-                                                        //color: Colors.white,
-                                                        alignment: Alignment.bottomCenter,
-                                                        child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                          children: [
-                                                            Text("Have an Account?",style: TextStyle(
-                                                              fontSize: 15,letterSpacing: 0.5
-                                                            ),),
-                                                            Text("Log in",style: TextStyle(
-                                                                fontSize: 15,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                                                            ),),
-
-                                                          ],
-                                                        ),
-                                                      )
-                                                    ],
-                                                  )
-                                              ),
-                                              Container(
-                                                height: screenSize.height*0.5,
-                                                // color: Colors.grey,
-                                                margin: const EdgeInsets.only(left: 15,right: 15,top: 20),
-                                                child:  Column(
-                                                  children: [
-                                                    SizedBox(
-                                                      height: screenSize.height*0.1,
-                                                    ),
-                                                    Container(
-                                                      margin: const EdgeInsets.all(8.0),
-                                                      height: screenSize.height*0.13,
-                                                      width: screenSize.width*0.4,
-                                                     // color: Colors.grey,
-                                                      child: Image.asset("assets/images/no-property-search.png"),
-                                                    ),
-                                                    Container(
-                                                      margin: const EdgeInsets.all(8.0),
-                                                      height: screenSize.height*0.03,
-                                                      width: screenSize.width*0.9,
-                                                      color: Colors.white,
-                                                      child: Text("Save your favourite properties now!",textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                        fontWeight: FontWeight.bold,fontSize: 20,color: Colors.blue
-                                                      ),),
-                                                    ),
-                                                    Container(
-                                                      margin: const EdgeInsets.all(8.0),
-                                                      height: screenSize.height*0.1,
-                                                      width: screenSize.width*0.9,
-                                                      color: Colors.white,
-                                                      child: Text("It looks like you haven’t added any favourite properties "
-                                                          " just yet. You can add a property listing to your favourites by tapping "
-                                                          "the icon at the top right corner of property details",textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                            letterSpacing: 0.5,fontSize: 15
-                                                        ),),
-                                                    ),
-                                                    SizedBox(
-                                                      height: screenSize.height*0.13,
-                                                    ),
-                                                    Container(
-                                                      width: screenSize.width*0.9,
-                                                      height: screenSize.height*0.1,
-                                                      child: Padding(padding: const EdgeInsets.only(top: 40,left: 10,right: 10),
-                                                        child: ElevatedButton(
-                                                            onPressed: (){
-                                                              // Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                                                            },style:
-                                                        ElevatedButton.styleFrom(
-                                                          backgroundColor: Colors.blue,
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius:  BorderRadius.all(
-                                                                Radius.circular(8)),),),
-                                                            child: Text("Start a New Search",
-                                                              style: TextStyle(color: Colors.white,
-                                                                  fontSize: 15),)),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                            ]
-                                        )
-                                    )
+                    ),
                   ]
               )
           ),

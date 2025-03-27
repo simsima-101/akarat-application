@@ -1,11 +1,15 @@
 import 'dart:convert';
 
-import 'package:drawerdemo/model/agency_detailModel.dart';
-import 'package:drawerdemo/screen/findagent.dart';
-import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/profile_login.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:Akarat/model/agency_detailModel.dart';
+import 'package:Akarat/screen/findagent.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/my_account.dart';
+import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
+import '../utils/shared_preference_manager.dart';
 
 
 class About_Agency extends StatefulWidget {
@@ -17,11 +21,29 @@ class About_Agency extends StatefulWidget {
 class _About_AgencyState extends State<About_Agency> {
   AgencyDetailmodel? agencyDetailmodel;
   int pageIndex = 0;
+
+  String token = '';
+  String email = '';
+  String result = '';
+  bool isDataRead = false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
+
+
   @override
   void initState() {
     fetchProducts(widget.data);
+    readData();
   }
-
 
   Future<void> fetchProducts(data) async {
     // you can replace your api link with this link
@@ -35,8 +57,8 @@ class _About_AgencyState extends State<About_Agency> {
       debugPrint("Parsed ProductModel: ${parsedModel.toString()}");
       setState(() {
         debugPrint("API setState: ");
-        String title = jsonData['title'] ?? 'No title';
-        debugPrint("API title: $title");
+       /* String title = jsonData['title'] ?? 'No title';
+        debugPrint("API title: $title");*/
         agencyDetailmodel = parsedModel;
 
       });
@@ -140,9 +162,10 @@ class _About_AgencyState extends State<About_Agency> {
                             ),
                           ],
                         ),
-                        Padding(padding: const EdgeInsets.only(left: 40,top: 0,right: 40,bottom: 15),
+                        Padding(padding: const EdgeInsets.only(left: 0,top: 0,right: 0,bottom: 10),
                           child: Container(
-                            height: 100,
+                            height: screenSize.height*0.09,
+                            width: screenSize.width*0.8,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadiusDirectional.circular(10.0),
                               boxShadow: [
@@ -161,6 +184,72 @@ class _About_AgencyState extends State<About_Agency> {
                                   blurRadius: 0.0,
                                   spreadRadius: 0.0,
                                 ), //BoxShadow
+                              ],
+                            ),
+                            child:  Row(
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(top: 0,left: 5),
+                                  width: screenSize.width*0.29,
+                                  height: screenSize.height*0.1,
+                                 // color: Colors.grey,
+                                  child: CachedNetworkImage( // this is to fetch the image
+                                    imageUrl: (agencyDetailmodel!.image.toString()),
+                                    fit: BoxFit.fill,
+
+                                  ),
+
+                                ),
+                                Container(
+                                  margin: const EdgeInsets.only(left: 10,right: 0,top: 10),
+                                  height: screenSize.height*0.15,
+                                  width: screenSize.width*0.45,
+                                  // color: Colors.grey,
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 10),
+                                            child: Text(agencyDetailmodel!.name.toString(),style: TextStyle(
+                                                fontSize: 17,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                                            ),),
+                                          ),
+
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 5,bottom: 5),
+                                            child: Container(
+                                              width: screenSize.width*0.15,
+                                              height: screenSize.height*0.027,
+                                              padding: const EdgeInsets.only(top: 2,),
+                                              decoration: BoxDecoration(
+                                                  borderRadius: BorderRadiusDirectional.circular(6.0),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey,
+                                                      offset: const Offset(
+                                                        0.5,
+                                                        0.5,
+                                                      ),
+                                                      blurRadius: 1.0,
+                                                      spreadRadius: 0.5,
+                                                    ), //BoxShadow
+                                                    BoxShadow(
+                                                      color: Colors.white,
+                                                      offset: const Offset(0.0, 0.0),
+                                                      blurRadius: 0.0,
+                                                      spreadRadius: 0.0,
+                                                    ), //BoxShadow
+                                                  ]),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                )
                               ],
                             ),
                           ),
@@ -299,9 +388,10 @@ class _About_AgencyState extends State<About_Agency> {
                     ],
                   ),
                   Container(
-                      height: double.infinity,
+                      height: screenSize.height*0.8,
                       child: TabBarView(
                           children: [
+                            //About
                             Container(
                               //padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
                                margin: const EdgeInsets.only(left: 15,right: 15,top: 30),
@@ -311,24 +401,35 @@ class _About_AgencyState extends State<About_Agency> {
                                   children: [
                                     //About details
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 0, left: 0.0, right: 290),
-                                      child: Text("About  ", style: TextStyle(
-                                          fontSize: 20, color: Colors.black, letterSpacing: 0.5,
-                                        fontWeight: FontWeight.bold
-                                      ),textAlign: TextAlign.start,),
+                                      padding: const EdgeInsets.only(top: 0, left: 10.0, right: 0),
+                                      child: Row(
+                                        children: [
+                                          Text("About  ", style: TextStyle(
+                                              fontSize: 20, color: Colors.black, letterSpacing: 0.5,
+                                            fontWeight: FontWeight.bold
+                                          ),textAlign: TextAlign.start,),
+                                          Text(""),
+                                        ],
+                                      ),
                                     ),
 
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 5, left: 10.0, right: 280),
-                                      child: Text("Description ", style: TextStyle(
-                                          fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold
-                                      ),),
+                                      padding: const EdgeInsets.only(top: 5, left: 10.0, right: 0),
+                                      child: Row(
+                                        children: [
+                                          Text("Description ", style: TextStyle(
+                                              fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold
+                                          ),),
+                                          Text(""),
+                                        ],
+                                      ),
                                     ),
                                     Padding(
-                                        padding: const EdgeInsets.only(top: 10, left: 20.0, right: 10),
-                                        child: SizedBox(
-                                          width: 400,
-                                          height: 65,
+                                        padding: const EdgeInsets.only(top: 10, left: 10.0, right: 10),
+                                        child: Container(
+                                         // color: Colors.grey,
+                                          width: screenSize.width*1,
+                                          height: screenSize.height*0.2,
                                           child: Text(
                                             agencyDetailmodel!.description.toString(),
                                             style: TextStyle(
@@ -337,21 +438,26 @@ class _About_AgencyState extends State<About_Agency> {
                                         )
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 10, left: 15.0, right: 310),
-                                      child: Text("Properties", style: TextStyle(
-                                          fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                      ),),
+                                      padding: const EdgeInsets.only(top: 10, left: 10.0, right: 0),
+                                      child: Row(
+                                        children: [
+                                          Text("Properties", style: TextStyle(
+                                              fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+                                          ),),
+                                          Text(""),
+                                        ],
+                                      ),
                                     ),
                                     Row(
                                       children: [
                                         Padding(
                                           padding: const EdgeInsets.only(
-                                              left: 15.0, right: 5.0, top: 10, bottom: 0),
+                                              left: 10.0, right: 5.0, top: 10, bottom: 0),
                                           child: Container(
                                             // width: 130,
                                               height: 35,
                                               padding: const EdgeInsets.only(
-                                                  top: 0, left: 5, right: 10),
+                                                  top: 0, left: 2, right: 2),
                                               decoration: BoxDecoration(
                                                 borderRadius: BorderRadiusDirectional.circular(8.0),
                                                 boxShadow: [
@@ -395,12 +501,12 @@ class _About_AgencyState extends State<About_Agency> {
                                         ),
                                         Padding(
                                           padding: const EdgeInsets.only(
-                                              left: 10.0, right: 5.0, top: 5, bottom: 0),
+                                              left: 5.0, right: 5.0, top: 5, bottom: 0),
                                           child: Container(
                                             // width: 130,
                                               height: 35,
                                               padding: const EdgeInsets.only(
-                                                  top: 8, left: 5, right: 5),
+                                                  top: 8, left: 2, right: 2),
                                               decoration: BoxDecoration(
                                                 borderRadius: BorderRadiusDirectional.circular(8.0),
                                                 boxShadow: [
@@ -442,77 +548,118 @@ class _About_AgencyState extends State<About_Agency> {
                                       ],
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 15, left: 10.0, right: 290),
-                                      child: Text("Service Areas", style: TextStyle(
-                                          fontSize: 12, color: Colors.grey, letterSpacing: 0.5,
-                                          height: 1.0
-                                      ),),
+                                      padding: const EdgeInsets.only(top: 15, left: 10.0, right: 0),
+                                      child: Row(
+                                        children: [
+                                          Text("Service Areas", style: TextStyle(
+                                              fontSize: 12, color: Colors.grey, letterSpacing: 0.5,
+                                              height: 1.0
+                                          ),),
+                                          Text("")
+                                        ],
+                                      ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 8, left: 15.0, right: 80),
-                                      child: Text("Meydan City, Al Marjan Island, Dubailand", style: TextStyle(
-                                          fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
-                                          height: 1.0
-                                      ),),
+                                      padding: const EdgeInsets.only(top: 8, left: 10.0, right: 0),
+                                      child: Row(
+                                        children: [
+                                          Text("Meydan City, Al Marjan Island, Dubailand", style: TextStyle(
+                                              fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
+                                              height: 1.0
+                                          ),),
+                                          Text("")
+                                        ],
+                                      ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 15, left: 15.0, right: 290),
-                                      child: Text("Property Type", style: TextStyle(
-                                          fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                      ),),
+                                      padding: const EdgeInsets.only(top: 15, left: 10.0, right: 0),
+                                      child: Row(
+                                        children: [
+                                          Text("Property Type", style: TextStyle(
+                                              fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+                                          ),),
+                                          Text("")
+                                        ],
+                                      ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 8, left: 15.0, right: 150),
-                                      child: Text(" Villas, Townhouses,Apartments", style: TextStyle(
-                                          fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
-                                          height: 1.0
-                                      ),),
+                                      padding: const EdgeInsets.only(top: 8, left: 8.0, right: 0),
+                                      child: Row(
+                                        children: [
+                                          Text(" Villas, Townhouses,Apartments", style: TextStyle(
+                                              fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
+                                              height: 1.0
+                                          ),),
+                                          Text("")
+                                        ],
+                                      ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 15, left: 15.0, right: 340),
-                                      child: Text("DED", style: TextStyle(
-                                          fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                      ),),
+                                      padding: const EdgeInsets.only(top: 15, left: 10.0, right: 0),
+                                      child: Row(
+                                        children: [
+                                          Text("DED", style: TextStyle(
+                                              fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+                                          ),),
+                                          Text("")
+                                        ],
+                                      ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 8, left: 15.0, right: 325),
-                                      child: Text(agencyDetailmodel!.ded.toString(), style: TextStyle(
-                                          fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
-                                          height: 1.0
-                                      ),),
+                                      padding: const EdgeInsets.only(top: 8, left: 10.0, right: 0),
+                                      child: Row(
+                                        children: [
+                                          Text(agencyDetailmodel!.ded.toString(), style: TextStyle(
+                                              fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
+                                              height: 1.0
+                                          ),),
+                                          Text("")
+                                        ],
+                                      ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 15, left: 15.0, right: 330),
-                                      child: Text("RERA", style: TextStyle(
-                                          fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                      ),),
+                                      padding: const EdgeInsets.only(top: 15, left: 10.0, right: 0),
+                                      child: Row(
+                                        children: [
+                                          Text("RERA", style: TextStyle(
+                                              fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+                                          ),),
+                                          Text("")
+                                        ],
+                                      ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 8, left: 15.0, right: 325),
-                                      child: Text(agencyDetailmodel!.rera.toString(), style: TextStyle(
-                                          fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
-                                          height: 1.0
-                                      ),),
+                                      padding: const EdgeInsets.only(top: 8, left: 10.0, right: 0),
+                                      child: Row(
+                                        children: [
+                                          Text(agencyDetailmodel!.rera.toString(), style: TextStyle(
+                                              fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
+                                              height: 1.0
+                                          ),),
+                                          Text("")
+                                        ],
+                                      ),
                                     ),
                                     //ending about details
 
                                   ],
                                 )
                             ),
+                            //Properties
                             Container(
                               height: screenSize.height*0.8,
                              // color: Colors.grey,
-                              margin: const EdgeInsets.only(left: 15,right: 15,top: 30),
+                              margin: const EdgeInsets.only(left: 10,right: 15,top: 20),
                               child:  Column(
                                 children: [
                                   //About details
-                                  Padding(padding: const EdgeInsets.only(top: 10,left: 5),
+                                  Padding(padding: const EdgeInsets.only(top: 5,left: 5),
                                     child:  Row(
                                       children: [
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 10,left: 15,right: 10),
+                                          padding: const EdgeInsets.only(top: 5,left: 5,right: 0),
                                           child: Container(
-                                            width: 250,
+                                            width: screenSize.width*0.65,
                                             height: 45,
                                             padding: const EdgeInsets.only(top: 2),
                                             decoration: BoxDecoration(
@@ -556,7 +703,7 @@ class _About_AgencyState extends State<About_Agency> {
                                             ),
                                           ),
                                         ),
-                                        Padding(padding: const EdgeInsets.only(top: 10,left: 30,right: 5),
+                                        Padding(padding: const EdgeInsets.only(top: 10,left: 20,right: 5),
                                           child: Image.asset("assets/images/filter.png",width: 20,height: 30,),
                                         ),
                                         Padding(padding: const EdgeInsets.only(top: 10,left: 5,right: 10),
@@ -567,7 +714,7 @@ class _About_AgencyState extends State<About_Agency> {
                                       ],
                                     ),
                                   ),
-                                  Padding(padding: const EdgeInsets.only(top: 10,left: 10),
+                                  Padding(padding: const EdgeInsets.only(top: 10,left: 0),
                                     child: Row(
                                         mainAxisAlignment: MainAxisAlignment.start,
                                         children: [
@@ -600,7 +747,8 @@ class _About_AgencyState extends State<About_Agency> {
                                               ),
                                               child:Padding(padding: const EdgeInsets.only(left: 1,right: 3),
                                                   child:   Text("All",style: TextStyle(
-                                                      letterSpacing: 0.5,color: Colors.black,fontSize: 12
+                                                      letterSpacing: 0.5,color: Colors.black,fontSize: 12,
+                                                    fontWeight: FontWeight.bold
                                                   ),textAlign: TextAlign.center,)
                                               ),
                                             ),
@@ -633,8 +781,9 @@ class _About_AgencyState extends State<About_Agency> {
                                                 ],
                                               ),
                                               child: Padding(padding: const EdgeInsets.only(left: 1,right: 3),
-                                                  child:   Text("Ready",style: TextStyle(
-                                                      letterSpacing: 0.5,color: Colors.black,fontSize: 12
+                                                  child:   Text("Buy",style: TextStyle(
+                                                      letterSpacing: 0.5,color: Colors.black,fontSize: 12,
+                                                      fontWeight: FontWeight.bold
                                                   ),textAlign: TextAlign.center,)
                                               ),
                                             ),
@@ -667,8 +816,9 @@ class _About_AgencyState extends State<About_Agency> {
                                                   ],
                                                 ),
                                                 child:Padding(padding: const EdgeInsets.only(left: 1,right: 3),
-                                                    child:   Text("Off-Plan",style: TextStyle(
-                                                        letterSpacing: 0.5,color: Colors.black,fontSize: 12
+                                                    child:   Text("Rent",style: TextStyle(
+                                                        letterSpacing: 0.5,color: Colors.black,fontSize: 12,
+                                                        fontWeight: FontWeight.bold
                                                     ),textAlign: TextAlign.center,)
                                                 )
                                             ),
@@ -678,123 +828,52 @@ class _About_AgencyState extends State<About_Agency> {
                                 ],
                               ),
                             ),
-                           /* Container(
-                                height: screenSize.height*0.8,
-                                //color: Colors.grey,
-                                margin: const EdgeInsets.only(left: 15,right: 15,top: 30),
+                            //Agent
+                            Container(
+                              //padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
+                                margin: const EdgeInsets.only(left: 10,right: 10,top: 20),
+                                // height: 800,
+                               //  color: Colors.grey,
                                 child:  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: (){
-                                          Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Agency()));
-                                        },
-                                        child:  Padding(padding: const EdgeInsets.only(left: 15,top: 15,right: 10),
-                                          child: Container(
-                                            height: 120,
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadiusDirectional.circular(10.0),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey,
-                                                  offset: const Offset(
-                                                    0.3,
-                                                    0.3,
-                                                  ),
-                                                  blurRadius: 0.3,
-                                                  spreadRadius: 0.3,
-                                                ), //BoxShadow
-                                                BoxShadow(
-                                                  color: Colors.white,
-                                                  offset: const Offset(0.0, 0.0),
-                                                  blurRadius: 0.0,
-                                                  spreadRadius: 0.0,
-                                                ), //BoxShadow
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: (){
-                                          Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Agency()));
-                                        },
-                                        child:  Padding(padding: const EdgeInsets.only(left: 15,top: 15,right: 10),
-                                          child: Container(
-                                            height: 120,
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadiusDirectional.circular(10.0),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey,
-                                                  offset: const Offset(
-                                                    0.3,
-                                                    0.3,
-                                                  ),
-                                                  blurRadius: 0.3,
-                                                  spreadRadius: 0.3,
-                                                ), //BoxShadow
-                                                BoxShadow(
-                                                  color: Colors.white,
-                                                  offset: const Offset(0.0, 0.0),
-                                                  blurRadius: 0.0,
-                                                  spreadRadius: 0.0,
-                                                ), //BoxShadow
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: (){
-                                          Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Agency()));
-                                        },
-                                        child:  Padding(padding: const EdgeInsets.only(left: 15,top: 15,right: 10),
-                                          child: Container(
-                                            height: 120,
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadiusDirectional.circular(10.0),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey,
-                                                  offset: const Offset(
-                                                    0.3,
-                                                    0.3,
-                                                  ),
-                                                  blurRadius: 0.3,
-                                                  spreadRadius: 0.3,
-                                                ), //BoxShadow
-                                                BoxShadow(
-                                                  color: Colors.white,
-                                                  offset: const Offset(0.0, 0.0),
-                                                  blurRadius: 0.0,
-                                                  spreadRadius: 0.0,
-                                                ), //BoxShadow
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ]
+                                  children: [
+                                    ListView.builder(
+                                      scrollDirection: Axis.vertical,
+                                      physics: const ScrollPhysics(),
+                                     // itemCount: agentcymodel.length,
+                                      shrinkWrap: true,
+                                      itemBuilder: (context, index) {
+                                       // return Agencycardscreen(agencyModel: agentcymodel[index]);
+                                      },
+
+                                    ),
+
+                                  ],
                                 )
-                            ),*/
+                            ),
+                            //Review
                             Container(
                                 height: screenSize.height*0.8,
                                // color: Colors.grey,
-                                margin: const EdgeInsets.only(left: 15,right: 15,top: 30),
+                                margin: const EdgeInsets.only(left: 10,right: 10,top: 20),
                                 child:  Column(
                                     children: [
                                       //About details
-                                      Padding(padding: const EdgeInsets.only(top: 10,left: 5,right: 290),
-                                        child: Text("Reviews",style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          letterSpacing: 0.5,
-                                        ),textAlign: TextAlign.left,),
+                                      Padding(padding: const EdgeInsets.only(top: 10,left: 10,right: 0),
+                                        child: Row(
+                                          children: [
+                                            Text("Reviews",style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 0.5,
+                                            ),textAlign: TextAlign.left,),
+                                            Text(""),
+                                          ],
+                                        ),
                                       ),
-                                      Padding(padding: const EdgeInsets.only(top: 10,left: 15,right: 15),
+                                      Padding(padding: const EdgeInsets.only(top: 10,left: 10,right: 10),
                                         child: Container(
                                           //   width: 250,
-                                            height: 120,
+                                            height: screenSize.height*0.15,
                                             padding: const EdgeInsets.only(top: 5),
                                             decoration: BoxDecoration(
                                               borderRadius: BorderRadiusDirectional.circular(10.0),
@@ -986,7 +1065,7 @@ class _About_AgencyState extends State<About_Agency> {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.call_outlined,color: Colors.green,)
+              child: Image.asset("assets/images/whats.png",height: 20,)
 
           ),
           Container(
@@ -1021,8 +1100,13 @@ class _About_AgencyState extends State<About_Agency> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-              });
+                if(isDataRead == true){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+
+                }              });
             },
             icon: pageIndex == 3
                 ? const Icon(
@@ -1061,7 +1145,6 @@ class Page1 extends StatelessWidget {
     );
   }
 }
-
 class Page2 extends StatelessWidget {
   const Page2({Key? key}) : super(key: key);
 
@@ -1082,7 +1165,6 @@ class Page2 extends StatelessWidget {
     );
   }
 }
-
 class Page3 extends StatelessWidget {
   const Page3({Key? key}) : super(key: key);
 
@@ -1103,7 +1185,6 @@ class Page3 extends StatelessWidget {
     );
   }
 }
-
 class Page4 extends StatelessWidget {
   const Page4({Key? key}) : super(key: key);
 

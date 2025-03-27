@@ -3,7 +3,7 @@ class Amenities {
   String? title;
   String? icon;
 
-  Amenities.dart({this.id, this.title, this.icon});
+  Amenities({this.id, this.title, this.icon});
 
   Amenities.fromJson(Map<String, dynamic> json) {
     id = json['id'];

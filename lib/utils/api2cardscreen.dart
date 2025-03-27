@@ -1,15 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:drawerdemo/screen/product_detail.dart';
+import 'package:Akarat/model/filtermodel.dart';
+import 'package:Akarat/screen/product_detail.dart';
 import 'package:flutter/material.dart';
 import '../model/api2model.dart';
 
 class ProductCard extends StatelessWidget {
-  final Product product;
-  const ProductCard({super.key, required this.product});
+  final FilterModel filterModel;
+  const ProductCard({super.key, required this.filterModel});
 
   @override
   Widget build(BuildContext context) {
-    if(product == null){
+    if(filterModel == null){
       return Scaffold(
         body: Center(child: CircularProgressIndicator()), // Show loading state
       );
@@ -17,7 +18,7 @@ class ProductCard extends StatelessWidget {
     return SingleChildScrollView(
       child: GestureDetector(
         onTap: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context) => Product_Detail(data: '${product.id}')));
+         // Navigator.push(context, MaterialPageRoute(builder: (context) => Product_Detail(data: '${product.id}')));
         },
        child : Card(
             color: Colors.white,
@@ -29,20 +30,20 @@ class ProductCard extends StatelessWidget {
                   AspectRatio(
                     aspectRatio: 1.5,
                     // this is the ratio
-                    child: CachedNetworkImage( // this is to fetch the image
+                   /* child: CachedNetworkImage( // this is to fetch the image
                       imageUrl: (product.image),
                       fit: BoxFit.cover,
                       height: 100,
-                    ),
+                    ),*/
                   ),
                   Padding(padding: const EdgeInsets.only(top: 5),
                     child: ListTile(
-                      title: Text(product.title,style: TextStyle(
+                     /* title: Text(product.title,style: TextStyle(
                           fontWeight: FontWeight.bold,fontSize: 18,height: 1.4
                       ),),
                       subtitle: Text('${product.price}',style: TextStyle(
                           fontWeight: FontWeight.bold,fontSize: 15,height: 1.8
-                      ),),
+                      ),),*/
                     ),
                   ),
                   Row(
@@ -53,10 +54,10 @@ class ProductCard extends StatelessWidget {
                         child:  Image.asset("assets/images/map.png",height: 14,),
                       ),
                       Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                        child: Text(product.category,style: TextStyle(
+                       /* child: Text(product.category,style: TextStyle(
                             fontWeight: FontWeight.bold,fontSize: 13,height: 1.4,
                             overflow: TextOverflow.visible
-                        ),),
+                        ),),*/
                       ),
                     ],
                   ),

@@ -1,15 +1,12 @@
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:drawerdemo/model/api2model.dart';
-import 'package:drawerdemo/model/fdetailmodel.dart';
-import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/profile_login.dart';
+import 'package:Akarat/model/api2model.dart';
+import 'package:Akarat/model/fdetailmodel.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-
-
-
 class Featured_Detail extends StatefulWidget {
   const Featured_Detail({super.key, required this.data});
   final String data;
@@ -107,10 +104,15 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                     ), //BoxShadow
                                   ],
                                 ),
+                          child: GestureDetector(
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
+                            },
                                 child: Image.asset("assets/images/ar-left.png",
                                   width: 15,
                                   height: 15,
                                   fit: BoxFit.contain,),
+                          ),
                               ),
                               Container(
                                 margin: const EdgeInsets.only(left: 220,top: 5,bottom: 0,),
@@ -212,55 +214,23 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     ],
                   ),
                   Container(
-                      height: 550,
+                      height: screenSize.height*0.4,
                       margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                      child:  ListView(
+                      child:  ListView.builder(
                           shrinkWrap: true,
                           scrollDirection: Axis.vertical,
-                          children: <Widget>[
-                             CachedNetworkImage( // this is to fetch the image
-                              imageUrl: (featured_detailModel!.data!.media![0].originalUrl.toString()),
-                              //fit: BoxFit.cover,
-                             // height: 100,
-                            ),
-                            CachedNetworkImage( // this is to fetch the image
-                              imageUrl: (featured_detailModel!.data!.media![1].originalUrl.toString()),
+                        physics: const ScrollPhysics(),
+                          itemCount: featured_detailModel?.data?.media?.length ?? 0,
+                          itemBuilder: (BuildContext context, int index) {
+                           return CachedNetworkImage( // this is to fetch the image
+                              imageUrl: (featured_detailModel!.data!.media![index].originalUrl.toString()),
                               //fit: BoxFit.cover,
                               // height: 100,
-                            ),
-                            CachedNetworkImage( // this is to fetch the image
-                              imageUrl: (featured_detailModel!.data!.media![2].originalUrl.toString()),
-                              //fit: BoxFit.cover,
-                              // height: 100,
-                            ),
-                            CachedNetworkImage( // this is to fetch the image
-                              imageUrl: (featured_detailModel!.data!.media![3].originalUrl.toString()),
-                              //fit: BoxFit.cover,
-                              // height: 100,
-                            ),
-                            CachedNetworkImage( // this is to fetch the image
-                              imageUrl: (featured_detailModel!.data!.media![4].originalUrl.toString()),
-                              //fit: BoxFit.cover,
-                              // height: 100,
-                            ),
-                            CachedNetworkImage( // this is to fetch the image
-                              imageUrl: (featured_detailModel!.data!.media![5].originalUrl.toString()),
-                              //fit: BoxFit.cover,
-                              // height: 100,
-                            ),
-                            CachedNetworkImage( // this is to fetch the image
-                              imageUrl: (featured_detailModel!.data!.media![6].originalUrl.toString()),
-                              //fit: BoxFit.cover,
-                              // height: 100,
-                            ),
-                           /* CachedNetworkImage( // this is to fetch the image
-                              imageUrl: (featured_detailModel!.data!.media![7].originalUrl.toString()),
-                              //fit: BoxFit.cover,
-                              // height: 100,
-                            ),*/
-                          ]
+                            );
+                          },
+
                       )
-                  ) ,
+                  ),
                   Container(
                     height: 40,
                     margin: const EdgeInsets.only(left: 20,top: 10,right: 10,bottom: 0),
@@ -268,7 +238,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     child: Row(
                       children: [
                         //  Text(productModels!.title),
-                        Text("Townhouse",style: TextStyle(
+                        Text(featured_detailModel!.data!.location.toString(),style: TextStyle(
                           // Text("Townhouse",style: TextStyle(
                             letterSpacing: 0.5
                         ),),
@@ -328,7 +298,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         ],
                       )
                   ),
-                  Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 5,bottom: 0),
+                  /* Padding(
+                      padding: const EdgeInsets.only(left: 20,right: 0,top: 5,bottom: 0),
                       child:Row(
                         children: [
                           Text("Est.Mortgage:",style: TextStyle(
@@ -342,7 +313,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           ),),
                         ],
                       )
-                  ),
+                  ),*/
                   Container(
                       margin: const EdgeInsets.only(left: 20,top: 5,right: 10),
                       height: 40,
@@ -350,17 +321,32 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       child:Row(
                         children: [
                           Image.asset("assets/images/bed.png",height: 20,),
-                          Text(" "+ featured_detailModel!.data!.bedrooms.toString()+" beds   ",style: TextStyle(
-                              fontSize: 14,letterSpacing: 0.5
-                          ),),
-                          Image.asset("assets/images/bath.png",height: 20),
-                          Text(" "+ featured_detailModel!.data!.bathrooms.toString()+" baths   ",style: TextStyle(
-                            fontSize: 14,letterSpacing: 0.5,
-                          ),),
-                          Image.asset("assets/images/messure.png",height: 20),
-                          Text(" "+ featured_detailModel!.data!.squareFeet.toString()+" sqft",style: TextStyle(
-                            fontSize: 14,letterSpacing: 0.5,
-                          ),),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 3.0),
+                            child: Text('${featured_detailModel!.data!.bedrooms}  beds',style: TextStyle(
+                                fontSize: 14,letterSpacing: 0.5
+                            ),),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 3.0),
+                            child: Image.asset("assets/images/bath.png",height: 20),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 3.0),
+                            child: Text('${featured_detailModel!.data!.bathrooms}  baths',style: TextStyle(
+                              fontSize: 14,letterSpacing: 0.5,
+                            ),),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 3.0),
+                            child: Image.asset("assets/images/messure.png",height: 20),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 3.0),
+                            child: Text('${featured_detailModel!.data!.squareFeet}  sqft',style: TextStyle(
+                              fontSize: 14,letterSpacing: 0.5,
+                            ),),
+                          ),
                         ],
                       )
                   ),
@@ -377,59 +363,70 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   Padding(
                     padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
                     child: Container(
-                      width: double.infinity,
-                      height: screenSize.height*0.3,
-                      //color: Colors.grey,
-                      margin: const EdgeInsets.only(left: 5,top: 5),
-                      child: Text(featured_detailModel!.data!.description.toString(),
-                        textAlign: TextAlign.left,style: TextStyle(
-                            letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
+                        width: double.infinity,
+                        height: screenSize.height*0.2,
+                        //color: Colors.grey,
+                        margin: const EdgeInsets.only(left: 5,top: 5),
+                        child:  ListView(
+                            shrinkWrap: true,
+                            scrollDirection: Axis.vertical,
+                            children: <Widget>[
+                              Text(featured_detailModel!.data!.description.toString(),
+                                textAlign: TextAlign.left,style: TextStyle(
+                                    letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
+                                ),),
+                            ]
+                        )
+
+                    ),
+                  ),
+                  /* Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      height: screenSize.height*0.05,
+                      width: screenSize.width*0.9,
+                      margin: const EdgeInsets.only(left: 20,right: 20,top: 10),
+                      padding: const EdgeInsets.only(top: 8),
+                      // color: Colors.grey,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadiusDirectional.circular(8.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.red,
+                            offset: const Offset(
+                              0.0,
+                              0.0,
+                            ),
+                            blurRadius: 0.0,
+                            spreadRadius: 0.3,
+                          ), //BoxShadow
+                          BoxShadow(
+                            color: Colors.white,
+                            offset: const Offset(0.0, 0.0),
+                            blurRadius: 0.0,
+                            spreadRadius: 0.0,
+                          ), //BoxShadow
+                        ],
+                      ),
+                      child: Text("Show Full Description",textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
                         ),),
                     ),
-                  ),
-                  Container(
-                    height: screenSize.height*0.05,
-                    width: screenSize.width*0.9,
-                    margin: const EdgeInsets.only(left: 20,right: 20,top: 10),
-                    padding: const EdgeInsets.only(top: 8),
-                    // color: Colors.grey,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(8.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.red,
-                          offset: const Offset(
-                            0.0,
-                            0.0,
-                          ),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Show Full Description",textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
-                      ),),
-                  ),
-                /*  Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 20,bottom: 0),
+                  ),*/
+                  Padding(
+                      padding: const EdgeInsets.only(left: 20,right: 0,top: 20,bottom: 0),
                       child:Row(
                         children: [
                           Text("Posted On:",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                           ),),
-                          Text(featured_detailModel!.data!.postedOn.toString(),style: TextStyle(
+                           /*Text(featured_detailModel!.data!.pos.toString(),style: TextStyle(
                             fontSize: 14,letterSpacing: 0.5,
-                          ),),
+                          ),),*/
                         ],
                       )
-                  ),*/
+                  ),
                   Container(
                     height: 30,
                     width: 200,
@@ -446,21 +443,42 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       child:Row(
                         children: [
                           Image.asset("assets/images/Residential__1.png",height: 15,),
-                          Text("  Apartment   ",style: TextStyle(
-                              fontSize: 14,letterSpacing: 0.5
-                          ),),
-                          Image.asset("assets/images/bed.png",height: 15,),
-                          Text("  2 beds   ",style: TextStyle(
-                              fontSize: 14,letterSpacing: 0.5
-                          ),),
-                          Image.asset("assets/images/bath.png",height: 15),
-                          Text(" 3 baths   ",style: TextStyle(
-                            fontSize: 14,letterSpacing: 0.5,
-                          ),),
-                          Image.asset("assets/images/messure.png",height: 15),
-                          Text(" 1410 sqft",style: TextStyle(
-                            fontSize: 14,letterSpacing: 0.5,
-                          ),),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Text(featured_detailModel!.data!.propertyType.toString(),style: TextStyle(
+                                fontSize: 14,letterSpacing: 0.5
+                            ),),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Image.asset("assets/images/bed.png",height: 15,),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Text('${featured_detailModel!.data!.bedrooms} beds',style: TextStyle(
+                                fontSize: 14,letterSpacing: 0.5
+                            ),),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Image.asset("assets/images/bath.png",height: 15),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Text('${featured_detailModel!.data!.bathrooms} baths',style: TextStyle(
+                              fontSize: 14,letterSpacing: 0.5,
+                            ),),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Image.asset("assets/images/messure.png",height: 15),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Text('${featured_detailModel!.data!.squareFeet} sqft',style: TextStyle(
+                              fontSize: 14,letterSpacing: 0.5,
+                            ),),
+                          ),
                         ],
                       )
                   ),
@@ -474,59 +492,109 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     ),),
                   ),
                   Container(
-                      margin: const EdgeInsets.only(left: 15,top: 0,right: 1),
+                      margin: const EdgeInsets.only(left: 20,top: 0,right: 1),
                       padding: const EdgeInsets.only(top: 5),
-                      height: 60,
+                      height: screenSize.height*0.11,
                       // color: Colors.grey,
                       child:Column(
-                        spacing: 10,
+                        spacing: 15,
                         children: [
                           Row(
+                            spacing: 5,
                             children: [
-                              Image.asset("assets/images/Residential__1.png",height: 13,),
-                              Text(" Swimming Pool ",style: TextStyle(
-                                  fontSize: 12,letterSpacing: 0.5
-                              ),),
-                              Image.asset("assets/images/bed.png",height: 13,),
-                              Text(" Balcony/Terrace ",style: TextStyle(
-                                  fontSize: 12,letterSpacing: 0.5
-                              ),),
-                              Image.asset("assets/images/bath.png",height: 13),
-                              Text(" Barbeque Area ",style: TextStyle(
-                                fontSize: 12,letterSpacing: 0.5,
-                              ),),
+                              Image.asset("assets/images/Residential__1.png",height: 15,),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Text(" Swimming Pool ",style: TextStyle(
+                                    fontSize: 14,letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Image.asset("assets/images/bed.png",height: 15,),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Text(" Balcony/Terrace ",style: TextStyle(
+                                    fontSize: 14,letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Image.asset("assets/images/bed.png",height: 15,),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Text(" Gym ",style: TextStyle(
+                                    fontSize: 14,letterSpacing: 0.5
+                                ),),
+                              ),
                             ],
                           ),
                           Row(
-                            //spacing: 10,
+                            spacing: 5,
                             children: [
-                              Image.asset("assets/images/Residential__1.png",height: 13,),
-                              Text(" Elevators ",style: TextStyle(
-                                  fontSize: 12,letterSpacing: 0.5
-                              ),),
-                              Image.asset("assets/images/bed.png",height: 13,),
-                              Text(" Gym ",style: TextStyle(
-                                  fontSize: 12,letterSpacing: 0.5
-                              ),),
-                              Image.asset("assets/images/bath.png",height: 13),
-                              Text("Parking Space ",style: TextStyle(
-                                fontSize: 12,letterSpacing: 0.5,
-                              ),),
-                              Image.asset("assets/images/messure.png",height: 13),
-                              Text("Pet Allowed ",style: TextStyle(
-                                fontSize: 12,letterSpacing: 0.5,
-                              ),),
-                              Image.asset("assets/images/messure.png",height: 13),
-                              Text("Security ",style: TextStyle(
-                                fontSize: 12,letterSpacing: 0.5,
-                              ),),
+                              Image.asset("assets/images/bath.png",height: 15),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Text(" Barbeque Area ",style: TextStyle(
+                                  fontSize: 14,letterSpacing: 0.5,
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Image.asset("assets/images/Residential__1.png",height: 15,),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Text(" Elevators ",style: TextStyle(
+                                    fontSize: 14,letterSpacing: 0.5
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Image.asset("assets/images/bath.png",height: 15),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Text("Parking Space ",style: TextStyle(
+                                  fontSize: 14,letterSpacing: 0.5,
+                                ),),
+                              ),
                             ],
-                          )
+                          ),
+
+
+                          Row(
+                            spacing: 5,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Image.asset("assets/images/messure.png",height: 15),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Text("Pet Allowed ",style: TextStyle(
+                                  fontSize: 14,letterSpacing: 0.5,
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Image.asset("assets/images/messure.png",height: 15),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: Text("Security ",style: TextStyle(
+                                  fontSize: 14,letterSpacing: 0.5,
+                                ),),
+                              ),
+                            ],
+                          ),
                         ],
                       )
 
                   ),
-                  Container(
+                  /*  Container(
                     height: screenSize.height*0.05,
                     width: screenSize.width*0.9,
                     margin: const EdgeInsets.only(left: 20,right: 20,top: 15),
@@ -556,7 +624,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       style: TextStyle(
                           fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
                       ),),
-                  ),
+                  ),*/
                   Container(
                     height: 30,
                     width: 200,
@@ -567,7 +635,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     ),),
                   ),
                   Container(
-                    height: 80,
+                    height: screenSize.height*0.12,
                     margin: const EdgeInsets.only(left: 20,right: 20,top: 10),
                     // color: Colors.grey,
                     child: Row(
@@ -575,26 +643,44 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         Column(
                           children: [
                             Text("Project            "),
-                            Text("Mag eye          ",style: TextStyle(
-                                fontWeight: FontWeight.bold
-                            ),),
-                            Text("Delivery Date  "),
-                            Text("25th Jan 2025",style: TextStyle(
-                                fontWeight: FontWeight.bold
-                            ),)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4.0),
+                              child: Text("Mag eye          ",style: TextStyle(
+                                  fontWeight: FontWeight.bold
+                              ),),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10.0),
+                              child: Text("Delivery Date  "),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4.0),
+                              child: Text("25th Jan 2025",style: TextStyle(
+                                  fontWeight: FontWeight.bold
+                              ),),
+                            )
                           ],
                         ),
                         Padding(padding: const EdgeInsets.only(left: 70),
                           child:  Column(
                             children: [
                               Text("Developer                               "),
-                              Text("MAG Property Development",style: TextStyle(
-                                  fontWeight: FontWeight.bold
-                              ),),
-                              Text("Property type                         "),
-                              Text("Townhouse,Apartment         ",style: TextStyle(
-                                  fontWeight: FontWeight.bold
-                              ),)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text("MAG Property Development",style: TextStyle(
+                                    fontWeight: FontWeight.bold
+                                ),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10.0),
+                                child: Text("Property type                         "),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text("Townhouse,Apartment         ",style: TextStyle(
+                                    fontWeight: FontWeight.bold
+                                ),),
+                              )
                             ],
                           ),
                         ),
@@ -605,7 +691,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   Container(
                     height: screenSize.height*0.17,
                     margin: const EdgeInsets.only(left: 20,right: 20,top: 20),
-                    color: Colors.grey,
+                    // color: Colors.grey,
                     child: Row(
                       spacing: 1,
                       children: [
@@ -654,36 +740,39 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                   fontSize: 10,fontWeight: FontWeight.bold
                               ),),
                             ),
-                            Container(
-                              height: 30,
-                              width: 145,
-                              margin: const EdgeInsets.only(left: 15,right: 10,top: 15),
-                              padding: const EdgeInsets.only(top: 8),
-                              // color: Colors.grey,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadiusDirectional.circular(8.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.red,
-                                    offset: const Offset(
-                                      0.0,
-                                      0.0,
-                                    ),
-                                    blurRadius: 0.0,
-                                    spreadRadius: 0.3,
-                                  ), //BoxShadow
-                                  BoxShadow(
-                                    color: Colors.white,
-                                    offset: const Offset(0.0, 0.0),
-                                    blurRadius: 0.0,
-                                    spreadRadius: 0.0,
-                                  ), //BoxShadow
-                                ],
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                height: screenSize.height*0.04,
+                                width: screenSize.width*0.4,
+                                // margin: const EdgeInsets.only(left: 15,right: 10,top: 15),
+                                padding: const EdgeInsets.only(top: 8),
+                                // color: Colors.grey,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadiusDirectional.circular(8.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.red,
+                                      offset: const Offset(
+                                        0.5,
+                                        0.5,
+                                      ),
+                                      blurRadius: 0.3,
+                                      spreadRadius: 0.3,
+                                    ), //BoxShadow
+                                    BoxShadow(
+                                      color: Colors.white,
+                                      offset: const Offset(0.0, 0.0),
+                                      blurRadius: 0.0,
+                                      spreadRadius: 0.0,
+                                    ), //BoxShadow
+                                  ],
+                                ),
+                                child: Text("View All Project Details",textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      letterSpacing: 0.5,fontSize: 11,fontWeight: FontWeight.bold
+                                  ),),
                               ),
-                              child: Text("View All Project Details",textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    letterSpacing: 0.5,fontSize: 11,fontWeight: FontWeight.bold
-                                ),),
                             ),
                           ],
                         )
@@ -764,21 +853,21 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               ), //BoxShadow
                             ],
                           ),
-                          child: CachedNetworkImage( // this is to fetch the image
-                            imageUrl: (featured_detailModel!.data!.media![0].originalUrl.toString()),
+                          /* child: CachedNetworkImage( // this is to fetch the image
+                            imageUrl: (productModels!.data!.media.toString()),
                             fit: BoxFit.cover,
                             height: 100,
-                          ),
+                          ),*/
                         ),
-                       /* Padding(padding: const EdgeInsets.only(top: 10),
-                          child: Text(productModels!.agent.name.toString(),style: TextStyle(
+                        /*Padding(padding: const EdgeInsets.only(top: 10),
+                          child: Text(featured_detailModel!.data!..toString(),style: TextStyle(
                               fontWeight: FontWeight.bold,letterSpacing: 0.5
                           ),),
                         ),*/
-                      /*  Row(
+                        Row(
                           children: [
                             Padding(padding: const EdgeInsets.only(top: 5,left: 80),
-                              child: Text(productModels!.agent.rating.toString()),
+                              // child: Text(productModels!.agent.rating.toString()),
                             ),
                             Padding(padding: const EdgeInsets.only(top: 5,left: 5),
                               child: Row(
@@ -795,8 +884,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               child: Text("ratings"),
                             ),
                           ],
-                        ),*/
-                      /*  Row(
+                        ),
+                        Row(
                           children: [
                             Padding(padding: const EdgeInsets.only(top: 5,left: 50),
                               child: Text("Response time"),
@@ -805,8 +894,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               child: Text("within 5 minutes"),
                             ),
                           ],
-                        ),*/
-                      /*  Row(
+                        ),
+                        Row(
                           children: [
                             Padding(padding: const EdgeInsets.only(top: 5,left: 50),
                               child: Text("Closed Deals"),
@@ -815,10 +904,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               child: Text("17"),
                             ),
                           ],
-                        ),*/
-                       /* Container(
+                        ),
+                        Container(
                           height: 35,
-                          width: 220,
+                          width: screenSize.width*0.5,
                           margin: const EdgeInsets.only(left: 15,right: 10,top: 15),
                           padding: const EdgeInsets.only(top: 8),
                           // color: Colors.grey,
@@ -828,10 +917,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               BoxShadow(
                                 color: Colors.red,
                                 offset: const Offset(
-                                  0.0,
-                                  0.0,
+                                  0.5,
+                                  0.5,
                                 ),
-                                blurRadius: 0.0,
+                                blurRadius: 0.5,
                                 spreadRadius: 0.3,
                               ), //BoxShadow
                               BoxShadow(
@@ -842,15 +931,15 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               ), //BoxShadow
                             ],
                           ),
-                          child: Text("See Agents Properties(16)",textAlign: TextAlign.center,
+                          child: Text("See Agents Properties",textAlign: TextAlign.center,
                             style: TextStyle(
                                 letterSpacing: 0.5,fontSize: 13,fontWeight: FontWeight.bold
                             ),),
-                        ),*/
+                        ),
                       ],
                     ),
                   ),
-                 /* Container(
+                  Container(
                     height: screenSize.height*0.3,
                     width: double.infinity,
                     margin: const EdgeInsets.only(left: 18,right: 14,top: 20),
@@ -860,10 +949,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         BoxShadow(
                           color: Colors.grey,
                           offset: const Offset(
-                            0.0,
-                            0.0,
+                            0.5,
+                            0.5,
                           ),
-                          blurRadius: 0.0,
+                          blurRadius: 0.5,
                           spreadRadius: 0.3,
                         ), //BoxShadow
                         BoxShadow(
@@ -876,10 +965,15 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     ),
                     child: Column(
                       children: [
-                        Padding(padding: const EdgeInsets.only(left: 0,top: 5,right: 160),
-                          child: Text("Regulatory Information  ",style: TextStyle(
-                              fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                          ),textAlign: TextAlign.left,),
+                        Row(
+                          children: [
+                            Padding(padding: const EdgeInsets.only(left: 5,top: 5,right: 0),
+                              child: Text("Regulatory Information  ",style: TextStyle(
+                                  fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                              ),textAlign: TextAlign.left,),
+                            ),
+                            Text("")
+                          ],
                         ),
                         Row(
                           children: [
@@ -887,18 +981,18 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               child: Text("Reference:",style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
-                            Padding(padding: const EdgeInsets.only(left: 65,top: 5),
-                              child: Text(productModels!.regulatoryInfo.reference.toString(),style: TextStyle(
+                           /* Padding(padding: const EdgeInsets.only(left: 65,top: 5),
+                              child: Text(featured_detailModel!.data!.regulatoryInfo!.reference.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
-                              ),),),
+                              ),),),*/
                             Padding(padding: const EdgeInsets.only(left: 10,top: 5),
                               child: Text("Listed:",style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
-                            Padding(padding: const EdgeInsets.only(left: 10,top: 5),
-                              child: Text(productModels!.regulatoryInfo.listed.toString(),style: TextStyle(
+                           /* Padding(padding: const EdgeInsets.only(left: 10,top: 5),
+                              child: Text(productModels!.data!.regulatoryInfo!.listed.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
-                              ),),),
+                              ),),),*/
                           ],
                         ),
                         Row(
@@ -907,18 +1001,18 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               child: Text("Brocker License:",style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
-                            Padding(padding: const EdgeInsets.only(left: 27,top: 5),
-                              child: Text(productModels!.regulatoryInfo.brokerLicense.toString(),style: TextStyle(
+                           /* Padding(padding: const EdgeInsets.only(left: 27,top: 5),
+                              child: Text(productModels!.data!.regulatoryInfo!.brokerLicense.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
-                              ),),),
+                              ),),),*/
                             Padding(padding: const EdgeInsets.only(left: 15,top: 5),
                               child: Text("Agent Licence:",style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
-                            Padding(padding: const EdgeInsets.only(left: 10,top: 5),
-                              child: Text(productModels!.regulatoryInfo.agentLicense.toString(),style: TextStyle(
+                           /* Padding(padding: const EdgeInsets.only(left: 10,top: 5),
+                              child: Text(productModels!.data!.regulatoryInfo!.agentLicense.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
-                              ),),),
+                              ),),),*/
 
                           ],
                         ),
@@ -928,10 +1022,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               child: Text("OLD Permit Number:",style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
-                            Padding(padding: const EdgeInsets.only(left: 1,top: 5),
-                              child: Text(productModels!.regulatoryInfo.dldPermitNumber.toString(),style: TextStyle(
+                            /*Padding(padding: const EdgeInsets.only(left: 1,top: 5),
+                              child: Text(productModels!.data!.regulatoryInfo!.dldPermitNumber.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
-                              ),),),
+                              ),),),*/
 
                           ],
                         ),
@@ -941,25 +1035,26 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               child: Text("Zone Name:",style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
-                            Padding(padding: const EdgeInsets.only(left: 1,top: 5),
-                              child: Text(productModels!.regulatoryInfo.zoneName.toString(),overflow: TextOverflow.ellipsis,
+                           /* Padding(padding: const EdgeInsets.only(left: 1,top: 5),
+                              child: Text(productModels!.data!.regulatoryInfo!.zoneName.toString(),overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13,
-                                ),),),
+                                ),),),*/
                           ],
                         ),
                         Container(
                           margin: const EdgeInsets.only(top: 10),
-                          height: 90,
+                          height: screenSize.height*0.1,
                           width: 110,
-                          color: Colors.grey,
+                          // color: Colors.grey,
+                          child: Image.asset("assets/images/dld.png",fit: BoxFit.fill,),
                         ),
                         Padding(padding: const EdgeInsets.only(top: 10),
                           child: Text("OLD Permit Number",style: TextStyle(fontWeight: FontWeight.bold),),)
                       ],
                     ),
-                  ),*/
-                 /* Container(
+                  ),
+                  Container(
                     height: 30,
                     width: double.infinity,
                     // color: Colors.grey,
@@ -967,8 +1062,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     child:Text("Recommended Properties",style: TextStyle(
                         fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                     ),),
-                  ),*/
-
+                  ),
                   SizedBox(height: 100,)
                 ]
             )

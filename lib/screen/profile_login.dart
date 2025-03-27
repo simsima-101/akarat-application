@@ -1,14 +1,14 @@
-import 'package:drawerdemo/screen/about_us.dart';
-import 'package:drawerdemo/screen/advertising.dart';
-import 'package:drawerdemo/screen/blog.dart';
-import 'package:drawerdemo/screen/cookies.dart';
-import 'package:drawerdemo/screen/favorite.dart';
-import 'package:drawerdemo/screen/findagent.dart';
-import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/login.dart';
-import 'package:drawerdemo/screen/privacy.dart';
-import 'package:drawerdemo/screen/support.dart';
-import 'package:drawerdemo/screen/terms_condition.dart';
+import 'package:Akarat/screen/about_us.dart';
+import 'package:Akarat/screen/advertising.dart';
+import 'package:Akarat/screen/blog.dart';
+import 'package:Akarat/screen/cookies.dart';
+import 'package:Akarat/screen/favorite.dart';
+import 'package:Akarat/screen/findagent.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/login.dart';
+import 'package:Akarat/screen/privacy.dart';
+import 'package:Akarat/screen/support.dart';
+import 'package:Akarat/screen/terms_condition.dart';
 import 'package:flutter/material.dart';
 
 void main(){

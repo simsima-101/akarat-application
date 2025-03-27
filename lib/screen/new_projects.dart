@@ -1,6 +1,12 @@
-import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/profile_login.dart';
+import 'dart:convert';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:Akarat/model/projectmodel.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/profile_login.dart';
+import 'package:Akarat/screen/property_detail.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main(){
   runApp(const New_Projects());
@@ -31,6 +37,31 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
     const Page3(),
     const Page4(),
   ];
+
+  bool isFavorited = false;
+  ProjectModel? projectModel;
+
+  @override
+  void initState() {
+    super.initState();
+    getFilesApi();
+  }
+
+  Future<void> getFilesApi() async {
+    final response = await http.get(Uri.parse("https://akarat.com/api/new-projects"));
+    var data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      ProjectModel feature= ProjectModel.fromJson(data);
+
+      setState(() {
+        projectModel = feature ;
+
+      });
+
+    } else {
+      //return FeaturedModel.fromJson(data);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +100,14 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                     ), //BoxShadow
                   ],
                 ),
-                child: Icon(Icons.arrow_back,color: Colors.red,
+
+                child: GestureDetector(
+                  onTap: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+                  },
+                  child:  Icon(Icons.arrow_back,color: Colors.red,
+                )
+
                 ),
               ),
               //logo2
@@ -161,280 +199,145 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
             child: Text("Find off-plan development and everything you need to "
                 "know to invest in UAE's real estate market",style: TextStyle(letterSpacing: 0.5,),),
           ),
-          Container(
-            width: double.infinity,
-              height: 300,
-             // color: Colors.grey,
-             // padding: const EdgeInsets.only(top: 10,left: 10),
-            margin: const EdgeInsets.only(top: 15,left: 15),
-            child: ListView(
-                shrinkWrap: true,
-                scrollDirection: Axis.horizontal,
-                children: <Widget>[
-                GestureDetector(
-                onTap: (){
-         //Navigator.push(context, MaterialPageRoute(builder: (context)=> Product_Detail(data: ,)));
-          },
-          child:   Container(
-              margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
-            width: 300,
-                height: 300,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadiusDirectional.circular(6.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.5,
-                        0.5,
+          ListView.builder(
+            scrollDirection: Axis.vertical,
+            physics: const ScrollPhysics(),
+            // this give th length of item
+            itemCount: projectModel?.data?.length  ?? 0,
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              return SingleChildScrollView(
+                  child: GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                          Property_Detail(data:projectModel!.data![index].id.toString())));
+                    },
+                    child : Padding(
+                      padding: const EdgeInsets.only(left: 5.0,right: 5,top: 0,bottom: 5),
+                      child: Card(
+                        color: Colors.white,
+                        elevation: 20,
+                        shadowColor: Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 5.0,top: 1,right: 5,bottom: 15),
+                          child: Column(
+                            // spacing: 5,// this is the coloumn
+                            children: [
+                              ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Stack(
+                                      children: [
+                                        AspectRatio(
+                                          aspectRatio: 1.8,
+                                          // this is the ratio
+                                          child: CachedNetworkImage( // this is to fetch the image
+                                            imageUrl: (projectModel!.data![index].media![index].originalUrl.toString()),
+                                            fit: BoxFit.fill,
+
+                                          ),
+                                        ),
+                                        Positioned(
+                                          top: 5,
+                                          right: 10,
+                                          child: Container(
+                                            margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
+                                            height: 35,
+                                            width: 35,
+                                            padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadiusDirectional.circular(20.0),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey,
+                                                  offset: const Offset(
+                                                    0.3,
+                                                    0.3,
+                                                  ),
+                                                  blurRadius: 0.3,
+                                                  spreadRadius: 0.3,
+                                                ), //BoxShadow
+                                                BoxShadow(
+                                                  color: Colors.white,
+                                                  offset: const Offset(0.0, 0.0),
+                                                  blurRadius: 0.0,
+                                                  spreadRadius: 0.0,
+                                                ), //BoxShadow
+                                              ],
+                                            ),
+                                            // child: Positioned(
+                                            // child: Icon(Icons.favorite_border,color: Colors.red,),)
+                                            child: IconButton(
+                                              padding: EdgeInsets.only(left: 5,top: 7),
+                                              alignment: Alignment.center,
+                                              icon: Icon(
+                                                isFavorited ? Icons.favorite : Icons.favorite_border,
+                                                color: isFavorited ? Colors.red : Colors.red,
+                                              ),
+                                              onPressed: () {
+                                                setState(() {
+                                                  // property_id=featuredModel!.data![index].id;
+                                                  /*  if(token == ''){
+                                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
+                                                  }
+                                                  else{
+                                                    toggledApi(token,property_id);
+                                                  }*/
+                                                  isFavorited = !isFavorited;
+                                                });
+                                              },
+                                            ),
+                                            //)
+                                          ),
+                                        ),
+                            ]
+                          )
+                        ),
+                              Padding(padding: const EdgeInsets.only(top: 5),
+                                child: ListTile(
+                                  title: Text(projectModel!.data![index].title.toString(),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,fontSize: 18,height: 1.4
+                                    ),),
+                                  /* subtitle: Text('${product.price}',style: TextStyle(
+                                     fontWeight: FontWeight.bold,fontSize: 15,height: 1.8
+                                 ),),*/
+                                ),
+                              ),
+
+                            /*  Row(
+
+                                children: [
+                                  Padding(padding: const EdgeInsets.only(left: 1,right: 0,top: 0,bottom: 0),
+                                      child:  Icon(Icons.circle,color: Colors.red,size: 12,)
+                                  ),
+                                  Padding(padding: const EdgeInsets.only(left: 1,right: 5,top: 0,bottom: 0),
+                                    child:  Text(blogModel!.data![index].readingTime.toString(),
+                                      style: TextStyle(
+                                          color: Colors.grey
+                                      ),),
+                                  ),
+                                  Padding(padding: const EdgeInsets.only(left: 10,right: 0,top: 0,bottom: 0),
+                                      child:  Icon(Icons.circle,color: Colors.red,size: 12,)
+                                  ),
+
+                                  Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0,bottom: 0),
+                                    child: Text("Published:"+blogModel!.data![index].publishedDate.toString(),
+                                      style: TextStyle(color: Colors.grey
+                                      ),),
+                                  ),
+                                ],
+                              ),*/
+                            ],
+                          ),
+                        ),
                       ),
-                      blurRadius: 1.0,
-                      spreadRadius: 0.5,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ]),
-            child:   Image.asset("assets/images/image 2.png",fit: BoxFit.fill,),
-            ),
-                ),
-        GestureDetector(
-            onTap: (){
-              //Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
+                    ),
+
+                  )
+
+              );
             },
-                child:   Container(
-                    margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
-                    width: 300,
-                    height: 300,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
-                    child:   Image.asset("assets/images/image 4.png",fit: BoxFit.fill,),
-                  ),
-        ),
-        GestureDetector(
-            onTap: (){
-             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
-            },child:
-                  Container(
-                    margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
-                    width: 300,
-                    height: 300,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
-                    child:   Image.asset("assets/images/image 2.png",fit: BoxFit.fill,),
-                  ),
-        ),
-        GestureDetector(
-            onTap: (){
-             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
-            },child:
-                  Container(
-                    margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
-                    width: 300,
-                    height: 300,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(6.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ]),
-                    child:   Image.asset("assets/images/image3.png",fit: BoxFit.fill,),
-                  ),
-        ),
-                  ]
-            )
           ),
-          Padding(padding: const EdgeInsets.only(top: 15,left: 5,right: 265),
-            child: Text("Dubai Marina",textAlign: TextAlign.left,
-              style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15),),
-          ),
-          Container(
-              width: double.infinity,
-              height: 300,
-              // color: Colors.grey,
-              // padding: const EdgeInsets.only(top: 10,left: 10),
-              margin: const EdgeInsets.only(top: 15,left: 15),
-              child: ListView(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  children: <Widget>[
-                  GestureDetector(
-                  onTap: (){
-         // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
-          },child:
-                    Container(
-                      margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.5,
-                                0.5,
-                              ),
-                              blurRadius: 1.0,
-                              spreadRadius: 0.5,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ]),
-                      child:   Image.asset("assets/images/image 2.png",fit: BoxFit.fill,),
-                    ),
-                  ),
-        GestureDetector(
-            onTap: (){
-             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
-            },child:
-                    Container(
-                      margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.5,
-                                0.5,
-                              ),
-                              blurRadius: 1.0,
-                              spreadRadius: 0.5,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ]),
-                      child:   Image.asset("assets/images/image 4.png",fit: BoxFit.fill,),
-                    ),
-        ),
-        GestureDetector(
-            onTap: (){
-             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
-            },child:
-                    Container(
-                      margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.5,
-                                0.5,
-                              ),
-                              blurRadius: 1.0,
-                              spreadRadius: 0.5,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ]),
-                      child:   Image.asset("assets/images/image 2.png",fit: BoxFit.fill,),
-                    ),
-        ),
-        GestureDetector(
-            onTap: (){
-             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Property_Detail()));
-            },child:
-                    Container(
-                      margin: const EdgeInsets.only(top: 5,left: 5,right: 10,bottom: 5),
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.5,
-                                0.5,
-                              ),
-                              blurRadius: 1.0,
-                              spreadRadius: 0.5,
-                            ), //BoxShadow
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
-                          ]),
-                      child:   Image.asset("assets/images/image3.png",fit: BoxFit.fill,),
-                    ),
-        ),
-                  ]
-              )
-          ),
-          SizedBox(
-            width: double.infinity,
-            height: 100,
-          )
           ]
     )
     )
@@ -526,7 +429,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.call_outlined,color: Colors.green,)
+              child: Image.asset("assets/images/whats.png",height: 20,)
 
           ),
           Container(

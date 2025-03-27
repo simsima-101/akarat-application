@@ -1,14 +1,19 @@
-class Featured_DetailModel {
+class FilterModel {
   bool? success;
   String? message;
-  Data? data;
+  List<Data>? data;
 
-  Featured_DetailModel({this.success, this.message, this.data});
+  FilterModel({this.success, this.message, this.data});
 
-  Featured_DetailModel.fromJson(Map<String, dynamic> json) {
+  FilterModel.fromJson(Map<String, dynamic> json) {
     success = json['success'];
     message = json['message'];
-    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
+    if (json['data'] != null) {
+      data = <Data>[];
+      json['data'].forEach((v) {
+        data!.add(new Data.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -16,7 +21,7 @@ class Featured_DetailModel {
     data['success'] = this.success;
     data['message'] = this.message;
     if (this.data != null) {
-      data['data'] = this.data!.toJson();
+      data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -27,16 +32,7 @@ class Data {
   String? title;
   String? price;
   String? address;
-  Null? phoneNumber;
-  Null? whatsapp;
   String? location;
-  String? description;
-  String? paymentPeriod;
-  int? bedrooms;
-  int? bathrooms;
-  String? squareFeet;
-  String? purpose;
-  String? propertyType;
   List<Media>? media;
 
   Data(
@@ -44,16 +40,7 @@ class Data {
         this.title,
         this.price,
         this.address,
-        this.phoneNumber,
-        this.whatsapp,
         this.location,
-        this.description,
-        this.paymentPeriod,
-        this.bedrooms,
-        this.bathrooms,
-        this.squareFeet,
-        this.purpose,
-        this.propertyType,
         this.media});
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -61,16 +48,7 @@ class Data {
     title = json['title'];
     price = json['price'];
     address = json['address'];
-    phoneNumber = json['phone_number'];
-    whatsapp = json['whatsapp'];
     location = json['location'];
-    description = json['description'];
-    paymentPeriod = json['payment_period'];
-    bedrooms = json['bedrooms'];
-    bathrooms = json['bathrooms'];
-    squareFeet = json['square_feet'];
-    purpose = json['purpose'];
-    propertyType = json['property_type'];
     if (json['media'] != null) {
       media = <Media>[];
       json['media'].forEach((v) {
@@ -85,16 +63,7 @@ class Data {
     data['title'] = this.title;
     data['price'] = this.price;
     data['address'] = this.address;
-    data['phone_number'] = this.phoneNumber;
-    data['whatsapp'] = this.whatsapp;
     data['location'] = this.location;
-    data['description'] = this.description;
-    data['payment_period'] = this.paymentPeriod;
-    data['bedrooms'] = this.bedrooms;
-    data['bathrooms'] = this.bathrooms;
-    data['square_feet'] = this.squareFeet;
-    data['purpose'] = this.purpose;
-    data['property_type'] = this.propertyType;
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
     }

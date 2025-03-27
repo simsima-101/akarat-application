@@ -1,27 +1,16 @@
-class BlogModel {
-  bool? success;
-  String? message;
-  List<Data>? data;
+class BlogDetailModel {
+  Data? data;
 
-  BlogModel({this.success, this.message, this.data});
+  BlogDetailModel({this.data});
 
-  BlogModel.fromJson(Map<String, dynamic> json) {
-    success = json['success'];
-    message = json['message'];
-    if (json['data'] != null) {
-      data = <Data>[];
-      json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
-      });
-    }
+  BlogDetailModel.fromJson(Map<String, dynamic> json) {
+    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['success'] = this.success;
-    data['message'] = this.message;
     if (this.data != null) {
-      data['data'] = this.data!.map((v) => v.toJson()).toList();
+      data['data'] = this.data!.toJson();
     }
     return data;
   }
@@ -31,6 +20,7 @@ class Data {
   int? id;
   String? publishedDate;
   String? image;
+  String? thumbnail;
   String? readingTime;
   Translations? translations;
 
@@ -38,6 +28,7 @@ class Data {
       {this.id,
         this.publishedDate,
         this.image,
+        this.thumbnail,
         this.readingTime,
         this.translations});
 
@@ -45,6 +36,7 @@ class Data {
     id = json['id'];
     publishedDate = json['published_date'];
     image = json['image'];
+    thumbnail = json['thumbnail'];
     readingTime = json['reading_time'];
     translations = json['translations'] != null
         ? new Translations.fromJson(json['translations'])
@@ -56,6 +48,7 @@ class Data {
     data['id'] = this.id;
     data['published_date'] = this.publishedDate;
     data['image'] = this.image;
+    data['thumbnail'] = this.thumbnail;
     data['reading_time'] = this.readingTime;
     if (this.translations != null) {
       data['translations'] = this.translations!.toJson();
@@ -89,16 +82,19 @@ class Translations {
 
 class En {
   String? title;
+  String? description;
 
-  En({this.title});
+  En({this.title, this.description});
 
   En.fromJson(Map<String, dynamic> json) {
     title = json['title'];
+    description = json['description'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['title'] = this.title;
+    data['description'] = this.description;
     return data;
   }
 }

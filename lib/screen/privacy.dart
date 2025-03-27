@@ -1,8 +1,13 @@
 import 'dart:async';
 
-import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/profile_login.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/my_account.dart';
+import 'package:Akarat/screen/profile_login.dart';
+import 'package:Akarat/utils/shared_preference_manager.dart';
 import 'package:flutter/material.dart';
+
+import '../utils/fav_login.dart';
+import '../utils/fav_logout.dart';
 
 class Privacy extends StatefulWidget {
   Privacy({super.key,});
@@ -21,6 +26,29 @@ class _PrivacyState extends State<Privacy> {
     const Page3(),
     const Page4(),
   ];
+
+  String token = '';
+  String email = '';
+  String result = '';
+  bool isDataRead = false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
+
+  @override
+  void initState() {
+    readData();
+    super.initState();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -64,8 +92,15 @@ class _PrivacyState extends State<Privacy> {
                     child:   Row(
                       children: [GestureDetector(
                         onTap: (){
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
-                        },
+                          setState(() {
+                            if(token == ''){
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                            }
+                            else{
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+
+                            }
+                          });                        },
                         child:   Container(
                           margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
                           height: 35,
@@ -379,7 +414,7 @@ class _PrivacyState extends State<Privacy> {
               margin: const EdgeInsets.only(left: 40),
               height: 35,
               width: 35,
-              padding: const EdgeInsets.only(top: 2),
+              padding: const EdgeInsets.only(top: 0,right: 5,bottom: 5),
               decoration: BoxDecoration(
                 borderRadius: BorderRadiusDirectional.circular(20.0),
                 boxShadow: [
@@ -400,7 +435,19 @@ class _PrivacyState extends State<Privacy> {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.favorite_border,color: Colors.red,)
+            child: IconButton(
+                padding: EdgeInsets.only(left: 5,top: 7),
+                onPressed: (){
+                  setState(() {
+                    if(token == ''){
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Logout()));
+                    }
+                    else if(token.isNotEmpty){
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Login()));
+                    }
+                  });
+                }, icon: Icon(Icons.favorite_border,color: Colors.red,)
+            ),
           ),
 
           Container(
@@ -463,8 +510,15 @@ class _PrivacyState extends State<Privacy> {
             enableFeedback: false,
             onPressed: () {
 
-              //   Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
+                }
+              });
             },
             icon: pageIndex == 3
                 ? const Icon(

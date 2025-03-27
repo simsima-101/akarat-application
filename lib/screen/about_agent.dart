@@ -1,12 +1,14 @@
 import 'dart:convert';
 
-import 'package:drawerdemo/model/agentdetaill.dart';
-import 'package:drawerdemo/model/agentsmodel.dart';
-import 'package:drawerdemo/screen/findagent.dart';
-import 'package:drawerdemo/screen/home.dart';
-import 'package:drawerdemo/screen/profile_login.dart';
+import 'package:Akarat/model/agentdetaill.dart';
+import 'package:Akarat/model/agentsmodel.dart';
+import 'package:Akarat/screen/findagent.dart';
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/my_account.dart';
+import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../utils/shared_preference_manager.dart';
 
 
 class AboutAgent extends StatefulWidget {
@@ -18,9 +20,28 @@ class AboutAgent extends StatefulWidget {
 class _AboutAgentState extends State<AboutAgent> {
   AgentDetail? agentDetail;
     int pageIndex = 0;
+
+  String token = '';
+  String email = '';
+  String result = '';
+  bool isDataRead = false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
+
+
   @override
   void initState() {
     fetchProducts(widget.data);
+    readData();
   }
 
 
@@ -623,7 +644,7 @@ class _AboutAgentState extends State<AboutAgent> {
                           child: Text(
                             agentDetail!.about,
                             style: TextStyle(
-                                fontSize: 13, color: Colors.grey, letterSpacing: 0.5
+                                fontSize: 13, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold
                             ),),
                         )
                     ),
@@ -1050,7 +1071,7 @@ class _AboutAgentState extends State<AboutAgent> {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.call_outlined,color: Colors.green,)
+              child: Image.asset("assets/images/whats.png",height: 20,)
 
           ),
           Container(
@@ -1085,7 +1106,13 @@ class _AboutAgentState extends State<AboutAgent> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                if(isDataRead == true){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+
+                }
               });
             },
             icon: pageIndex == 3

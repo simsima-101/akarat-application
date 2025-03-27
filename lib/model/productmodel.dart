@@ -1,153 +1,274 @@
-import 'package:flutter/cupertino.dart';
-
 class ProductModel {
-  final int id;
-  final String title;
-  final String media;
-  final String propertyType;
-  final String location;
-  final double price;
-  final String description;
-  final int bathrooms;
-  final int bedrooms;
-  final double squareFeet;
-  final List<String> amenities;
-  final String postedOn;
-  final double? latitude;
-  final double? longitude;
-  final String googleMapUrl;
-  final RegulatoryInfo regulatoryInfo;
-  final Agent agent;
-  final List<ProductModel> recommendedProperties;
+  Data? data;
 
-  ProductModel({
-    required this.id,
-    required this.title,
-    required this.media,
-    required this.propertyType,
-    required this.location,
-    required this.price,
-    required this.description,
-    required this.bathrooms,
-    required this.bedrooms,
-    required this.squareFeet,
-    required this.amenities,
-    required this.postedOn,
-    this.latitude,
-    this.longitude,
-    required this.googleMapUrl,
-    required this.regulatoryInfo,
-    required this.agent,
-    required this.recommendedProperties,
-  });
+  ProductModel({this.data});
 
-  factory ProductModel.fromJson(Map<String, dynamic>? json) {
-    if (json == null || json.isEmpty) {
-      debugPrint("API fromJson: Received null/empty JSON");
-      return ProductModel(
-        id: 0,
-        title: 'na',
-        media: 'https://example.com/default_image.jpg',
-        propertyType: 'na',
-        location: 'na',
-        price: 0.0,
-        description: 'na',
-        bathrooms: 0,
-        bedrooms: 0,
-        squareFeet: 0.0,
-        amenities: [],
-        postedOn: 'na',
-        latitude: null,
-        longitude: null,
-        googleMapUrl: '',
-        regulatoryInfo: RegulatoryInfo.fromJson({}),
-        agent: Agent.fromJson({}),
-        recommendedProperties: [],
-      );
+  ProductModel.fromJson(Map<String, dynamic> json) {
+    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    if (this.data != null) {
+      data['data'] = this.data!.toJson();
     }
+    return data;
+  }
+}
 
-    debugPrint("API fromJson: ${json.toString()}");
-    debugPrint("JSON Keys: ${json.keys}");
+class Data {
+  int? id;
+  String? title;
+  String? price;
+  String? address;
+  String? phoneNumber;
+  String? whatsapp;
+  String? location;
+  String? description;
+  String? paymentPeriod;
+  int? bedrooms;
+  int? bathrooms;
+  String? squareFeet;
+  String? purpose;
+  String? propertyType;
+  String? category;
+  String? latitude;
+  String? longitude;
+  String? postedOn;
+  String? deliveryDate;
+  String? project;
+  String? developer;
+  List<Media>? media;
+  String? googleMapUrl;
+  String? furnishedStatus;
+  String? agent;
+  int? closedDeals;
+  String? agentImage;
+  List<RecommendedProperties>? recommendedProperties;
+  RegulatoryInfo? regulatoryInfo;
 
-    return ProductModel(
-      id: json['id'] ?? 0,
-      title: json['title'] ?? 'na',
-      media: json['media'] ?? 'https://example.com/default_image.jpg',
-      propertyType: json['property_type'] ?? 'na',
-      location: json['location'] ?? 'na',
-      price: (json['price'] ?? 0.0).toDouble(),
-      description: json['description'] ?? 'na',
-      bathrooms: json['bathrooms'] ?? 0,
-      bedrooms: json['bedrooms'] ?? 0,
-      squareFeet: double.tryParse(json['square_feet']?.toString() ?? '0.0') ?? 0.0,
-      amenities: (json['amenities'] as List<dynamic>?)?.map((item) => item.toString()).toList() ?? [],
-      postedOn: json['posted_on'] ?? 'na',
-      latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : null,
-      longitude: json['longitude'] != null ? (json['longitude'] as num).toDouble() : null,
-      googleMapUrl: json['google_map_url'] ?? '',
-      regulatoryInfo: RegulatoryInfo.fromJson(json['regulatory_info'] ?? {}),
-      agent: Agent.fromJson(json['agent'] ?? {}),
-      recommendedProperties: (json['recommended_properties'] as List?)
-          ?.map((item) => ProductModel.fromJson(item as Map<String, dynamic>))
-          .toList() ?? [],
-    );
+  Data(
+      {this.id,
+        this.title,
+        this.price,
+        this.address,
+        this.phoneNumber,
+        this.whatsapp,
+        this.location,
+        this.description,
+        this.paymentPeriod,
+        this.bedrooms,
+        this.bathrooms,
+        this.squareFeet,
+        this.purpose,
+        this.propertyType,
+        this.category,
+        this.latitude,
+        this.longitude,
+        this.postedOn,
+        this.deliveryDate,
+        this.project,
+        this.developer,
+        this.media,
+        this.googleMapUrl,
+        this.furnishedStatus,
+        this.agent,
+        this.closedDeals,
+        this.agentImage,
+        this.recommendedProperties,
+        this.regulatoryInfo});
+
+  Data.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    title = json['title'];
+    price = json['price'];
+    address = json['address'];
+    phoneNumber = json['phone_number'];
+    whatsapp = json['whatsapp'];
+    location = json['location'];
+    description = json['description'];
+    paymentPeriod = json['payment_period'];
+    bedrooms = json['bedrooms'];
+    bathrooms = json['bathrooms'];
+    squareFeet = json['square_feet'];
+    purpose = json['purpose'];
+    propertyType = json['property_type'];
+    category = json['category'];
+    latitude = json['latitude'];
+    longitude = json['longitude'];
+    postedOn = json['posted_on'];
+    deliveryDate = json['delivery_date'];
+    project = json['project'];
+    developer = json['developer'];
+    if (json['media'] != null) {
+      media = <Media>[];
+      json['media'].forEach((v) {
+        media!.add(new Media.fromJson(v));
+      });
+    }
+    googleMapUrl = json['google_map_url'];
+    furnishedStatus = json['furnished_status'];
+    agent = json['agent'];
+    closedDeals = json['closed_deals'];
+    agentImage = json['agent_image'];
+    if (json['recommended_properties'] != null) {
+      recommendedProperties = <RecommendedProperties>[];
+      json['recommended_properties'].forEach((v) {
+        recommendedProperties!.add(new RecommendedProperties.fromJson(v));
+      });
+    }
+    regulatoryInfo = json['regulatory_info'] != null
+        ? new RegulatoryInfo.fromJson(json['regulatory_info'])
+        : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['title'] = this.title;
+    data['price'] = this.price;
+    data['address'] = this.address;
+    data['phone_number'] = this.phoneNumber;
+    data['whatsapp'] = this.whatsapp;
+    data['location'] = this.location;
+    data['description'] = this.description;
+    data['payment_period'] = this.paymentPeriod;
+    data['bedrooms'] = this.bedrooms;
+    data['bathrooms'] = this.bathrooms;
+    data['square_feet'] = this.squareFeet;
+    data['purpose'] = this.purpose;
+    data['property_type'] = this.propertyType;
+    data['category'] = this.category;
+    data['latitude'] = this.latitude;
+    data['longitude'] = this.longitude;
+    data['posted_on'] = this.postedOn;
+    data['delivery_date'] = this.deliveryDate;
+    data['project'] = this.project;
+    data['developer'] = this.developer;
+    if (this.media != null) {
+      data['media'] = this.media!.map((v) => v.toJson()).toList();
+    }
+    data['google_map_url'] = this.googleMapUrl;
+    data['furnished_status'] = this.furnishedStatus;
+    data['agent'] = this.agent;
+    data['closed_deals'] = this.closedDeals;
+    data['agent_image'] = this.agentImage;
+    if (this.recommendedProperties != null) {
+      data['recommended_properties'] =
+          this.recommendedProperties!.map((v) => v.toJson()).toList();
+    }
+    if (this.regulatoryInfo != null) {
+      data['regulatory_info'] = this.regulatoryInfo!.toJson();
+    }
+    return data;
+  }
+}
+
+class Media {
+  String? originalUrl;
+
+  Media({this.originalUrl});
+
+  Media.fromJson(Map<String, dynamic> json) {
+    originalUrl = json['original_url'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['original_url'] = this.originalUrl;
+    return data;
+  }
+}
+
+class RecommendedProperties {
+  int? id;
+  String? title;
+  String? price;
+  String? address;
+  String? location;
+  List<Media>? media;
+  int? bedrooms;
+  int? bathrooms;
+  String? squareFeet;
+
+  RecommendedProperties(
+      {this.id,
+        this.title,
+        this.price,
+        this.address,
+        this.location,
+        this.media,
+        this.bedrooms,
+        this.bathrooms,
+        this.squareFeet});
+
+  RecommendedProperties.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    title = json['title'];
+    price = json['price'];
+    address = json['address'];
+    location = json['location'];
+    if (json['media'] != null) {
+      media = <Media>[];
+      json['media'].forEach((v) {
+        media!.add(new Media.fromJson(v));
+      });
+    }
+    bedrooms = json['bedrooms'];
+    bathrooms = json['bathrooms'];
+    squareFeet = json['square_feet'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['title'] = this.title;
+    data['price'] = this.price;
+    data['address'] = this.address;
+    data['location'] = this.location;
+    if (this.media != null) {
+      data['media'] = this.media!.map((v) => v.toJson()).toList();
+    }
+    data['bedrooms'] = this.bedrooms;
+    data['bathrooms'] = this.bathrooms;
+    data['square_feet'] = this.squareFeet;
+    return data;
   }
 }
 
 class RegulatoryInfo {
-  final String reference;
-  final String listed;
-  final String brokerLicense;
-  final String zoneName;
-  final String dldPermitNumber;
-  final String agentLicense;
+  String? reference;
+  String? listed;
+  String? brokerLicense;
+  String? zoneName;
+  String? dldPermitNumber;
+  String? agentLicense;
 
-  RegulatoryInfo({
-    required this.reference,
-    required this.listed,
-    required this.brokerLicense,
-    required this.zoneName,
-    required this.dldPermitNumber,
-    required this.agentLicense,
-  });
+  RegulatoryInfo(
+      {this.reference,
+        this.listed,
+        this.brokerLicense,
+        this.zoneName,
+        this.dldPermitNumber,
+        this.agentLicense});
 
-  factory RegulatoryInfo.fromJson(Map<String, dynamic>? json) {
-    return RegulatoryInfo(
-      reference: json?['reference'] ?? 'na',
-      listed: json?['listed'] ?? 'na',
-      brokerLicense: json?['broker_license'] ?? 'na',
-      zoneName: json?['zone_name'] ?? 'na',
-      dldPermitNumber: json?['dld_permit_number'] ?? 'na',
-      agentLicense: json?['agent_license'] ?? 'na',
-    );
+  RegulatoryInfo.fromJson(Map<String, dynamic> json) {
+    reference = json['reference'];
+    listed = json['listed'];
+    brokerLicense = json['broker_license'];
+    zoneName = json['zone_name'];
+    dldPermitNumber = json['dld_permit_number'];
+    agentLicense = json['agent_license'];
   }
-}
 
-class Agent {
-  final String name;
-  final String img;
-  final int rating;
-  final String whatsapp;
-  final String email;
-  final String phone;
-
-  Agent({
-    required this.name,
-    required this.img,
-    required this.rating,
-    required this.whatsapp,
-    required this.email,
-    required this.phone,
-  });
-
-  factory Agent.fromJson(Map<String, dynamic>? json) {
-    return Agent(
-      name: json?['name'] ?? 'Unknown',
-      img: json?['img'] ?? 'na',
-      rating: json?['rating'] ?? 0,
-      whatsapp: json?['whatsapp'] ?? '',
-      email: json?['email'] ?? '',
-      phone: json?['phone'] != null ? json!['phone'].toString() : '',
-    );
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['reference'] = this.reference;
+    data['listed'] = this.listed;
+    data['broker_license'] = this.brokerLicense;
+    data['zone_name'] = this.zoneName;
+    data['dld_permit_number'] = this.dldPermitNumber;
+    data['agent_license'] = this.agentLicense;
+    return data;
   }
 }

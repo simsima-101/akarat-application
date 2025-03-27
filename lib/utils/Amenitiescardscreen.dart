@@ -1,4 +1,4 @@
-import 'package:drawerdemo/model/amenities.dart';
+import 'package:Akarat/model/amenities.dart';
 import 'package:flutter/material.dart';
 
 class Amenitiescardscreen extends StatelessWidget {
