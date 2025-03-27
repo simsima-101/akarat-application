@@ -1,12 +1,7 @@
-import 'dart:convert';
-
-import 'package:Akarat/model/loginmodel.dart';
-import 'package:Akarat/model/registermodel.dart';
 import 'package:Akarat/screen/about_us.dart';
 import 'package:Akarat/screen/advertising.dart';
 import 'package:Akarat/screen/blog.dart';
 import 'package:Akarat/screen/cookies.dart';
-import 'package:Akarat/screen/favorite.dart';
 import 'package:Akarat/screen/findagent.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/privacy.dart';
@@ -17,8 +12,6 @@ import 'package:Akarat/utils/fav_login.dart';
 import 'package:Akarat/utils/fav_logout.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../utils/shared_preference_manager.dart';
 
 

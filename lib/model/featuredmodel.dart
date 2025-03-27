@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 
 class FeaturedModel {
   bool? success;
@@ -34,8 +33,8 @@ class Data {
   String? title;
   String? price;
   String? address;
-  Null? phoneNumber;
-  Null? whatsapp;
+  String? phoneNumber;
+  String? whatsapp;
   String? location;
   String? description;
   String? paymentPeriod;

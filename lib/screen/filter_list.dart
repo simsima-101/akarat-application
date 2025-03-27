@@ -1,16 +1,11 @@
-import 'dart:convert';
 import 'package:Akarat/screen/product_detail.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:Akarat/model/amenities.dart';
-import 'package:Akarat/model/api2model.dart';
 import 'package:Akarat/model/filtermodel.dart';
 import 'package:Akarat/screen/blog.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:sliding_switch/sliding_switch.dart';
-import 'package:http/http.dart' as http;
-import '../utils/api2cardscreen.dart';
 
 
 class FliterList extends StatelessWidget {

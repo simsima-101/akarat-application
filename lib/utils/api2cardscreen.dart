@@ -1,8 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/filtermodel.dart';
-import 'package:Akarat/screen/product_detail.dart';
 import 'package:flutter/material.dart';
-import '../model/api2model.dart';
 
 class ProductCard extends StatelessWidget {
   final FilterModel filterModel;

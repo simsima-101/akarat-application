@@ -1,18 +1,8 @@
-import 'dart:async';
-import 'dart:convert';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:Akarat/model/favoritemodel.dart';
-import 'package:Akarat/model/togglemodel.dart';
 import 'package:Akarat/screen/home.dart';
-import 'package:Akarat/screen/login.dart';
 import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/utils/fav_login.dart';
 import 'package:Akarat/utils/fav_logout.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../utils/shared_preference_manager.dart';
 
 class Favorite extends StatefulWidget {

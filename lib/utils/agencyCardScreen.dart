@@ -1,8 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/agencymodel.dart';
-import 'package:Akarat/model/agentsmodel.dart';
 import 'package:Akarat/screen/about_agency.dart';
-import 'package:Akarat/screen/about_agent.dart';
 import 'package:flutter/material.dart';
 
 class Agencycardscreen extends StatelessWidget {

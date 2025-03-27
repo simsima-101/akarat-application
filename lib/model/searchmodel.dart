@@ -38,11 +38,11 @@ class Data {
   String? squareFeet;
   String? location;
   int? locationId;
-  Null? verified;
+  String? verified;
   String? projectType;
   String? image;
-  Null? phone;
-  Null? whatsapp;
+  String? phone;
+  String? whatsapp;
 
   Data(
       {this.id,

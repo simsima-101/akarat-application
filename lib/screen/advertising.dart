@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/login.dart';
 import 'package:Akarat/screen/my_account.dart';

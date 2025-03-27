@@ -6,8 +6,6 @@ import 'package:Akarat/model/amenities.dart';
 import 'package:Akarat/model/filtermodel.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/profile_login.dart';
-import 'package:Akarat/utils/Amenitiescardscreen.dart';
-import 'package:Akarat/utils/api2cardscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_core/core.dart';

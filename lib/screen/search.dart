@@ -6,8 +6,6 @@ import 'package:Akarat/screen/product_detail.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:sliding_switch/sliding_switch.dart';
-
 import '../model/searchmodel.dart';
 
 class Search extends StatefulWidget {

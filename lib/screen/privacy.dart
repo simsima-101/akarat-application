@@ -1,11 +1,8 @@
-import 'dart:async';
-
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/utils/shared_preference_manager.dart';
 import 'package:flutter/material.dart';
-
 import '../utils/fav_login.dart';
 import '../utils/fav_logout.dart';
 

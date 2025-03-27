@@ -1,4 +1,3 @@
-import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 

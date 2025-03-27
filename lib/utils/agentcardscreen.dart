@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/agentsmodel.dart';
 import 'package:Akarat/screen/about_agent.dart';
 import 'package:flutter/material.dart';

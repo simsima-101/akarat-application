@@ -27,8 +27,8 @@ class Data {
   String? title;
   String? price;
   String? address;
-  Null? phoneNumber;
-  Null? whatsapp;
+  String? phoneNumber;
+  String? whatsapp;
   String? location;
   String? description;
   String? paymentPeriod;

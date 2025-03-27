@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:Akarat/model/api2model.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';

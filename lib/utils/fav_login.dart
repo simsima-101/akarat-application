@@ -5,10 +5,7 @@ import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/utils/shared_preference_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
 import '../model/favoritemodel.dart';
-import '../model/togglemodel.dart';
-import '../screen/featured_detail.dart';
 import '../screen/home.dart';
 import '../screen/product_detail.dart';
 

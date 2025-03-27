@@ -1,7 +1,5 @@
 import 'dart:convert';
-
 import 'package:Akarat/model/agentdetaill.dart';
-import 'package:Akarat/model/agentsmodel.dart';
 import 'package:Akarat/screen/findagent.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/my_account.dart';

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:Akarat/model/api2model.dart';
 import 'package:Akarat/model/blogmodel.dart';
 import 'package:Akarat/screen/blog_detail.dart';
 import 'package:Akarat/screen/home.dart';

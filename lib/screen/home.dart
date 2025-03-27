@@ -11,13 +11,9 @@ import 'package:Akarat/screen/featured_detail.dart';
 import 'package:Akarat/screen/filter.dart';
 import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/screen/new_projects.dart';
-import 'package:Akarat/screen/product_detail.dart';
 import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../utils/fav_login.dart';
 import '../utils/shared_preference_manager.dart';
 

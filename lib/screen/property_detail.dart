@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/propertymodel.dart';
-import 'package:Akarat/screen/filter_list.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/new_projects.dart';
 import 'package:Akarat/screen/profile_login.dart';
