@@ -91,10 +91,6 @@ final List _product = [
   final List _ftype = [
     'All', 'Furnished', 'Unfurnished'
   ];
-  final List _amnities = [
-    'Maids Room', 'Study', 'Central A/C Heating',
-    'Balcony', 'Private Garden'
-  ];
   final List _rent = [
     'Yearly', 'Bi-Yearly', 'Quarterly',
         'Monthly'

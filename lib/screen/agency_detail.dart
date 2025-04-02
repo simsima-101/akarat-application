@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:Akarat/screen/about_agent.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/profile_login.dart';
@@ -7,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import '../model/productmodel.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
