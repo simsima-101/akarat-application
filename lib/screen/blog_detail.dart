@@ -257,7 +257,7 @@ readData();
         ),),
       ),
       ),
-    /*  Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
+      /*  Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
         child: Container(
           height: 150,
           width: double.infinity,
@@ -270,7 +270,7 @@ readData();
           ),),
         ),
       ),*/
-     /* Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
+      /* Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
         child: Container(
           height: 250,
           width: double.infinity,
@@ -303,7 +303,7 @@ readData();
           )
         ),
       ),*/
-SizedBox(
+      SizedBox(
   height: screenSize.height*0.1,
 )
 

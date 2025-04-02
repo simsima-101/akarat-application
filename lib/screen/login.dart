@@ -32,8 +32,8 @@ class _LoginDemoState extends State<LoginDemo> {
       body: SingleChildScrollView(
         child: Column(
             children: <Widget>[
-        //logo
-        Padding(
+              //logo
+              Padding(
         padding: const EdgeInsets.only(top: 190.0,bottom: 0),
         child: Center(
           child: SizedBox(
@@ -42,18 +42,17 @@ class _LoginDemoState extends State<LoginDemo> {
               child: Image.asset('assets/images/app_icon.png')),
         ),
       ),
-
-      //textlogo
-      Padding(
-        padding: const EdgeInsets.only(top:0),
-        child: Center(
-          child: SizedBox(
-              width: 150,
-              height: 38,
-              child: Image.asset('assets/images/logo-text.png')),
-        ),
-      ),
-        Form(
+              //textlogo
+              Padding(
+              padding: const EdgeInsets.only(top:0),
+              child: Center(
+                child: SizedBox(
+                    width: 150,
+                    height: 38,
+                    child: Image.asset('assets/images/logo-text.png')),
+              ),
+            ),
+              Form(
           key: formkey,
           child: Container(
           // color: Colors.white70,

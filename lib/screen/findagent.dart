@@ -574,7 +574,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                             ListView.builder(
                               scrollDirection: Axis.vertical,
                               physics: const ScrollPhysics(),
-                              itemCount: agentsmodel.length,
+                              itemCount: agentsmodel.length ?? 0,
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
                                 return Agentcardscreen(agentsModel: agentsmodel[index]);
@@ -658,7 +658,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                             ListView.builder(
                               scrollDirection: Axis.vertical,
                               physics: const ScrollPhysics(),
-                              itemCount: agentcymodel.length,
+                              itemCount: agentcymodel.length ?? 0,
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
                                 return Agencycardscreen(agencyModel: agentcymodel[index]);

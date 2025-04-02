@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import '../model/productmodel.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 
 class Product_Detail extends StatefulWidget {
@@ -111,7 +114,7 @@ class _Product_DetailState extends State<Product_Detail> {
                                   fit: BoxFit.contain,),
                               ),
                               Container(
-                                margin: const EdgeInsets.only(left: 220,top: 5,bottom: 0,),
+                                margin: const EdgeInsets.only(left: 320,top: 5,bottom: 0,),
                                 height: 35,
                                 width: 35,
                                 padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
@@ -141,68 +144,7 @@ class _Product_DetailState extends State<Product_Detail> {
                                   fit: BoxFit.contain,),
                                 //child: Image(image: Image.asset("assets/images/share.png")),
                               ),
-                              Container(
-                                margin: const EdgeInsets.only(left: 5,top: 5,bottom: 0,),
-                                height: 35,
-                                width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Image.asset("assets/images/forward.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,),
-                                //child: Image(image: Image.asset("assets/images/share.png")),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(left: 5,top: 5,bottom: 0,),
-                                height: 35,
-                                width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Image.asset("assets/images/arrow_right.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,),
-                                //child: Image(image: Image.asset("assets/images/share.png")),
-                              ),
+
                             ],
                           ),
                         ),
@@ -294,7 +236,7 @@ class _Product_DetailState extends State<Product_Detail> {
                         ],
                       )
                   ),
-                 /* Padding(
+                  /* Padding(
                       padding: const EdgeInsets.only(left: 20,right: 0,top: 5,bottom: 0),
                       child:Row(
                         children: [
@@ -376,7 +318,7 @@ class _Product_DetailState extends State<Product_Detail> {
 
                     ),
                   ),
-                 /* Padding(
+                  /* Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
                       height: screenSize.height*0.05,
@@ -413,13 +355,14 @@ class _Product_DetailState extends State<Product_Detail> {
                   Padding(
                       padding: const EdgeInsets.only(left: 20,right: 0,top: 20,bottom: 0),
                       child:Row(
+                        spacing: 5,
                         children: [
                           Text("Posted On:",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                           ),),
-                         /* Text(productModels!.data!.pos.toString(),style: TextStyle(
+                          Text(productModels!.data!.postedOn.toString(),style: TextStyle(
                             fontSize: 14,letterSpacing: 0.5,
-                          ),),*/
+                          ),),
                         ],
                       )
                   ),
@@ -590,7 +533,7 @@ class _Product_DetailState extends State<Product_Detail> {
                       )
 
                   ),
-                /*  Container(
+                  /*  Container(
                     height: screenSize.height*0.05,
                     width: screenSize.width*0.9,
                     margin: const EdgeInsets.only(left: 20,right: 20,top: 15),
@@ -632,28 +575,40 @@ class _Product_DetailState extends State<Product_Detail> {
                   ),
                   Container(
                     height: screenSize.height*0.12,
-                    margin: const EdgeInsets.only(left: 20,right: 20,top: 10),
+                    margin: const EdgeInsets.only(left: 20,right: 10,top: 10),
                     // color: Colors.grey,
                     child: Row(
                       children: [
                         Column(
                           children: [
                             Text("Project            "),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4.0),
-                              child: Text("Mag eye          ",style: TextStyle(
-                                  fontWeight: FontWeight.bold
-                              ),),
+                            Row(
+                              spacing: 5,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4.0,right: 27),
+                                  child: Text(productModels!.data!.project.toString(),style: TextStyle(
+                                      fontWeight: FontWeight.bold
+                                  ),),
+                                ),
+                                Text("")
+                              ],
                             ),
                             Padding(
                               padding: const EdgeInsets.only(top: 10.0),
                               child: Text("Delivery Date  "),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4.0),
-                              child: Text("25th Jan 2025",style: TextStyle(
-                                  fontWeight: FontWeight.bold
-                              ),),
+                            Row(
+                              spacing: 5,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4.0,right: 20),
+                                  child: Text(productModels!.data!.deliveryDate.toString(),style: TextStyle(
+                                      fontWeight: FontWeight.bold
+                                  ),textAlign: TextAlign.left,),
+                                ),
+                                Text("  "),
+                              ],
                             )
                           ],
                         ),
@@ -663,7 +618,7 @@ class _Product_DetailState extends State<Product_Detail> {
                               Text("Developer                               "),
                               Padding(
                                 padding: const EdgeInsets.only(top: 4.0),
-                                child: Text("MAG Property Development",style: TextStyle(
+                                child: Text(productModels!.data!.developer.toString(),style: TextStyle(
                                     fontWeight: FontWeight.bold
                                 ),),
                               ),
@@ -671,11 +626,20 @@ class _Product_DetailState extends State<Product_Detail> {
                                 padding: const EdgeInsets.only(top: 10.0),
                                 child: Text("Property type                         "),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4.0),
-                                child: Text("Townhouse,Apartment         ",style: TextStyle(
-                                    fontWeight: FontWeight.bold
-                                ),),
+                              Row(
+                                spacing: 5,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4.0,right: 10),
+                                    child: Text(productModels!.data!.propertyType.toString(),style: TextStyle(
+                                        fontWeight: FontWeight.bold
+                                    ),),
+                                  ),
+                                  Text("     "),
+                                  Text("     "),
+                                  Text("     "),
+                                  Text("      "),
+                                ],
                               )
                             ],
                           ),
@@ -732,8 +696,8 @@ class _Product_DetailState extends State<Product_Detail> {
                                 )
                             ),
                             Padding(padding: const EdgeInsets.only(top: 10),
-                              child: Text("       MAG Property Development        ",style: TextStyle(
-                                  fontSize: 10,fontWeight: FontWeight.bold
+                              child: Text(productModels!.data!.developer.toString(),style: TextStyle(
+                                  fontSize: 12,fontWeight: FontWeight.bold
                               ),),
                             ),
                             Padding(
@@ -808,6 +772,60 @@ class _Product_DetailState extends State<Product_Detail> {
                         ), //BoxShadow
                       ],
                     ),
+                    child: Stack(
+                      children: [
+                        FlutterMap(
+                          options: MapOptions(
+                            initialCenter: LatLng(25.0657, 55.2030), // Updated
+                            initialZoom: 13.0, // Updated
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                              subdomains: ['a', 'b', 'c'],
+                            ),
+                            MarkerLayer(
+                              markers: [
+                                Marker(
+                                  point: LatLng(25.0657, 55.2030),
+                                  width: 40,
+                                  height: 40,
+                                  child: Icon(Icons.location_pin, color: Colors.red, size: 40), // Fixed
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Positioned(
+                          bottom: 20,
+                          left: 60,
+                          right: 60,
+                          child: Card(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(1.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    "AAA Residence, JVC District 13,\nJumeirah Village Circle (JVC), Dubai",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                  ),
+                                  // SizedBox(height: 4),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      // Implement map navigation
+                                    },
+                                    child: Text("View on map"),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   Container(
                     height: 30,
@@ -849,11 +867,11 @@ class _Product_DetailState extends State<Product_Detail> {
                               ), //BoxShadow
                             ],
                           ),
-                         /* child: CachedNetworkImage( // this is to fetch the image
-                            imageUrl: (productModels!.data!.media.toString()),
+                          child: CachedNetworkImage( // this is to fetch the image
+                            imageUrl: (productModels!.data!.agentImage.toString()),
                             fit: BoxFit.cover,
                             height: 100,
-                          ),*/
+                          ),
                         ),
                         Padding(padding: const EdgeInsets.only(top: 10),
                           child: Text(productModels!.data!.agent.toString(),style: TextStyle(
@@ -897,7 +915,7 @@ class _Product_DetailState extends State<Product_Detail> {
                               child: Text("Closed Deals"),
                             ),
                             Padding(padding: const EdgeInsets.only(top: 5,left: 63),
-                              child: Text("17"),
+                              child: Text(productModels!.data!.closedDeals.toString()),
                             ),
                           ],
                         ),
@@ -1054,224 +1072,84 @@ class _Product_DetailState extends State<Product_Detail> {
                     height: 30,
                     width: double.infinity,
                     // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 20,top: 20,bottom: 0),
+                    margin: const EdgeInsets.only(left: 20,right: 20,top: 20,bottom: 10),
                     child:Text("Recommended Properties",style: TextStyle(
                         fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                     ),),
                   ),
-                 /* Container(
-                    height: screenSize.height*0.3,
-                    margin: const EdgeInsets.only(left: 20),
-                   // color: Colors.grey,
+                  SizedBox(
+                    height: 220, // Adjust height based on card size
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                        physics: const ScrollPhysics(),
-                        itemCount: productModels?.data?.recommendedProperties?.length ?? 0,
-                        shrinkWrap: true,
-                        itemBuilder: (context,index){
-                          return SingleChildScrollView(
-                              child: GestureDetector(
-                                onTap: (){
-                                  String id = productModels!.data!.recommendedProperties![index].id.toString();
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                                      Product_Detail(data: id)));
-                                },
-                                child : Padding(
-                                  padding: const EdgeInsets.only(top: 0.0,left: 10,right: 10),
-                                  child: Card(
-                                    color: Colors.white,
-                                    borderOnForeground: true,
-                                    shadowColor: Colors.white,
-                                    elevation: 10,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(left: 5.0,top: 0,right: 5),
-                                      child: Column(
-                                        // spacing: 5,// this is the coloumn
-                                        children: [
-                                          Padding(
-                                              padding: const EdgeInsets.only(top: 0.0),
-                                              child:ClipRRect(
-                                                  borderRadius: BorderRadius.circular(12),
-                                                  child: Stack(
-                                                      children: [
-                                                        AspectRatio(
-                                                          aspectRatio: 1.6,
-                                                          // this is the ratio
-                                                          child: CachedNetworkImage( // this is to fetch the image
-                                                            imageUrl: (productModels!.data!.recommendedProperties![index].media![index].originalUrl.toString()),
-                                                            fit: BoxFit.fill,
-                                                          ),
-                                                        ),
-
-
-
-
-                                                       *//* Positioned(
-                                                          top: 5,
-                                                          right: 10,
-                                                          child: Container(
-                                                            margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
-                                                            height: 35,
-                                                            width: 35,
-                                                            padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
-                                                            decoration: BoxDecoration(
-                                                              borderRadius: BorderRadiusDirectional.circular(20.0),
-                                                              boxShadow: [
-                                                                BoxShadow(
-                                                                  color: Colors.grey,
-                                                                  offset: const Offset(
-                                                                    0.3,
-                                                                    0.3,
-                                                                  ),
-                                                                  blurRadius: 0.3,
-                                                                  spreadRadius: 0.3,
-                                                                ), //BoxShadow
-                                                                BoxShadow(
-                                                                  color: Colors.white,
-                                                                  offset: const Offset(0.0, 0.0),
-                                                                  blurRadius: 0.0,
-                                                                  spreadRadius: 0.0,
-                                                                ), //BoxShadow
-                                                              ],
-                                                            ),
-                                                            // child: Positioned(
-                                                            // child: Icon(Icons.favorite_border,color: Colors.red,),)
-                                                            child: IconButton(
-                                                              padding: EdgeInsets.only(left: 5,top: 7),
-                                                              alignment: Alignment.center,
-                                                              icon: Icon(
-                                                                isFavorited ? Icons.favorite : Icons.favorite_border,
-                                                                color: isFavorited ? Colors.red : Colors.red,
-                                                              ),
-                                                              onPressed: () {
-                                                                setState(() {
-                                                                  property_id=searchModel!.data![index].id;
-
-                                                         if(token == ''){
-                                                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                                                                  }
-                                                                  else{
-                                                                    toggledApi(token,property_id);
-                                                                  }
-                                                                  isFavorited = !isFavorited;
-                                                                });
-                                                              },
-                                                            ),
-                                                            //)
-                                                          ),
-                                                        ),*//*
-                                                      ]
-                                                  )
-                                              )
-                                          ),
-
-                                          Padding(padding: const EdgeInsets.only(top: 5),
-                                            child: ListTile(
-                                              title: Padding(
-                                                padding: const EdgeInsets.only(top: 5.0,bottom: 5),
-                                                child: Text(productModels!.data!.recommendedProperties![index].title.toString(),
-                                                  style: TextStyle(
-                                                      fontSize: 16,height: 1.4
-                                                  ),),
-                                              ),
-                                              subtitle: Text('${productModels!.data!.recommendedProperties![index].price}',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
-                                                ),),
-                                            ),
-                                          ),
-                                          Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            children: [
-                                              Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 0,bottom: 10),
-                                                child:  Image.asset("assets/images/map.png",height: 14,),
-                                              ),
-                                              Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                                child: Text(productModels!.data!.recommendedProperties![index].address.toString(),style: TextStyle(
-                                                    fontSize: 13,height: 1.4,
-                                                    overflow: TextOverflow.visible
-                                                ),),
-                                              ),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 5),
-                                                child: Image.asset("assets/images/bed.png",height: 13,),
-                                              ),
-                                              Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                                  child: Text(productModels!.data!.recommendedProperties![index].bedrooms.toString())
-                                              ),
-                                             *//* Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
-                                                child: Image.asset("assets/images/bath.png",height: 13,),
-                                              ),
-                                              Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                                  child: Text(productModels!.data!.recommendedProperties![index]..toString())
-                                              ),*//*
-                                              Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
-                                                child: Image.asset("assets/images/messure.png",height: 13,),
-                                              ),
-                                              Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                                  child: Text(productModels!.data!.recommendedProperties![index].squareFeet.toString())
-                                              ),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Padding(padding: const EdgeInsets.only(left: 30,top: 20,bottom: 15),
-                                                child: ElevatedButton.icon(onPressed: (){},
-                                                    label: Text("call",style: TextStyle(
-                                                        color: Colors.black
-                                                    ),),
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.grey[50],
-                                                      alignment: Alignment.center,
-                                                      elevation: 1,
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                      padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 40),
-                                                      textStyle: TextStyle(letterSpacing: 0.5,
-                                                          color: Colors.black,fontSize: 15,fontWeight: FontWeight.bold
-                                                      ),
-                                                    ),
-                                                    icon: Icon(Icons.call,color: Colors.red,)),
-                                              ),
-                                              // Text(product.description),
-                                              Padding(padding: const EdgeInsets.only(left: 15,top: 20,bottom: 15),
-                                                child: ElevatedButton.icon(onPressed: (){},
-                                                    label: Text("Watsapp",style: TextStyle(
-                                                        color: Colors.black
-                                                    ),),
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.grey[50],
-                                                      alignment: Alignment.center,
-                                                      elevation: 1,
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                      padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 30),
-                                                      textStyle: TextStyle(letterSpacing: 0.5,
-                                                          color: Colors.black,fontSize: 12,fontWeight: FontWeight.bold
-                                                      ),
-                                                    ),
-                                                    icon: Image.asset("assets/images/whats.png",height: 20,)
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-
-                                        ],
+                      itemCount: productModels?.data?.recommendedProperties?.length ?? 0,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          width: 200, // Adjust width for horizontal layout
+                          margin: EdgeInsets.symmetric(horizontal: 8),
+                          child: Card(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                            elevation: 4,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+                                      child: Image.network(
+                                       productModels!.data!.recommendedProperties![index].media![index].originalUrl.toString(),
+                                        height: 120,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
                                       ),
                                     ),
 
+                                    Positioned(
+                                      top: 8,
+                                      right: 8,
+                                      child: Icon(Icons.favorite_border, color: Colors.red),
+                                    ),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                  productModels!.data!.recommendedProperties![index].price.toString()
+                                        ,style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.bed, size: 16, color: Colors.red),
+                                          SizedBox(width: 4),
+                                          Text("${productModels!.data!.recommendedProperties![index].bedrooms} beds"),
+                                          SizedBox(width: 8),
+                                          Icon(Icons.square_foot, size: 16, color: Colors.red),
+                                          SizedBox(width: 4),
+                                          Text("${productModels!.data!.recommendedProperties![index].squareFeet} sqft"),
+                                        ],
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        "${productModels!.data!.recommendedProperties![index].location} ",
+                                        style: TextStyle(fontSize: 12, color: Colors.black),
+                                      ),
+                                    ],
                                   ),
                                 ),
-
-                              )
-
-                          );
-                        }),
-                  ),*/
-
-                  SizedBox(height: 100,)
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  )
                 ]
             )
         )
@@ -1437,7 +1315,6 @@ class Page1 extends StatelessWidget {
     );
   }
 }
-
 class Page2 extends StatelessWidget {
   const Page2({super.key});
 
@@ -1458,7 +1335,6 @@ class Page2 extends StatelessWidget {
     );
   }
 }
-
 class Page3 extends StatelessWidget {
   const Page3({super.key});
 
@@ -1479,7 +1355,6 @@ class Page3 extends StatelessWidget {
     );
   }
 }
-
 class Page4 extends StatelessWidget {
   const Page4({super.key});
 

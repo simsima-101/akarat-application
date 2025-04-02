@@ -48,8 +48,6 @@ class _TermsConditionState extends State<TermsCondition> {
   }
 
 
-
-
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);

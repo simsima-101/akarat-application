@@ -80,8 +80,20 @@ class Agentcardscreen extends StatelessWidget {
                                         child: Text(""),),
                                     ],
                                   ),
-
                                   Row(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 0.0),
+                                        child:
+                                        Text(agentsModel.agency,style: TextStyle(
+                                            overflow: TextOverflow.visible,fontWeight: FontWeight.bold
+                                        ),textAlign: TextAlign.right,maxLines: 2,
+                                          softWrap: true,),
+                                      ),
+                                      Text("")
+                                    ],
+                                  ),
+                                /*  Row(
                                     children: [
                                       Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
                                       child: Text("Service Area:",style: TextStyle(
@@ -92,7 +104,7 @@ class Agentcardscreen extends StatelessWidget {
                                             fontSize: 12,letterSpacing: 0.5
                                         ),),),
                                     ],
-                                  ),
+                                  ),*/
                                   Row(
                                     children: [
                                       Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
@@ -191,21 +203,7 @@ class Agentcardscreen extends StatelessWidget {
 
                                         ),
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 45.0),
-                                        child: Column(
-                                          children: [
-                                            Text("McCone ",style: TextStyle(
-                                            overflow: TextOverflow.visible,fontWeight: FontWeight.bold
-                                            ),textAlign: TextAlign.right,maxLines: 2,
-                                              softWrap: true,),
-                                            Text(" Properties",style: TextStyle(
-                                              overflow: TextOverflow.visible,fontWeight: FontWeight.bold
-                                            ),textAlign: TextAlign.right,maxLines: 2,
-                                              softWrap: true,),
-                                          ],
-                                        ),
-                                      )
+
                                     ],
                                   ),
                                 ],

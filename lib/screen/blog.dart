@@ -87,54 +87,54 @@ class _BlogDemoState extends State<BlogDemo> {
        body: SingleChildScrollView(
        child: Column(
        children: <Widget>[
-       Padding(
-       padding: EdgeInsets.only(top: 10),
-           child: Container(
-             height: 50,
-             width: double.infinity,
-             // color: Color(0xFFEEEEEE),
-             child:   Row(
-               children: [
-                 Container(
-                     margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
-                     height: 35,
-                     width: 35,
-                     padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                     decoration: BoxDecoration(
-                       borderRadius: BorderRadiusDirectional.circular(20.0),
-                       boxShadow: [
-                         BoxShadow(
-                           color: Colors.grey,
-                           offset: const Offset(
-                             0.0,
-                             0.0,
-                           ),
-                           blurRadius: 0.1,
-                           spreadRadius: 0.1,
-                         ), //BoxShadow
-                         BoxShadow(
-                           color: Colors.white,
-                           offset: const Offset(0.0, 0.0),
-                           blurRadius: 0.0,
-                           spreadRadius: 0.0,
-                         ), //BoxShadow
-                       ],
-                     ),
-                     child: GestureDetector(
-                       onTap: (){
-                         setState(() {
-                           if(token == ''){
-                             Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                           }
-                           else{
-                             Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+                 Padding(
+                 padding: EdgeInsets.only(top: 10),
+                   child: Container(
+                     height: 50,
+                     width: double.infinity,
+                     // color: Color(0xFFEEEEEE),
+                     child:   Row(
+                       children: [
+                         Container(
+                         margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
+                         height: 35,
+                         width: 35,
+                         padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
+                         decoration: BoxDecoration(
+                           borderRadius: BorderRadiusDirectional.circular(20.0),
+                           boxShadow: [
+                             BoxShadow(
+                               color: Colors.grey,
+                               offset: const Offset(
+                                 0.0,
+                                 0.0,
+                               ),
+                               blurRadius: 0.1,
+                               spreadRadius: 0.1,
+                             ), //BoxShadow
+                             BoxShadow(
+                               color: Colors.white,
+                               offset: const Offset(0.0, 0.0),
+                               blurRadius: 0.0,
+                               spreadRadius: 0.0,
+                             ), //BoxShadow
+                           ],
+                         ),
+                         child: GestureDetector(
+                           onTap: (){
+                             setState(() {
+                               if(token == ''){
+                                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                               }
+                               else{
+                                 Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
-                           }
-                         });
-                       },
-                       child: Image.asset("assets/images/ar-left.png",
-                         width: 15,
-                         height: 15,
+                               }
+                             });
+                           },
+                           child: Image.asset("assets/images/ar-left.png",
+                             width: 15,
+                             height: 15,
                          fit: BoxFit.contain,),
                      )
                  ),
@@ -152,7 +152,7 @@ class _BlogDemoState extends State<BlogDemo> {
                ],
              ),
            ),),
-       Padding(
+                 Padding(
          padding: const EdgeInsets.only(top: 10.0),
          child: Container(
            height: 50,
@@ -192,7 +192,7 @@ class _BlogDemoState extends State<BlogDemo> {
           ),
             ),
        ),
-        /* Padding(
+                 /* Padding(
            padding: const EdgeInsets.only(top: 10),
            child: Container(
              height: 30,
@@ -215,7 +215,7 @@ class _BlogDemoState extends State<BlogDemo> {
              ),
            ),
          ),*/
-         ListView.builder(
+                 ListView.builder(
            scrollDirection: Axis.vertical,
            physics: const ScrollPhysics(),
            // this give th length of item
@@ -309,7 +309,7 @@ class _BlogDemoState extends State<BlogDemo> {
          ]
         )
        ),
-     bottomSheet:  Container(
+       bottomSheet:  Container(
        height: 50,
        width: double.infinity,
        margin: const EdgeInsets.only(left: 10,right: 10,top: 10,bottom: 10),

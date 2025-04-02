@@ -122,7 +122,7 @@ class _Property_DetailState extends State<Property_Detail> {
                                 )
                               ),
                               Container(
-                                margin: const EdgeInsets.only(left: 260,top: 5,bottom: 0,),
+                                margin: const EdgeInsets.only(left: 310,top: 5,bottom: 0,),
                                 height: 35,
                                 width: 35,
                                 padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
@@ -147,37 +147,6 @@ class _Property_DetailState extends State<Property_Detail> {
                                   ],
                                 ),
                                 child: Image.asset("assets/images/lov.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,),
-                                //child: Image(image: Image.asset("assets/images/share.png")),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(left: 5,top: 5,bottom: 0,),
-                                height: 35,
-                                width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Image.asset("assets/images/forward.png",
                                   width: 15,
                                   height: 15,
                                   fit: BoxFit.contain,),
@@ -998,7 +967,6 @@ class Page1 extends StatelessWidget {
     );
   }
 }
-
 class Page2 extends StatelessWidget {
   const Page2({Key? key}) : super(key: key);
 
@@ -1019,7 +987,6 @@ class Page2 extends StatelessWidget {
     );
   }
 }
-
 class Page3 extends StatelessWidget {
   const Page3({Key? key}) : super(key: key);
 
@@ -1040,7 +1007,6 @@ class Page3 extends StatelessWidget {
     );
   }
 }
-
 class Page4 extends StatelessWidget {
   const Page4({Key? key}) : super(key: key);
 

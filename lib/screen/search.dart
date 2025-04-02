@@ -691,8 +691,6 @@ class _SearchState extends State<Search> {
                           ),
                         ),
                       ),
-
-
                       ListView.builder(
                         scrollDirection: Axis.vertical,
                         physics: const ScrollPhysics(),

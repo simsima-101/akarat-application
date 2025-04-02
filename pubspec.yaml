@@ -42,7 +42,8 @@ dependencies:
   shared_preferences:
   flutter:
     sdk: flutter
-
+  flutter_map:
+  
   cached_network_image:
   http:
   dio:

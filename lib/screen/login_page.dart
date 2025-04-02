@@ -31,29 +31,27 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
       body: SingleChildScrollView(
           child: Column(
               children: <Widget>[
-      //logo
-      Padding(
-        padding: const EdgeInsets.only(top: 150.0),
-        child: Center(
-          child: SizedBox(
-              width: 150,
-              height: 55,
-              child: Image.asset('assets/images/app_icon.png')),
-        ),
-      ),
-
-      //textlogo
-      Padding(
-        padding: const EdgeInsets.only(top:0),
-        child: Center(
-          child: SizedBox(
-              width: 150,
-              height: 40,
-              child: Image.asset('assets/images/logo-text.png')),
-        ),
-      ),
-
-     Container(
+                //logo
+                Padding(
+                  padding: const EdgeInsets.only(top: 150.0),
+                  child: Center(
+                    child: SizedBox(
+                        width: 150,
+                        height: 55,
+                        child: Image.asset('assets/images/app_icon.png')),
+                  ),
+                ),
+                //textlogo
+                Padding(
+                  padding: const EdgeInsets.only(top:0),
+                  child: Center(
+                    child: SizedBox(
+                        width: 150,
+                        height: 40,
+                        child: Image.asset('assets/images/logo-text.png')),
+                  ),
+                ),
+                Container(
       height: 380,
       width: double.infinity,
       margin: const EdgeInsets.only(top: 25,left: 20,right: 20),

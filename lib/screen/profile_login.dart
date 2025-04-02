@@ -197,7 +197,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                     ),
 
                   ),
-                 Container(
+                  Container(
                    height: screenSize.height*0.15,
                    width: screenSize.width*0.78,
                    margin: const EdgeInsets.only(left: 20,top: 15,right: 20),
@@ -801,7 +801,6 @@ class Page1 extends StatelessWidget {
     );
   }
 }
-
 class Page2 extends StatelessWidget {
   const Page2({Key? key}) : super(key: key);
 
@@ -822,7 +821,6 @@ class Page2 extends StatelessWidget {
     );
   }
 }
-
 class Page3 extends StatelessWidget {
   const Page3({Key? key}) : super(key: key);
 
@@ -843,7 +841,6 @@ class Page3 extends StatelessWidget {
     );
   }
 }
-
 class Page4 extends StatelessWidget {
   const Page4({Key? key}) : super(key: key);
 

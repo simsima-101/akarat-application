@@ -554,7 +554,6 @@ class Page1 extends StatelessWidget {
     );
   }
 }
-
 class Page2 extends StatelessWidget {
   const Page2({Key? key}) : super(key: key);
 
@@ -575,7 +574,6 @@ class Page2 extends StatelessWidget {
     );
   }
 }
-
 class Page3 extends StatelessWidget {
   const Page3({Key? key}) : super(key: key);
 
@@ -596,7 +594,6 @@ class Page3 extends StatelessWidget {
     );
   }
 }
-
 class Page4 extends StatelessWidget {
   const Page4({Key? key}) : super(key: key);
 

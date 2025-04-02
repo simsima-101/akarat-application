@@ -38,11 +38,11 @@ class Agencycardscreen extends StatelessWidget {
                       Container(
                           margin: const EdgeInsets.only(top: 0,left: 5),
                           width: screenSize.width*0.29,
-                          height: screenSize.height*0.12,
-                          //color: Colors.grey,
+                          height: screenSize.height*0.15,
+                         // color: Colors.grey,
                         child: CachedNetworkImage( // this is to fetch the image
                           imageUrl: (agencyModel.image.toString()),
-                          fit: BoxFit.fill,
+                          fit: BoxFit.contain,
 
                         ),
 
@@ -68,16 +68,16 @@ class Agencycardscreen extends StatelessWidget {
                             Row(
                               children: [
 
-                                Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                  child: Text(agencyModel.userName.toString(),style: TextStyle(
+                                Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 5),
+                                  child: Text(agencyModel.email.toString(),style: TextStyle(
                                       fontSize: 12,letterSpacing: 0.5
-                                  ),),),
+                                  ),maxLines: 2,),),
                               ],
                             ),
                             Row(
                               children: [
 
-                                Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
+                                Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 5),
                                   child: Text(agencyModel.location.toString(),style: TextStyle(
                                       fontSize: 12,letterSpacing: 0.5
                                   ),),),
@@ -115,9 +115,9 @@ class Agencycardscreen extends StatelessWidget {
                                 ),*/
                                 Padding(padding: const EdgeInsets.only(left: 5,right: 0,top: 10),
                                   child: Container(
-                                    width: screenSize.width*0.15,
-                                    height: screenSize.height*0.027,
-                                    padding: const EdgeInsets.only(top: 2,),
+                                    width: screenSize.width*0.27,
+                                    height: screenSize.height*0.033,
+                                    padding: const EdgeInsets.only(top: 5,),
                                     decoration: BoxDecoration(
                                         borderRadius: BorderRadiusDirectional.circular(6.0),
                                         boxShadow: [
@@ -137,11 +137,11 @@ class Agencycardscreen extends StatelessWidget {
                                             spreadRadius: 0.0,
                                           ), //BoxShadow
                                         ]),
-                                 /* child: Padding(
-                                    padding: const EdgeInsets.only(left: 5.0),
-                                    child: Text(agencyModel.rent.toString(),textAlign: TextAlign.center,style:
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 0.0),
+                                    child: Text("${agencyModel.propertiesCount}  Properties",textAlign: TextAlign.center,style:
                                     TextStyle(letterSpacing: 0.5,color: Colors.blueAccent)),
-                                  ),*/
+                                  ),
                                   ),
                                 ),
                              /*   Padding(

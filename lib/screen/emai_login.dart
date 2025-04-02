@@ -87,7 +87,7 @@ RegisterModel? registerModel;
         child: Column(
         children: <Widget>[
         //logo
-        Padding(
+          Padding(
         padding: const EdgeInsets.only(top: 150.0),
     child: Center(
     child: SizedBox(
@@ -96,8 +96,8 @@ RegisterModel? registerModel;
     child: Image.asset('assets/images/app_icon.png')),
     ),
     ),
-    //textlogo
-    Padding(
+          //textlogo
+          Padding(
     padding: const EdgeInsets.only(top:5),
     child: Center(
     child: SizedBox(
@@ -106,7 +106,6 @@ RegisterModel? registerModel;
     child: Image.asset('assets/images/logo-text.png')),
     ),
     ),
-
           Container(
             height: screenSize.height*0.36,
             width: double.infinity,
@@ -344,8 +343,8 @@ RegisterModel? registerModel;
             ),
 
           ),
-]
-    )
+            ]
+          )
         )
     ),
     );

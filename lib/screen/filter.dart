@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:Akarat/model/propertytypemodel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/amenities.dart';
@@ -36,12 +35,12 @@ class FilterDemo extends StatefulWidget {
 }
 class _FilterDemoState extends State<FilterDemo> {
   late bool isSelected = true;
-   double start = 3000.0;
-   double startarea = 2000.0;
-   double endarea = 4500.0;
-   double end = 5000.0;
-   SfRangeValues _values = SfRangeValues(3000.0 ,5000.0);
-   SfRangeValues _valuesArea = SfRangeValues(2000.0 ,4500.0);
+   double start = 3000;
+   double startarea = 2000;
+   double endarea = 4500;
+   double end = 5000;
+   SfRangeValues _values = SfRangeValues(3000 ,5000);
+   SfRangeValues _valuesArea = SfRangeValues(2000 ,4500);
   late RangeController _rangeController;
   late RangeController _rangeControllerarea;
   final agenciesController = TextEditingController();
@@ -101,93 +100,93 @@ final List _product = [
         'Monthly'
   ];
   final List<Data> chartData = <Data>[
-    Data(x: 500.0, y: 1500.45),
-    Data(x: 750.0, y: 6000.45),
-    Data(x: 1000.0, y:3000.7),
-    Data(x: 1250.0, y:3000.7),
-    Data(x: 1500.0, y: 1500.7),
-    Data(x: 1750.0, y: 1500.7),
-    Data(x: 2000.0, y: 9000.7),
-    Data(x: 2250.0, y: 9000.7),
-    Data(x: 2500.0, y: 6000.7),
-    Data(x: 2750.0, y: 6000.7),
-    Data(x: 3000.0, y: 2500.7),
-    Data(x: 3250.0, y: 2500.7),
-    Data(x: 3500.0, y: 5000.7),
-    Data(x: 3750.0, y: 5000.7),
-    Data(x: 4000.0, y: 8000.7),
-    Data(x: 4250.0, y: 8000.7),
-    Data(x: 4500.0, y: 2000.7),
-    Data(x: 4750.0, y: 2000.7),
-    Data(x: 5000.0, y: 4000.7),
-    Data(x: 5250.0, y: 4000.7),
-    Data(x: 5500.0, y: 8000.7),
-    Data(x: 5750.0, y: 8000.7),
-    Data(x: 6000.0, y: 5500.7),
-    Data(x: 6250.0, y: 5500.7),
-    Data(x: 6500.0, y: 3000.7),
-    Data(x: 6750.0, y: 3000.7),
-    Data(x: 7000.0, y: 7500.7),
-    Data(x: 7250.0, y: 7500.7),
-    Data(x: 7500.0, y: 10000.7),
-    Data(x: 7750.0, y: 10000.7),
-    Data(x: 8000.0, y: 6000.7),
-    Data(x: 8250.0, y: 6000.7),
-    Data(x: 8500.0, y: 9000.7),
-    Data(x: 8750.0, y: 9000.7),
-    Data(x: 9000.0, y: 6500.7),
-    Data(x: 9250.0, y: 6500.7),
-    Data(x: 9500.0, y: 7500.7),
-    Data(x: 9750.0, y: 7500.7),
-    Data(x: 10000.0, y: 3000.7),
+    Data(x: 500, y: 1500),
+    Data(x: 750, y: 6000),
+    Data(x: 1000, y:3000),
+    Data(x: 1250, y:3000),
+    Data(x: 1500, y: 1500),
+    Data(x: 1750, y: 1500),
+    Data(x: 2000, y: 9000),
+    Data(x: 2250, y: 9000),
+    Data(x: 2500, y: 6000),
+    Data(x: 2750, y: 6000),
+    Data(x: 3000, y: 2500),
+    Data(x: 3250, y: 2500),
+    Data(x: 3500, y: 5000),
+    Data(x: 3750, y: 5000),
+    Data(x: 4000, y: 8000),
+    Data(x: 4250, y: 8000),
+    Data(x: 4500, y: 2000),
+    Data(x: 4750, y: 2000),
+    Data(x: 5000, y: 4000),
+    Data(x: 5250, y: 4000),
+    Data(x: 5500, y: 8000),
+    Data(x: 5750, y: 8000),
+    Data(x: 6000, y: 5500),
+    Data(x: 6250, y: 5500),
+    Data(x: 6500, y: 3000),
+    Data(x: 6750, y: 3000),
+    Data(x: 7000, y: 7500),
+    Data(x: 7250, y: 7500),
+    Data(x: 7500, y: 10000),
+    Data(x: 7750, y: 10000),
+    Data(x: 8000, y: 6000),
+    Data(x: 8250, y: 6000),
+    Data(x: 8500, y: 9000),
+    Data(x: 8750, y: 9000),
+    Data(x: 9000, y: 6500),
+    Data(x: 9250, y: 6500),
+    Data(x: 9500, y: 7500),
+    Data(x: 9750, y: 7500),
+    Data(x: 10000, y: 3000),
   ];
   final List<Dataarea> chartDataarea = <Dataarea>[
-    Dataarea(x: 500.0, y: 1500.45),
-    Dataarea(x: 600.0, y: 1000.44),
-    Dataarea(x: 700.0, y: 3800.12),
-    Dataarea(x: 800.0, y: 1800.9),
-    Dataarea(x: 900.0, y: 2200.8),
-    Dataarea(x: 1000.0, y:1900.7),
-    Dataarea(x: 1100.0, y: 3600.11),
-    Dataarea(x: 1200.0, y: 1200.5),
-    Dataarea(x: 1300.0, y: 1300.7),
-    Dataarea(x: 1400.0, y: 2000.8),
-    Dataarea(x: 1500.0, y: 3300.7),
-    Dataarea(x: 1600.0, y: 3400.7),
-    Dataarea(x: 1700.0, y: 1700.7),
-    Dataarea(x: 1800.0, y: 2200.7),
-    Dataarea(x: 1900.0, y: 1900.7),
-    Dataarea(x: 2000.0, y: 2200.7),
-    Dataarea(x: 2100.0, y: 2000.7),
-    Dataarea(x: 2200.0, y: 4400.7),
-    Dataarea(x: 2300.0, y: 4500.7),
-    Dataarea(x: 2400.0, y: 4000.7),
-    Dataarea(x: 2500.0, y: 1500.7),
-    Dataarea(x: 2600.0, y: 2600.7),
-    Dataarea(x: 2700.0, y: 1400.7),
-    Dataarea(x: 2800.0, y: 2000.7),
-    Dataarea(x: 2900.0, y: 4100.7),
-    Dataarea(x: 3000.0, y: 1300.7),
-    Dataarea(x: 3100.0, y: 1300.7),
-    Dataarea(x: 3200.0, y: 3400.0),
-    Dataarea(x: 3300.0, y: 2500.5),
-    Dataarea(x: 3400.0, y: 4100.5),
-    Dataarea(x: 3500.0, y: 1300.7),
-    Dataarea(x: 3600.0, y: 1300.7),
-    Dataarea(x: 3700.0, y: 1300.7),
-    Dataarea(x: 3800.0, y: 4500.7),
-    Dataarea(x: 3900.0, y: 1300.7),
-    Dataarea(x: 4000.0, y: 1300.7),
-    Dataarea(x: 4100.0, y: 4200.7),
-    Dataarea(x: 4200.0, y: 1300.7),
-    Dataarea(x: 4300.0, y: 4400.7),
-    Dataarea(x: 4400.0, y: 1300.7),
-    Dataarea(x: 4500.0, y: 2000.7),
-    Dataarea(x: 4600.0, y: 4400.7),
-    Dataarea(x: 4700.0, y: 1550.7),
-    Dataarea(x: 4800.0, y: 1600.7),
-    Dataarea(x: 4900.0, y: 3300.7),
-    Dataarea(x: 5000.0, y: 2400.7),
+    Dataarea(x: 500, y: 1500),
+    Dataarea(x: 600, y: 1000),
+    Dataarea(x: 700, y: 3800),
+    Dataarea(x: 800, y: 1800),
+    Dataarea(x: 900, y: 2200),
+    Dataarea(x: 1000, y:1900),
+    Dataarea(x: 1100, y: 3600),
+    Dataarea(x: 1200, y: 1200),
+    Dataarea(x: 1300, y: 1300),
+    Dataarea(x: 1400, y: 2000),
+    Dataarea(x: 1500, y: 3300),
+    Dataarea(x: 1600, y: 3400),
+    Dataarea(x: 1700, y: 1700),
+    Dataarea(x: 1800, y: 2200),
+    Dataarea(x: 1900, y: 1900),
+    Dataarea(x: 2000, y: 2200),
+    Dataarea(x: 2100, y: 2000),
+    Dataarea(x: 2200, y: 4400),
+    Dataarea(x: 2300, y: 4500),
+    Dataarea(x: 2400, y: 4000),
+    Dataarea(x: 2500, y: 1500),
+    Dataarea(x: 2600, y: 2600),
+    Dataarea(x: 2700, y: 1400),
+    Dataarea(x: 2800, y: 2000),
+    Dataarea(x: 2900, y: 4100),
+    Dataarea(x: 3000, y: 1300),
+    Dataarea(x: 3100, y: 1300),
+    Dataarea(x: 3200, y: 3400),
+    Dataarea(x: 3300, y: 2500),
+    Dataarea(x: 3400, y: 4100),
+    Dataarea(x: 3500, y: 1300),
+    Dataarea(x: 3600, y: 1300),
+    Dataarea(x: 3700, y: 1300),
+    Dataarea(x: 3800, y: 4500),
+    Dataarea(x: 3900, y: 1300),
+    Dataarea(x: 4000, y: 1300),
+    Dataarea(x: 4100, y: 4200),
+    Dataarea(x: 4200, y: 1300),
+    Dataarea(x: 4300, y: 4400),
+    Dataarea(x: 4400, y: 1300),
+    Dataarea(x: 4500, y: 2000),
+    Dataarea(x: 4600, y: 4400),
+    Dataarea(x: 4700, y: 1550),
+    Dataarea(x: 4800, y: 1600),
+    Dataarea(x: 4900, y: 3300),
+    Dataarea(x: 5000, y: 2400),
   ];
 
   int pageIndex = 0;
@@ -241,8 +240,6 @@ String max_sqrfeet = ' ';
     }
   }
 
-
-
   Future<void> propertyApi(purpose) async {
     final response = await http.get(Uri.parse(
         "https://akarat.com/api/property-types/$purpose"));
@@ -259,7 +256,6 @@ String max_sqrfeet = ' ';
       //return FeaturedModel.fromJson(data);
     }
   }
-
 
   Future<void> fetchAmenities() async {
     final response = await http.get(Uri.parse("https://akarat.com/api/amenities"));
@@ -508,13 +504,13 @@ String max_sqrfeet = ' ';
                         child: GestureDetector(
                           child:   Column(
                             children: [
-                              Padding(
+                             /* Padding(
                                 padding: const EdgeInsets.all(2.0),
                                 child: CachedNetworkImage(
                                   imageUrl: propertyTypeModel!.data![index].icon.toString(),height: 10,),
-                              ),
+                              ),*/
                               Padding(
-                                padding: const EdgeInsets.all(1.0),
+                                padding: const EdgeInsets.all(5.0),
                                 child: Text(propertyTypeModel!.data![index].name.toString(),
                                   style: TextStyle(
                                     color: selectedtype == index ? Colors.white : Colors.black,
@@ -654,7 +650,7 @@ String max_sqrfeet = ' ';
                                 ), //BoxShadow
                               ],
                             ),
-                            child: Text(_values.start.toStringAsFixed(2))
+                            child: Text(_values.start.toStringAsFixed(0))
 
                         ),
                         Container(
@@ -693,7 +689,7 @@ String max_sqrfeet = ' ';
                                 ), //BoxShadow
                               ],
                             ),
-                            child: Text(_values.end.toStringAsFixed(2))
+                            child: Text(_values.end.toStringAsFixed(0))
                         ),
                       ]
                   )
@@ -702,17 +698,17 @@ String max_sqrfeet = ' ';
               Padding(
                 padding: const EdgeInsets.only(top: 25.0,left: 1,bottom: 0),
                 child: SfRangeSelector(
-                  min: 500.0,
-                  max: 10000.0,
-                  interval: 500,
+                  min: 500,
+                  max: 10000,
+                  interval: 1000,
                   enableTooltip: true,
                   shouldAlwaysShowTooltip: true,
                   initialValues: _values,
                   onChanged: (value) {
                     setState(() {
                       _values=SfRangeValues(value.start, value.end);
-                      min_price=value.start.toStringAsFixed(2);
-                      max_price=value.end.toStringAsFixed(2);
+                      min_price=value.start.toStringAsFixed(0);
+                      max_price=value.end.toStringAsFixed(0);
                     });
 
                   },
@@ -723,7 +719,7 @@ String max_sqrfeet = ' ';
                       backgroundColor: Colors.transparent,
                       plotAreaBorderColor: Colors.transparent,
                       margin: const EdgeInsets.all(0),
-                      primaryXAxis: NumericAxis(minimum: 500.0, maximum: 10000.0,
+                      primaryXAxis: NumericAxis(minimum: 500, maximum: 10000,
                         isVisible: false,),
                       primaryYAxis: NumericAxis(isVisible: false),
                       plotAreaBorderWidth: 0,
@@ -743,7 +739,7 @@ String max_sqrfeet = ' ';
                           xValueMapper: (Data sales, int index) => sales.x,
                           yValueMapper: (Data sales, int index) => sales.y,
                           pointColorMapper: (Data sales, int index) {
-                            return const Color.fromARGB(255, 126, 184, 253);
+                            return const Color.fromARGB(255, 37, 117, 212);
                           },
                           // color: const Color.fromRGBO(255, 255, 255, 0),
                           dashArray: const <double>[5, 3],
@@ -997,8 +993,8 @@ String max_sqrfeet = ' ';
               Padding(
                 padding: const EdgeInsets.only(top: 25.0,left: 1,bottom: 0),
                 child: SfRangeSelector(
-                  min: 1000.0,
-                  max: 5000.0,
+                  min: 1000,
+                  max: 5000,
                   interval: 500,
                   enableTooltip: true,
                   shouldAlwaysShowTooltip: true,
@@ -1017,7 +1013,7 @@ String max_sqrfeet = ' ';
                     child: SfCartesianChart(
                       plotAreaBorderColor: Colors.transparent,
                       margin: const EdgeInsets.all(0),
-                      primaryXAxis: NumericAxis(minimum: 1000.0, maximum: 5000.0,
+                      primaryXAxis: NumericAxis(minimum: 1000, maximum: 5000,
                         isVisible: false,),
                       primaryYAxis: NumericAxis(isVisible: false),
                       plotAreaBorderWidth: 0,
@@ -1035,7 +1031,7 @@ String max_sqrfeet = ' ';
                           xValueMapper: (Dataarea sales, int index) => sales.x,
                           yValueMapper: (Dataarea sales, int index) => sales.y,
                           pointColorMapper: (Dataarea sales, int index) {
-                            return const Color.fromRGBO(0, 178, 206, 1);
+                            return const Color.fromARGB(255, 37, 117, 212);
                           },
                           // color: const Color.fromRGBO(255, 255, 255, 0),
                           dashArray: const <double>[5, 3],

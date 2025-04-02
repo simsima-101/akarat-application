@@ -186,7 +186,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
               ),
             ],
           ),
-         Padding(padding: const EdgeInsets.only(top: 20,left: 10,right: 190),
+          Padding(padding: const EdgeInsets.only(top: 20,left: 10,right: 190),
            child: Text("Latest Projects in Dubai",textAlign: TextAlign.left,
            style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15),),
          ),
@@ -232,7 +232,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                           // this is the ratio
                                           child: CachedNetworkImage( // this is to fetch the image
                                             imageUrl: (projectModel!.data![index].media![index].originalUrl.toString()),
-                                            fit: BoxFit.fill,
+                                            fit: BoxFit.contain,
 
                                           ),
                                         ),
@@ -504,7 +504,6 @@ class Page1 extends StatelessWidget {
     );
   }
 }
-
 class Page2 extends StatelessWidget {
   const Page2({Key? key}) : super(key: key);
 
@@ -525,7 +524,6 @@ class Page2 extends StatelessWidget {
     );
   }
 }
-
 class Page3 extends StatelessWidget {
   const Page3({Key? key}) : super(key: key);
 
@@ -546,7 +544,6 @@ class Page3 extends StatelessWidget {
     );
   }
 }
-
 class Page4 extends StatelessWidget {
   const Page4({Key? key}) : super(key: key);
 

@@ -12,21 +12,22 @@ class AgencyModel {
   String? ded;
   String? rera;
   String? image;
+  int? propertiesCount;
 
-  AgencyModel(
-      {this.id,
-        this.userName,
-        this.name,
-        this.description,
-        this.website,
-        this.email,
-        this.phone,
-        this.address,
-        this.location,
-        this.statusId,
-        this.ded,
-        this.rera,
-        this.image});
+  AgencyModel({this.id,
+    this.userName,
+    this.name,
+    this.description,
+    this.website,
+    this.email,
+    this.phone,
+    this.address,
+    this.location,
+    this.statusId,
+    this.ded,
+    this.rera,
+    this.image,
+    this.propertiesCount});
 
   AgencyModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -42,6 +43,7 @@ class AgencyModel {
     ded = json['ded'];
     rera = json['rera'];
     image = json['image'];
+    propertiesCount = json['properties_count'];
   }
 
   Map<String, dynamic> toJson() {
@@ -59,6 +61,7 @@ class AgencyModel {
     data['ded'] = this.ded;
     data['rera'] = this.rera;
     data['image'] = this.image;
+    data['properties_count'] = this.propertiesCount;
     return data;
   }
 }

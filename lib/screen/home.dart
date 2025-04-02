@@ -239,7 +239,7 @@ class _MyHomePageState extends State<HomeDemo> {
                         // Add a clear button to the search bar
                         suffixIcon: IconButton(
                           alignment: Alignment.center,
-                          icon: Icon(Icons.mic),
+                          icon: Icon(Icons.mic,color: Colors.red,),
                           onPressed: () => _searchController.clear(),
                         ),
 
@@ -721,11 +721,19 @@ class _MyHomePageState extends State<HomeDemo> {
                                           child: Stack(
                                             children: [
                                               AspectRatio(
-                                                aspectRatio: 1.6,
+                                                aspectRatio: 1.4,
                                                 // this is the ratio
-                                                child: CachedNetworkImage( // this is to fetch the image
-                                                  imageUrl: (featuredModel!.data![index].media![index].originalUrl.toString()),
-                                                  fit: BoxFit.fill,
+                                                child: ListView.builder(
+                                                  scrollDirection: Axis.horizontal,
+                                                  physics: const ScrollPhysics(),
+                                                  itemCount: featuredModel?.data?[index].media?.length ?? 0,
+                                                  shrinkWrap: true,
+                                                  itemBuilder: (BuildContext context, int index) {
+                                                   return CachedNetworkImage( // this is to fetch the image
+                                                      imageUrl: (featuredModel!.data![index].media![index].originalUrl.toString()),
+                                                      fit: BoxFit.contain,
+                                                    );
+                                                  },
                                                 ),
                                               ),
                                               Positioned(
@@ -919,7 +927,6 @@ class _MyHomePageState extends State<HomeDemo> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                pageIndex = 0;
               });
             },
             icon: pageIndex == 0
