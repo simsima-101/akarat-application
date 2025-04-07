@@ -31,7 +31,7 @@ class Data {
   String? squareFeet;
   String? purpose;
   String? propertyType;
-  String? category;
+ // String? category;
   String? latitude;
   String? longitude;
   String? postedOn;
@@ -42,10 +42,14 @@ class Data {
   String? googleMapUrl;
   String? furnishedStatus;
   String? agent;
+  int? agentId;
   int? closedDeals;
   String? agentImage;
   List<RecommendedProperties>? recommendedProperties;
   RegulatoryInfo? regulatoryInfo;
+
+
+
 
   Data(
       {this.id,
@@ -62,7 +66,7 @@ class Data {
         this.squareFeet,
         this.purpose,
         this.propertyType,
-        this.category,
+       // this.category,
         this.latitude,
         this.longitude,
         this.postedOn,
@@ -73,6 +77,7 @@ class Data {
         this.googleMapUrl,
         this.furnishedStatus,
         this.agent,
+        this.agentId,
         this.closedDeals,
         this.agentImage,
         this.recommendedProperties,
@@ -93,7 +98,7 @@ class Data {
     squareFeet = json['square_feet'];
     purpose = json['purpose'];
     propertyType = json['property_type'];
-    category = json['category'];
+   // category = json['category'];
     latitude = json['latitude'];
     longitude = json['longitude'];
     postedOn = json['posted_on'];
@@ -109,6 +114,7 @@ class Data {
     googleMapUrl = json['google_map_url'];
     furnishedStatus = json['furnished_status'];
     agent = json['agent'];
+    agentId = json['agent_id'];
     closedDeals = json['closed_deals'];
     agentImage = json['agent_image'];
     if (json['recommended_properties'] != null) {
@@ -138,7 +144,7 @@ class Data {
     data['square_feet'] = this.squareFeet;
     data['purpose'] = this.purpose;
     data['property_type'] = this.propertyType;
-    data['category'] = this.category;
+   // data['category'] = this.category;
     data['latitude'] = this.latitude;
     data['longitude'] = this.longitude;
     data['posted_on'] = this.postedOn;
@@ -151,6 +157,7 @@ class Data {
     data['google_map_url'] = this.googleMapUrl;
     data['furnished_status'] = this.furnishedStatus;
     data['agent'] = this.agent;
+    data['agent_id'] = this.agentId;
     data['closed_deals'] = this.closedDeals;
     data['agent_image'] = this.agentImage;
     if (this.recommendedProperties != null) {

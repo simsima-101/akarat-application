@@ -1302,7 +1302,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.call_outlined,color: Colors.green,)
+              child: Image.asset("assets/images/whats.png",height: 20,)
 
           ),
           Container(

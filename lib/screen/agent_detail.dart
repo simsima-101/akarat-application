@@ -9,6 +9,8 @@ import '../model/productmodel.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+import 'about_agent.dart';
+
 
 class Agent_Detail extends StatefulWidget {
   const Agent_Detail({super.key, required this.data});
@@ -84,8 +86,8 @@ class _Agent_DetailState extends State<Agent_Detail> {
                             children: [
                               GestureDetector(
                                 onTap: (){
-                                 // Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                                     // AboutAgent(data:productModels!.data!.id.toString())));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                                      AboutAgent(data:productModels!.data!.id.toString())));
                                 },
                                 child: Container(
                                   margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
@@ -119,7 +121,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                                 ),
                               ),
                               Container(
-                                margin: const EdgeInsets.only(left: 320,top: 5,bottom: 0,),
+                                margin: const EdgeInsets.only(left: 300,top: 5,bottom: 0,),
                                 height: 35,
                                 width: 35,
                                 padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
@@ -436,46 +438,50 @@ class _Agent_DetailState extends State<Agent_Detail> {
                     height: 30,
                     width: 200,
                     // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 200,top: 20,bottom: 0),
+                    margin: const EdgeInsets.only(left: 20,right: 200,top: 20,bottom: 5),
                     child:Text("Property Details",style: TextStyle(
                         fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                     ),),
                   ),
                   Container(
                       margin: const EdgeInsets.only(left: 20,top: 0,right: 10),
-                      height: 30,
+                      height: 20,
                       // color: Colors.grey,
-                      child:Row(
+                      child:ListView(
+                        scrollDirection: Axis.horizontal,
                         children: [
-                          Image.asset("assets/images/Residential__1.png",height: 15,),
                           Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
+                            padding: const EdgeInsets.all(2.0),
+                            child: Image.asset("assets/images/Residential__1.png",height: 15,),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 5.0,right: 6),
                             child: Text(productModels!.data!.propertyType.toString(),style: TextStyle(
                                 fontSize: 14,letterSpacing: 0.5
                             ),),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
+                            padding: const EdgeInsets.all( 2.0),
                             child: Image.asset("assets/images/bed.png",height: 15,),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
+                            padding: const EdgeInsets.only(left: 5.0,right: 6),
                             child: Text('${productModels!.data!.bedrooms} beds',style: TextStyle(
                                 fontSize: 14,letterSpacing: 0.5
                             ),),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
+                            padding: const EdgeInsets.all( 2.0),
                             child: Image.asset("assets/images/bath.png",height: 15),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
+                            padding: const EdgeInsets.only(left: 5.0,right: 6),
                             child: Text('${productModels!.data!.bathrooms} baths',style: TextStyle(
                               fontSize: 14,letterSpacing: 0.5,
                             ),),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
+                            padding: const EdgeInsets.all( 2.0),
                             child: Image.asset("assets/images/messure.png",height: 15),
                           ),
                           Padding(
@@ -491,7 +497,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                     height: 30,
                     width: 200,
                     // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 200,top: 10,bottom: 0),
+                    margin: const EdgeInsets.only(left: 20,right: 200,top: 15,bottom: 0),
                     child:Text("Amnesties",style: TextStyle(
                         fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                     ),),
@@ -501,97 +507,102 @@ class _Agent_DetailState extends State<Agent_Detail> {
                       padding: const EdgeInsets.only(top: 5),
                       height: screenSize.height*0.11,
                       // color: Colors.grey,
-                      child:Column(
-                        spacing: 15,
+                      child:ListView(
+                        scrollDirection: Axis.horizontal,
                         children: [
-                          Row(
-                            spacing: 5,
+                          Column(
+                            spacing: 15,
                             children: [
-                              Image.asset("assets/images/Residential__1.png",height: 15,),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 3.0),
-                                child: Text(" Swimming Pool ",style: TextStyle(
-                                    fontSize: 14,letterSpacing: 0.5
-                                ),),
+                              Row(
+                                spacing: 5,
+                                children: [
+                                  Image.asset("assets/images/Residential__1.png",height: 15,),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 3.0),
+                                    child: Text(" Swimming Pool ",style: TextStyle(
+                                        fontSize: 14,letterSpacing: 0.5
+                                    ),),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Image.asset("assets/images/bed.png",height: 15,),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 3.0),
+                                    child: Text(" Balcony/Terrace ",style: TextStyle(
+                                        fontSize: 14,letterSpacing: 0.5
+                                    ),),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Image.asset("assets/images/bed.png",height: 15,),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 3.0),
+                                    child: Text(" Gym ",style: TextStyle(
+                                        fontSize: 14,letterSpacing: 0.5
+                                    ),),
+                                  ),
+                                ],
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Image.asset("assets/images/bed.png",height: 15,),
+                              Row(
+                                spacing: 5,
+                                children: [
+                                  Image.asset("assets/images/bath.png",height: 15),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 3.0),
+                                    child: Text(" Barbeque Area ",style: TextStyle(
+                                      fontSize: 14,letterSpacing: 0.5,
+                                    ),),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Image.asset("assets/images/Residential__1.png",height: 15,),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 3.0),
+                                    child: Text(" Elevators ",style: TextStyle(
+                                        fontSize: 14,letterSpacing: 0.5
+                                    ),),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Image.asset("assets/images/bath.png",height: 15),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 3.0),
+                                    child: Text("Parking Space ",style: TextStyle(
+                                      fontSize: 14,letterSpacing: 0.5,
+                                    ),),
+                                  ),
+                                ],
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 3.0),
-                                child: Text(" Balcony/Terrace ",style: TextStyle(
-                                    fontSize: 14,letterSpacing: 0.5
-                                ),),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Image.asset("assets/images/bed.png",height: 15,),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 3.0),
-                                child: Text(" Gym ",style: TextStyle(
-                                    fontSize: 14,letterSpacing: 0.5
-                                ),),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            spacing: 5,
-                            children: [
-                              Image.asset("assets/images/bath.png",height: 15),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 3.0),
-                                child: Text(" Barbeque Area ",style: TextStyle(
-                                  fontSize: 14,letterSpacing: 0.5,
-                                ),),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Image.asset("assets/images/Residential__1.png",height: 15,),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 3.0),
-                                child: Text(" Elevators ",style: TextStyle(
-                                    fontSize: 14,letterSpacing: 0.5
-                                ),),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Image.asset("assets/images/bath.png",height: 15),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 3.0),
-                                child: Text("Parking Space ",style: TextStyle(
-                                  fontSize: 14,letterSpacing: 0.5,
-                                ),),
-                              ),
-                            ],
-                          ),
 
 
-                          Row(
-                            spacing: 5,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 3.0),
-                                child: Image.asset("assets/images/messure.png",height: 15),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 3.0),
-                                child: Text("Pet Allowed ",style: TextStyle(
-                                  fontSize: 14,letterSpacing: 0.5,
-                                ),),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Image.asset("assets/images/messure.png",height: 15),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 3.0),
-                                child: Text("Security ",style: TextStyle(
-                                  fontSize: 14,letterSpacing: 0.5,
-                                ),),
+                              Row(
+                                spacing: 5,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 3.0),
+                                    child: Image.asset("assets/images/messure.png",height: 15),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 3.0),
+                                    child: Text("Pet Allowed ",style: TextStyle(
+                                      fontSize: 14,letterSpacing: 0.5,
+                                    ),),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Image.asset("assets/images/messure.png",height: 15),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 3.0),
+                                    child: Text("Security ",style: TextStyle(
+                                      fontSize: 14,letterSpacing: 0.5,
+                                    ),),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

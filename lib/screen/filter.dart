@@ -549,7 +549,7 @@ String max_sqrfeet = ' ';
                       // Add a clear button to the search bar
                       suffixIcon: IconButton(
                         alignment: Alignment.topLeft,
-                        icon: Icon(Icons.mic),
+                        icon: Icon(Icons.mic,color: Colors.red,),
                         onPressed: () => _searchController.clear(),
                       ),
 
@@ -581,7 +581,7 @@ String max_sqrfeet = ' ';
               ),
               Container(
                 margin: const EdgeInsets.only(left: 15,right: 5),
-                height: screenSize.height*0.1,
+                height: screenSize.height*0.11,
              //  width: screenSize.width*0.5,
                // color: Colors.grey,
                 child:  ListView.builder(
@@ -591,8 +591,8 @@ String max_sqrfeet = ' ';
                   shrinkWrap: true,
                   itemBuilder: (context, index) {
                     return Container(
-                        margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                        padding: const EdgeInsets.only(top: 0,left: 5,right: 10),
+                        margin: const EdgeInsets.only(left: 8,right: 8,top: 5,bottom: 5),
+                        padding: const EdgeInsets.only(top: 5,left: 15,right: 15),
                         decoration: BoxDecoration(
                           color: selectedtype == index ? Colors.blueAccent : Colors.white,
                          // color: selectedIndexes.contains(index) ? Colors.grey : Colors.white,

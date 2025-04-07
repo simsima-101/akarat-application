@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:Akarat/model/searchmodel.dart';
 import 'package:Akarat/model/togglemodel.dart';
 import 'package:Akarat/screen/login.dart';
-import 'package:Akarat/screen/sample.dart';
 import 'package:Akarat/screen/search.dart';
 import 'package:Akarat/utils/fav_logout.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -197,20 +196,24 @@ class _MyHomePageState extends State<HomeDemo> {
 
 
 
-  void main() async {
-    HttpClient httpClient = HttpClient()
+  HttpClient createBadCertClient() {
+    final HttpClient client = HttpClient()
       ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
+          (X509Certificate cert, String host, int port) {
+        print('❗ Allowing expired certificate from $host');
+        return true; // Always allow
+      };
+    return client;
+  }
 
-    IOClient client = IOClient(httpClient);
+  void makeRequest() async {
+    final ioClient = IOClient(createBadCertClient());
 
     try {
-      var response = await client.get(Uri.parse('https://akarat.com/'));
-      print('Response: ${response.body}');
+      final response = await ioClient.get(Uri.parse("https://akarat.com/"));
+      print("✅ Response: ${response.body}");
     } catch (e) {
-      print('Error: $e');
-    } finally {
-      client.close();
+      print("❌ Error: $e");
     }
   }
 

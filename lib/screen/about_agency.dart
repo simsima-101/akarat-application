@@ -194,7 +194,7 @@ AgencyAgentsModel? agencyAgentsModel;
             child: Column(
                 children: <Widget>[
                   Container(
-                    height: screenSize.height*0.18,
+                    height: screenSize.height*0.19,
                     color: Color(0xFFF5F5F5),
                    // color: Colors.grey,
                     child: Column(
@@ -567,104 +567,108 @@ AgencyAgentsModel? agencyAgentsModel;
                                         ],
                                       ),
                                     ),
-                                    Row(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 10.0, right: 5.0, top: 10, bottom: 0),
-                                          child: Container(
-                                            // width: 130,
-                                              height: 35,
-                                              padding: const EdgeInsets.only(
-                                                  top: 0, left: 5, right: 5),
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadiusDirectional.circular(8.0),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.red,
-                                                    offset: const Offset(
-                                                      0.3,
-                                                      0.3,
-                                                    ),
-                                                    blurRadius: 0.3,
-                                                    spreadRadius: 0.3,
-                                                  ), //BoxShadow
-                                                  BoxShadow(
-                                                    color: Colors.white,
-                                                    offset: const Offset(0.0, 0.0),
-                                                    blurRadius: 0.0,
-                                                    spreadRadius: 0.0,
-                                                  ), //BoxShadow
-                                                ],
-                                              ),
+                                    Container(
+                                      margin: EdgeInsets.only(left: 10,right: 0,top: 5),
+                                      height: screenSize.height*0.06,
+                                      alignment: Alignment.centerLeft,
+                                      // color: Colors.grey,
+                                      child: ListView(
+                                        scrollDirection: Axis.horizontal,
+                                        shrinkWrap: true,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 5.0, right: 5, top: 8, bottom: 8),
+                                            child: Container(
+                                              // width: 130,
+                                                height: 35,
+                                                padding: const EdgeInsets.only(
+                                                    top: 5, left: 10, right: 8),
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadiusDirectional.circular(8.0),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.red,
+                                                      offset: const Offset(
+                                                        0.3,
+                                                        0.5,
+                                                      ),
+                                                      blurRadius: 0.5,
+                                                      spreadRadius: 0.8,
+                                                    ), //BoxShadow
+                                                    BoxShadow(
+                                                      color: Colors.white,
+                                                      offset: const Offset(0.5, 0.5),
+                                                      blurRadius: 0.5,
+                                                      spreadRadius: 0.5,
+                                                    ), //BoxShadow
+                                                  ],
+                                                ),
 
-                                              child: Row(
-                                                children: [
-                                                  Text("18 Properties for Rent", style: TextStyle(
-                                                      letterSpacing: 0.5,
-                                                      color: Colors.black,
-                                                      fontSize: 13,
-                                                    fontWeight: FontWeight.bold
-                                                  ), textAlign: TextAlign.left,),
-                                                  Padding(
-                                                      padding: const EdgeInsets.only(left: 5, right: 5),
-                                                      child: Image.asset("assets/images/arrow.png",
-                                                        width: 15,
-                                                        height: 15,
-                                                        fit: BoxFit.contain,)
-                                                  ),
-
-                                                ],
-                                              )
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 10.0, right: 5.0, top: 5, bottom: 0),
-                                          child: Container(
-                                            // width: 130,
-                                              height: 35,
-                                              padding: const EdgeInsets.only(
-                                                  top: 8, left: 5, right: 5),
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadiusDirectional.circular(8.0),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.red,
-                                                    offset: const Offset(
-                                                      0.3,
-                                                      0.3,
+                                                child: Row(
+                                                  children: [
+                                                    Text("18 Properties for Rent", style: TextStyle(
+                                                        letterSpacing: 0.5,
+                                                        color: Colors.black,
+                                                        fontSize: 13
+                                                    ), textAlign: TextAlign.left,),
+                                                    Padding(
+                                                        padding: const EdgeInsets.only(left: 5, right: 5),
+                                                        child: Image.asset("assets/images/arrow.png",
+                                                          width: 15,
+                                                          height: 15,
+                                                          fit: BoxFit.contain,)
                                                     ),
-                                                    blurRadius: 0.3,
-                                                    spreadRadius: 0.3,
-                                                  ), //BoxShadow
-                                                  BoxShadow(
-                                                    color: Colors.white,
-                                                    offset: const Offset(0.0, 0.0),
-                                                    blurRadius: 0.0,
-                                                    spreadRadius: 0.0,
-                                                  ), //BoxShadow
-                                                ],
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  Text("18 Properties for Rent", style: TextStyle(
-                                                      letterSpacing: 0.5,
-                                                      color: Colors.black,
-                                                      fontSize: 13,fontWeight: FontWeight.bold
-                                                  ), textAlign: TextAlign.left,),
-                                                  Padding(
-                                                      padding: const EdgeInsets.only(left: 5, right: 5),
-                                                      child: Image.asset("assets/images/arrow.png",
-                                                        width: 15,
-                                                        height: 15,
-                                                        fit: BoxFit.contain,)
-                                                  ),
-                                                ],
-                                              )
+
+                                                  ],
+                                                )
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 10.0, right: 5, top: 8, bottom: 8),
+                                            child: Container(
+                                              // width: 130,
+                                                height: 35,
+                                                padding: const EdgeInsets.only(top: 8, left: 10, right: 8,bottom: 8),
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadiusDirectional.circular(8.0),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.red,
+                                                      offset: const Offset(
+                                                        0.3,
+                                                        0.5,
+                                                      ),
+                                                      blurRadius: 0.5,
+                                                      spreadRadius: 0.8,
+                                                    ), //BoxShadow
+                                                    BoxShadow(
+                                                      color: Colors.white,
+                                                      offset: const Offset(0.5, 0.5),
+                                                      blurRadius: 0.5,
+                                                      spreadRadius: 0.5,
+                                                    ), //BoxShadow
+                                                  ],
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Text("18 Properties for Sale", style: TextStyle(
+                                                        letterSpacing: 0.5,
+                                                        color: Colors.black,
+                                                        fontSize: 13
+                                                    ), textAlign: TextAlign.left,),
+                                                    Padding(
+                                                        padding: const EdgeInsets.only(left: 5, right: 5),
+                                                        child: Image.asset("assets/images/arrow.png",
+                                                          width: 15,
+                                                          height: 15,
+                                                          fit: BoxFit.contain,)
+                                                    ),
+                                                  ],
+                                                )
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(top: 15, left: 10.0, right: 0),
@@ -1240,8 +1244,8 @@ AgencyAgentsModel? agencyAgentsModel;
                                                           Container(
                                                             margin: const EdgeInsets.only(left: 10,right: 0,top: 10),
                                                             height: screenSize.height*0.13,
-                                                            width: screenSize.width*0.6,
-                                                            //color: Colors.grey,
+                                                            width: screenSize.width*0.55,
+                                                           // color: Colors.grey,
                                                             child: Column(
                                                               children: [
                                                                 Row(

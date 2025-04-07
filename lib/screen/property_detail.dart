@@ -122,7 +122,7 @@ class _Property_DetailState extends State<Property_Detail> {
                                 )
                               ),
                               Container(
-                                margin: const EdgeInsets.only(left: 310,top: 5,bottom: 0,),
+                                margin: const EdgeInsets.only(left: 290,top: 5,bottom: 0,),
                                 height: 35,
                                 width: 35,
                                 padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
@@ -892,7 +892,7 @@ class _Property_DetailState extends State<Property_Detail> {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.call_outlined,color: Colors.green,)
+              child: Image.asset("assets/images/whats.png",height: 20,)
 
           ),
           Container(

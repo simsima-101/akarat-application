@@ -195,7 +195,7 @@ class FliterList extends StatelessWidget {
 
                       // Add a clear button to the search bar
                       suffixIcon: IconButton(
-                        icon: Icon(Icons.mic),
+                        icon: Icon(Icons.mic,color: Colors.red,),
                         onPressed: () => _searchController.clear(),
                       ),
 
@@ -214,47 +214,44 @@ class FliterList extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 20,left: 10,right: 10),
                 child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 1),
-                  height: 35,
+                 // margin: const EdgeInsets.symmetric(vertical: 1),
+                  height: 40,
+                 // color: Colors.grey,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: <Widget>[
                       //text
                       Padding(
                         padding: const EdgeInsets.only(
-                            left:0.0,top: 7.0),
+                            left:0.0,top: 0.0),
 
                         child: Center(
                           child: Row(
                             children: [
                               Padding(
-                                padding: const EdgeInsets.only(left: 2),
-                                child: Icon(
-                                  Icons.filter_alt_outlined,color: Colors.red,)
+                                padding: const EdgeInsets.only(left: 2,right: 2),
+                                child: Image.asset("assets/images/filter.png",height: 17,)
                               ),
 
                               Padding(
-                                padding: const EdgeInsets.only(left:1.0),
+                                padding: const EdgeInsets.only(left:1.0,right: 10),
                                 child: InkWell(
                                     onTap: (){
                                       //   print('hello');
                                     },
-                                    child: Text('Filters', style: TextStyle(fontSize: 14, color: Colors.black),)),
+                                    child: Text('Filters', style: TextStyle(fontSize: 16, color: Colors.black),)),
                               )
                             ],
                           ),
                         ),
 
                       ),
-                      Container(
-                        width: 10,
-                      ),
                       //buy
                       Padding(
-                        padding: const EdgeInsets.only(top: 10),
+                        padding: const EdgeInsets.only(top: 3,bottom: 3,right: 10),
                      child:  Container(
                         width: 70,
-                        height: 10,
+                        height: 15,
                         decoration: BoxDecoration(
                             shape: BoxShape.rectangle,
                             border: Border.all(
@@ -280,25 +277,22 @@ class FliterList extends StatelessWidget {
                           ],),
                       child: Row(
                         children: [
-                          Text(" Buy"),
-                          Container(
-                            width: 10,
+                          Padding(
+                            padding: const EdgeInsets.only(right: 10.0),
+                            child: Text(" Buy"),
                           ),
+
                           Icon(Icons.keyboard_arrow_down,color: Colors.black,)
                         ],
                       ),
                       ),
                       ),
-                      //all residential
-                      Container(
-                        width: 10,
-                      ),
                       //buy
                       Padding(
-                        padding: const EdgeInsets.only(top: 10),
+                        padding: const EdgeInsets.only(top: 3,bottom: 3,right: 10),
                         child:  Container(
                           width: 130,
-                          height: 10,
+                          height: 15,
                           decoration: BoxDecoration(
                               shape: BoxShape.rectangle,
                               border: Border.all(
@@ -333,13 +327,9 @@ class FliterList extends StatelessWidget {
                           ),
                         ),
                       ),
-
-                      Container(
-                        width: 10,
-                      ),
                       //buy
                       Padding(
-                        padding: const EdgeInsets.only(top: 10),
+                        padding: const EdgeInsets.only(top: 3,bottom: 3,right: 10),
                         child:  Container(
                           width: 120,
                           height: 10,
@@ -377,12 +367,9 @@ class FliterList extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Container(
-                        width: 10,
-                      ),
                       //buy
                       Padding(
-                        padding: const EdgeInsets.only(top: 10),
+                        padding: const EdgeInsets.only(top: 3,bottom: 3,right: 10),
                         child:  Container(
                           width: 70,
                           height: 10,
@@ -420,13 +407,9 @@ class FliterList extends StatelessWidget {
                           ),
                         ),
                       ),
-
-                      Container(
-                        width: 10,
-                      ),
                       //buy
                       Padding(
-                        padding: const EdgeInsets.only(top: 10),
+                        padding: const EdgeInsets.only(top: 3,bottom: 3,right: 10),
                         child:  Container(
                           width: 70,
                           height: 10,
@@ -520,21 +503,19 @@ class FliterList extends StatelessWidget {
               ),
               //filter
               Padding(
-                padding: const EdgeInsets.only(top: 10,left: 10,right: 10,bottom: 10),
+                padding: const EdgeInsets.only(top: 20,left: 10,right: 10,bottom: 10),
                 child: Container(
                  // color: Colors.grey,
-                  margin: const EdgeInsets.symmetric(vertical: 1),
-                  height: 35,
+                 // margin: const EdgeInsets.symmetric(vertical: 1),
+                  height: 40,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: <Widget>[
-                     //items
-                      //buy
                       Padding(
-                        padding: const EdgeInsets.only(top: 5,left: 10),
+                        padding: const EdgeInsets.only(top: 3,left: 10,bottom: 3),
                         child:  Container(
                           width: 100,
-                          height: 20,
+                          height: 25,
                           padding: const EdgeInsets.only(top: 5,),
                           decoration: BoxDecoration(
                               shape: BoxShape.rectangle,
@@ -566,13 +547,9 @@ class FliterList extends StatelessWidget {
 
                         ),
                       ),
-                      //all residential
-                      Container(
-                        width: 10,
-                      ),
                       //buy
                       Padding(
-                        padding: const EdgeInsets.only(top: 5),
+                        padding: const EdgeInsets.only(top: 3,left: 10,bottom: 3),
                         child:  Container(
                           width: 100,
                           height: 10,
@@ -608,13 +585,8 @@ class FliterList extends StatelessWidget {
 
                         ),
                       ),
-
-                      Container(
-                        width: 10,
-                      ),
-                      //buy
                       Padding(
-                        padding: const EdgeInsets.only(top: 5),
+                        padding: const EdgeInsets.only(top: 3,left: 10,bottom: 3),
                         child:  Container(
                           width: 100,
                           height: 10,
@@ -908,19 +880,19 @@ class FliterList extends StatelessWidget {
             enableFeedback: false,
             onPressed: () {
             //  setState(() {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Blog()));
+             //   Navigator.push(context, MaterialPageRoute(builder: (context)=> Blog()));
              // });
             },
             icon: pageIndex == 2
                 ? const Icon(
               Icons.favorite,
               color: Colors.red,
-              size: 35,
+              size: 30,
             )
                 : const Icon(
               Icons.favorite_border_outlined,
               color: Colors.red,
-              size: 35,
+              size: 30,
             ),
           ),
           IconButton(

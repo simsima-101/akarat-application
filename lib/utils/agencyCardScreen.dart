@@ -50,8 +50,8 @@ class Agencycardscreen extends StatelessWidget {
                       Container(
                         margin: const EdgeInsets.only(left: 10,right: 0,top: 10),
                         height: screenSize.height*0.15,
-                        width: screenSize.width*0.63,
-                        // color: Colors.grey,
+                        width: screenSize.width*0.62,
+                       //  color: Colors.grey,
                         child: Column(
                           children: [
                             Row(

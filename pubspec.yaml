@@ -46,6 +46,8 @@ dependencies:
   provider:
   cached_network_image:
   http:
+  html_unescape: ^2.0.0
+  flutter_html:
   dio:
   flutter_dotenv:
   connectivity_plus: ^4.0.2
