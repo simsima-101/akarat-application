@@ -5,8 +5,11 @@ import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/utils/shared_preference_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../model/favoritemodel.dart';
+import '../model/togglemodel.dart';
 import '../screen/home.dart';
+import '../screen/login.dart';
 import '../screen/product_detail.dart';
 
 class Fav_Login extends StatefulWidget {
@@ -30,6 +33,8 @@ class _Fav_LoginState extends State<Fav_Login> {
   String email = '';
   String result = '';
   bool isDataRead = false;
+  int? property_id ;
+  ToggleModel? toggleModel;
   // Create an object of SharedPreferencesManager class
   SharedPreferencesManager prefManager = SharedPreferencesManager();
   // Method to read data from shared preferences
@@ -49,7 +54,7 @@ class _Fav_LoginState extends State<Fav_Login> {
    void initState() {
      super.initState();
      readData();
-
+     _loadFavorites();
    }
 
    Future<void> getFilesApi(token) async {
@@ -72,6 +77,65 @@ class _Fav_LoginState extends State<Fav_Login> {
        //return FeaturedModel.fromJson(data);
      }
    }
+
+  Set<int> favoriteProperties = {}; // Stores favorite property IDs
+
+  void toggleFavorite(int propertyId) async {
+    setState(() {
+      if (favoriteProperties.contains(propertyId)) {
+        favoriteProperties.remove(propertyId);
+        getFilesApi(token);// Remove from favorites
+      } else {
+        favoriteProperties.add(propertyId); // Add to favorites
+      }
+    });
+    await _saveFavorites();
+    getFilesApi(token);
+  }
+
+  // Load saved favorites from SharedPreferences
+  Future<void> _loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedFavorites = prefs.getStringList('favorite_properties') ?? [];
+    setState(() {
+      favoriteProperties = savedFavorites.map(int.parse).toSet();
+    });
+  }
+
+  // Save favorites to SharedPreferences
+  Future<void> _saveFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+        'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
+  }
+
+  Future<void> toggledApi(token,property_id) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://akarat.com/api/toggle-saved-property'),
+        headers: <String, String>{'Authorization':'Bearer $token',
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          "property_id": property_id,
+          // Add any other data you want to send in the body
+        }),
+      );
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = json.decode(response.body);
+        toggleModel = ToggleModel.fromJson(jsonData);
+        print(" Succesfully");
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+      } else {
+        throw Exception(" failed");
+
+      }
+    } catch (e) {
+      setState(() {
+        print('Error: $e');
+      });
+    }
+  }
 
 
   @override
@@ -253,6 +317,7 @@ class _Fav_LoginState extends State<Fav_Login> {
                       itemCount: favoriteModel?.data?.length ?? 0,
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
+                        bool isFavorited = favoriteProperties.contains(favoriteModel!.data![index].id);
                         return SingleChildScrollView(
                             child: GestureDetector(
                               onTap: () {
@@ -330,13 +395,14 @@ class _Fav_LoginState extends State<Fav_Login> {
                                               ),
                                               onPressed: () {
                                                 setState(() {
-                                                 // property_id=featuredModel!.data![index].id;
-                                                /*  if(token == ''){
+                                                  property_id=favoriteModel!.data![index].id;
+                                                  if(token == ''){
                                                     Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
                                                   }
                                                   else{
+                                                    toggleFavorite(property_id!);
                                                     toggledApi(token,property_id);
-                                                  }*/
+                                                  }
                                                   isFavorited = !isFavorited;
                                                 });
                                               },

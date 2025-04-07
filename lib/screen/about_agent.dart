@@ -8,8 +8,11 @@ import 'package:Akarat/screen/profile_login.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../model/togglemodel.dart';
 import '../utils/shared_preference_manager.dart';
 import 'agent_detail.dart';
+import 'login.dart';
 
 
 class AboutAgent extends StatefulWidget {
@@ -45,6 +48,7 @@ class _AboutAgentState extends State<AboutAgent> {
     fetchProducts(widget.data);
     getFilesApi(widget.data);
     readData();
+    _loadFavorites();
 
   }
   AgentProperties? agentProperties;
@@ -88,6 +92,65 @@ class _AboutAgentState extends State<AboutAgent> {
     } else {
       //return FeaturedModel.fromJson(data);
     }
+  }
+
+  ToggleModel? toggleModel;
+
+  Future<void> toggledApi(token,property_id) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://akarat.com/api/toggle-saved-property'),
+        headers: <String, String>{'Authorization':'Bearer $token',
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          "property_id": property_id,
+          // Add any other data you want to send in the body
+        }),
+      );
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = json.decode(response.body);
+        toggleModel = ToggleModel.fromJson(jsonData);
+        print(" Succesfully");
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+      } else {
+        throw Exception(" failed");
+
+      }
+    } catch (e) {
+      setState(() {
+        print('Error: $e');
+      });
+    }
+  }
+
+  Set<int> favoriteProperties = {}; // Stores favorite property IDs
+
+  void toggleFavorite(int propertyId) async {
+    setState(() {
+      if (favoriteProperties.contains(propertyId)) {
+        favoriteProperties.remove(propertyId); // Remove from favorites
+      } else {
+        favoriteProperties.add(propertyId); // Add to favorites
+      }
+    });
+    await _saveFavorites();
+  }
+
+  // Load saved favorites from SharedPreferences
+  Future<void> _loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedFavorites = prefs.getStringList('favorite_properties') ?? [];
+    setState(() {
+      favoriteProperties = savedFavorites.map(int.parse).toSet();
+    });
+  }
+
+  // Save favorites to SharedPreferences
+  Future<void> _saveFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+        'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
   }
 
 
@@ -965,6 +1028,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                   body: Center(child: CircularProgressIndicator()), // Show loading state
                                 );
                               }
+                              bool isFavorited = favoriteProperties.contains(agentProperties!.data![index].id);
                               return SingleChildScrollView(
                                   child: GestureDetector(
                                     onTap: (){
@@ -1047,10 +1111,11 @@ class _AboutAgentState extends State<AboutAgent> {
                                                                     setState(() {
                                                                       property_id=agentProperties!.data![index].id;
                                                                       if(token == ''){
-                                                                      //  Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
+                                                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
                                                                       }
                                                                       else{
-                                                                     //   toggledApi(token,property_id);
+                                                                        toggleFavorite(property_id!);
+                                                                        toggledApi(token,property_id);
                                                                       }
                                                                       isFavorited = !isFavorited;
                                                                     });

@@ -43,7 +43,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_map:
-  
+  provider:
   cached_network_image:
   http:
   dio:

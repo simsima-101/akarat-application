@@ -8,6 +8,7 @@ import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_core/core.dart';
+import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:http/http.dart' as http;
 import 'filter_list.dart';
@@ -36,11 +37,11 @@ class FilterDemo extends StatefulWidget {
 class _FilterDemoState extends State<FilterDemo> {
   late bool isSelected = true;
    double start = 3000;
-   double startarea = 2000;
-   double endarea = 4500;
+   double startarea = 3000;
+   double endarea = 5000;
    double end = 5000;
    SfRangeValues _values = SfRangeValues(3000 ,5000);
-   SfRangeValues _valuesArea = SfRangeValues(2000 ,4500);
+   SfRangeValues _valuesArea = SfRangeValues(3000 ,5000);
   late RangeController _rangeController;
   late RangeController _rangeControllerarea;
   final agenciesController = TextEditingController();
@@ -57,8 +58,18 @@ class _FilterDemoState extends State<FilterDemo> {
         start: startarea.toString(),
         end: endarea.toString());
     fetchAmenities();
-    selectedproduct = 0; // Select first item initially
-    purpose = _product[0]; // Set initial purpose
+    if(widget.data == 'Rent'){
+      selectedproduct = 0;
+    }else if(widget.data == 'Buy'){
+      selectedproduct = 1;
+    }else if(widget.data == 'Commercial'){
+      selectedproduct = 3;
+    }
+    else{
+      selectedproduct = 0;
+    }
+   // selectedproduct = 0; // Select first item initially
+    purpose = widget.data; // Set initial purpose
 
     propertyApi(widget.data);
   }
@@ -96,93 +107,200 @@ final List _product = [
         'Monthly'
   ];
   final List<Data> chartData = <Data>[
-    Data(x: 500, y: 1500),
-    Data(x: 750, y: 6000),
-    Data(x: 1000, y:3000),
-    Data(x: 1250, y:3000),
+    Data(x: 500, y: 5000),
+    Data(x: 600, y: 3000),
+    Data(x: 700, y: 6000),
+    Data(x: 800, y: 2000),
+    Data(x: 900, y:8000),
+    Data(x: 1000, y:1000),
+    Data(x: 1100, y:3000),
+    Data(x: 1200, y:5000),
+    Data(x: 1300, y: 9000),
+    Data(x: 1400, y: 4000),
     Data(x: 1500, y: 1500),
-    Data(x: 1750, y: 1500),
-    Data(x: 2000, y: 9000),
-    Data(x: 2250, y: 9000),
-    Data(x: 2500, y: 6000),
-    Data(x: 2750, y: 6000),
-    Data(x: 3000, y: 2500),
-    Data(x: 3250, y: 2500),
-    Data(x: 3500, y: 5000),
-    Data(x: 3750, y: 5000),
-    Data(x: 4000, y: 8000),
-    Data(x: 4250, y: 8000),
-    Data(x: 4500, y: 2000),
-    Data(x: 4750, y: 2000),
-    Data(x: 5000, y: 4000),
-    Data(x: 5250, y: 4000),
-    Data(x: 5500, y: 8000),
-    Data(x: 5750, y: 8000),
-    Data(x: 6000, y: 5500),
-    Data(x: 6250, y: 5500),
-    Data(x: 6500, y: 3000),
-    Data(x: 6750, y: 3000),
-    Data(x: 7000, y: 7500),
-    Data(x: 7250, y: 7500),
-    Data(x: 7500, y: 10000),
-    Data(x: 7750, y: 10000),
-    Data(x: 8000, y: 6000),
-    Data(x: 8250, y: 6000),
-    Data(x: 8500, y: 9000),
-    Data(x: 8750, y: 9000),
-    Data(x: 9000, y: 6500),
-    Data(x: 9250, y: 6500),
-    Data(x: 9500, y: 7500),
-    Data(x: 9750, y: 7500),
+    Data(x: 1600, y: 6000),
+    Data(x: 1700, y: 9000),
+    Data(x: 1800, y: 2000),
+    Data(x: 1900, y: 8000),
+    Data(x: 2000, y: 1000),
+    Data(x: 2100, y: 6000),
+    Data(x: 2200, y: 3000),
+    Data(x: 2300, y: 5000),
+    Data(x: 2400, y: 1000),
+    Data(x: 2500, y: 2500),
+    Data(x: 2600, y: 5500),
+    Data(x: 2700, y: 8000),
+    Data(x: 2800, y: 2500),
+    Data(x: 2900, y: 6000),
+    Data(x: 3000, y: 1000),
+    Data(x: 3100, y: 3000),
+    Data(x: 3200, y: 5000),
+    Data(x: 3300, y: 7000),
+    Data(x: 3400, y: 6000),
+    Data(x: 3500, y: 4000),
+    Data(x: 3600, y: 2000),
+    Data(x: 3700, y: 5000),
+    Data(x: 3800, y: 7000),
+    Data(x: 3900, y: 9000),
+    Data(x: 4000, y: 1000),
+    Data(x: 4100, y: 3000),
+    Data(x: 4200, y: 5000),
+    Data(x: 4300, y: 7000),
+    Data(x: 4400, y: 4000),
+    Data(x: 4500, y: 10000),
+    Data(x: 4600, y: 8000),
+    Data(x: 4700, y: 6000),
+    Data(x: 4800, y: 4000),
+    Data(x: 4900, y: 2000),
+    Data(x: 5000, y: 5500),
+    Data(x: 5100, y: 1000),
+    Data(x: 5200, y: 3000),
+    Data(x: 5300, y: 5000),
+    Data(x: 5400, y: 7000),
+    Data(x: 5500, y: 9000),
+    Data(x: 5600, y: 3000),
+    Data(x: 5700, y: 7500),
+    Data(x: 5800, y: 3500),
+    Data(x: 5900, y: 4560),
+    Data(x: 6000, y: 7500),
+    Data(x: 6100, y: 10000),
+    Data(x: 6200, y: 6000),
+    Data(x: 6300, y: 4000),
+    Data(x: 6400, y: 2000),
+    Data(x: 6500, y: 6000),
+    Data(x: 6600, y: 3000),
+    Data(x: 6700, y: 5000),
+    Data(x: 6800, y: 7000),
+    Data(x: 6900, y: 9000),
+    Data(x: 7000, y: 8000),
+    Data(x: 7100, y: 6000),
+    Data(x: 7200, y: 4000),
+    Data(x: 7300, y: 2000),
+    Data(x: 7400, y: 6500),
+    Data(x: 7500, y: 1000),
+    Data(x: 7600, y: 3000),
+    Data(x: 7700, y: 5000),
+    Data(x: 7800, y: 7000),
+    Data(x: 7900, y: 7500),
+    Data(x: 8000, y: 5000),
+    Data(x: 8100, y: 3000),
+    Data(x: 8200, y: 1000),
+    Data(x: 8300, y: 5000),
+    Data(x: 8400, y: 7000),
+    Data(x: 8500, y: 5000),
+    Data(x: 8600, y: 6000),
+    Data(x: 8700, y: 4000),
+    Data(x: 8800, y: 2000),
+    Data(x: 8900, y: 8000),
+    Data(x: 9000, y: 7000),
+    Data(x: 9100, y: 8800),
+    Data(x: 9200, y: 10000),
+    Data(x: 9300, y: 6600),
+    Data(x: 9400, y: 6600),
+    Data(x: 9500, y: 9999),
+    Data(x: 9600, y: 5555),
+    Data(x: 9700, y: 4444),
+    Data(x: 9800, y: 6666),
+    Data(x: 9900, y: 7777),
     Data(x: 10000, y: 3000),
   ];
   final List<Dataarea> chartDataarea = <Dataarea>[
-    Dataarea(x: 500, y: 1500),
-    Dataarea(x: 600, y: 1000),
-    Dataarea(x: 700, y: 3800),
-    Dataarea(x: 800, y: 1800),
-    Dataarea(x: 900, y: 2200),
-    Dataarea(x: 1000, y:1900),
-    Dataarea(x: 1100, y: 3600),
-    Dataarea(x: 1200, y: 1200),
-    Dataarea(x: 1300, y: 1300),
-    Dataarea(x: 1400, y: 2000),
-    Dataarea(x: 1500, y: 3300),
-    Dataarea(x: 1600, y: 3400),
-    Dataarea(x: 1700, y: 1700),
-    Dataarea(x: 1800, y: 2200),
-    Dataarea(x: 1900, y: 1900),
-    Dataarea(x: 2000, y: 2200),
-    Dataarea(x: 2100, y: 2000),
-    Dataarea(x: 2200, y: 4400),
-    Dataarea(x: 2300, y: 4500),
-    Dataarea(x: 2400, y: 4000),
-    Dataarea(x: 2500, y: 1500),
-    Dataarea(x: 2600, y: 2600),
-    Dataarea(x: 2700, y: 1400),
-    Dataarea(x: 2800, y: 2000),
-    Dataarea(x: 2900, y: 4100),
-    Dataarea(x: 3000, y: 1300),
-    Dataarea(x: 3100, y: 1300),
-    Dataarea(x: 3200, y: 3400),
-    Dataarea(x: 3300, y: 2500),
-    Dataarea(x: 3400, y: 4100),
-    Dataarea(x: 3500, y: 1300),
-    Dataarea(x: 3600, y: 1300),
-    Dataarea(x: 3700, y: 1300),
-    Dataarea(x: 3800, y: 4500),
-    Dataarea(x: 3900, y: 1300),
-    Dataarea(x: 4000, y: 1300),
-    Dataarea(x: 4100, y: 4200),
-    Dataarea(x: 4200, y: 1300),
-    Dataarea(x: 4300, y: 4400),
-    Dataarea(x: 4400, y: 1300),
-    Dataarea(x: 4500, y: 2000),
-    Dataarea(x: 4600, y: 4400),
-    Dataarea(x: 4700, y: 1550),
-    Dataarea(x: 4800, y: 1600),
-    Dataarea(x: 4900, y: 3300),
-    Dataarea(x: 5000, y: 2400),
+    Dataarea(x: 500, y: 5000),
+    Dataarea(x: 600, y: 3000),
+    Dataarea(x: 700, y: 6000),
+    Dataarea(x: 800, y: 2000),
+    Dataarea(x: 900, y:8000),
+    Dataarea(x: 1000, y:1000),
+    Dataarea(x: 1100, y:3000),
+    Dataarea(x: 1200, y:5000),
+    Dataarea(x: 1300, y: 9000),
+    Dataarea(x: 1400, y: 4000),
+    Dataarea(x: 1500, y: 1500),
+    Dataarea(x: 1600, y: 6000),
+    Dataarea(x: 1700, y: 9000),
+    Dataarea(x: 1800, y: 2000),
+    Dataarea(x: 1900, y: 8000),
+    Dataarea(x: 2000, y: 1000),
+    Dataarea(x: 2100, y: 6000),
+    Dataarea(x: 2200, y: 3000),
+    Dataarea(x: 2300, y: 5000),
+    Dataarea(x: 2400, y: 1000),
+    Dataarea(x: 2500, y: 2500),
+    Dataarea(x: 2600, y: 5500),
+    Dataarea(x: 2700, y: 8000),
+    Dataarea(x: 2800, y: 2500),
+    Dataarea(x: 2900, y: 6000),
+    Dataarea(x: 3000, y: 1000),
+    Dataarea(x: 3100, y: 3000),
+    Dataarea(x: 3200, y: 5000),
+    Dataarea(x: 3300, y: 7000),
+    Dataarea(x: 3400, y: 6000),
+    Dataarea(x: 3500, y: 4000),
+    Dataarea(x: 3600, y: 2000),
+    Dataarea(x: 3700, y: 5000),
+    Dataarea(x: 3800, y: 7000),
+    Dataarea(x: 3900, y: 9000),
+    Dataarea(x: 4000, y: 1000),
+    Dataarea(x: 4100, y: 3000),
+    Dataarea(x: 4200, y: 5000),
+    Dataarea(x: 4300, y: 7000),
+    Dataarea(x: 4400, y: 4000),
+    Dataarea(x: 4500, y: 10000),
+    Dataarea(x: 4600, y: 8000),
+    Dataarea(x: 4700, y: 6000),
+    Dataarea(x: 4800, y: 4000),
+    Dataarea(x: 4900, y: 2000),
+    Dataarea(x: 5000, y: 5500),
+    Dataarea(x: 5100, y: 1000),
+    Dataarea(x: 5200, y: 3000),
+    Dataarea(x: 5300, y: 5000),
+    Dataarea(x: 5400, y: 7000),
+    Dataarea(x: 5500, y: 9000),
+    Dataarea(x: 5600, y: 3000),
+    Dataarea(x: 5700, y: 7500),
+    Dataarea(x: 5800, y: 3500),
+    Dataarea(x: 5900, y: 4560),
+    Dataarea(x: 6000, y: 7500),
+    Dataarea(x: 6100, y: 10000),
+    Dataarea(x: 6200, y: 6000),
+    Dataarea(x: 6300, y: 4000),
+    Dataarea(x: 6400, y: 2000),
+    Dataarea(x: 6500, y: 6000),
+    Dataarea(x: 6600, y: 3000),
+    Dataarea(x: 6700, y: 5000),
+    Dataarea(x: 6800, y: 7000),
+    Dataarea(x: 6900, y: 9000),
+    Dataarea(x: 7000, y: 8000),
+    Dataarea(x: 7100, y: 6000),
+    Dataarea(x: 7200, y: 4000),
+    Dataarea(x: 7300, y: 2000),
+    Dataarea(x: 7400, y: 6500),
+    Dataarea(x: 7500, y: 1000),
+    Dataarea(x: 7600, y: 3000),
+    Dataarea(x: 7700, y: 5000),
+    Dataarea(x: 7800, y: 7000),
+    Dataarea(x: 7900, y: 7500),
+    Dataarea(x: 8000, y: 5000),
+    Dataarea(x: 8100, y: 3000),
+    Dataarea(x: 8200, y: 1000),
+    Dataarea(x: 8300, y: 5000),
+    Dataarea(x: 8400, y: 7000),
+    Dataarea(x: 8500, y: 5000),
+    Dataarea(x: 8600, y: 6000),
+    Dataarea(x: 8700, y: 4000),
+    Dataarea(x: 8800, y: 2000),
+    Dataarea(x: 8900, y: 8000),
+    Dataarea(x: 9000, y: 7000),
+    Dataarea(x: 9100, y: 8800),
+    Dataarea(x: 9200, y: 10000),
+    Dataarea(x: 9300, y: 6600),
+    Dataarea(x: 9400, y: 6600),
+    Dataarea(x: 9500, y: 9999),
+    Dataarea(x: 9600, y: 5555),
+    Dataarea(x: 9700, y: 4444),
+    Dataarea(x: 9800, y: 6666),
+    Dataarea(x: 9900, y: 7777),
+    Dataarea(x: 10000, y: 3000),
   ];
 
   int pageIndex = 0;
@@ -194,7 +312,7 @@ final List _product = [
   ];
   int? selectedIndex; // Holds the index of the selected container
   int? selectedtype; // Holds the index of the selected container
-  int? selectedproduct = 0; // Holds the index of the selected container
+  int? selectedproduct ; // Holds the index of the selected container
   int? selectedcategory; // Holds the index of the selected container
   int? selectedbedroom; // Holds the index of the selected container
   int? selectedbathroom; // Holds the index of the selected container
@@ -269,6 +387,7 @@ String max_sqrfeet = ' ';
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
+     // appBar: AppBar(title: Text("")),
       bottomNavigationBar: buildMyNavBar(context),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -340,10 +459,10 @@ String max_sqrfeet = ' ';
                         return Container(
                             alignment: Alignment.topLeft,
                             // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                            margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                            margin: const EdgeInsets.only(left: 5,right: 3,top: 5,bottom: 5),
                             //  width: screenSize.width * 0.25,
                             // height: 20,
-                            padding: const EdgeInsets.only(top: 0,left: 15,right: 15),
+                            padding: const EdgeInsets.only(top: 0,left: 14,right: 14),
                             decoration: BoxDecoration(
                               color: selectedproduct == index ? Colors.blueAccent : Colors.white,
                               borderRadius: BorderRadiusDirectional.circular(6.0),
@@ -500,11 +619,11 @@ String max_sqrfeet = ' ';
                         child: GestureDetector(
                           child:   Column(
                             children: [
-                             /* Padding(
-                                padding: const EdgeInsets.all(2.0),
+                              Padding(
+                                padding: const EdgeInsets.all(5.0),
                                 child: CachedNetworkImage(
-                                  imageUrl: propertyTypeModel!.data![index].icon.toString(),height: 10,),
-                              ),*/
+                                  imageUrl: propertyTypeModel!.data![index].icon.toString(),height: 35,),
+                              ),
                               Padding(
                                 padding: const EdgeInsets.all(5.0),
                                 child: Text(propertyTypeModel!.data![index].name.toString(),
@@ -544,7 +663,7 @@ String max_sqrfeet = ' ';
               ),
               //category
               Padding(
-                  padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
+                  padding: const EdgeInsets.only(top: 0,left: 15,right: 3),
                   child: Container(
                     //color: Colors.grey,
                     height: 50,
@@ -557,10 +676,10 @@ String max_sqrfeet = ' ';
                         // Colors.grey;
                         return Container(
                           // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                            margin: const EdgeInsets.only(left: 5,right: 10,top: 5,bottom: 5),
+                            margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
                             // width: screenSize.width * 0.25,
                             // height: 20,
-                            padding: const EdgeInsets.only(top: 0,left: 5,right: 5),
+                            padding: const EdgeInsets.only(top: 0,left: 8,right: 8),
                             decoration: BoxDecoration(
                               color: selectedcategory == index ? Colors.blueAccent : Colors.white,
                               borderRadius: BorderRadiusDirectional.circular(6.0),
@@ -625,7 +744,7 @@ String max_sqrfeet = ' ';
                         Container(
                             width: 135,
                             height: 35,
-                            padding: const EdgeInsets.only(top: 5,left: 5),
+                            padding: const EdgeInsets.only(top: 8,left: 8),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadiusDirectional.circular(6.0),
                               boxShadow: [
@@ -646,7 +765,8 @@ String max_sqrfeet = ' ';
                                 ), //BoxShadow
                               ],
                             ),
-                            child: Text(_values.start.toStringAsFixed(0))
+                            child: Text(_values.start.toStringAsFixed(0),style: TextStyle(
+                                fontWeight: FontWeight.bold ))
 
                         ),
                         Container(
@@ -664,7 +784,7 @@ String max_sqrfeet = ' ';
                         Container(
                             width: 135,
                             height: 35,
-                            padding: const EdgeInsets.only(top: 5,left: 5),
+                            padding: const EdgeInsets.only(top: 8,left: 8),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadiusDirectional.circular(6.0),
                               boxShadow: [
@@ -685,7 +805,8 @@ String max_sqrfeet = ' ';
                                 ), //BoxShadow
                               ],
                             ),
-                            child: Text(_values.end.toStringAsFixed(0))
+                            child: Text(_values.end.toStringAsFixed(0),style: TextStyle(
+                                fontWeight: FontWeight.bold ))
                         ),
                       ]
                   )
@@ -693,58 +814,69 @@ String max_sqrfeet = ' ';
               //rangeslider
               Padding(
                 padding: const EdgeInsets.only(top: 25.0,left: 1,bottom: 0),
-                child: SfRangeSelector(
-                  min: 500,
-                  max: 10000,
-                  interval: 1000,
-                  enableTooltip: true,
-                  shouldAlwaysShowTooltip: true,
-                  initialValues: _values,
-                  onChanged: (value) {
-                    setState(() {
-                      _values=SfRangeValues(value.start, value.end);
-                      min_price=value.start.toStringAsFixed(0);
-                      max_price=value.end.toStringAsFixed(0);
-                    });
+                child: SfRangeSelectorTheme(
+                  data: SfRangeSelectorThemeData(
+                    tooltipBackgroundColor: Colors.black, // Change tooltip background color
+                    tooltipTextStyle: TextStyle(
+                      color: Colors.white, // Change tooltip text color
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  child: SfRangeSelector(
+                    min: 500,
+                    max: 10000,
+                    interval: 100,
+                    activeColor: Colors.black,
+                    inactiveColor: Color(0x80E0E0E0),
+                    enableTooltip: true,
+                    shouldAlwaysShowTooltip: true,
+                    initialValues: _values,
+                    onChanged: (value) {
+                      setState(() {
+                        _values=SfRangeValues(value.start, value.end);
+                        min_price=value.start.toStringAsFixed(0);
+                        max_price=value.end.toStringAsFixed(0);
+                      });
 
-                  },
-                  child: SizedBox(
-                    height: 60,
-                    width: 400,
-                    child: SfCartesianChart(
-                      backgroundColor: Colors.transparent,
-                      plotAreaBorderColor: Colors.transparent,
-                      margin: const EdgeInsets.all(0),
-                      primaryXAxis: NumericAxis(minimum: 500, maximum: 10000,
-                        isVisible: false,),
-                      primaryYAxis: NumericAxis(isVisible: false),
-                      plotAreaBorderWidth: 0,
-                      plotAreaBackgroundColor: Colors.transparent,
-                      series: <ColumnSeries<Data, double>>[
-                        ColumnSeries<Data, double>(
-                          trackColor: Colors.transparent,
-                          //color: Color.fromARGB(255, 126, 184, 253),
-                          //opacity: 0.5,
-                          dataSource: chartData,
-                          selectionBehavior: SelectionBehavior(
-                            unselectedOpacity: 0.0,
-                            selectedColor: Colors.transparent,
-                            selectedOpacity: 0.0,unselectedColor: Colors.transparent,
-                            selectionController: _rangeController,
+                    },
+                    child: SizedBox(
+                      height: 60,
+                      width: 400,
+                      child: SfCartesianChart(
+                        backgroundColor: Colors.transparent,
+                        plotAreaBorderColor: Colors.transparent,
+                        margin: const EdgeInsets.all(0),
+                        primaryXAxis: NumericAxis(minimum: 500, maximum: 10000,
+                          isVisible: false,),
+                        primaryYAxis: NumericAxis(isVisible: false),
+                        plotAreaBorderWidth: 0,
+                        plotAreaBackgroundColor: Colors.transparent,
+                        series: <ColumnSeries<Data, double>>[
+                          ColumnSeries<Data, double>(
+                            trackColor: Colors.transparent,
+                            //color: Color.fromARGB(255, 126, 184, 253),
+                            //opacity: 0.5,
+                            dataSource: chartData,
+                            selectionBehavior: SelectionBehavior(
+                              unselectedOpacity: 0.0,
+                              selectedColor: Colors.transparent,
+                              selectedOpacity: 0.0,unselectedColor: Colors.transparent,
+                              selectionController: _rangeController,
+                            ),
+                            xValueMapper: (Data sales, int index) => sales.x,
+                            yValueMapper: (Data sales, int index) => sales.y,
+                            pointColorMapper: (Data sales, int index) {
+                              return const Color.fromARGB(255, 37, 117, 212);
+                            },
+                            // color: const Color.fromRGBO(255, 255, 255, 0),
+                            dashArray: const <double>[5, 3],
+                            // borderColor: const Color.fromRGBO(194, 194, 194, 1),
+                            animationDuration: 0,
+                            borderWidth: 0,
+                            //opacity: 0.5,
                           ),
-                          xValueMapper: (Data sales, int index) => sales.x,
-                          yValueMapper: (Data sales, int index) => sales.y,
-                          pointColorMapper: (Data sales, int index) {
-                            return const Color.fromARGB(255, 37, 117, 212);
-                          },
-                          // color: const Color.fromRGBO(255, 255, 255, 0),
-                          dashArray: const <double>[5, 3],
-                          // borderColor: const Color.fromRGBO(194, 194, 194, 1),
-                          animationDuration: 0,
-                          borderWidth: 0,
-                          //opacity: 0.5,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -921,7 +1053,7 @@ String max_sqrfeet = ' ';
                         Container(
                             width: 135,
                             height: 35,
-                            padding: const EdgeInsets.only(top: 5,left: 5),
+                            padding: const EdgeInsets.only(top: 8,left: 8),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadiusDirectional.circular(6.0),
                               boxShadow: [
@@ -942,7 +1074,9 @@ String max_sqrfeet = ' ';
                                 ), //BoxShadow
                               ],
                             ),
-                            child: Text(_valuesArea.start.toStringAsFixed(2) )
+                            child: Text(_valuesArea.start.toStringAsFixed(0),style: TextStyle(
+                              fontWeight: FontWeight.bold
+                            ),)
                         ),
                         Container(
                           width: 35,
@@ -959,7 +1093,7 @@ String max_sqrfeet = ' ';
                         Container(
                             width: 135,
                             height: 35,
-                            padding: const EdgeInsets.only(top: 5,left: 5),
+                            padding: const EdgeInsets.only(top: 8,left: 8),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadiusDirectional.circular(6.0),
                               boxShadow: [
@@ -980,7 +1114,8 @@ String max_sqrfeet = ' ';
                                 ), //BoxShadow
                               ],
                             ),
-                            child: Text(_valuesArea.end.toStringAsFixed(2) )
+                            child: Text(_valuesArea.end.toStringAsFixed(0),style: TextStyle(
+                                fontWeight: FontWeight.bold ))
                         ),
                       ]
                   )
@@ -988,55 +1123,66 @@ String max_sqrfeet = ' ';
               //rangeslider
               Padding(
                 padding: const EdgeInsets.only(top: 25.0,left: 1,bottom: 0),
-                child: SfRangeSelector(
-                  min: 1000,
-                  max: 5000,
-                  interval: 500,
-                  enableTooltip: true,
-                  shouldAlwaysShowTooltip: true,
-                  initialValues: _valuesArea,
-                  onChanged: (value) {
-                    setState(() {
-                      _valuesArea=SfRangeValues(value.start, value.end);
-                      min_sqrfeet=value.start.toStringAsFixed(2);
-                      max_sqrfeet=value.end.toStringAsFixed(2);
-                    });
+                child: SfRangeSelectorTheme(
+                  data: SfRangeSelectorThemeData(
+                    tooltipBackgroundColor: Colors.black, // Change tooltip background color
+                    tooltipTextStyle: TextStyle(
+                      color: Colors.white, // Change tooltip text color
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  child: SfRangeSelector(
+                    min: 500,
+                    max: 10000,
+                    interval: 1000,
+                    enableTooltip: true,
+                    shouldAlwaysShowTooltip: true,
+                    activeColor: Colors.black,
+                    inactiveColor: Color(0x80E0E0E0),
+                    initialValues: _valuesArea,
+                    onChanged: (value) {
+                      setState(() {
+                        _valuesArea=SfRangeValues(value.start, value.end);
+                        min_sqrfeet=value.start.toStringAsFixed(0);
+                        max_sqrfeet=value.end.toStringAsFixed(0);
+                      });
 
-                  },
-                  child: SizedBox(
-                    height: 70,
-                    width: 400,
-                    child: SfCartesianChart(
-                      plotAreaBorderColor: Colors.transparent,
-                      margin: const EdgeInsets.all(0),
-                      primaryXAxis: NumericAxis(minimum: 1000, maximum: 5000,
-                        isVisible: false,),
-                      primaryYAxis: NumericAxis(isVisible: false),
-                      plotAreaBorderWidth: 0,
-                      plotAreaBackgroundColor: Colors.transparent,
-                      series: <ColumnSeries<Dataarea, double>>[
-                        ColumnSeries<Dataarea, double>(
-                          trackColor: Colors.transparent,
-                          // color: Color.fromARGB(255, 126, 184, 253),
-                          dataSource: chartDataarea,
-                          selectionBehavior: SelectionBehavior(
-                            unselectedOpacity: 0,
-                            selectedOpacity: 0.0,unselectedColor: Colors.transparent,
-                            selectionController: _rangeControllerarea,
+                    },
+                    child: SizedBox(
+                      height: 70,
+                      width: 400,
+                      child: SfCartesianChart(
+                        plotAreaBorderColor: Colors.transparent,
+                        margin: const EdgeInsets.all(0),
+                        primaryXAxis: NumericAxis(minimum: 500, maximum: 10000,
+                          isVisible: false,),
+                        primaryYAxis: NumericAxis(isVisible: false),
+                        plotAreaBorderWidth: 0,
+                        plotAreaBackgroundColor: Colors.transparent,
+                        series: <ColumnSeries<Dataarea, double>>[
+                          ColumnSeries<Dataarea, double>(
+                            trackColor: Colors.transparent,
+                            // color: Color.fromARGB(255, 126, 184, 253),
+                            dataSource: chartDataarea,
+                            selectionBehavior: SelectionBehavior(
+                              unselectedOpacity: 0,
+                              selectedOpacity: 0.0,unselectedColor: Colors.transparent,
+                              selectionController: _rangeControllerarea,
+                            ),
+                            xValueMapper: (Dataarea sales, int index) => sales.x,
+                            yValueMapper: (Dataarea sales, int index) => sales.y,
+                            pointColorMapper: (Dataarea sales, int index) {
+                              return const Color.fromARGB(255, 37, 117, 212);
+                            },
+                            // color: const Color.fromRGBO(255, 255, 255, 0),
+                            dashArray: const <double>[5, 3],
+                            // borderColor: const Color.fromRGBO(194, 194, 194, 1),
+                            animationDuration: 0,
+                            borderWidth: 0,
+                            //opacity: 0.5,
                           ),
-                          xValueMapper: (Dataarea sales, int index) => sales.x,
-                          yValueMapper: (Dataarea sales, int index) => sales.y,
-                          pointColorMapper: (Dataarea sales, int index) {
-                            return const Color.fromARGB(255, 37, 117, 212);
-                          },
-                          // color: const Color.fromRGBO(255, 255, 255, 0),
-                          dashArray: const <double>[5, 3],
-                          // borderColor: const Color.fromRGBO(194, 194, 194, 1),
-                          animationDuration: 0,
-                          borderWidth: 0,
-                          //opacity: 0.5,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -1272,7 +1418,7 @@ String max_sqrfeet = ' ';
                     ),textAlign: TextAlign.left,),
                   ),
                 ],
-              ),
+              ), 
               Padding(
                   padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
                   child: Container(
@@ -1449,12 +1595,12 @@ Container buildMyNavBar(BuildContext context) {
               ? const Icon(
             Icons.favorite,
             color: Colors.red,
-            size: 35,
+            size: 30,
           )
               : const Icon(
             Icons.favorite_border_outlined,
             color: Colors.red,
-            size: 35,
+            size: 30,
           ),
         ),
         IconButton(

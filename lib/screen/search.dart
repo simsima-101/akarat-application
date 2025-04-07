@@ -6,7 +6,11 @@ import 'package:Akarat/screen/product_detail.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../model/searchmodel.dart';
+import '../model/togglemodel.dart';
+import '../utils/shared_preference_manager.dart';
+import 'login.dart';
 
 class Search extends StatefulWidget {
   const Search({super.key, required this.data});
@@ -20,9 +24,17 @@ class _SearchState extends State<Search> {
   @override
   void initState() {
     searchApi(widget.data);
+    readData();
+    _loadFavorites();
   }
 
   SearchModel? searchModel;
+  ToggleModel? toggleModel;
+  int? property_id ;
+  String token = '';
+  String email = '';
+  String result = '';
+  bool isDataRead = false;
 
   Future<void> searchApi(location) async {
     final response = await http.get(Uri.parse(
@@ -39,8 +51,78 @@ class _SearchState extends State<Search> {
       //return FeaturedModel.fromJson(data);
     }
   }
+
+  Future<void> toggledApi(token,property_id) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://akarat.com/api/toggle-saved-property'),
+        headers: <String, String>{'Authorization':'Bearer $token',
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          "property_id": property_id,
+          // Add any other data you want to send in the body
+        }),
+      );
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = json.decode(response.body);
+        toggleModel = ToggleModel.fromJson(jsonData);
+        print(" Succesfully");
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+      } else {
+        throw Exception(" failed");
+
+      }
+    } catch (e) {
+      setState(() {
+        print('Error: $e');
+      });
+    }
+  }
+
+  Set<int> favoriteProperties = {}; // Stores favorite property IDs
+
+  void toggleFavorite(int propertyId) async {
+    setState(() {
+      if (favoriteProperties.contains(propertyId)) {
+        favoriteProperties.remove(propertyId); // Remove from favorites
+      } else {
+        favoriteProperties.add(propertyId); // Add to favorites
+      }
+    });
+    await _saveFavorites();
+  }
+
+  // Load saved favorites from SharedPreferences
+  Future<void> _loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedFavorites = prefs.getStringList('favorite_properties') ?? [];
+    setState(() {
+      favoriteProperties = savedFavorites.map(int.parse).toSet();
+    });
+  }
+
+  // Save favorites to SharedPreferences
+  Future<void> _saveFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+        'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
+  }
+
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
+
   bool isFavorited = false;
-  int? property_id ;
+
   final TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -98,7 +180,7 @@ class _SearchState extends State<Search> {
                                       fit: BoxFit.contain,),
                                   ),
                                   Container(
-                                    margin: const EdgeInsets.only(left: 220,top: 5,bottom: 0,),
+                                    margin: const EdgeInsets.only(left: 320,top: 5,bottom: 0,),
                                     height: 35,
                                     width: 35,
                                     padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
@@ -128,68 +210,7 @@ class _SearchState extends State<Search> {
                                       fit: BoxFit.contain,),
                                     //child: Image(image: Image.asset("assets/images/share.png")),
                                   ),
-                                  Container(
-                                    margin: const EdgeInsets.only(left: 5,top: 5,bottom: 0,),
-                                    height: 35,
-                                    width: 35,
-                                    padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadiusDirectional.circular(20.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          offset: const Offset(
-                                            0.0,
-                                            0.0,
-                                          ),
-                                          blurRadius: 0.1,
-                                          spreadRadius: 0.1,
-                                        ), //BoxShadow
-                                        BoxShadow(
-                                          color: Colors.white,
-                                          offset: const Offset(0.0, 0.0),
-                                          blurRadius: 0.0,
-                                          spreadRadius: 0.0,
-                                        ), //BoxShadow
-                                      ],
-                                    ),
-                                    child: Image.asset("assets/images/forward.png",
-                                      width: 15,
-                                      height: 15,
-                                      fit: BoxFit.contain,),
-                                    //child: Image(image: Image.asset("assets/images/share.png")),
-                                  ),
-                                  Container(
-                                    margin: const EdgeInsets.only(left: 5,top: 5,bottom: 0,),
-                                    height: 35,
-                                    width: 35,
-                                    padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadiusDirectional.circular(20.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          offset: const Offset(
-                                            0.0,
-                                            0.0,
-                                          ),
-                                          blurRadius: 0.1,
-                                          spreadRadius: 0.1,
-                                        ), //BoxShadow
-                                        BoxShadow(
-                                          color: Colors.white,
-                                          offset: const Offset(0.0, 0.0),
-                                          blurRadius: 0.0,
-                                          spreadRadius: 0.0,
-                                        ), //BoxShadow
-                                      ],
-                                    ),
-                                    child: Image.asset("assets/images/arrow_right.png",
-                                      width: 15,
-                                      height: 15,
-                                      fit: BoxFit.contain,),
-                                    //child: Image(image: Image.asset("assets/images/share.png")),
-                                  ),
+
                                 ],
                               ),
                             ),
@@ -697,6 +718,7 @@ class _SearchState extends State<Search> {
                         itemCount: searchModel?.data?.length ?? 0,
                         shrinkWrap: true,
                         itemBuilder: (context, index) {
+                          bool isFavorited = favoriteProperties.contains(searchModel!.data![index].id);
                           return SingleChildScrollView(
                               child: GestureDetector(
                                 onTap: (){
@@ -770,12 +792,13 @@ class _SearchState extends State<Search> {
                                                               onPressed: () {
                                                                 setState(() {
                                                                   property_id=searchModel!.data![index].id;
-                                                                 /* if(token == ''){
+                                                                  if(token == ''){
                                                                     Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
                                                                   }
                                                                   else{
+                                                                    toggleFavorite(property_id!);
                                                                     toggledApi(token,property_id);
-                                                                  }*/
+                                                                  }
                                                                   isFavorited = !isFavorited;
                                                                 });
                                                               },
@@ -811,10 +834,10 @@ class _SearchState extends State<Search> {
                                                 child:  Image.asset("assets/images/map.png",height: 14,),
                                               ),
                                               Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                                child: Text(searchModel!.data![index].address.toString(),style: TextStyle(
+                                                child: Text(searchModel!.data![index].location.toString(),style: TextStyle(
                                                     fontSize: 13,height: 1.4,
                                                     overflow: TextOverflow.visible
-                                                ),),
+                                                ),maxLines: 2,),
                                               ),
                                             ],
                                           ),

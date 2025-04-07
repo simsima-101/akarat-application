@@ -7,6 +7,11 @@ import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/screen/property_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../model/togglemodel.dart';
+import '../utils/shared_preference_manager.dart';
+import 'login.dart';
 
 void main(){
   runApp(const New_Projects());
@@ -37,14 +42,33 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
     const Page3(),
     const Page4(),
   ];
-
+  bool isDataRead = false;
   bool isFavorited = false;
   ProjectModel? projectModel;
+  ToggleModel? toggleModel;
+  int? property_id ;
+  String token = '';
+  String email = '';
+  String result = '';
+
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     getFilesApi();
+    readData();
+    _loadFavorites();
   }
 
   Future<void> getFilesApi() async {
@@ -61,6 +85,63 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
     } else {
       //return FeaturedModel.fromJson(data);
     }
+  }
+
+  Future<void> toggledApi(token,property_id) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://akarat.com/api/toggle-saved-property'),
+        headers: <String, String>{'Authorization':'Bearer $token',
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          "property_id": property_id,
+          // Add any other data you want to send in the body
+        }),
+      );
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = json.decode(response.body);
+        toggleModel = ToggleModel.fromJson(jsonData);
+        print(" Succesfully");
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+      } else {
+        throw Exception(" failed");
+
+      }
+    } catch (e) {
+      setState(() {
+        print('Error: $e');
+      });
+    }
+  }
+
+  Set<int> favoriteProperties = {}; // Stores favorite property IDs
+
+  void toggleFavorite(int propertyId) async {
+    setState(() {
+      if (favoriteProperties.contains(propertyId)) {
+        favoriteProperties.remove(propertyId); // Remove from favorites
+      } else {
+        favoriteProperties.add(propertyId); // Add to favorites
+      }
+    });
+    await _saveFavorites();
+  }
+
+  // Load saved favorites from SharedPreferences
+  Future<void> _loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedFavorites = prefs.getStringList('favorite_properties') ?? [];
+    setState(() {
+      favoriteProperties = savedFavorites.map(int.parse).toSet();
+    });
+  }
+
+  // Save favorites to SharedPreferences
+  Future<void> _saveFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+        'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
   }
 
   @override
@@ -206,6 +287,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
             itemCount: projectModel?.data?.length  ?? 0,
             shrinkWrap: true,
             itemBuilder: (context, index) {
+              bool isFavorited = favoriteProperties.contains(projectModel!.data![index].id);
               return SingleChildScrollView(
                   child: GestureDetector(
                     onTap: (){
@@ -228,7 +310,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                   child: Stack(
                                       children: [
                                         AspectRatio(
-                                          aspectRatio: 1.8,
+                                          aspectRatio: 1.4,
                                           // this is the ratio
                                           child: CachedNetworkImage( // this is to fetch the image
                                             imageUrl: (projectModel!.data![index].media![index].originalUrl.toString()),
@@ -275,13 +357,14 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                               ),
                                               onPressed: () {
                                                 setState(() {
-                                                  // property_id=featuredModel!.data![index].id;
-                                                  /*  if(token == ''){
+                                                  property_id=projectModel!.data![index].id;
+                                                  if(token == ''){
                                                     Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
                                                   }
                                                   else{
+                                                    toggleFavorite(property_id!);
                                                     toggledApi(token,property_id);
-                                                  }*/
+                                                  }
                                                   isFavorited = !isFavorited;
                                                 });
                                               },
@@ -294,16 +377,96 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                         ),
                               Padding(padding: const EdgeInsets.only(top: 5),
                                 child: ListTile(
-                                  title: Text(projectModel!.data![index].title.toString(),
+                                  title: Padding(
+                                    padding: const EdgeInsets.only(top: 5.0,bottom: 5),
+                                    child: Text(projectModel!.data![index].title.toString(),
+                                      style: TextStyle(
+                                          fontSize: 16,height: 1.4
+                                      ),),
+                                  ),
+                                  subtitle: Text('${projectModel!.data![index].price} AED',
                                     style: TextStyle(
-                                        fontWeight: FontWeight.bold,fontSize: 18,height: 1.4
+                                        fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
                                     ),),
-                                  /* subtitle: Text('${product.price}',style: TextStyle(
-                                     fontWeight: FontWeight.bold,fontSize: 15,height: 1.8
-                                 ),),*/
                                 ),
                               ),
-
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 0,bottom: 10),
+                                    child:  Image.asset("assets/images/map.png",height: 14,),
+                                  ),
+                                  Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
+                                    child: Text(projectModel!.data![index].location.toString(),style: TextStyle(
+                                        fontSize: 13,height: 1.4,
+                                        overflow: TextOverflow.visible
+                                    ),),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 5),
+                                    child: Image.asset("assets/images/bed.png",height: 13,),
+                                  ),
+                                  Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
+                                      child: Text(projectModel!.data![index].bedrooms.toString())
+                                  ),
+                                  Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
+                                    child: Image.asset("assets/images/bath.png",height: 13,),
+                                  ),
+                                  Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
+                                      child: Text(projectModel!.data![index].bathrooms.toString())
+                                  ),
+                                  Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
+                                    child: Image.asset("assets/images/messure.png",height: 13,),
+                                  ),
+                                  Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
+                                      child: Text(projectModel!.data![index].squareFeet.toString())
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Padding(padding: const EdgeInsets.only(left: 30,top: 20,bottom: 15),
+                                    child: ElevatedButton.icon(onPressed: (){},
+                                        label: Text("call",style: TextStyle(
+                                            color: Colors.black
+                                        ),),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.grey[50],
+                                          alignment: Alignment.center,
+                                          elevation: 1,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                          padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 40),
+                                          textStyle: TextStyle(letterSpacing: 0.5,
+                                              color: Colors.black,fontSize: 15,fontWeight: FontWeight.bold
+                                          ),
+                                        ),
+                                        icon: Icon(Icons.call,color: Colors.red,)),
+                                  ),
+                                  // Text(product.description),
+                                  Padding(padding: const EdgeInsets.only(left: 15,top: 20,bottom: 15),
+                                    child: ElevatedButton.icon(onPressed: (){},
+                                        label: Text("Watsapp",style: TextStyle(
+                                            color: Colors.black
+                                        ),),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.grey[50],
+                                          alignment: Alignment.center,
+                                          elevation: 1,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                          padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 30),
+                                          textStyle: TextStyle(letterSpacing: 0.5,
+                                              color: Colors.black,fontSize: 12,fontWeight: FontWeight.bold
+                                          ),
+                                        ),
+                                        icon: Image.asset("assets/images/whats.png",height: 20,)
+                                    ),
+                                  ),
+                                ],
+                              ),
                             /*  Row(
 
                                 children: [

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:Akarat/model/searchmodel.dart';
 import 'package:Akarat/model/togglemodel.dart';
 import 'package:Akarat/screen/login.dart';
+import 'package:Akarat/screen/sample.dart';
 import 'package:Akarat/screen/search.dart';
 import 'package:Akarat/utils/fav_logout.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -14,8 +15,12 @@ import 'package:Akarat/screen/new_projects.dart';
 import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/fav_login.dart';
 import '../utils/shared_preference_manager.dart';
+import 'dart:io';
+
+import 'package:http/io_client.dart';
 
 void main() {
   runApp(const MyApp());
@@ -75,6 +80,7 @@ class _MyHomePageState extends State<HomeDemo> {
     super.initState();
     getFilesApi();
     readData();
+    _loadFavorites();
   }
   Future<bool> _onWillPop() async {
     return (await showDialog(
@@ -127,9 +133,8 @@ class _MyHomePageState extends State<HomeDemo> {
     }
   }
 
-  Future<void> getFilesApi() async {
-    final response = await http.get(Uri.parse(
-        "https://akarat.com/api/featured-properties"));
+  Future<void> getFilesApi() async   {
+    final response = await http.get(Uri.parse("https://akarat.com/api/featured-properties"));
     var data = jsonDecode(response.body);
     if (response.statusCode == 200 ) {
       FeaturedModel feature= FeaturedModel.fromJson(data);
@@ -159,6 +164,56 @@ class _MyHomePageState extends State<HomeDemo> {
       //return FeaturedModel.fromJson(data);
     }
   }
+
+
+  Set<int> favoriteProperties = {}; // Stores favorite property IDs
+
+  void toggleFavorite(int propertyId) async {
+    setState(() {
+      if (favoriteProperties.contains(propertyId)) {
+        favoriteProperties.remove(propertyId); // Remove from favorites
+      } else {
+        favoriteProperties.add(propertyId); // Add to favorites
+      }
+    });
+    await _saveFavorites();
+  }
+
+  // Load saved favorites from SharedPreferences
+  Future<void> _loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedFavorites = prefs.getStringList('favorite_properties') ?? [];
+    setState(() {
+      favoriteProperties = savedFavorites.map(int.parse).toSet();
+    });
+  }
+
+  // Save favorites to SharedPreferences
+  Future<void> _saveFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+        'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
+  }
+
+
+
+  void main() async {
+    HttpClient httpClient = HttpClient()
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+
+    IOClient client = IOClient(httpClient);
+
+    try {
+      var response = await client.get(Uri.parse('https://akarat.com/'));
+      print('Response: ${response.body}');
+    } catch (e) {
+      print('Error: $e');
+    } finally {
+      client.close();
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -695,6 +750,7 @@ class _MyHomePageState extends State<HomeDemo> {
                       body: Center(child: CircularProgressIndicator()), // Show loading state
                     );
                     }
+                    bool isFavorited = favoriteProperties.contains(featuredModel!.data![index].id);
                     return SingleChildScrollView(
                         child: GestureDetector(
                           onTap: (){
@@ -780,6 +836,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                                             Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
                                                           }
                                                           else{
+                                                            toggleFavorite(property_id!);
                                                             toggledApi(token,property_id);
                                                           }
                                                           isFavorited = !isFavorited;
@@ -906,10 +963,9 @@ class _MyHomePageState extends State<HomeDemo> {
               ],
             ),
           ),
-        ));
-
+        )
+    );
   }
-
   Container buildMyNavBar(BuildContext context) {
     return Container(
       height: 60,
@@ -945,7 +1001,8 @@ class _MyHomePageState extends State<HomeDemo> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                pageIndex = 1;
+              //  Navigator.push(context, MaterialPageRoute(builder: (context)=> PropertyListScreen()));
+
               });
             },
             icon: pageIndex == 1
@@ -1036,7 +1093,6 @@ class Page1 extends StatelessWidget {
     );
   }
 }
-
 class Page2 extends StatelessWidget {
   const Page2({super.key});
 
@@ -1057,7 +1113,6 @@ class Page2 extends StatelessWidget {
     );
   }
 }
-
 class Page3 extends StatelessWidget {
   const Page3({super.key});
 
@@ -1078,7 +1133,6 @@ class Page3 extends StatelessWidget {
     );
   }
 }
-
 class Page4 extends StatelessWidget {
   const Page4({super.key});
 
