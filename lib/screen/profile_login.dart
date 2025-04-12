@@ -46,23 +46,25 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
                   Container(
-                    height: screenSize.height*0.22,
+                    height: screenSize.height*0.219,
                     color: Color(0xFFF5F5F5),
                     child: Column(
+
                       children: [
                         Row(
+                          spacing:screenSize.width*0.7,
                           children: [
-                    GestureDetector(
-                    onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
-                  },
-                    child: Container(
-                              margin: const EdgeInsets.only(left: 20,top: 30,bottom: 0),
+                              GestureDetector(
+                              onTap: (){
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
+                                },
+                              child: Container(
+                              margin: const EdgeInsets.only(left: 20,top: 20,bottom: 0),
                               height: 35,
                               width: 35,
                               padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
@@ -93,7 +95,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                             ),
                     ),
                             Container(
-                              margin: const EdgeInsets.only(left: 280,top: 30,bottom: 0),
+                              margin: const EdgeInsets.only(left: 0,top: 20,bottom: 0),
                               height: 35,
                               width: 35,
                               padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
@@ -158,8 +160,8 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                            ),
                            Container(
                              margin: const EdgeInsets.only(left: 10),
-                             height: screenSize.height*0.14,
-                             width: screenSize.width*0.42,
+                             height: screenSize.height*0.15,
+                             width: screenSize.width*0.45,
                              // color: Colors.grey,
                              padding: const EdgeInsets.only(left: 0,top: 0),
                              child:   Column(
@@ -179,13 +181,13 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                        letterSpacing: 0.5,
                                      ),textAlign: TextAlign.left,),
                                    ),
-                                   Padding(padding: const EdgeInsets.only(top: 5,left: 10,right: 20),
+                                   Padding(padding: const EdgeInsets.only(top: 0,left: 8,right: 8),
                                    child: ElevatedButton(onPressed: (){
                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
                                    },style:
                                    ElevatedButton.styleFrom(backgroundColor: Colors.blue,
                                      shape: RoundedRectangleBorder(borderRadius:  BorderRadius.all(Radius.circular(8)),),),
-                                       child: Text("Login or Signup",style: TextStyle(color: Colors.white,fontSize: 12),)),
+                                       child: Text("Login or Signup",style: TextStyle(color: Colors.white,fontSize: 11),)),
                                    ),
                                  ],
                                )
@@ -198,28 +200,26 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
 
                   ),
                   Container(
-                   height: screenSize.height*0.15,
-                   width: screenSize.width*0.78,
-                   margin: const EdgeInsets.only(left: 20,top: 15,right: 20),
+                   height: screenSize.height*0.16,
+                   width: screenSize.width*0.8,
+                   margin: const EdgeInsets.only(left: 20,top: 5,right: 20),
                    decoration: BoxDecoration(
-                     borderRadius: BorderRadiusDirectional.circular(10.0),
+                     color: Colors.white,
                      boxShadow: [
                        BoxShadow(
-                         color: Colors.grey,
-                         offset: const Offset(
-                           0.0,
-                           0.0,
-                         ),
-                         blurRadius: 0.3,
-                         spreadRadius: 0.5,
-                       ), //BoxShadow
+                         color: Colors.grey.withOpacity(0.5),
+                         offset: Offset(4, 4),
+                         blurRadius: 8,
+                         spreadRadius: 2,
+                       ),
                        BoxShadow(
-                         color: Colors.white,
-                         offset: const Offset(0.0, 0.0),
-                         blurRadius: 0.0,
-                         spreadRadius: 0.3,
-                       ), //BoxShadow
+                         color: Colors.white.withOpacity(0.8),
+                         offset: Offset(-4, -4),
+                         blurRadius: 8,
+                         spreadRadius: 2,
+                       ),
                      ],
+                     borderRadius: BorderRadius.circular(10),
                    ),
                    child: Column(
                      children: [
@@ -250,8 +250,9 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                   Container(
                    // color: Colors.grey,
                     height: screenSize.height*0.55,
-                    margin:const EdgeInsets.only(left: 20,right: 20,top: 0),
+                    margin:const EdgeInsets.only(left: 20,right: 10,top: 10),
                     child: ListView(
+                      padding: EdgeInsets.zero,
                         shrinkWrap: true,
                         scrollDirection: Axis.vertical,
                         children: [
@@ -280,7 +281,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                     ),),
                                   ),
                                   SizedBox(
-                                    width: screenSize.width*0.29,
+                                    width: screenSize.width*0.25,
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(right: 8.0,left: 15),
@@ -313,7 +314,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                     ),),
                                   ),
                                   SizedBox(
-                                    width: screenSize.width*0.38,
+                                    width: screenSize.width*0.34,
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(right: 8.0,left: 15),
@@ -346,7 +347,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                   ),),
                                 ),
                                 SizedBox(
-                                  width: screenSize.width*0.43,
+                                  width: screenSize.width*0.4,
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.all(0.0),
@@ -386,7 +387,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                         ),),
                                       ),
                                       SizedBox(
-                                        width: screenSize.width*0.26,
+                                        width: screenSize.width*0.22,
                                       ),
                                       Padding(
                                           padding: const EdgeInsets.all(0.0),
@@ -425,7 +426,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                     ),),
                                   ),
                                   SizedBox(
-                                    width: screenSize.width*0.38,
+                                    width: screenSize.width*0.365,
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(right: 8.0,left: 15),
@@ -458,7 +459,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                     ),),
                                   ),
                                   SizedBox(
-                                    width: screenSize.width*0.44,
+                                    width: screenSize.width*0.416,
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(right: 8.0,left: 15),
@@ -491,7 +492,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                     ),),
                                   ),
                                   SizedBox(
-                                    width: screenSize.width*0.35,
+                                    width: screenSize.width*0.32,
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(right: 8.0,left: 12),
@@ -524,7 +525,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                     ),),
                                   ),
                                   SizedBox(
-                                    width: screenSize.width*0.4,
+                                    width: screenSize.width*0.375,
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(right: 8.0,left: 15),
@@ -557,7 +558,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                     ),),
                                   ),
                                   SizedBox(
-                                    width: screenSize.width*0.31,
+                                    width: screenSize.width*0.28,
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(right: 8.0,left: 15),
@@ -590,7 +591,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                     ),),
                                   ),
                                   SizedBox(
-                                    width: screenSize.width*0.17,
+                                    width: screenSize.width*0.135,
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(right: 8.0,left: 15),
@@ -623,7 +624,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                     ),),
                                   ),
                                   SizedBox(
-                                    width: screenSize.width*0.39,
+                                    width: screenSize.width*0.375,
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(right: 8.0,left: 20),
@@ -643,7 +644,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 60,
+      height: 40,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(

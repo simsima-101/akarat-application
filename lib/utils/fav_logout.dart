@@ -22,7 +22,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: DefaultTabController(
           length: 2,
           child:  SingleChildScrollView(
@@ -132,24 +132,22 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                             height: screenSize.height*0.045,
                             padding: const EdgeInsets.only(top: 10,),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(8.0),
+                              color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.5,
-                                    0.5,
-                                  ),
-                                  blurRadius: 1.0,
-                                  spreadRadius: 0.5,
-                                ), //BoxShadow
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: Offset(4, 4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                                 BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                               ],
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text('Searches',textAlign: TextAlign.center,style: TextStyle(
                                 fontWeight: FontWeight.bold,fontSize: 15
@@ -162,24 +160,22 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                             height: screenSize.height*0.045,
                             padding: const EdgeInsets.only(top: 10,),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(8.0),
+                              color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.5,
-                                    0.5,
-                                  ),
-                                  blurRadius: 1.0,
-                                  spreadRadius: 0.5,
-                                ), //BoxShadow
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: Offset(4, 4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                                 BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                               ],
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text('Favorites',textAlign: TextAlign.center,style: TextStyle(
                                 fontWeight: FontWeight.bold,fontSize: 15

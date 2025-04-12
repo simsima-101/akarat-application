@@ -2,6 +2,7 @@ class PropertyTypeModel {
   bool? success;
   String? message;
   List<Data>? data;
+  List<String>? availability;
 
   PropertyTypeModel({this.success, this.message, this.data});
 
@@ -14,6 +15,7 @@ class PropertyTypeModel {
         data!.add(new Data.fromJson(v));
       });
     }
+    availability = json['availability'].cast<String>();
   }
 
   Map<String, dynamic> toJson() {
@@ -23,6 +25,7 @@ class PropertyTypeModel {
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
+    data['availability'] = this.availability;
     return data;
   }
 }

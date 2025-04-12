@@ -51,7 +51,7 @@ class _AdvertisingState extends State<Advertising> {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
@@ -175,33 +175,31 @@ class _AdvertisingState extends State<Advertising> {
                       ),textAlign: TextAlign.left,),
                   ),
                   Container(
-                    height: screenSize.height*0.23,
+                    height: screenSize.height*0.21,
                     width: screenSize.width*0.9,
                     margin: const EdgeInsets.only(left: 20,top: 15,right: 20),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(10.0),
+                      color: Colors.white,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.0,
-                            0.0,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.5,
-                        ), //BoxShadow
+                          color: Colors.grey.withOpacity(0.5),
+                          offset: Offset(4, 4),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
                         BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
+                          color: Colors.white.withOpacity(0.8),
+                          offset: Offset(-4, -4),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
                       ],
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.all(10.0),
+                          padding: const EdgeInsets.all(5.0),
                           child: Text("Hurry!",style: TextStyle(
                               fontWeight: FontWeight.bold,fontSize: 25,color: Colors.red
                           ),),
@@ -227,7 +225,7 @@ class _AdvertisingState extends State<Advertising> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.all(5.0),
+                              padding: const EdgeInsets.all(3.0),
                               child: Text("Subscription for all of   ",style: TextStyle(
                                   fontWeight: FontWeight.bold,fontSize: 20,color: Colors.black
                               ),textAlign: TextAlign.center,),
@@ -241,7 +239,7 @@ class _AdvertisingState extends State<Advertising> {
                           ],
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(10.0),
+                          padding: const EdgeInsets.all(0.0),
                           child: ElevatedButton(onPressed: (){
                             Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
                           },style:

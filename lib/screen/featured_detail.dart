@@ -30,28 +30,34 @@ class _Featured_DetailState extends State<Featured_Detail> {
     fetchProducts(widget.data);
   }
 
-  Future<void> fetchProducts(data) async {
-    // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/featured-properties/$data'));
-    Map<String,dynamic> jsonData=json.decode(response.body);
-    debugPrint("Status Code: ${response.statusCode}");
-    if (response.statusCode == 200) {
-      debugPrint("API Response: ${jsonData.toString()}");
-      debugPrint("API 200: ");
-      Featured_DetailModel parsedModel = Featured_DetailModel.fromJson(jsonData);
-      debugPrint("Parsed ProductModel: ${parsedModel.toString()}");
-      setState(() {
-        debugPrint("API setState: ");
-        String title = jsonData['title'] ?? 'No title';
-        debugPrint("API title: $title");
-        featured_detailModel = parsedModel;
+  Future<void> fetchProducts(String data) async {
+    try {
+      final response = await http
+          .get(Uri.parse('https://akarat.com/api/featured-properties/$data'))
+          .timeout(const Duration(seconds: 10));
 
-      });
+      debugPrint("Status Code: ${response.statusCode}");
 
-      debugPrint("productModels title_after: ${featured_detailModel!.data!.title.toString()}");
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = jsonDecode(response.body);
+        debugPrint("API Response: $jsonData");
 
-    } else {
-      // Handle error if needed
+        final Featured_DetailModel parsedModel = Featured_DetailModel.fromJson(jsonData);
+
+        if (mounted) {
+          setState(() {
+            featured_detailModel = parsedModel;
+          });
+        }
+
+        debugPrint("Parsed Model Title: ${featured_detailModel?.data?.title ?? 'No title'}");
+
+      } else {
+        debugPrint("API Error Status: ${response.statusCode}");
+      }
+
+    } catch (e) {
+      debugPrint("API Exception: $e");
     }
   }
 
@@ -65,7 +71,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
     }
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
@@ -218,6 +224,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       height: screenSize.height*0.4,
                       margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
                       child:  ListView.builder(
+                        padding: const EdgeInsets.all(0),
                           shrinkWrap: true,
                           scrollDirection: Axis.vertical,
                         physics: const ScrollPhysics(),
@@ -287,7 +294,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       ],
                     ),
                   ),
-                  Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 10,bottom: 0),
+                  Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 0,bottom: 0),
                       child:Row(
                         children: [
                           Text(featured_detailModel!.data!.price.toString(),style: TextStyle(
@@ -299,24 +306,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         ],
                       )
                   ),
-                  /* Padding(
-                      padding: const EdgeInsets.only(left: 20,right: 0,top: 5,bottom: 0),
-                      child:Row(
-                        children: [
-                          Text("Est.Mortgage:",style: TextStyle(
-                              fontSize: 14,letterSpacing: 0.5
-                          ),),
-                          Text("  12,750",style: TextStyle(
-                              fontSize: 19,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                          ),),
-                          Text("  AED/month",style: TextStyle(
-                            fontSize: 17,letterSpacing: 0.5,
-                          ),),
-                        ],
-                      )
-                  ),*/
                   Container(
-                      margin: const EdgeInsets.only(left: 20,top: 5,right: 10),
+                      margin: const EdgeInsets.only(left: 20,top: 0,right: 10),
                       height: 40,
                       // color: Colors.grey,
                       child:Row(
@@ -352,9 +343,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       )
                   ),
                   Container(
-                    height: screenSize.height*0.08,
-                    // color: Colors.grey,
-                    padding: const EdgeInsets.only(left: 20,right: 0,top: 1,bottom: 0),
+                    height: screenSize.height*0.07,
+                     width: double.infinity,
+                     //color: Colors.grey,
+                    margin: const EdgeInsets.only(left: 20,right: 10,top: 1,bottom: 0),
                     child:
                     Text(featured_detailModel!.data!.title.toString(),style: TextStyle(
                         fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
@@ -369,6 +361,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         //color: Colors.grey,
                         margin: const EdgeInsets.only(left: 5,top: 5),
                         child:  ListView(
+                          padding: const EdgeInsets.all(0),
                             shrinkWrap: true,
                             scrollDirection: Axis.vertical,
                             children: <Widget>[
@@ -381,40 +374,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
                     ),
                   ),
-                  /* Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      height: screenSize.height*0.05,
-                      width: screenSize.width*0.9,
-                      margin: const EdgeInsets.only(left: 20,right: 20,top: 10),
-                      padding: const EdgeInsets.only(top: 8),
-                      // color: Colors.grey,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(8.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.red,
-                            offset: const Offset(
-                              0.0,
-                              0.0,
-                            ),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
-                      ),
-                      child: Text("Show Full Description",textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
-                        ),),
-                    ),
-                  ),*/
                   Padding(
                       padding: const EdgeInsets.only(left: 20,right: 0,top: 20,bottom: 0),
                       child:Row(
@@ -617,37 +576,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       )
 
                   ),
-                  /*  Container(
-                    height: screenSize.height*0.05,
-                    width: screenSize.width*0.9,
-                    margin: const EdgeInsets.only(left: 20,right: 20,top: 15),
-                    padding: const EdgeInsets.only(top: 8),
-                    // color: Colors.grey,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(8.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.red,
-                          offset: const Offset(
-                            0.0,
-                            0.0,
-                          ),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Text("Show All Amenities(8) ",textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
-                      ),),
-                  ),*/
                   Container(
                     height: 30,
                     width: 200,
@@ -949,11 +877,11 @@ class _Featured_DetailState extends State<Featured_Detail> {
                             Padding(padding: const EdgeInsets.only(top: 5,left: 5),
                               child: Row(
                                 children: [
-                                  Icon(Icons.star,color: Colors.yellowAccent,),
-                                  Icon(Icons.star,color: Colors.yellowAccent,),
-                                  Icon(Icons.star,color: Colors.yellowAccent,),
-                                  Icon(Icons.star,color: Colors.yellowAccent,),
-                                  Icon(Icons.star,color: Colors.yellowAccent,),
+                                  Icon(Icons.star,color: Colors.yellow,),
+                                  Icon(Icons.star,color: Colors.yellow,),
+                                  Icon(Icons.star,color: Colors.yellow,),
+                                  Icon(Icons.star,color: Colors.yellow,),
+                                  Icon(Icons.star,color: Colors.yellow,),
                                 ],
                               ),
                             ),

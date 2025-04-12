@@ -71,7 +71,7 @@ class _Property_DetailState extends State<Property_Detail> {
     }
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[

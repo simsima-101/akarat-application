@@ -6,6 +6,7 @@ plugins {
 }
 
 android {
+//    namespace 'dev.fluttercommunity.plus.androidintent'
     namespace = "com.example.drawerdemo"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion

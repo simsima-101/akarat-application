@@ -81,10 +81,12 @@ class _BlogDemoState extends State<BlogDemo> {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
    return Scaffold(
+
        backgroundColor: Colors.white,
-       bottomNavigationBar: buildMyNavBar(context),
-       body: SingleChildScrollView(
+     bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+     body: SingleChildScrollView(
        child: Column(
        children: <Widget>[
                  Padding(
@@ -192,29 +194,6 @@ class _BlogDemoState extends State<BlogDemo> {
           ),
             ),
        ),
-                 /* Padding(
-           padding: const EdgeInsets.only(top: 10),
-           child: Container(
-             height: 30,
-             width: double.infinity,
-             child: Row(
-               children: [
-              Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
-              child: Image.asset("assets/images/map.png",height: 15,),
-              ),
-                 Padding(padding: const EdgeInsets.only(left: 5,top: 0,right: 0),
-              child: Text("Dubai")
-              ),
-                 Padding(padding: const EdgeInsets.only(left: 220,top: 0,right: 0),
-              child: Image.asset("assets/images/calender.png",height: 20,),
-              ),
-                 Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
-              child: Text("30.01.2025"),
-              ),
-               ],
-             ),
-           ),
-         ),*/
                  ListView.builder(
            scrollDirection: Axis.vertical,
            physics: const ScrollPhysics(),
@@ -278,7 +257,7 @@ class _BlogDemoState extends State<BlogDemo> {
                                                color: Colors.grey
                                            ),),
                                        ),
-                                       Padding(padding: const EdgeInsets.only(left: 60,right: 0,top: 0,bottom: 0),
+                                       Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 0,bottom: 0),
                                            child:  Icon(Icons.circle,color: Colors.red,size: 12,)
                                        ),
 
@@ -305,72 +284,72 @@ class _BlogDemoState extends State<BlogDemo> {
              );
            },
          ),
-
-         ]
-        )
-       ),
-       bottomSheet:  Container(
-       height: 50,
-       width: double.infinity,
-       margin: const EdgeInsets.only(left: 10,right: 10,top: 10,bottom: 10),
-       decoration: BoxDecoration(
-           shape: BoxShape.rectangle,
-           borderRadius: BorderRadiusDirectional.circular(6.0),
-           boxShadow: [
-             BoxShadow(
-               color: Colors.grey,
-               offset: const Offset(
-                 0.5,
-                 0.5,
+                ]
+              )
+            ),
+             bottomSheet:  Container(
+           height: 50,
+           width: double.infinity,
+           margin: const EdgeInsets.only(left: 10,right: 10,top: 10,bottom: 10),
+           decoration: BoxDecoration(
+               shape: BoxShape.rectangle,
+               borderRadius: BorderRadiusDirectional.circular(6.0),
+               boxShadow: [
+                 BoxShadow(
+                   color: Colors.grey,
+                   offset: const Offset(
+                     0.5,
+                     0.5,
+                   ),
+                   blurRadius: 1.0,
+                   spreadRadius: 0.5,
+                 ), //BoxShadow
+                 BoxShadow(
+                   color: Colors.white,
+                   offset: const Offset(0.0, 0.0),
+                   blurRadius: 0.0,
+                   spreadRadius: 0.0,
+                 ), //BoxShadow
+               ]),
+           child: Row(
+             children: [
+               Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
+                   child: Image.asset("assets/images/app_icon.png",height: 25,)
                ),
-               blurRadius: 1.0,
-               spreadRadius: 0.5,
-             ), //BoxShadow
-             BoxShadow(
-               color: Colors.white,
-               offset: const Offset(0.0, 0.0),
-               blurRadius: 0.0,
-               spreadRadius: 0.0,
-             ), //BoxShadow
-           ]),
-       child: Row(
-         children: [
-           Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
-               child: Image.asset("assets/images/app_icon.png",height: 25,)
-           ),
-           Padding(padding: const EdgeInsets.only(left: 5,top: 0,right: 0),
-               child: Image.asset("assets/images/logo-text.png",height: 22,)
-           ),
-           Padding(padding: const EdgeInsets.only(left: 70,top: 0,right: 0),
-             child: SizedBox(
-               height: 30,
-               width: 80,
-               child: ElevatedButton(onPressed: (){},style:
-               ElevatedButton.styleFrom(backgroundColor: Color(0xFFFFF59D),
-                 shape: RoundedRectangleBorder(borderRadius:  BorderRadius.all(Radius.circular(10)),),),
-                   child: Text("Rent",style: TextStyle(color: Colors.black,))
+               Padding(padding: const EdgeInsets.only(left: 5,top: 0,right: 0),
+                   child: Image.asset("assets/images/logo-text.png",height: 22,)
                ),
-             ),
-           ),
-           Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
-             child: SizedBox(
-               height: 30,
-               width: 80,
-               child: ElevatedButton(onPressed: (){},style:
-               ElevatedButton.styleFrom(backgroundColor: Color(0xFFF5F5F5),
-                 shape: RoundedRectangleBorder(borderRadius:  BorderRadius.all(Radius.circular(10)),),),
-                   child: Text("Sale",style: TextStyle(color: Colors.black,))
+               Padding(padding: const EdgeInsets.only(left: 40,top: 0,right: 0),
+                 child: SizedBox(
+                   height: 30,
+                   width: 80,
+                   child: ElevatedButton(onPressed: (){},style:
+                   ElevatedButton.styleFrom(backgroundColor: Color(0xFFFFF59D),
+                     shape: RoundedRectangleBorder(borderRadius:  BorderRadius.all(Radius.circular(10)),),),
+                       child: Text("Rent",style: TextStyle(color: Colors.black,))
+                   ),
+                 ),
                ),
-             ),
-           )
-         ],
-       ),
-     ),
-   );
-  }
+               Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
+                 child: SizedBox(
+                   height: 30,
+                   width: 80,
+                   child: ElevatedButton(onPressed: (){},style:
+                   ElevatedButton.styleFrom(backgroundColor: Color(0xFFF5F5F5),
+                     shape: RoundedRectangleBorder(borderRadius:  BorderRadius.all(Radius.circular(10)),),),
+                       child: Text("Sale",style: TextStyle(color: Colors.black,))
+                   ),
+                 ),
+               )
+             ],
+           ),
+         ),
+         );
+    }
   Container buildMyNavBar(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
     return Container(
-      height: 60,
+      height: 40,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -379,6 +358,7 @@ class _BlogDemoState extends State<BlogDemo> {
         ),
       ),
       child: Row(
+        spacing: screenSize.width*0.7,
        // mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(
@@ -402,7 +382,7 @@ class _BlogDemoState extends State<BlogDemo> {
           ),
 
           Padding(
-            padding: const EdgeInsets.only(left: 290.0),
+            padding: const EdgeInsets.only(left: 0.0),
             child: IconButton(
               alignment: Alignment.bottomRight,
               enableFeedback: false,

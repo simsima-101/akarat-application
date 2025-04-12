@@ -53,7 +53,7 @@ class _TermsConditionState extends State<TermsCondition> {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[

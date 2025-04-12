@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:Akarat/model/propertytypemodel.dart';
+import 'package:Akarat/screen/search.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/amenities.dart';
 import 'package:Akarat/model/filtermodel.dart';
@@ -12,6 +13,7 @@ import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:http/http.dart' as http;
 import 'filter_list.dart';
+import 'locationsearch.dart';
 
 
 class Filter extends StatelessWidget {
@@ -354,20 +356,26 @@ String max_sqrfeet = ' ';
     }
   }
 
-  Future<void> propertyApi(purpose) async {
-    final response = await http.get(Uri.parse(
-        "https://akarat.com/api/property-types/$purpose"));
-    var data = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      PropertyTypeModel feature= PropertyTypeModel.fromJson(data);
+  Future<void> propertyApi(String purpose) async {
+    try {
+      final response = await http
+          .get(Uri.parse("https://akarat.com/api/property-types/$purpose"))
+          .timeout(const Duration(seconds: 10)); // ⏱ Timeout prevents slow hang
 
-      setState(() {
-        propertyTypeModel = feature ;
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final feature = PropertyTypeModel.fromJson(data);
 
-      });
-
-    } else {
-      //return FeaturedModel.fromJson(data);
+        if (mounted) {
+          setState(() {
+            propertyTypeModel = feature;
+          });
+        }
+      } else {
+        print("Property API failed with status: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Property API error: $e");
     }
   }
 
@@ -387,8 +395,7 @@ String max_sqrfeet = ' ';
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
-     // appBar: AppBar(title: Text("")),
-      bottomNavigationBar: buildMyNavBar(context),
+      bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
@@ -397,13 +404,13 @@ String max_sqrfeet = ' ';
               Padding(
                 padding: const EdgeInsets.only(top: 30,left: 0,right: 0),
                 child: Container(
-                    margin: const EdgeInsets.only(left: 20,right: 10),
+                    margin: const EdgeInsets.only(left: 15,right: 10),
                     // color: Colors.grey,
                     width: screenSize.width * 1.0,
                     height: 50,
                     padding: const EdgeInsets.only(top: 5),
                     child: Row(
-                      spacing: 15,
+                    spacing: screenSize.width*0.27,
                       children: [
                         GestureDetector(
                           onTap: (){
@@ -414,7 +421,7 @@ String max_sqrfeet = ' ';
 
 
                         Padding(
-                          padding: const EdgeInsets.only(left: 100.0),
+                          padding: const EdgeInsets.only(left: 0.0),
                           child: Text("Filters",textAlign: TextAlign.center,
                             style: TextStyle(
                                 color: Colors.black,fontSize: 20.0,fontWeight: FontWeight.bold,
@@ -433,7 +440,7 @@ String max_sqrfeet = ' ';
                             );
                           },
                           child: Padding(
-                            padding: const EdgeInsets.only(left: 100.0),
+                            padding: const EdgeInsets.only(left: 0.0),
                             child: Text("Reset",textAlign: TextAlign.right,
                               style: TextStyle(color: Colors.red,fontSize: 16.0,fontWeight: FontWeight.bold,
                                 letterSpacing: 0.5,),),
@@ -445,10 +452,11 @@ String max_sqrfeet = ' ';
               ),
               //properties
               Padding(
-                  padding: const EdgeInsets.only(top: 10,left: 15,right: 10),
+                  padding: const EdgeInsets.only(top: 15,left: 15,right: 10),
                   child: Container(
+
                     //color: Colors.grey,
-                    height: 50,
+                    height: 60,
                     child:  ListView.builder(
                       scrollDirection: Axis.horizontal,
                       physics: const ScrollPhysics(),
@@ -465,25 +473,21 @@ String max_sqrfeet = ' ';
                             padding: const EdgeInsets.only(top: 0,left: 14,right: 14),
                             decoration: BoxDecoration(
                               color: selectedproduct == index ? Colors.blueAccent : Colors.white,
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: Offset(0, 2),
+                                  blurRadius: 4,
+                                  spreadRadius: 0,
+                                ),
                                 BoxShadow(
-
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                               ],
+                              borderRadius: BorderRadius.circular(8),
                             ),
 
                             child: GestureDetector(
@@ -491,7 +495,7 @@ String max_sqrfeet = ' ';
                                 child: Text(_product[index],style: TextStyle(
                                   //color: Colors.black,
                                   color: selectedproduct == index ? Colors.white : Colors.black,
-                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 16),textAlign: TextAlign.center,),
                               ),
                               onTap: (){
                                 setState(() {
@@ -511,55 +515,46 @@ String max_sqrfeet = ' ';
               ),
               //Searchbar
               Padding(
-                padding: const EdgeInsets.only(top: 20,left: 15,right: 10),
-                child: Container(
-                  width: screenSize.width*0.9,
-                  height: screenSize.height*0.07,
-                  padding: const EdgeInsets.only(top: 13),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(15.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.red,
-                        offset: const Offset(
-                          0.3,
-                          0.3,
+                padding: const EdgeInsets.only(top: 20, left: 20, right: 15),
+                child: GestureDetector(
+                  onTap: (){
+                   // Navigator.push(context, MaterialPageRoute(builder: (context)=> SearchScreen()));
+
+                  },
+                  child: Container(
+                    width: 400,
+                    height: 70,
+                    padding: const EdgeInsets.only(top: 8,left: 5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red,
+                          offset: Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.3,
                         ),
-                        blurRadius: 0.3,
-                        spreadRadius: 0.3,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ],
-                  ),
-                  // Use a Material design search bar
-                  child: TextField(
-                    textAlign: TextAlign.left,
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Search for a locality,area or city',
-                      hintStyle: TextStyle(color: Colors.grey,fontSize: 15,
-                          letterSpacing: 0.5),
-
-                      // Add a clear button to the search bar
-                      suffixIcon: IconButton(
-                        alignment: Alignment.topLeft,
-                        icon: Icon(Icons.mic,color: Colors.red,),
-                        onPressed: () => _searchController.clear(),
-                      ),
-
-                      // Add a search icon or button to the search bar
-                      prefixIcon: IconButton(
-                        alignment: Alignment.topLeft,
-                        icon: Icon(Icons.search,color: Colors.red,),
-                        onPressed: () {
-                          // Perform the search here
-                        },
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: Offset(0.0, 0.0),
+                          blurRadius: 0.5,
+                          spreadRadius: 0.0,
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Icon(Icons.search, color: Colors.red),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Text("Search for a locality, area or city",
+                              style: TextStyle(color: Colors.grey,fontSize: 14),),
+                          )
+                        ],
                       ),
                     ),
                   ),
@@ -568,20 +563,20 @@ String max_sqrfeet = ' ';
               //property type
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 25.0,left: 20,bottom: 15),
+                  Padding(padding: const EdgeInsets.only(top: 25.0,left: 20,bottom: 0),
                       // child:  Text(purpose,
                       child:  Text("Property Type",
                         style: TextStyle(
-                            color: Colors.black,fontSize: 18.0,
-                            fontWeight: FontWeight.w500,
+                            color: Colors.black,fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
                             letterSpacing: 0.5),
                         textAlign: TextAlign.left,)
                   ),
                 ],
               ),
               Container(
-                margin: const EdgeInsets.only(left: 15,right: 5),
-                height: screenSize.height*0.11,
+                margin: const EdgeInsets.only(left: 15,right: 5,top: 5),
+                height: screenSize.height*0.12,
              //  width: screenSize.width*0.5,
                // color: Colors.grey,
                 child:  ListView.builder(
@@ -594,27 +589,23 @@ String max_sqrfeet = ' ';
                         margin: const EdgeInsets.only(left: 8,right: 8,top: 5,bottom: 5),
                         padding: const EdgeInsets.only(top: 5,left: 15,right: 15),
                         decoration: BoxDecoration(
-                          color: selectedtype == index ? Colors.blueAccent : Colors.white,
-                         // color: selectedIndexes.contains(index) ? Colors.grey : Colors.white,
-                          borderRadius: BorderRadiusDirectional.circular(6.0),
+                          color: selectedtype == index ? Color(0xFFEEEEEE): Colors.white,
+                          //color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey,
-                              offset: const Offset(
-                                0.3,
-                                0.3,
-                              ),
-                              blurRadius: 0.3,
-                              spreadRadius: 0.3,
-                            ), //BoxShadow
+                              color: Colors.grey.withOpacity(0.5),
+                              offset: Offset(0, 2),
+                              blurRadius: 4,
+                              spreadRadius: 0,
+                            ),
                             BoxShadow(
-
-                              color: Colors.white,
-                              offset: const Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ), //BoxShadow
+                              color: Colors.white.withOpacity(0.8),
+                              offset: Offset(-4, -4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
                           ],
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: GestureDetector(
                           child:   Column(
@@ -628,8 +619,8 @@ String max_sqrfeet = ' ';
                                 padding: const EdgeInsets.all(5.0),
                                 child: Text(propertyTypeModel!.data![index].name.toString(),
                                   style: TextStyle(
-                                    color: selectedtype == index ? Colors.white : Colors.black,
-                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),
+                                    color: selectedtype == index ? Colors.black : Colors.black,
+                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 16),
                                   textAlign: TextAlign.center,),
                               ),
                             ],
@@ -650,100 +641,25 @@ String max_sqrfeet = ' ';
               //text
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 25.0,left: 20,bottom: 15),
-                    // child:  Text(property_type,
-                    child:  Text("Residential Categories",
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18.0,fontWeight: FontWeight.w500,
-                          letterSpacing: 0.5),
-                      textAlign: TextAlign.left,),
-                  ),
-                ],
-              ),
-              //category
-              Padding(
-                  padding: const EdgeInsets.only(top: 0,left: 15,right: 3),
-                  child: Container(
-                    //color: Colors.grey,
-                    height: 50,
-                    child:  ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      physics: const ScrollPhysics(),
-                      itemCount: _category.length,
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        // Colors.grey;
-                        return Container(
-                          // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                            margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                            // width: screenSize.width * 0.25,
-                            // height: 20,
-                            padding: const EdgeInsets.only(top: 0,left: 8,right: 8),
-                            decoration: BoxDecoration(
-                              color: selectedcategory == index ? Colors.blueAccent : Colors.white,
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
-                                BoxShadow(
-
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],
-                            ),
-                            child: GestureDetector(
-                              child:   Center(
-                                child: Text(_category[index],
-                                  style: TextStyle(
-                                    color: selectedcategory == index ? Colors.white : Colors.black,
-                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
-                              ),
-                              onTap: (){
-                                setState(() {
-                                 // if(isSelected=true) {
-                                  selectedcategory = index;
-                                    category = _category[index];
-                                 // }
-                                });
-                              },
-                            )
-                        );
-                      },
-                    ),
-                  )
-              ),
-              Row(
-                children: [
-                  Padding(padding: const EdgeInsets.only(top: 25.0,left: 20,bottom: 15),
+                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 15),
                     child:  Text("Price range",
                       style: TextStyle(
-                          color: Colors.black,fontSize: 18.0,
+                          color: Colors.black,fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
-                          fontWeight: FontWeight.w500),
+                      ),
                       textAlign: TextAlign.left,),
                   ),
                 ],
               ),
               Padding(
-                  padding: const EdgeInsets.only(top: 10,left: 20,right: 10),
+                  padding: const EdgeInsets.only(top: 0,left: 20,right: 10),
                   child: Row(
-                    // mainAxisAlignment: MainAxisAlignment.center,
-                    // crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: 15,
                       children: [
                         Container(
-                            width: 135,
-                            height: 35,
+                            width: screenSize.width*0.38,
+                            height: 40,
                             padding: const EdgeInsets.only(top: 8,left: 8),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadiusDirectional.circular(6.0),
@@ -766,24 +682,20 @@ String max_sqrfeet = ' ';
                               ],
                             ),
                             child: Text(_values.start.toStringAsFixed(0),style: TextStyle(
-                                fontWeight: FontWeight.bold ))
+                                fontWeight: FontWeight.bold,fontSize: 18 ))
 
                         ),
-                        Container(
-                          width: 30,
-                        ),
+
                         Padding(padding: const EdgeInsets.only(top: 5),
                           child:  Text("to",
                             style: TextStyle(
                                 color: Colors.black,fontSize: 15.0),
                             textAlign: TextAlign.left,),
                         ),
+
                         Container(
-                          width: 35,
-                        ),
-                        Container(
-                            width: 135,
-                            height: 35,
+                            width: screenSize.width*0.38,
+                            height: 40,
                             padding: const EdgeInsets.only(top: 8,left: 8),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadiusDirectional.circular(6.0),
@@ -806,20 +718,21 @@ String max_sqrfeet = ' ';
                               ],
                             ),
                             child: Text(_values.end.toStringAsFixed(0),style: TextStyle(
-                                fontWeight: FontWeight.bold ))
+                                fontWeight: FontWeight.bold ,fontSize: 18))
                         ),
                       ]
                   )
               ),
               //rangeslider
               Padding(
-                padding: const EdgeInsets.only(top: 25.0,left: 1,bottom: 0),
+                padding: const EdgeInsets.only(top: 15.0,left: 0,bottom: 0),
                 child: SfRangeSelectorTheme(
                   data: SfRangeSelectorThemeData(
                     tooltipBackgroundColor: Colors.black, // Change tooltip background color
                     tooltipTextStyle: TextStyle(
                       color: Colors.white, // Change tooltip text color
                       fontWeight: FontWeight.bold,
+
                     ),
                   ),
                   child: SfRangeSelector(
@@ -883,23 +796,24 @@ String max_sqrfeet = ' ';
               ),
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 15.0,left: 20,bottom: 15),
+                  Padding(padding: const EdgeInsets.only(top: 15.0,left: 20,bottom: 0),
                     // child:  Text(_values.start.toStringAsFixed(2),
                     child:  Text("Bedrooms",
                       style: TextStyle(
-                          color: Colors.black,fontSize: 18.0,
-                          letterSpacing: 0.5,fontWeight: FontWeight.w500),
+                          color: Colors.black,fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,),
                       textAlign: TextAlign.left,),
                   ),
                 ],
               ),
               //studio
               Padding(
-                  padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
+                  padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
                   child: Container(
                     //color: Colors.grey,
                     // width: 60,
-                    height: 50,
+                    height: 60,
                     child:  ListView.builder(
                       scrollDirection: Axis.horizontal,
                       physics: const ScrollPhysics(),
@@ -915,32 +829,30 @@ String max_sqrfeet = ' ';
                             padding: const EdgeInsets.only(top: 0,left: 15,right: 15),
                             decoration: BoxDecoration(
                               color: selectedbedroom == index ? Colors.blueAccent : Colors.white,
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                             // color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: Offset(0, 2),
+                                  blurRadius: 4,
+                                  spreadRadius: 0,
+                                ),
                                 BoxShadow(
-
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                               ],
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: GestureDetector(
                               child:   Center(
                                 child: Text(_bedroom[index],
                                   style: TextStyle(
                                     color: selectedbedroom == index ? Colors.white : Colors.black,
-                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,
+                                  fontSize: 18),textAlign: TextAlign.center,),
                               ),
                               onTap: (){
                                 setState(() {
@@ -958,23 +870,24 @@ String max_sqrfeet = ' ';
               ),
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 15),
+                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 0),
                     // child:  Text(bedroom,
                     child:  Text("Bathrooms",
                       style: TextStyle(
-                          color: Colors.black,fontSize: 18.0,fontWeight: FontWeight.w500,
+                          color: Colors.black,fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
                           letterSpacing: 0.5),
                       textAlign: TextAlign.left,),
                   ),
                 ],
               ),
               Padding(
-                  padding: const EdgeInsets.only(top: 0,left: 17,right: 10),
+                  padding: const EdgeInsets.only(top: 5,left: 17,right: 10),
                   child: Container(
                     //color: Colors.grey,
                     // width: 60,
                     alignment: Alignment.topLeft,
-                    height: 50,
+                    height: 60,
                     child:  ListView.builder(
                       scrollDirection: Axis.horizontal,
                       physics: const ScrollPhysics(),
@@ -990,32 +903,30 @@ String max_sqrfeet = ' ';
                             padding: const EdgeInsets.only(top: 0,left: 15,right: 15),
                             decoration: BoxDecoration(
                               color: selectedbathroom == index ? Colors.blueAccent : Colors.white,
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                             // color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: Offset(4, 4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                                 BoxShadow(
-
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                               ],
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: GestureDetector(
                               child:   Center(
                                 child: Text(_bathroom[index],
                                   style: TextStyle(
                                     color: selectedbathroom == index ? Colors.white : Colors.black,
-                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                                  letterSpacing: 0.5,fontSize: 18,
+                                    fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
                               ),
                               onTap: (){
                                 setState(() {
@@ -1034,12 +945,13 @@ String max_sqrfeet = ' ';
               //area
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 15),
+                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 0),
                     child:  Text("Area/Size",
                       style: TextStyle(
-                          color: Colors.black,fontSize: 18.0,
+                          color: Colors.black,fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
-                          fontWeight: FontWeight.w500),
+                         ),
                       textAlign: TextAlign.left,),
                   ),
                 ],
@@ -1047,12 +959,11 @@ String max_sqrfeet = ' ';
               Padding(
                   padding: const EdgeInsets.only(top: 5,left: 20,right: 10),
                   child: Row(
-                    // mainAxisAlignment: MainAxisAlignment.center,
-                    // crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: 15,
                       children: [
                         Container(
-                            width: 135,
-                            height: 35,
+                            width: screenSize.width*0.38,
+                            height: 40,
                             padding: const EdgeInsets.only(top: 8,left: 8),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadiusDirectional.circular(6.0),
@@ -1075,24 +986,20 @@ String max_sqrfeet = ' ';
                               ],
                             ),
                             child: Text(_valuesArea.start.toStringAsFixed(0),style: TextStyle(
-                              fontWeight: FontWeight.bold
+                              fontWeight: FontWeight.bold,fontSize: 18
                             ),)
                         ),
-                        Container(
-                          width: 35,
-                        ),
+
                         Padding(padding: const EdgeInsets.only(top: 5),
                           child:  Text("to",
                             style: TextStyle(
                                 color: Colors.black,fontSize: 15.0),
                             textAlign: TextAlign.left,),
                         ),
+
                         Container(
-                          width: 35,
-                        ),
-                        Container(
-                            width: 135,
-                            height: 35,
+                            width: screenSize.width*0.38,
+                            height: 40,
                             padding: const EdgeInsets.only(top: 8,left: 8),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadiusDirectional.circular(6.0),
@@ -1115,14 +1022,14 @@ String max_sqrfeet = ' ';
                               ],
                             ),
                             child: Text(_valuesArea.end.toStringAsFixed(0),style: TextStyle(
-                                fontWeight: FontWeight.bold ))
+                                fontWeight: FontWeight.bold ,fontSize: 18))
                         ),
                       ]
                   )
               ),
               //rangeslider
               Padding(
-                padding: const EdgeInsets.only(top: 25.0,left: 1,bottom: 0),
+                padding: const EdgeInsets.only(top: 10.0,left: 0,bottom: 0),
                 child: SfRangeSelectorTheme(
                   data: SfRangeSelectorThemeData(
                     tooltipBackgroundColor: Colors.black, // Change tooltip background color
@@ -1190,21 +1097,22 @@ String max_sqrfeet = ' ';
               //furnished
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 15),
+                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 0),
                     child:  Text("Furnished Type",
                       style: TextStyle(
-                          color: Colors.black,fontSize: 18.0,
+                          color: Colors.black,fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
-                          fontWeight: FontWeight.w500),
+                          ),
                       textAlign: TextAlign.left,),
                   ),
                 ],
               ),
               Padding(
-                  padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
+                  padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
                   child: Container(
                     alignment: Alignment.topLeft,
-                    height: 50,
+                    height: 60,
                     child:  ListView.builder(
                       scrollDirection: Axis.horizontal,
                       physics: const ScrollPhysics(),
@@ -1217,21 +1125,22 @@ String max_sqrfeet = ' ';
                           padding: const EdgeInsets.only(top: 0, left: 15, right: 15),
                           decoration: BoxDecoration(
                             color: selectedIndex == index ? Colors.blueAccent : Colors.white, // Change color if selected
-                            borderRadius: BorderRadius.circular(6.0),
+                           // color: Colors.white,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.grey,
-                                offset: const Offset(0.3, 0.3),
-                                blurRadius: 0.3,
-                                spreadRadius: 0.3,
+                                color: Colors.grey.withOpacity(0.5),
+                                offset: Offset(4, 4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
                               ),
                               BoxShadow(
-                                color: Colors.white,
-                                offset: const Offset(0.0, 0.0),
-                                blurRadius: 0.0,
-                                spreadRadius: 0.0,
+                                color: Colors.white.withOpacity(0.8),
+                                offset: Offset(-4, -4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
                               ),
                             ],
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: GestureDetector(
                             onTap: () {
@@ -1245,7 +1154,7 @@ String max_sqrfeet = ' ';
                                 _ftype[index],
                                 style: TextStyle(
                                   color: selectedIndex == index ? Colors.white : Colors.black,
-                                  letterSpacing: 0.5,
+                                  letterSpacing: 0.5,fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 textAlign: TextAlign.center,
@@ -1260,23 +1169,24 @@ String max_sqrfeet = ' ';
               //Amenities
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 15),
+                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 0),
                     child:  Text("Amenities",
                       style: TextStyle(
-                          color: Colors.black,fontSize: 18.0,
+                          color: Colors.black,fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
-                          fontWeight: FontWeight.w500),
+                          ),
                       textAlign: TextAlign.left,),
                   ),
                 ],
               ),
               Padding(
-                  padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
+                  padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
                   child: Container(
                     //color: Colors.grey,
                     // width: 60,
                     alignment: Alignment.topLeft,
-                    height: 50,
+                    height: 60,
                     child:  ListView.builder(
                       scrollDirection: Axis.horizontal,
                       physics: const ScrollPhysics(),
@@ -1289,25 +1199,22 @@ String max_sqrfeet = ' ';
                             decoration: BoxDecoration(
                               color: selectedIndexes.contains(index) ? Colors.blueAccent : Colors.white,
                               // color: selectedamenities == index ? Colors.grey : Colors.white,
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                             // color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: Offset(0, 2),
+                                  blurRadius: 4,
+                                  spreadRadius: 0,
+                                ),
                                 BoxShadow(
-
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                               ],
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: GestureDetector(
                               child:   Row(
@@ -1315,14 +1222,15 @@ String max_sqrfeet = ' ';
                                 children: [
                                    Padding(
                                      padding: const EdgeInsets.all(2.0),
-                                     child: CachedNetworkImage(imageUrl: amenities[index].icon.toString(),height: 15,),
+                                     child: CachedNetworkImage(imageUrl: amenities[index].icon.toString(),height: 17,),
                                    ),
                                   Padding(
                                     padding: const EdgeInsets.all(1.0),
                                     child: Text(amenities[index].title.toString(),
                                       style: TextStyle(
                                         color: selectedIndexes.contains(index) ? Colors.white : Colors.black,
-                                      letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                                      letterSpacing: 0.5,fontSize: 16,
+                                        fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
                                   ),
                                 ],
                               ),
@@ -1352,80 +1260,21 @@ String max_sqrfeet = ' ';
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(
-                        top: 20.0,left: 20,bottom: 15),
-                    // child:  Text(selectedIndexes.toString(),style: TextStyle(
-                    child:  Text("Real Estate Agencies",style: TextStyle(
-                        color: Colors.black,letterSpacing: 0.5,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 18
-
-                    ),textAlign: TextAlign.left,),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
-                child:   Container(
-                  width: screenSize.width*0.9,
-                  height: 50,
-                  padding: const EdgeInsets.only(top: 0,left: 10,bottom: 5),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(6.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.3,
-                          0.3,
-                        ),
-                        blurRadius: 0.3,
-                        spreadRadius: 0.3,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ],
-                  ),
-                  child: TextField(
-                    textAlignVertical: TextAlignVertical.center,
-                    controller: agenciesController,
-                    // obscureText: true,
-                    decoration: InputDecoration(
-                      /* border: OutlineInputBorder(
-                       ),*/
-                        border: InputBorder.none,
-                        hintText: '   eg.dubizzle properties',hintStyle: TextStyle(
-                        color: Colors.grey,fontSize: 15,
-                        letterSpacing: 0.5)
-                    ),
-                    textAlign: TextAlign.left,
-
-                  ),
-                ),
-              ),
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        top: 20.0,left: 20,bottom: 15),
+                        top: 20.0,left: 20,bottom: 0),
                     child:  Text("Rent is paid",style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,letterSpacing: 0.5
+                        color: Colors.black,fontSize: 16.0,
+                        fontWeight: FontWeight.bold,letterSpacing: 0.5
                     ),textAlign: TextAlign.left,),
                   ),
                 ],
               ), 
               Padding(
-                  padding: const EdgeInsets.only(top: 0,left: 15,right: 10),
+                  padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
                   child: Container(
                     //color: Colors.grey,
                     // width: 60,
                     alignment: Alignment.topLeft,
-                    height: 50,
+                    height: 60,
                     child:  ListView.builder(
                       scrollDirection: Axis.horizontal,
                       physics: const ScrollPhysics(),
@@ -1441,32 +1290,30 @@ String max_sqrfeet = ' ';
                             padding: const EdgeInsets.only(top: 0,left: 15,right: 15),
                             decoration: BoxDecoration(
                               color: selectedrent == index ? Colors.blueAccent : Colors.white,
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                             // color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: Offset(0, 2),
+                                  blurRadius: 4,
+                                  spreadRadius: 0,
+                                ),
                                 BoxShadow(
-
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                               ],
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: GestureDetector(
                               child:   Center(
                                 child: Text(_rent[index],
                                   style: TextStyle(
                                     color: selectedrent == index ? Colors.white : Colors.black,
-                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                                  letterSpacing: 0.5,fontSize: 16,
+                                    fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
                               ),
                               onTap: (){
                                 setState(() {

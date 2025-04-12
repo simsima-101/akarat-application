@@ -34,6 +34,8 @@ class FindAgentDemo extends StatefulWidget {
 class _FindAgentDemoState extends State<FindAgentDemo> {
   List<AgentsModel> agentsmodel = [];
   List<AgencyModel> agentcymodel = [];
+  final TextEditingController _agentSearchController = TextEditingController();
+  final TextEditingController _agencySearchController = TextEditingController();
   int pageIndex = 0;
 
   final pages = [
@@ -94,594 +96,216 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
-    return Scaffold(
-      bottomNavigationBar: buildMyNavBar(context),
-      backgroundColor: Colors.white,
-      body:DefaultTabController(
-        length: 2,
-        child: SingleChildScrollView(
-            child: Column(
-                children: <Widget>[
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: (){
-                          setState(() {
-                            if(token == ''){
-                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                            }
-                            else{
-                              Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                            }
-                          });
-                        },
-                        child: Container(
-                          alignment: Alignment.topCenter,
-                          margin: const EdgeInsets.only(top: 40,left:20),
-                          height: 30,
-                          width: 30,
-                          padding: const EdgeInsets.only(top: 2),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadiusDirectional.circular(15.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey,
-                                offset: const Offset(
-                                  0.5,
-                                  0.5,
-                                ),
-                                blurRadius: 1.0,
-                                spreadRadius: 0.5,
-                              ), //BoxShadow
-                              BoxShadow(
-                                color: Colors.white,
-                                offset: const Offset(0.0, 0.0),
-                                blurRadius: 0.0,
-                                spreadRadius: 0.0,
-                              ), //BoxShadow
-                            ],
-                          ),
-                          child: Icon(Icons.arrow_back,color: Colors.red,
-                          ),
-                        ),
-                      ),
-                      //logo 1
-                      Container(
-                        alignment: Alignment.topCenter,
-                        margin: const EdgeInsets.only(top: 40,left:25),
-                        height: 40,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: Colors.white, // Light grey background
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 20, left: 16, right: 16),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          if (token == '') {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                          } else {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                          }
+                        });
+                      },
+                      child: Container(
+                        height: 30,
                         width: 30,
                         decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage('assets/images/app_icon.png'),
-                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: Offset(0.5, 0.5),
+                              blurRadius: 1.0,
+                              spreadRadius: 0.5,
+                            ),
+                          ],
+                          color: Colors.white,
                         ),
+                        child: Icon(Icons.arrow_back, color: Colors.red),
                       ),
-
-                      //logo2
-                      Container(
-                        alignment: Alignment.topCenter,
-                        margin: const EdgeInsets.only(top: 40,left: 10),
-                        height: 30,
-                        width: 125,
-                        decoration: BoxDecoration(
-
-                        ),
-                        // child: Text(agentsmodel.em,style: TextStyle(
-                        child: Text("Find My Agent",style: TextStyle(
-                            color: Colors.black,letterSpacing: 0.5,fontSize: 18,fontWeight: FontWeight.bold
-                        ),),
-                      ),
-                    ],
-                  ),
-                  Padding(padding: const EdgeInsets.only(top: 20,left: 5,right: 190),
-                    child: Container(
-                      height: 40,
-                      // width: 200,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(10.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.5,
-                              0.5,
-                            ),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
-                      ),
-                      child: TabBar(
-                        padding: const EdgeInsets.only(top: 1,left: 1,right: 1),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 0,),
-                        splashFactory: NoSplash.splashFactory,
-                        indicatorWeight: 0.1,
-                        labelColor: Colors.lightBlueAccent,
-                        dividerColor: Colors.transparent,
-                        indicatorColor: Colors.transparent,
-                        tabAlignment: TabAlignment.center,
-                        // onTap: (int index) => setState(() => selectedColor),
-                        tabs: [
-
-                          Container(
-                            margin: const EdgeInsets.only(left: 3),
-                            width: screenSize.width*0.2,
-                            height: 30,
-                            padding: const EdgeInsets.only(top: 2,),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(10.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.0,
-                                    0.0,
+                    ),
+                    SizedBox(width: 20),
+                    Image.asset('assets/images/app_icon.png', height: 40),
+                    SizedBox(width: 10),
+                    Text("Find My Agent", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
+                  ],
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(top: 20, left: 15, right: 15),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      offset: Offset(4, 4),
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                    ),
+                    BoxShadow(
+                      color: Colors.white.withOpacity(0.8),
+                      offset: Offset(-4, -4),
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: TabBar(
+                  labelColor: Colors.lightBlueAccent,
+                  unselectedLabelColor: Colors.grey,
+                  indicatorColor: Colors.transparent,
+                  tabs: [
+                    Tab(child: Text('Agents', style: TextStyle(fontSize: 16))),
+                    Tab(child: Text('Agency', style: TextStyle(fontSize: 16))),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          buildSearchBar(_agentSearchController, 'Search for a locality, area or city', Icons.search),
+                          SizedBox(height: 10),
+                          Padding(
+                            padding:  EdgeInsets.only(left: 5.0, right: 5.0, top: 8, bottom: 8),
+                            child: Container(
+                              width: screenSize.width*0.28,
+                              height: 35,
+                              padding:  EdgeInsets.only(top: 2,left: 5,right: 1),
+                              decoration: BoxDecoration(
+                                color: Colors.blueAccent,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.5),
+                                    offset: Offset(0, 2),
+                                    blurRadius: 4,
+                                    spreadRadius: 0,
                                   ),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],
-                            ),
-                            child: Text('Agents',style:TextStyle(fontSize: 18),
-                            textAlign: TextAlign.center,
-
+                                  BoxShadow(
+                                    color: Colors.blueAccent.withOpacity(0.8),
+                                    offset: Offset(0, 2),
+                                    blurRadius: 4,
+                                    spreadRadius: 0,
+                                  ),
+                                ],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  Padding(padding: const EdgeInsets.only(left: 1),
+                                      child:   Icon(Icons.check_circle,color: Colors.white,size: 17,)
+                                  ),
+                                  Padding(padding: const EdgeInsets.only(left: 1,right: 3),
+                                      child:   Text("Prime Agent",style: TextStyle(
+                                          letterSpacing: 0.5,color: Colors.white,fontSize: 12
+                                      ),textAlign: TextAlign.center,)
+                                  )
+                                ],
+                              ),
                             ),
                           ),
-                          Container(
-                            margin: const EdgeInsets.only(left: 10),
-                            width: screenSize.width*0.22,
-                            height: 30,
-                            padding: const EdgeInsets.only(top: 2,right: 13),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(10.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.0,
-                                    0.0,
-                                  ),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],
-                            ),
-                            child: Text('Agency',style:TextStyle(fontSize: 18),
-                            textAlign: TextAlign.center,
-                            ),
+                          SizedBox(height: 10),
+                          Text("Explore agents with a proven track record of high response rates and authentic listings."),
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: agentsmodel.length,
+                            itemBuilder: (context, index) {
+                              return Agentcardscreen(agentsModel: agentsmodel[index]);
+                            },
                           ),
                         ],
                       ),
-
                     ),
-                  ),
-                  SizedBox(
-                    // height: 1800,
-                    height: screenSize.height*2,
-                    child: TabBarView(
-                      children: [
-                        Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 15,left: 11,right: 20),
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 1),
-                                height: 45,
-                                child: ListView(
-                                  scrollDirection: Axis.horizontal,
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 10,left: 10,right: 15),
-                                      child:  Container(
-                                        width: 70,
-                                        height: 10,
-                                        padding: const EdgeInsets.only(top: 6,),
-                                        decoration: BoxDecoration(
-                                            borderRadius: BorderRadiusDirectional.circular(6.0),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey,
-                                                offset: const Offset(
-                                                  0.5,
-                                                  0.5,
-                                                ),
-                                                blurRadius: 1.0,
-                                                spreadRadius: 0.5,
-                                              ), //BoxShadow
-                                              BoxShadow(
-                                                color: Colors.white,
-                                                offset: const Offset(0.0, 0.0),
-                                                blurRadius: 0.0,
-                                                spreadRadius: 0.0,
-                                              ), //BoxShadow
-                                            ]),
-                                        child:
-                                        Text("Buy",textAlign: TextAlign.center,style:
-                                        TextStyle(letterSpacing: 0.5)),
-
-                                      ),
-                                    ),
-                                    //buy
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 10),
-                                      child:  Container(
-                                        width: 90,
-                                        height: 10,
-                                        padding: const EdgeInsets.only(top: 6,),
-                                        decoration: BoxDecoration(
-                                            borderRadius: BorderRadiusDirectional.circular(6.0),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey,
-                                                offset: const Offset(
-                                                  0.5,
-                                                  0.5,
-                                                ),
-                                                blurRadius: 1.0,
-                                                spreadRadius: 0.5,
-                                              ), //BoxShadow
-                                              BoxShadow(
-                                                color: Colors.white,
-                                                offset: const Offset(0.0, 0.0),
-                                                blurRadius: 0.0,
-                                                spreadRadius: 0.0,
-                                              ), //BoxShadow
-                                            ]),
-                                        child:  Text(" Rent",textAlign: TextAlign.center,
-                                            style:
-                                            TextStyle(letterSpacing: 0.5)),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 20,left: 20,right: 20),
-                              child: Container(
-                                width: screenSize.width*1.0,
-                                height: screenSize.height*0.07,
-                                padding: const EdgeInsets.only(top: 12),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(15.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.red,
-                                      offset: const Offset(
-                                        0.5,
-                                        0.5,
-                                      ),
-                                      blurRadius: 1.0,
-                                      spreadRadius: 0.5,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],),
-                                // Use a Material design search bar
-                                child: TextField(
-                                  controller: _searchController,
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: 'Search for a locality,area or city',
-                                    hintStyle: TextStyle(color: Colors.grey,fontSize: 15,
-                                        letterSpacing: 0.5),
-
-                                    // Add a clear button to the search bar
-                                    suffixIcon: IconButton(
-                                      icon: Icon(Icons.mic),
-                                      onPressed: () => _searchController.clear(),
-                                    ),
-
-                                    // Add a search icon or button to the search bar
-                                    prefixIcon: IconButton(
-                                      icon: Icon(Icons.search,color: Colors.red,),
-                                      onPressed: () {
-                                        // Perform the search here
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 20, right: 0.0, top: 20, bottom: 0),
-                                  child: Container(
-                                    width: 130,
-                                    height: 35,
-                                    padding: const EdgeInsets.only(top: 2,left: 5,right: 0),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadiusDirectional.circular(8.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          offset: const Offset(
-                                            1.5,
-                                            1.5,
-                                          ),
-                                          blurRadius: 0.5,
-                                          spreadRadius: 0.5,
-                                        ), //BoxShadow
-                                        BoxShadow(
-                                          color: Colors.blue,
-                                          offset: const Offset(0.5, 0.5),
-                                          blurRadius: 0.5,
-                                          spreadRadius: 0.5,
-                                        ), //BoxShadow
-                                      ],
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Padding(padding: const EdgeInsets.only(left: 5),
-                                            child:   Icon(Icons.check_circle,color: Colors.white,)
-                                        ),
-                                        Padding(padding: const EdgeInsets.only(left: 5),
-                                            child:   Text("Prime Agent",style: TextStyle(
-                                                letterSpacing: 0.5,color: Colors.white
-                                            ),textAlign: TextAlign.center,)
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Text("")
-                              ],
-                            ),
-                            Padding(padding: const EdgeInsets.only(left: 20,top: 20),
-                              child: Text("Explore agents with a proven track record of high response rates "
-                                  "and Authentic listings.",style: TextStyle(
-                                letterSpacing: 0.5,
-                              ),),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10,left: 10,right: 10),
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 1),
-                                height: 45,
-                                child: ListView(
-                                  scrollDirection: Axis.horizontal,
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 10,left: 10),
-                                      child:  Container(
-                                        width: 70,
-                                        height: 10,
-                                        padding: const EdgeInsets.only(top: 8,),
-                                        decoration: BoxDecoration(
-                                            borderRadius: BorderRadiusDirectional.circular(6.0),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey,
-                                                offset: const Offset(
-                                                  0.5,
-                                                  0.5,
-                                                ),
-                                                blurRadius: 1.0,
-                                                spreadRadius: 0.5,
-                                              ), //BoxShadow
-                                              BoxShadow(
-                                                color: Colors.white,
-                                                offset: const Offset(0.0, 0.0),
-                                                blurRadius: 0.0,
-                                                spreadRadius: 0.0,
-                                              ), //BoxShadow
-                                            ]),
-                                        child:
-                                        Text("Dubai",textAlign: TextAlign.center,style:
-                                        TextStyle(letterSpacing: 0.5)),
-
-                                      ),
-                                    ),
-                                    //all residential
-                                    Container(
-                                      width: 10,
-                                    ),
-                                    //buy
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 10),
-                                      child:  Container(
-                                        width: 90,
-                                        height: 10,
-                                        padding: const EdgeInsets.only(top: 8,),
-                                        decoration: BoxDecoration(
-                                            borderRadius: BorderRadiusDirectional.circular(6.0),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey,
-                                                offset: const Offset(
-                                                  0.5,
-                                                  0.5,
-                                                ),
-                                                blurRadius: 1.0,
-                                                spreadRadius: 0.5,
-                                              ), //BoxShadow
-                                              BoxShadow(
-                                                color: Colors.white,
-                                                offset: const Offset(0.0, 0.0),
-                                                blurRadius: 0.0,
-                                                spreadRadius: 0.0,
-                                              ), //BoxShadow
-                                            ]),
-                                        child:  Text(" Abu Dhabi",textAlign: TextAlign.center,
-                                            style:
-                                            TextStyle(letterSpacing: 0.5)),
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 10,
-                                    ),
-                                    //buy
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 10),
-                                      child:  Container(
-                                        width: 90,
-                                        height: 10,
-                                        padding: const EdgeInsets.only(top: 8,),
-                                        decoration: BoxDecoration(
-                                            borderRadius: BorderRadiusDirectional.circular(6.0),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey,
-                                                offset: const Offset(
-                                                  0.5,
-                                                  0.5,
-                                                ),
-                                                blurRadius: 1.0,
-                                                spreadRadius: 0.5,
-                                              ), //BoxShadow
-                                              BoxShadow(
-                                                color: Colors.white,
-                                                offset: const Offset(0.0, 0.0),
-                                                blurRadius: 0.0,
-                                                spreadRadius: 0.0,
-                                              ), //BoxShadow
-                                            ]),
-                                        child:  Text(" Sharjah",textAlign: TextAlign.center,
-                                            style:
-                                            TextStyle(letterSpacing: 0.5)),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            ListView.builder(
-                              scrollDirection: Axis.vertical,
-                              physics: const ScrollPhysics(),
-                              itemCount: agentsmodel.length ?? 0,
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                return Agentcardscreen(agentsModel: agentsmodel[index]);
-                              },
-                            ),
-                          ],
-                        ),
-                        //AGENCIES
-                        Column(
-                          children: [
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 20,left: 20,right: 10),
-                                  child: Container(
-                                    width: screenSize.width*0.6,
-                                    height: screenSize.height*0.05,
-                                    padding: const EdgeInsets.only(top: 2,left: 0,right: 5),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadiusDirectional.circular(10.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          offset: const Offset(
-                                            0.5,
-                                            0.5,
-                                          ),
-                                          blurRadius: 1.0,
-                                          spreadRadius: 0.5,
-                                        ), //BoxShadow
-                                        BoxShadow(
-                                          color: Colors.white,
-                                          offset: const Offset(0.0, 0.0),
-                                          blurRadius: 0.0,
-                                          spreadRadius: 0.0,
-                                        ), //BoxShadow
-                                      ],),
-                                    // Use a Material design search bar
-                                    child: TextField(
-                                      controller: _searchController,
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: 'Dubai ',
-                                        hintStyle: TextStyle(color: Colors.grey,fontSize: 15,),
-                                        // Add a search icon or button to the search bar
-                                        prefixIcon: IconButton(
-                                          icon: Icon(Icons.location_on,color: Colors.red,),
-                                          onPressed: () {
-                                            // Perform the search here
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Padding(padding: const EdgeInsets.only(top: 15,left: 25,right: 5),
-                                  child: Image.asset("assets/images/filter.png",width: 20,height: 30,),
-                                ),
-                                Padding(padding: const EdgeInsets.only(top: 15,left: 5,right: 10),
-                                  child: Text("Filters",style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),),
-                                )
-                              ],
-                            ),
-                            //Searchbar
-                            Row(
-                              children: [
-                                Padding(padding: const EdgeInsets.only(left: 20,top: 20,right: 0),
-                                  child: Text("Featured Agencies",style: TextStyle(fontWeight: FontWeight.bold,
-                                    fontSize: 18,letterSpacing: 0.5,),textAlign: TextAlign.left,),
-                                ),
-                                Text("")
-                              ],
-                            ),
-                            Padding(padding: const EdgeInsets.only(left: 20,top: 10,right: 10),
-                              child: Text("Explore agents with a proven track record of high response rates"
-                                  " and authentic listings.",style: TextStyle(
-                                fontSize: 15,letterSpacing: 0.5,),textAlign: TextAlign.left,),
-                            ),
-                            ListView.builder(
-                              scrollDirection: Axis.vertical,
-                              physics: const ScrollPhysics(),
-                              itemCount: agentcymodel.length ?? 0,
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                return Agencycardscreen(agencyModel: agentcymodel[index]);
-                              },
-
-                            ),
-                          ],
-                        )
-
-                      ],
-                    ),
-                  ),
-
-                ]
-            )
+                    SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          buildSearchBar(_agencySearchController, 'Dubai', Icons.location_on),
+                          SizedBox(height: 20),
+                          Text("Featured Agencies", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          SizedBox(height: 10),
+                          Text("Explore agencies with a proven track record of high response rates and authentic listings."),
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: agentcymodel.length,
+                            itemBuilder: (context, index) {
+                              return Agencycardscreen(agencyModel: agentcymodel[index]);
+                            },
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
   }
-
+  Widget buildSearchBar(TextEditingController controller, String hint, IconData icon) {
+    return Container(
+      width: 400,
+      height: 70,
+      padding: const EdgeInsets.only(top: 8,left: 5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.red,
+            offset: Offset(0.0, 0.0),
+            blurRadius: 0.0,
+            spreadRadius: 0.3,
+          ),
+          BoxShadow(
+            color: Colors.white,
+            offset: Offset(0.0, 0.0),
+            blurRadius: 0.5,
+            spreadRadius: 0.0,
+          ),
+        ],
+      ),
+      child: Center(
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Icon(Icons.search, color: Colors.red),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text("Search for a locality, area or city",
+                style: TextStyle(color: Colors.grey,fontSize: 14),),
+            )
+          ],
+        ),
+      ),
+    );
+  }
 Container buildMyNavBar(BuildContext context) {
+  Size screenSize = MediaQuery.sizeOf(context);
   return Container(
-    height: 60,
+    height: 40,
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: const BorderRadius.only(
@@ -690,9 +314,11 @@ Container buildMyNavBar(BuildContext context) {
       ),
     ),
     child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+     spacing: screenSize.width*0.7,
       children: [
         IconButton(
+          alignment: Alignment.bottomLeft,
+          padding: const EdgeInsets.only(left: 15,top: 5),
           enableFeedback: false,
           onPressed: () {
             setState(() {
@@ -711,7 +337,7 @@ Container buildMyNavBar(BuildContext context) {
             size: 35,
           ),
         ),
-        Container(
+       /* Container(
           margin: const EdgeInsets.only(left: 40),
           height: 35,
           width: 35,
@@ -737,9 +363,9 @@ Container buildMyNavBar(BuildContext context) {
             ],
           ),
          child: Icon(Icons.call_outlined,color: Colors.red,)
-        ),
+        ),*/
 
-        Container(
+       /* Container(
             margin: const EdgeInsets.only(left: 1),
             height: 35,
             width: 35,
@@ -766,8 +392,8 @@ Container buildMyNavBar(BuildContext context) {
             ),
             child: Image.asset("assets/images/whats.png",height: 20,)
 
-        ),
-        Container(
+        ),*/
+       /* Container(
             margin: const EdgeInsets.only(left: 1,right: 40),
             height: 35,
             width: 35,
@@ -794,7 +420,7 @@ Container buildMyNavBar(BuildContext context) {
             ),
             child: Icon(Icons.mail,color: Colors.red,)
 
-        ),
+        ),*/
         IconButton(
           enableFeedback: false,
           onPressed: () {

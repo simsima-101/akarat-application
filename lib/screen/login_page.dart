@@ -128,7 +128,7 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
             ),
             ),
           //facebook button
-           Padding(
+         /*  Padding(
              padding: const EdgeInsets.only(
                  left: 15.0, right: 15.0, top: 15, bottom: 0),
              child: Container(
@@ -169,7 +169,7 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
                ),
 
              ),
-           ),
+           ),*/
           //  Text
            Padding(
          padding: const EdgeInsets.only(

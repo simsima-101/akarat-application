@@ -5,6 +5,8 @@ import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../model/productmodel.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -69,7 +71,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
     }
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
@@ -83,6 +85,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                           width: double.infinity,
                           // color: Color(0xFFEEEEEE),
                           child:   Row(
+                            spacing: screenSize.width*0.75,
                             children: [
                               GestureDetector(
                                 onTap: (){
@@ -121,7 +124,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                                 ),
                               ),
                               Container(
-                                margin: const EdgeInsets.only(left: 300,top: 5,bottom: 0,),
+                                margin: const EdgeInsets.only(left: 0,top: 5,bottom: 0,),
                                 height: 35,
                                 width: 35,
                                 padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
@@ -223,6 +226,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                       height: screenSize.height*0.5,
                       margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
                       child:  ListView.builder(
+                        padding: const EdgeInsets.all(0),
                         shrinkWrap: true,
                         scrollDirection: Axis.vertical,
                         physics: const ScrollPhysics(),
@@ -374,6 +378,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                         //color: Colors.grey,
                         margin: const EdgeInsets.only(left: 5,top: 5),
                         child:  ListView(
+                            padding: const EdgeInsets.all(0),
                             shrinkWrap: true,
                             scrollDirection: Axis.vertical,
                             children: <Widget>[
@@ -505,7 +510,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                   Container(
                       margin: const EdgeInsets.only(left: 20,top: 0,right: 1),
                       padding: const EdgeInsets.only(top: 5),
-                      height: screenSize.height*0.11,
+                      height: screenSize.height*0.118,
                       // color: Colors.grey,
                       child:ListView(
                         scrollDirection: Axis.horizontal,
@@ -641,17 +646,22 @@ class _Agent_DetailState extends State<Agent_Detail> {
                           fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
                       ),),
                   ),*/
-                  Container(
-                    height: 30,
-                    width: 200,
-                    // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 200,top: 15,bottom: 0),
-                    child:Text("Project Information",style: TextStyle(
-                        fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                    ),),
+                  Row(
+                    children: [
+                      Container(
+                        height: 30,
+                        width: 200,
+                        // color: Colors.grey,
+                        margin: const EdgeInsets.only(left: 20,right: 0,top: 15,bottom: 0),
+                        child:Text("Project Information",style: TextStyle(
+                            fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                        ),),
+                      ),
+                      Text("")
+                    ],
                   ),
                   Container(
-                    height: screenSize.height*0.12,
+                    height: screenSize.height*0.122,
                     margin: const EdgeInsets.only(left: 10,right: 5,top: 10),
                     // color: Colors.grey,
                     child: Row(
@@ -690,7 +700,8 @@ class _Agent_DetailState extends State<Agent_Detail> {
                             )
                           ],
                         ),
-                        Padding(padding: const EdgeInsets.only(left: 70),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 40),
                           child:  Column(
                             children: [
                               Text("Developer                               "),
@@ -727,8 +738,8 @@ class _Agent_DetailState extends State<Agent_Detail> {
                     ),
                   ),
                   Container(
-                    height: screenSize.height*0.17,
-                    margin: const EdgeInsets.only(left: 20,right: 20,top: 20),
+                    height: screenSize.height*0.18,
+                    margin: const EdgeInsets.only(left: 20,right: 5,top: 20),
                     // color: Colors.grey,
                     child: Row(
                       spacing: 1,
@@ -737,7 +748,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                           height: 150,
                           width: 170,
                           child:   Image.asset("assets/images/image3.png",height: 100,
-                            fit: BoxFit.fill,),
+                            fit: BoxFit.contain,),
                         ),
 
                         Column(
@@ -1032,7 +1043,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                     ),
                   ),
                   Container(
-                    height: screenSize.height*0.3,
+                    height: screenSize.height*0.33,
                     width: double.infinity,
                     margin: const EdgeInsets.only(left: 18,right: 14,top: 20),
                     decoration: BoxDecoration(
@@ -1175,7 +1186,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                                     ClipRRect(
                                       borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
                                       child: Image.network(
-                                        productModels!.data!.recommendedProperties![index].media![index].originalUrl.toString(),
+                                        productModels!.data!.recommendedProperties![index].media!.first.originalUrl.toString(),
                                         height: 120,
                                         width: double.infinity,
                                         fit: BoxFit.cover,
@@ -1235,7 +1246,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 60,
+      height: 40,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -1290,7 +1301,23 @@ class _Agent_DetailState extends State<Agent_Detail> {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.call_outlined,color: Colors.red,)
+              child: GestureDetector(
+                  onTap:  () async {
+                    String phone = 'tel:${productModels!.data!.phoneNumber}';
+                    try {
+                      final bool launched = await launchUrlString(
+                        phone,
+                        mode: LaunchMode.externalApplication, // ✅ Force external
+                      );
+                      if (!launched) {
+                        print("❌ Could not launch dialer");
+                      }
+                    } catch (e) {
+                      print("❌ Exception: $e");
+                    }
+
+                  },
+                  child: Icon(Icons.call_outlined,color: Colors.red,))
           ),
 
           Container(
@@ -1318,7 +1345,32 @@ class _Agent_DetailState extends State<Agent_Detail> {
                   ), //BoxShadow
                 ],
               ),
-              child: Image.asset("assets/images/whats.png",height: 20,)
+              child: GestureDetector(
+                  onTap: () async {
+                    final phone = productModels!.data!.whatsapp; // without plus
+                    final message = Uri.encodeComponent("Hello");
+                    // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
+                    // final url = Uri.parse("https://wa.me/?text=hello");
+                    final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+
+                    if (await canLaunchUrl(url)) {
+                      try {
+                        final launched = await launchUrl(
+                          url,
+                          mode: LaunchMode.externalApplication, // 💥 critical on Android 15
+                        );
+
+                        if (!launched) {
+                          print("❌ Could not launch WhatsApp");
+                        }
+                      } catch (e) {
+                        print("❌ Exception: $e");
+                      }
+                    } else {
+                      print("❌ WhatsApp not available or URL not supported");
+                    }
+                  },
+                  child: Image.asset("assets/images/whats.png",height: 20,))
 
           ),
           Container(
@@ -1346,7 +1398,21 @@ class _Agent_DetailState extends State<Agent_Detail> {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.mail,color: Colors.red,)
+              child: GestureDetector(
+                  onTap: () async {
+                    final Uri emailUri = Uri(
+                      scheme: 'mailto',
+                      path: '${productModels!.data!.whatsapp}', // Replace with actual email
+                      query: 'subject=Property Inquiry&body=Hi, I saw your property on Akarat.',
+                    );
+
+                    if (await canLaunchUrl(emailUri)) {
+                      await launchUrl(emailUri);
+                    } else {
+                      throw 'Could not launch $emailUri';
+                    }
+                  },
+                  child: Icon(Icons.mail,color: Colors.red,))
 
           ),
           IconButton(

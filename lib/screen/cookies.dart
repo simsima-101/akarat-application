@@ -53,7 +53,7 @@ class _CookiesState extends State<Cookies> {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
@@ -212,7 +212,7 @@ class _CookiesState extends State<Cookies> {
                   ),
                   Container(
                     margin: const EdgeInsets.only(top: 10),
-                    height: screenSize.height*0.16,
+                    height: screenSize.height*0.2,
                     width: screenSize.width*0.9,
                     //color: Colors.grey,
                     child: Column(
@@ -242,7 +242,7 @@ class _CookiesState extends State<Cookies> {
                   ),
                   Container(
                     margin: const EdgeInsets.only(top: 10),
-                    height: screenSize.height*0.73,
+                    height: screenSize.height*0.85,
                     width: screenSize.width*0.9,
                      //color: Colors.grey,
                     child: Column(
@@ -302,7 +302,7 @@ class _CookiesState extends State<Cookies> {
                   ),
                   Container(
                     margin: const EdgeInsets.only(top: 10),
-                    height: screenSize.height*0.13,
+                    height: screenSize.height*0.17,
                     width: screenSize.width*0.9,
                     //color: Colors.grey,
                     child: Column(
@@ -331,7 +331,7 @@ class _CookiesState extends State<Cookies> {
                   ),
                   Container(
                     margin: const EdgeInsets.only(top: 10),
-                    height: screenSize.height*0.18,
+                    height: screenSize.height*0.22,
                     width: screenSize.width*0.9,
                     //color: Colors.grey,
                     child: Column(
@@ -361,7 +361,7 @@ class _CookiesState extends State<Cookies> {
                   ),
                   Container(
                     margin: const EdgeInsets.only(top: 10),
-                    height: screenSize.height*0.08,
+                    height: screenSize.height*0.12,
                     width: screenSize.width*0.9,
                     //color: Colors.grey,
                     child: Column(
@@ -389,7 +389,7 @@ class _CookiesState extends State<Cookies> {
                   ),
                   Container(
                     margin: const EdgeInsets.only(top: 10),
-                    height: screenSize.height*0.18,
+                    height: screenSize.height*0.23,
                     width: screenSize.width*0.9,
                     //color: Colors.grey,
                     child: Column(

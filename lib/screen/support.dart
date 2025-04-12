@@ -95,7 +95,7 @@ class _SupportState extends State<Support> {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
@@ -205,11 +205,16 @@ class _SupportState extends State<Support> {
                     width: screenSize.width*0.9,
                     child: Column(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0,right: 300,top: 8,bottom: 8),
-                          child: Text("Name",textAlign: TextAlign.left,style: TextStyle(
-                            fontSize: 15,letterSpacing: 0.5
-                          ),),
+                        Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
+                              child: Text("Name",textAlign: TextAlign.left,style: TextStyle(
+                                fontSize: 15,letterSpacing: 0.5
+                              ),),
+                            ),
+                            Text("")
+                          ],
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
@@ -255,11 +260,16 @@ class _SupportState extends State<Support> {
                             ),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0,right: 240,top: 8,bottom: 8),
-                          child: Text("Email Address",textAlign: TextAlign.left,style: TextStyle(
-                              fontSize: 15,letterSpacing: 0.5
-                          ),),
+                        Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
+                              child: Text("Email Address",textAlign: TextAlign.left,style: TextStyle(
+                                  fontSize: 15,letterSpacing: 0.5
+                              ),),
+                            ),
+                            Text("")
+                          ],
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
@@ -307,11 +317,16 @@ class _SupportState extends State<Support> {
                             ),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0,right: 240,top: 8,bottom: 8),
-                          child: Text("Phone Number",textAlign: TextAlign.left,style: TextStyle(
-                              fontSize: 15,letterSpacing: 0.5
-                          ),),
+                        Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
+                              child: Text("Phone Number",textAlign: TextAlign.left,style: TextStyle(
+                                  fontSize: 15,letterSpacing: 0.5
+                              ),),
+                            ),
+                            Text("")
+                          ],
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
@@ -357,11 +372,16 @@ class _SupportState extends State<Support> {
                             ),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0,right: 280,top: 8,bottom: 8),
-                          child: Text("Subject",textAlign: TextAlign.left,style: TextStyle(
-                              fontSize: 15,letterSpacing: 0.5
-                          ),),
+                        Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
+                              child: Text("Subject",textAlign: TextAlign.left,style: TextStyle(
+                                  fontSize: 15,letterSpacing: 0.5
+                              ),),
+                            ),
+                            Text("")
+                          ],
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
@@ -407,11 +427,16 @@ class _SupportState extends State<Support> {
                             ),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0,right: 280,top: 8,bottom: 8),
-                          child: Text("Message",textAlign: TextAlign.left,style: TextStyle(
-                              fontSize: 15,letterSpacing: 0.5
-                          ),),
+                        Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
+                              child: Text("Message",textAlign: TextAlign.left,style: TextStyle(
+                                  fontSize: 15,letterSpacing: 0.5
+                              ),),
+                            ),
+                            Text("")
+                          ],
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),

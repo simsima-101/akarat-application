@@ -6,6 +6,8 @@ import 'package:Akarat/utils/shared_preference_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../model/favoritemodel.dart';
 import '../model/togglemodel.dart';
 import '../screen/home.dart';
@@ -143,7 +145,7 @@ class _Fav_LoginState extends State<Fav_Login> {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: DefaultTabController(
           length: 2,
           child:  SingleChildScrollView(
@@ -253,24 +255,22 @@ class _Fav_LoginState extends State<Fav_Login> {
                             height: screenSize.height*0.045,
                             padding: const EdgeInsets.only(top: 10,),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(8.0),
+                              color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.5,
-                                    0.5,
-                                  ),
-                                  blurRadius: 1.0,
-                                  spreadRadius: 0.5,
-                                ), //BoxShadow
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: Offset(4, 4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                                 BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                               ],
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text('Searches',textAlign: TextAlign.center,style: TextStyle(
                                 fontWeight: FontWeight.bold,fontSize: 15
@@ -283,24 +283,22 @@ class _Fav_LoginState extends State<Fav_Login> {
                             height: screenSize.height*0.045,
                             padding: const EdgeInsets.only(top: 10,),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(8.0),
+                              color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.5,
-                                    0.5,
-                                  ),
-                                  blurRadius: 1.0,
-                                  spreadRadius: 0.5,
-                                ), //BoxShadow
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: Offset(4, 4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                                 BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                               ],
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text('Favorites',textAlign: TextAlign.center,style: TextStyle(
                                 fontWeight: FontWeight.bold,fontSize: 15
@@ -471,7 +469,21 @@ class _Fav_LoginState extends State<Fav_Login> {
                                         Row(
                                           children: [
                                             Padding(padding: const EdgeInsets.only(left: 30,top: 10,bottom: 5),
-                                              child: ElevatedButton.icon(onPressed: (){},
+                                              child: ElevatedButton.icon(
+                                                  onPressed: () async {
+                                                    String phone = 'tel:${favoriteModel!.data![index].title}';
+                                                    try {
+                                                      final bool launched = await launchUrlString(
+                                                        phone,
+                                                        mode: LaunchMode.externalApplication, // ✅ Force external
+                                                      );
+                                                      if (!launched) {
+                                                        print("❌ Could not launch dialer");
+                                                      }
+                                                    } catch (e) {
+                                                      print("❌ Exception: $e");
+                                                    }
+                                                  },
                                                   label: Text("call",style: TextStyle(
                                                       color: Colors.black
                                                   ),),
@@ -489,7 +501,31 @@ class _Fav_LoginState extends State<Fav_Login> {
                                             ),
                                             // Text(product.description),
                                             Padding(padding: const EdgeInsets.only(left: 15,top: 10,bottom: 5),
-                                              child: ElevatedButton.icon(onPressed: (){},
+                                              child: ElevatedButton.icon(
+                                                  onPressed: () async {
+                                                    final phone = favoriteModel!.data![index].title; // without plus
+                                                    final message = Uri.encodeComponent("Hello");
+                                                    // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
+                                                    // final url = Uri.parse("https://wa.me/?text=hello");
+                                                    final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+
+                                                    if (await canLaunchUrl(url)) {
+                                                      try {
+                                                        final launched = await launchUrl(
+                                                          url,
+                                                          mode: LaunchMode.externalApplication, // 💥 critical on Android 15
+                                                        );
+
+                                                        if (!launched) {
+                                                          print("❌ Could not launch WhatsApp");
+                                                        }
+                                                      } catch (e) {
+                                                        print("❌ Exception: $e");
+                                                      }
+                                                    } else {
+                                                      print("❌ WhatsApp not available or URL not supported");
+                                                    }
+                                                  },
                                                   label: Text("Watsapp",style: TextStyle(
                                                       color: Colors.black
                                                   ),),

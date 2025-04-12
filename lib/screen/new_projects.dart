@@ -8,6 +8,8 @@ import 'package:Akarat/screen/property_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../model/togglemodel.dart';
 import '../utils/shared_preference_manager.dart';
@@ -149,7 +151,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: SingleChildScrollView(
         child: Column(
         children: <Widget>[
@@ -430,7 +432,21 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                               Row(
                                 children: [
                                   Padding(padding: const EdgeInsets.only(left: 30,top: 20,bottom: 15),
-                                    child: ElevatedButton.icon(onPressed: (){},
+                                    child: ElevatedButton.icon(
+                                        onPressed: () async {
+                                          String phone = 'tel:${projectModel!.data![index].phoneNumber}';
+                                          try {
+                                            final bool launched = await launchUrlString(
+                                              phone,
+                                              mode: LaunchMode.externalApplication, // ✅ Force external
+                                            );
+                                            if (!launched) {
+                                              print("❌ Could not launch dialer");
+                                            }
+                                          } catch (e) {
+                                            print("❌ Exception: $e");
+                                          }
+                                        },
                                         label: Text("call",style: TextStyle(
                                             color: Colors.black
                                         ),),
@@ -448,7 +464,31 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                   ),
                                   // Text(product.description),
                                   Padding(padding: const EdgeInsets.only(left: 15,top: 20,bottom: 15),
-                                    child: ElevatedButton.icon(onPressed: (){},
+                                    child: ElevatedButton.icon(
+                                        onPressed: () async {
+                                          final phone = projectModel!.data![index].whatsapp; // without plus
+                                          final message = Uri.encodeComponent("Hello");
+                                          // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
+                                          // final url = Uri.parse("https://wa.me/?text=hello");
+                                          final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+
+                                          if (await canLaunchUrl(url)) {
+                                            try {
+                                              final launched = await launchUrl(
+                                                url,
+                                                mode: LaunchMode.externalApplication, // 💥 critical on Android 15
+                                              );
+
+                                              if (!launched) {
+                                                print("❌ Could not launch WhatsApp");
+                                              }
+                                            } catch (e) {
+                                              print("❌ Exception: $e");
+                                            }
+                                          } else {
+                                            print("❌ WhatsApp not available or URL not supported");
+                                          }
+                                        },
                                         label: Text("Watsapp",style: TextStyle(
                                             color: Colors.black
                                         ),),

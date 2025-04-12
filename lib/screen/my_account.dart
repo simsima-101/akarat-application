@@ -103,7 +103,7 @@ class _My_AccountState extends State<My_Account> {
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         backgroundColor: Colors.white,
         body: SingleChildScrollView(
             child: Column(

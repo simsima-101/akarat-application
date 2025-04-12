@@ -52,7 +52,7 @@ class _PrivacyState extends State<Privacy> {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: SingleChildScrollView(
         child: Column(
         children: <Widget>[
@@ -210,7 +210,7 @@ class _PrivacyState extends State<Privacy> {
           ),
           Container(
             margin: const EdgeInsets.only(top: 10),
-            height: screenSize.height*0.34,
+            height: screenSize.height*0.36,
             width: screenSize.width*0.9,
              //color: Colors.grey,
             child: Column(
@@ -247,7 +247,7 @@ class _PrivacyState extends State<Privacy> {
           ),
           Container(
             margin: const EdgeInsets.only(top: 10),
-            height: screenSize.height*0.43,
+            height: screenSize.height*0.49,
             width: screenSize.width*0.9,
            // color: Colors.grey,
             child: Column(
@@ -297,7 +297,7 @@ class _PrivacyState extends State<Privacy> {
           ),
           Container(
             margin: const EdgeInsets.only(top: 10),
-            height: screenSize.height*0.39,
+            height: screenSize.height*0.415,
             width: screenSize.width*0.9,
             //color: Colors.grey,
             child: Column(
@@ -334,7 +334,7 @@ class _PrivacyState extends State<Privacy> {
           ),
           Container(
             margin: const EdgeInsets.only(top: 10),
-            height: screenSize.height*0.5,
+            height: screenSize.height*0.54,
             width: screenSize.width*0.9,
             //color: Colors.grey,
             child: Column(

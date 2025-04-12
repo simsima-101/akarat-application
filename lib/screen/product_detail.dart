@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart' show Html;
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../model/productmodel.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -77,7 +79,7 @@ class _Product_DetailState extends State<Product_Detail> {
     }
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
@@ -164,6 +166,7 @@ class _Product_DetailState extends State<Product_Detail> {
                       height: screenSize.height*0.5,
                       margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
                       child:  ListView.builder(
+                        padding: const EdgeInsets.all(0),
                         shrinkWrap: true,
                         scrollDirection: Axis.vertical,
                         physics: const ScrollPhysics(),
@@ -177,7 +180,7 @@ class _Product_DetailState extends State<Product_Detail> {
                         },
 
                       )
-                  ) ,
+                  ),
                   Container(
                     height: 40,
                     margin: const EdgeInsets.only(left: 20,top: 10,right: 10,bottom: 0),
@@ -233,7 +236,7 @@ class _Product_DetailState extends State<Product_Detail> {
                       ],
                     ),
                   ),
-                  Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 10,bottom: 0),
+                  Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 0,bottom: 0),
                       child:Row(
                         children: [
                           Text(productModels!.data!.price.toString(),style: TextStyle(
@@ -262,7 +265,7 @@ class _Product_DetailState extends State<Product_Detail> {
                       )
                   ),*/
                   Container(
-                      margin: const EdgeInsets.only(left: 20,top: 5,right: 10),
+                      margin: const EdgeInsets.only(left: 20,top: 0,right: 10),
                       height: 40,
                       // color: Colors.grey,
                       child:Row(
@@ -298,9 +301,11 @@ class _Product_DetailState extends State<Product_Detail> {
                       )
                   ),
                   Container(
-                    height: screenSize.height*0.08,
-                    // color: Colors.grey,
-                    padding: const EdgeInsets.only(left: 20,right: 0,top: 1,bottom: 0),
+                    height: screenSize.height*0.07,
+                     width: screenSize.width*0.9,
+                     //color: Colors.grey,
+                    margin: const EdgeInsets.only(left: 10,right: 10),
+                   // padding: const EdgeInsets.only(left: 0,right: 0,top: 1,bottom: 0),
                     child:
                     Text(productModels!.data!.title.toString(),style: TextStyle(
                         fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
@@ -312,9 +317,10 @@ class _Product_DetailState extends State<Product_Detail> {
                     child: Container(
                       width: double.infinity,
                       height: screenSize.height*0.2,
-                       //color: Colors.grey,
+                      // color: Colors.grey,
                       margin: const EdgeInsets.only(left: 5,top: 5),
                       child:  ListView(
+                        padding: const EdgeInsets.all(0),
                       shrinkWrap: true,
                       scrollDirection: Axis.vertical,
                       children: <Widget>[
@@ -1052,7 +1058,7 @@ class _Product_DetailState extends State<Product_Detail> {
                         Row(
                           children: [
                             Padding(padding: const EdgeInsets.only(left: 5,top: 5),
-                              child: Text("OLD Permit Number:",style: TextStyle(
+                              child: Text("DLD Permit Number:",style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
                             Padding(padding: const EdgeInsets.only(left: 1,top: 5),
@@ -1080,10 +1086,10 @@ class _Product_DetailState extends State<Product_Detail> {
                           height: screenSize.height*0.1,
                           width: 110,
                          // color: Colors.grey,
-                          child: Image.asset("assets/images/dld.png",fit: BoxFit.fill,),
+                          child: Image.asset("assets/images/dld.png",fit: BoxFit.contain,),
                         ),
                         Padding(padding: const EdgeInsets.only(top: 10),
-                          child: Text("OLD Permit Number",style: TextStyle(fontWeight: FontWeight.bold),),)
+                          child: Text("DLD Permit Number",style: TextStyle(fontWeight: FontWeight.bold),),)
                       ],
                     ),
                   ),
@@ -1116,7 +1122,7 @@ class _Product_DetailState extends State<Product_Detail> {
                                     ClipRRect(
                                       borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
                                       child: Image.network(
-                                       productModels!.data!.recommendedProperties![index].media![index].originalUrl.toString(),
+                                       productModels!.data!.recommendedProperties![index].media!.first.originalUrl.toString(),
                                         height: 120,
                                         width: double.infinity,
                                         fit: BoxFit.cover,
@@ -1231,7 +1237,23 @@ class _Product_DetailState extends State<Product_Detail> {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.call_outlined,color: Colors.red,)
+              child: GestureDetector(
+                  onTap:  () async {
+                    String phone = 'tel:${productModels!.data!.phoneNumber}';
+                    try {
+                      final bool launched = await launchUrlString(
+                        phone,
+                        mode: LaunchMode.externalApplication, // ✅ Force external
+                      );
+                      if (!launched) {
+                        print("❌ Could not launch dialer");
+                      }
+                    } catch (e) {
+                      print("❌ Exception: $e");
+                    }
+
+                  },
+                  child: Icon(Icons.call_outlined,color: Colors.red,))
           ),
 
           Container(
@@ -1259,7 +1281,32 @@ class _Product_DetailState extends State<Product_Detail> {
                   ), //BoxShadow
                 ],
               ),
-              child: Image.asset("assets/images/whats.png",height: 20,)
+              child: GestureDetector(
+                  onTap: () async {
+                    final phone = productModels!.data!.whatsapp; // without plus
+                    final message = Uri.encodeComponent("Hello");
+                    // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
+                    // final url = Uri.parse("https://wa.me/?text=hello");
+                    final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+
+                    if (await canLaunchUrl(url)) {
+                      try {
+                        final launched = await launchUrl(
+                          url,
+                          mode: LaunchMode.externalApplication, // 💥 critical on Android 15
+                        );
+
+                        if (!launched) {
+                          print("❌ Could not launch WhatsApp");
+                        }
+                      } catch (e) {
+                        print("❌ Exception: $e");
+                      }
+                    } else {
+                      print("❌ WhatsApp not available or URL not supported");
+                    }
+                  },
+                  child: Image.asset("assets/images/whats.png",height: 20,))
 
           ),
           Container(
@@ -1287,7 +1334,21 @@ class _Product_DetailState extends State<Product_Detail> {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.mail,color: Colors.red,)
+              child: GestureDetector(
+                  onTap: () async {
+                    final Uri emailUri = Uri(
+                      scheme: 'mailto',
+                      path: '${productModels!.data!.whatsapp}', // Replace with actual email
+                      query: 'subject=Property Inquiry&body=Hi, I saw your property on Akarat.',
+                    );
+
+                    if (await canLaunchUrl(emailUri)) {
+                      await launchUrl(emailUri);
+                    } else {
+                      throw 'Could not launch $emailUri';
+                    }
+                  },
+                  child: Icon(Icons.mail,color: Colors.red,))
 
           ),
           IconButton(

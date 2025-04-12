@@ -53,7 +53,7 @@ class _About_UsState extends State<About_Us> {
     return   WillPopScope(
         child:  Scaffold(
             backgroundColor: Colors.white,
-            bottomNavigationBar: buildMyNavBar(context),
+            bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
             body: SingleChildScrollView(
                 child: Column(
                     children: <Widget>[
@@ -170,7 +170,7 @@ class _About_UsState extends State<About_Us> {
                       ),
                       Container(
                         margin: const EdgeInsets.only(left: 10,top: 20,right: 10),
-                        height: screenSize.height*0.03,
+                        height: screenSize.height*0.05,
                         //color: Colors.grey,
                         child: Text("Akarat.com",style: TextStyle(
                           fontSize: 25,fontWeight: FontWeight.bold,
@@ -179,7 +179,7 @@ class _About_UsState extends State<About_Us> {
                       ),
                       Container(
                         margin: const EdgeInsets.only(top: 15),
-                        height: screenSize.height*0.6,
+                        height: screenSize.height*0.8,
                         width: screenSize.width*0.9,
                         // color: Colors.grey,
                         child: Column(

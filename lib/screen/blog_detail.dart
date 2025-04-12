@@ -88,8 +88,8 @@ readData();
     }
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
-    body: SingleChildScrollView(
+      bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+      body: SingleChildScrollView(
     child: Column(
     children: <Widget>[
       Padding(
@@ -224,7 +224,7 @@ readData();
                   child: Text(blogDetailModel!.data!.readingTime.toString(),style: TextStyle(
                     fontSize: 12,color: Colors.grey
                   ),)
-                ), Padding(padding: const EdgeInsets.only(left: 50,top: 10,right: 0,bottom: 0),
+                ), Padding(padding: const EdgeInsets.only(left: 30,top: 10,right: 0,bottom: 0),
                   child: Image.asset("assets/images/dot.png",height: 10,)
                 ), Padding(padding: const EdgeInsets.only(left: 10,top: 10,right: 0,bottom: 0),
                     child: Text("Published:"+blogDetailModel!.data!.publishedDate.toString(),style: TextStyle(
@@ -257,52 +257,6 @@ readData();
         ),),
       ),
       ),
-      /*  Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
-        child: Container(
-          height: 150,
-          width: double.infinity,
-         // color: Colors.grey,
-          child: Text("The UAE's real estate market is booming,offering endless opportunities for buyers,sellers and "
-              "investors,with the rise of digital platforms, property hunting has become more accessible and "
-              "efficient than even. Akarat is at the forefront of this transformation providing "
-              "an innovative property search experience tailored to the modern real estate markets. ",style: TextStyle(
-              letterSpacing: 0.5
-          ),),
-        ),
-      ),*/
-      /* Padding(padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
-        child: Container(
-          height: 250,
-          width: double.infinity,
-          //color: Colors.grey,
-          child: Column(
-            children: [
-              Padding(padding: const EdgeInsets.only(left: 0,right: 180,top: 10),
-              child: Text("Key Features of Industry",style: TextStyle(
-                  letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 15
-              ),),
-              ), Padding(padding: const EdgeInsets.only(left: 10,right: 162,top: 10),
-              child: Text("1.  Comprehensive Listings-",style: TextStyle(
-                  letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 15
-              ),),
-              ), Padding(padding: const EdgeInsets.only(left: 25,right: 10,top: 10),
-              child: Text("Access thousands of properties across dubai and other key locations in the UAE"),
-              ), Padding(padding: const EdgeInsets.only(left: 10,right: 162,top: 10),
-              child: Text("2.  Comprehensive Listings-",style: TextStyle(
-                  letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 15
-              ),),
-              ), Padding(padding: const EdgeInsets.only(left: 25,right: 10,top: 10),
-              child: Text("Access thousands of properties across dubai and other key locations in the UAE"),
-              ),Padding(padding: const EdgeInsets.only(left: 10,right: 162,top: 10),
-              child: Text("3.  Comprehensive Listings-",style: TextStyle(
-                  letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 15
-              ),),
-              ),
-
-            ],
-          )
-        ),
-      ),*/
       SizedBox(
   height: screenSize.height*0.1,
 )
@@ -342,7 +296,7 @@ readData();
             Padding(padding: const EdgeInsets.only(left: 5,top: 0,right: 0),
                 child: Image.asset("assets/images/logo-text.png",height: 22,)
             ),
-            Padding(padding: const EdgeInsets.only(left: 70,top: 0,right: 0),
+            Padding(padding: const EdgeInsets.only(left: 40,top: 0,right: 0),
               child: SizedBox(
                 height: 30,
                 width: 80,
@@ -371,8 +325,9 @@ readData();
   }
 
   Container buildMyNavBar(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
     return Container(
-      height: 60,
+      height: 40,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -381,6 +336,7 @@ readData();
         ),
       ),
       child: Row(
+        spacing: screenSize.width*0.7,
         children: [
           IconButton(
             enableFeedback: false,
@@ -402,7 +358,7 @@ readData();
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(left: 290.0),
+            padding: const EdgeInsets.only(left: 0.0),
             child: IconButton(
               enableFeedback: false,
               alignment: Alignment.bottomRight,

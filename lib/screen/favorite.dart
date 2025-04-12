@@ -57,7 +57,7 @@ class _FavoriteState extends State<Favorite> {
 
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: buildMyNavBar(context),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: DefaultTabController(
           length: 2,
           child:  SingleChildScrollView(
