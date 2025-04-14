@@ -54,104 +54,23 @@ class _CookiesState extends State<Cookies> {
     return Scaffold(
         backgroundColor: Colors.white,
         bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+        appBar: AppBar(
+          title: const Text(
+              "Cookie Policy", style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold)),
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          iconTheme: const IconThemeData(color: Colors.red),
+          elevation: 1,
+        ),
         body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
             child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Container(
-                    height: screenSize.height*0.1,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(2.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],),
-                    child:  Stack(
-                      // alignment: Alignment.topCenter,
-                      children: <Widget>[
-                        Padding(
-                          padding: EdgeInsets.only(top: 25),
-                          child: Container(
-                            height: screenSize.height*0.07,
-                            width: double.infinity,
-                            // color: Color(0xFFEEEEEE),
-                            child:   Row(
-                              children: [
-                                GestureDetector(
-                                onTap: (){
-                                  setState(() {
-                                    if(token == ''){
-                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                                    }
-                                    else{
-                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                                    }
-                                  });                                },
-                                child:   Container(
-                                  margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
-                                  height: 35,
-                                  width: 35,
-                                  padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadiusDirectional.circular(20.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey,
-                                        offset: const Offset(
-                                          0.3,
-                                          0.3,
-                                        ),
-                                        blurRadius: 0.3,
-                                        spreadRadius: 0.3,
-                                      ), //BoxShadow
-                                      BoxShadow(
-                                        color: Colors.white,
-                                        offset: const Offset(0.0, 0.0),
-                                        blurRadius: 0.0,
-                                        spreadRadius: 0.0,
-                                      ), //BoxShadow
-                                    ],
-                                  ),
-                                  child: Image.asset("assets/images/ar-left.png",
-                                    width: 15,
-                                    height: 15,
-                                    fit: BoxFit.contain,),
-                                ),
-                              ),
-                                SizedBox(
-                                  width: screenSize.width*0.23,
-                                ),
-                                Padding(padding: const EdgeInsets.all(8.0),
-                                  child: Text("Cookie Policy",style: TextStyle(
-                                      fontWeight: FontWeight.bold,fontSize: 20
-                                  ),),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(left: 10,right: 10,top: 10),
-                    height: screenSize.height*0.06,
-                    width: screenSize.width*0.38,
+                  Center(
                     //color: Colors.grey,
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Padding(
                           padding: const EdgeInsets.all(3.0),
@@ -164,247 +83,129 @@ class _CookiesState extends State<Cookies> {
                       ],
                     ),
                   ),
-                  Container(
-                    margin: const EdgeInsets.only(left: 10,right: 10,top: 5),
-                    height: screenSize.height*0.04,
-                    width: screenSize.width*0.9,
-                    //color: Colors.grey,
-                    child: Text("Cookie Policy",
+                  const SizedBox(height: 20),
+                  Text("Cookie Policy",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,fontSize: 20,
                         letterSpacing: 0.5,
                       ),textAlign: TextAlign.left,),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(left: 10,right: 10,top: 0),
-                    height: screenSize.height*0.03,
-                    width: screenSize.width*0.9,
-                    // color: Colors.grey,
-                    child: Text("Introduction",
+                  const SizedBox(height: 16),
+                  Text("Introduction",
                       style: TextStyle(
                           fontSize: 17,
                           letterSpacing: 0.5,
                           fontWeight: FontWeight.bold
                       ),textAlign: TextAlign.left,),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    height: screenSize.height*0.11,
-                    width: screenSize.width*0.9,
-                     //color: Colors.grey,
-                    child: Text("At Akarat, we use cookies to enhance your browsing experience "
+                  const SizedBox(height: 6),
+                  Text("At Akarat, we use cookies to enhance your browsing experience "
                         "on our website. This Cookie Policy explains what cookies are, how we use them,"
                         " and your choices regarding their use.",style: TextStyle(
-                        fontSize: 15.5,letterSpacing: 0.5
+                        fontSize: 15.5,letterSpacing: 0.4
                     ),),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(left: 10,right: 10,top: 0),
-                    height: screenSize.height*0.03,
-                    width: screenSize.width*0.9,
-                    // color: Colors.grey,
-                    child: Text("What Are Cookies?",
+      const SizedBox(height: 16),
+      Text("What Are Cookies?",
                       style: TextStyle(
                           fontSize: 17,
                           letterSpacing: 0.5,
                           fontWeight: FontWeight.bold
                       ),textAlign: TextAlign.left,),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    height: screenSize.height*0.2,
-                    width: screenSize.width*0.9,
-                    //color: Colors.grey,
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("Cookies are small text files that are placed on your "
+      const SizedBox(height: 6),
+      Text("Cookies are small text files that are placed on your "
                               "device by websites you visit. They are widely used to make websites"
                               " work more efficiently, as well as to provide information to the website "
                               "owners.",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5
                           ),),
-                        ),
-                      ],
-                    ),),
-                  Container(
-                    margin: const EdgeInsets.only(left: 10,right: 10,top: 0),
-                    height: screenSize.height*0.03,
-                    width: screenSize.width*0.9,
-                    // color: Colors.grey,
-                    child: Text("How We Use Cookies ",
+      const SizedBox(height: 16),
+      Text("How We Use Cookies ",
                       style: TextStyle(
                           fontSize: 17,
                           letterSpacing: 0.5,
                           fontWeight: FontWeight.bold
                       ),textAlign: TextAlign.left,),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    height: screenSize.height*0.85,
-                    width: screenSize.width*0.9,
-                     //color: Colors.grey,
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("We use cookies for various purposes, including:",style: TextStyle(
+      const SizedBox(height: 6),
+      Text("We use cookies for various purposes, including:",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5
                           ),),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("1.Essential Cookies:These cookies are necessary for the website "
+      const SizedBox(height: 6),
+      Text("1.Essential Cookies:These cookies are necessary for the website "
                               "to function properly. They enable you to navigate the site and use its features,"
                               " such as accessing secure areas of the website.",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5
                           ),),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("2.Performance Cookies:These cookies collect information about how "
+      const SizedBox(height: 6),
+      Text("2.Performance Cookies:These cookies collect information about how "
                               "visitors use our website, such as which pages are visited most often. This helps"
                               " us improve how our website works and enhance the user experience.",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5
                           ),),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("3.Functionality Cookies:These cookies allow our website to remember"
+      const SizedBox(height: 6),
+      Text("3.Functionality Cookies:These cookies allow our website to remember"
                               " choices you make (such as your username, language, or the region you are in)"
                               " and provide enhanced, more personalized features.",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5
                           ),),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("4.Targeting/Advertising Cookies:These cookies are used to deliver"
+      const SizedBox(height: 6),
+      Text("4.Targeting/Advertising Cookies:These cookies are used to deliver"
                               " adverts more relevant to you and your interests. They are also used to limit"
                               " the number of times you see an advertisement and help measure the effectiveness"
                               " of advertising campaigns.",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5
                           ),),
-                        ),
-                      ],
-                    ),),
-                  Container(
-                    margin: const EdgeInsets.only(left: 10,right: 10,top: 0),
-                    height: screenSize.height*0.03,
-                    width: screenSize.width*0.9,
-                    // color: Colors.grey,
-                    child: Text("Third-Party Cookies",
+      const SizedBox(height: 16),
+      Text("Third-Party Cookies",
                       style: TextStyle(
                           fontSize: 17,
                           letterSpacing: 0.5,
                           fontWeight: FontWeight.bold
                       ),textAlign: TextAlign.left,),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    height: screenSize.height*0.17,
-                    width: screenSize.width*0.9,
-                    //color: Colors.grey,
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("In addition to our own cookies, we may also use various third-party "
+      const SizedBox(height: 6),
+      Text("In addition to our own cookies, we may also use various third-party "
                               "cookies to report usage statistics of the website and deliver advertisements on "
                               "and through the website.",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5
                           ),),
-                        ),
-                      ],
-                    ),),
-                  Container(
-                    margin: const EdgeInsets.only(left: 10,right: 10,top: 0),
-                    height: screenSize.height*0.03,
-                    width: screenSize.width*0.9,
-                    // color: Colors.grey,
-                    child: Text("Your Choices Regarding Cookies",
+      const SizedBox(height: 16),
+      Text("Your Choices Regarding Cookies",
                       style: TextStyle(
                           fontSize: 17,
                           letterSpacing: 0.5,
                           fontWeight: FontWeight.bold
                       ),textAlign: TextAlign.left,),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    height: screenSize.height*0.22,
-                    width: screenSize.width*0.9,
-                    //color: Colors.grey,
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("You have the right to decide whether to accept or reject cookies."
+      const SizedBox(height: 6),
+      Text("You have the right to decide whether to accept or reject cookies."
                               " You can set your web browser to refuse cookies or to alert you when cookies"
                               " are being sent. However, if you choose to refuse cookies, you may not be able "
                               "to use some portions of our website.",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5
                           ),),
-                        ),
-                      ],
-                    ),),
-                  Container(
-                    margin: const EdgeInsets.only(left: 10,right: 10,top: 0),
-                    height: screenSize.height*0.03,
-                    width: screenSize.width*0.9,
-                    // color: Colors.grey,
-                    child: Text("Managing Cookies",
+      const SizedBox(height: 16),
+      Text("Managing Cookies",
                       style: TextStyle(
                           fontSize: 17,
                           letterSpacing: 0.5,
                           fontWeight: FontWeight.bold
                       ),textAlign: TextAlign.left,),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    height: screenSize.height*0.12,
-                    width: screenSize.width*0.9,
-                    //color: Colors.grey,
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("Most web browsers allow you to control cookies through their settings"
+      const SizedBox(height: 6),
+      Text("Most web browsers allow you to control cookies through their settings"
                               " preferences.",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5
                           ),),
-                        ),
-                      ],
-                    ),),
-                  Container(
-                    margin: const EdgeInsets.only(left: 10,right: 10,top: 0),
-                    height: screenSize.height*0.03,
-                    width: screenSize.width*0.9,
-                    // color: Colors.grey,
-                    child: Text("Changes to This Cookie Policy",
+      const SizedBox(height: 16),
+      Text("Changes to This Cookie Policy",
                       style: TextStyle(
                           fontSize: 17,
                           letterSpacing: 0.5,
                           fontWeight: FontWeight.bold
                       ),textAlign: TextAlign.left,),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    height: screenSize.height*0.23,
-                    width: screenSize.width*0.9,
-                    //color: Colors.grey,
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("We may update our Cookie Policy from time to time to reflect "
+      const SizedBox(height: 6),
+      Text("We may update our Cookie Policy from time to time to reflect "
                               "changes in our practices or for other operational, legal, or regulatory reasons. "
                               "We encourage you to periodically review this page for the latest information on our "
                               "cookie practices.",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5
                           ),),
-                        ),
-                      ],
-                    ),),
+
                 ]
             )
         )
@@ -427,7 +228,7 @@ class _CookiesState extends State<Cookies> {
             enableFeedback: false,
             onPressed: () {
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
 
             },
             icon: pageIndex == 0

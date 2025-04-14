@@ -11,6 +11,8 @@ import 'package:Akarat/screen/support.dart';
 import 'package:Akarat/screen/terms_condition.dart';
 import 'package:flutter/material.dart';
 
+import 'settingstile.dart';
+
 void main(){
   runApp(const Profile_Login());
 
@@ -50,6 +52,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
+                  const SizedBox(height: 10,),
                   Container(
                     height: screenSize.height*0.219,
                     color: Color(0xFFF5F5F5),
@@ -61,7 +64,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                           children: [
                               GestureDetector(
                               onTap: (){
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
                                 },
                               child: Container(
                               margin: const EdgeInsets.only(left: 20,top: 20,bottom: 0),
@@ -159,35 +162,56 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                                fit: BoxFit.contain,),
                            ),
                            Container(
-                             margin: const EdgeInsets.only(left: 10),
+                             margin: const EdgeInsets.only(left: 15),
                              height: screenSize.height*0.15,
                              width: screenSize.width*0.45,
                              // color: Colors.grey,
                              padding: const EdgeInsets.only(left: 0,top: 0),
                              child:   Column(
                                  children: [
-                                   Padding(padding: const EdgeInsets.only(top: 0,left: 2,right: 60),
-                                     child: Text("Hi there,",style: TextStyle(
-                                       fontSize: 22,
-                                       fontWeight: FontWeight.bold,
-                                       letterSpacing: 0.5,
-                                     ),textAlign: TextAlign.left,),
+                                   Row(
+                                     children: [
+                                       Padding(padding: const EdgeInsets.only(top: 0,left: 2,right: 0),
+                                         child: Text("Hi there,",style: TextStyle(
+                                           fontSize: 22,
+                                           fontWeight: FontWeight.bold,
+                                           letterSpacing: 0.5,
+                                         ),textAlign: TextAlign.left,),
+                                       ),
+                                       Text("")
+                                     ],
                                    ),
-                                   Padding(padding: const EdgeInsets.only(top: 1,left: 10,right: 0),
-                                     child: Text("Sign in for a more"
-                                         " personalized experience.",style: TextStyle(
-                                       fontSize: 12,
-                                       // fontWeight: FontWeight.bold,
-                                       letterSpacing: 0.5,
-                                     ),textAlign: TextAlign.left,),
+                                   Row(
+                                     children: [
+                                       Expanded(
+                                         child: Padding(
+                                           padding: const EdgeInsets.only(top: 1),
+                                           child: Text(
+                                             "Sign in for a more personalized experience.",
+                                             style: TextStyle(
+                                               fontSize: 12,
+                                               letterSpacing: 0.5,
+                                             ),
+                                             textAlign: TextAlign.left,
+                                             overflow: TextOverflow.ellipsis, // optional
+                                             maxLines: 2, // optional
+                                           ),
+                                         ),
+                                       ),
+                                     ],
                                    ),
-                                   Padding(padding: const EdgeInsets.only(top: 0,left: 8,right: 8),
-                                   child: ElevatedButton(onPressed: (){
-                                     Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                                   },style:
-                                   ElevatedButton.styleFrom(backgroundColor: Colors.blue,
-                                     shape: RoundedRectangleBorder(borderRadius:  BorderRadius.all(Radius.circular(8)),),),
-                                       child: Text("Login or Signup",style: TextStyle(color: Colors.white,fontSize: 11),)),
+                                   Row(
+                                     children: [
+                                       Padding(padding: const EdgeInsets.only(top: 0,left: 0,right: 8),
+                                       child: ElevatedButton(onPressed: (){
+                                         Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
+                                       },style:
+                                       ElevatedButton.styleFrom(backgroundColor: Colors.blue,
+                                         shape: RoundedRectangleBorder(borderRadius:  BorderRadius.all(Radius.circular(8)),),),
+                                           child: Text("Login or Signup",style: TextStyle(color: Colors.white,fontSize: 11),)),
+                                       ),
+                                       Text("")
+                                     ],
                                    ),
                                  ],
                                )
@@ -202,7 +226,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                   Container(
                    height: screenSize.height*0.16,
                    width: screenSize.width*0.8,
-                   margin: const EdgeInsets.only(left: 20,top: 5,right: 20),
+                   margin: const EdgeInsets.only(left: 20,top: 14,right: 20),
                    decoration: BoxDecoration(
                      color: Colors.white,
                      boxShadow: [
@@ -247,396 +271,107 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                      ],
                    ),
                  ),
-                  Container(
-                   // color: Colors.grey,
-                    height: screenSize.height*0.55,
-                    margin:const EdgeInsets.only(left: 20,right: 10,top: 10),
-                    child: ListView(
-                      padding: EdgeInsets.zero,
-                        shrinkWrap: true,
-                        scrollDirection: Axis.vertical,
-                        children: [
-                          GestureDetector(
-                            onTap: (){
-                              Navigator.push(context, MaterialPageRoute(builder: (context)=> FindAgent()));
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
-                              height: screenSize.height*0.045,
 
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 15),
-                                    child: Image.asset("assets/images/find-my-agent.png",height: 22,),
-                                  ),
-
-                                  SizedBox(
-                                    width: screenSize.width*0.13,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 0),
-                                    child: Text("Find My Agent",style: TextStyle(
-                                        fontWeight: FontWeight.bold
-                                    ),),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.25,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0,left: 15),
-                                    child: Icon(Icons.arrow_forward_ios,color: Colors.red,size: 13,),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: (){
-                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Favorite()));
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
-                              height: screenSize.height*0.045,
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 15),
-                                    child: Image.asset("assets/images/favourites.png",height: 22,),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.1,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 12),
-                                    child: Text("Favorites",style: TextStyle(
-                                        fontWeight: FontWeight.bold
-                                    ),),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.34,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0,left: 15),
-                                    child: Icon(Icons.arrow_forward_ios,color: Colors.red,size: 13,),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          GestureDetector(
-                          onTap: (){
-                            //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
-                              height: screenSize.height*0.045,
-                              child: Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 0.0,left: 15),
-                                  child: Image.asset("assets/images/cities.png",height: 25,),
-                                ),
-                                SizedBox(
-                                  width: screenSize.width*0.1,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 0.0,left: 12),
-                                  child: Text("City",style: TextStyle(
-                                    fontWeight: FontWeight.bold
-                                  ),),
-                                ),
-                                SizedBox(
-                                  width: screenSize.width*0.4,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(0.0),
-                                  child: Text("UAE",style: TextStyle(
-                                    fontWeight: FontWeight.bold
-                                  ),)
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 8.0,left: 3),
-                                  child: Icon(Icons.arrow_forward_ios,color: Colors.red,size: 13,),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          ),
-                          GestureDetector(
-                            onTap: (){
-                              //Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter()));
-                            },
-                                child: Container(
-                                  margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
-                                  height: screenSize.height*0.045,
-                                  child: Row(
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(right: 0.0,left: 15),
-                                        child: Image.asset("assets/images/languages.png",height: 25,),
-                                      ),
-                                      SizedBox(
-                                        width: screenSize.width*0.1,
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(right: 0.0,left: 12),
-                                        child: Text("Languages",style: TextStyle(
-                                            fontWeight: FontWeight.bold
-                                        ),),
-                                      ),
-                                      SizedBox(
-                                        width: screenSize.width*0.22,
-                                      ),
-                                      Padding(
-                                          padding: const EdgeInsets.all(0.0),
-                                          child: Text("English",style: TextStyle(
-                                              fontWeight: FontWeight.bold
-                                          ),)
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(right: 8.0,left: 3),
-                                        child: Icon(Icons.arrow_forward_ios,color: Colors.red,size: 13,),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                            ),
-                          GestureDetector(
-                            onTap: (){
-                              Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Us()));
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
-                              height: screenSize.height*0.045,
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 15),
-                                    child: Image.asset("assets/images/app_icon.png",height: 25,),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.1,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 12),
-                                    child: Text("About Us",style: TextStyle(
-                                        fontWeight: FontWeight.bold
-                                    ),),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.365,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0,left: 15),
-                                    child: Icon(Icons.arrow_forward_ios,color: Colors.red,size: 13,),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: (){
-                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Blog()));
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
-                              height: screenSize.height*0.045,
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 15),
-                                    child: Image.asset("assets/images/blog.png",height: 25,),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.13,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 0),
-                                    child: Text("Blogs",style: TextStyle(
-                                        fontWeight: FontWeight.bold
-                                    ),),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.416,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0,left: 15),
-                                    child: Icon(Icons.arrow_forward_ios,color: Colors.red,size: 13,),
-                                  )
-                                ],
-                              ),
-                            ),
-                            ),
-                          GestureDetector(
-                            onTap: (){
-                               Navigator.push(context, MaterialPageRoute(builder: (context)=> Advertising()));
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
-                              height: screenSize.height*0.045,
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 15),
-                                    child: Image.asset("assets/images/advertise.png",height: 25,),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.13,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 0),
-                                    child: Text("Advertising",style: TextStyle(
-                                        fontWeight: FontWeight.bold
-                                    ),),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.32,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0,left: 12),
-                                    child: Icon(Icons.arrow_forward_ios,color: Colors.red,size: 13,),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: (){
-                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Support()));
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
-                              height: screenSize.height*0.045,
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 15),
-                                    child: Image.asset("assets/images/support.png",height: 25,),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.13,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 0),
-                                    child: Text("Support",style: TextStyle(
-                                        fontWeight: FontWeight.bold
-                                    ),),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.375,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0,left: 15),
-                                    child: Icon(Icons.arrow_forward_ios,color: Colors.red,size: 13,),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: (){
-                               Navigator.push(context, MaterialPageRoute(builder: (context)=> Privacy()));
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
-                              height: screenSize.height*0.045,
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 15),
-                                    child: Image.asset("assets/images/privacy-policy.png",height: 22,),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.12,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 0),
-                                    child: Text("Privacy Policy",style: TextStyle(
-                                        fontWeight: FontWeight.bold
-                                    ),),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.28,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0,left: 15),
-                                    child: Icon(Icons.arrow_forward_ios,color: Colors.red,size: 13,),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: (){
-                               Navigator.push(context, MaterialPageRoute(builder: (context)=> TermsCondition()));
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
-                              height: screenSize.height*0.045,
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 15),
-                                    child: Image.asset("assets/images/terms-and-conditions.png",height: 25,),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.12,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 0),
-                                    child: Text("Terms And Conditions",style: TextStyle(
-                                        fontWeight: FontWeight.bold
-                                    ),),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.135,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0,left: 15),
-                                    child: Icon(Icons.arrow_forward_ios,color: Colors.red,size: 13,),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: (){
-                               Navigator.push(context, MaterialPageRoute(builder: (context)=> Cookies()));
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(left: 10,top: 0,right: 5),
-                              height: screenSize.height*0.045,
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 12),
-                                    child: Image.asset("assets/images/cookies.png",height: 25,),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.12,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0.0,left: 0),
-                                    child: Text("Cookies",style: TextStyle(
-                                        fontWeight: FontWeight.bold
-                                    ),),
-                                  ),
-                                  SizedBox(
-                                    width: screenSize.width*0.375,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0,left: 20),
-                                    child: Icon(Icons.arrow_forward_ios,color: Colors.red,size: 13,),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+            Container(
+                height: screenSize.height * 0.9,
+                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    GestureDetector(
+                      child: SettingsTile(
+                        title: "Find My Agent",
+                        iconPath: "assets/images/find-my-agent.png",
                       ),
-                  ),
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> FindAgent()));
+                      },
+                    ),
+                    GestureDetector(
+                      child: const SettingsTile(
+                        title: "Favorites",
+                        iconPath: "assets/images/favourites.png",
+                      ),
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Favorite()));
+                      },
+                    ),
+                    const SettingsTile(
+                      title: "City",
+                      iconPath: "assets/images/cities.png",
+                      trailingText: "UAE",
+                    ),
+                    const SettingsTile(
+                      title: "Languages",
+                      iconPath: "assets/images/languages.png",
+                      trailingText: "English",
+                    ),
+                    GestureDetector(
+                      child: const SettingsTile(
+                        title: "About Us",
+                        iconPath: "assets/images/about.png",
+                      ),
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Us()));
+                      },
+                    ),
+                    GestureDetector(
+                      child: const SettingsTile(
+                        title: "Blogs",
+                        iconPath: "assets/images/blog.png",
+                      ),
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Blog()));
+                      },
+                    ),
+                    GestureDetector(
+                      child: const SettingsTile(
+                        title: "Advertising",
+                        iconPath: "assets/images/advertise.png",
+                      ),
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Advertising()));
+                      },
+                    ),
+                    GestureDetector(
+                      child: const SettingsTile(
+                        title: "Support",
+                        iconPath: "assets/images/support.png",
+                      ),
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Support()));
+                      },
+                    ),
+                    GestureDetector(
+                      child: const SettingsTile(
+                        title: "Privacy Policy",
+                        iconPath: "assets/images/privacy-policy.png",
+                      ),
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Privacy()));
+                      },
+                    ),
+                    GestureDetector(
+                      child: const SettingsTile(
+                        title: "Terms And Conditions",
+                        iconPath: "assets/images/terms-and-conditions.png",
+                      ),
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> TermsCondition()));
+                      },
+                    ),
+                    GestureDetector(
+                      child: const SettingsTile(
+                        title: "Cookies",
+                        iconPath: "assets/images/cookies.png",
+                      ),
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Cookies()));
+                      },
+                    ),
+                  ],
+                ),
+            ),
                 ]
             )
         )
@@ -659,7 +394,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
             enableFeedback: false,
             onPressed: () {
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
 
             },
             icon: pageIndex == 0

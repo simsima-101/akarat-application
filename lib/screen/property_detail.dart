@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/propertymodel.dart';
 import 'package:Akarat/screen/home.dart';
@@ -66,7 +67,7 @@ class _Property_DetailState extends State<Property_Detail> {
     Size screenSize = MediaQuery.sizeOf(context);
     if (projectDetailModel == null) {
       return Scaffold(
-        body: Center(child: CircularProgressIndicator()), // Show loading state
+        body: Center(child: ShimmerCard()), // Show loading state
       );
     }
     return Scaffold(
@@ -824,7 +825,7 @@ class _Property_DetailState extends State<Property_Detail> {
             enableFeedback: false,
             onPressed: () {
 
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
 
             },
             icon: pageIndex == 0

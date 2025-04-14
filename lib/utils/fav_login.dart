@@ -580,7 +580,7 @@ class _Fav_LoginState extends State<Fav_Login> {
              enableFeedback: false,
              onPressed: () {
 
-               Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+               Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
 
              },
              icon: pageIndex == 0

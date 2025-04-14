@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:Akarat/screen/filter.dart';
 import 'package:Akarat/screen/product_detail.dart';
 import 'package:Akarat/screen/searchexample.dart';
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -345,7 +346,10 @@ class _SearchState extends State<Search> {
     Size screenSize = MediaQuery.sizeOf(context);
     if (searchModel == null) {
       return Scaffold(
-        body: Center(child: CircularProgressIndicator()), // Show loading state
+        body: ListView.builder(
+          itemCount: 5,
+          itemBuilder: (context, index) => const ShimmerCard(),)
+       // body: Center(child: const ShimmerCard()), // Show loading state
       );
     }
     return Scaffold(
@@ -450,7 +454,7 @@ class _SearchState extends State<Search> {
                           child: Container(
                             width: 400,
                             height: 70,
-                            padding: const EdgeInsets.only(top: 8,left: 5),
+                            padding: const EdgeInsets.only(top: 0,left: 5),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(25.0),
                               boxShadow: [
@@ -1121,7 +1125,7 @@ class _SearchState extends State<Search> {
                                               // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
                                             },
                                             child:  Padding(
-                                              padding: const EdgeInsets.only(top: 10.0,left: 15,bottom: 15,right: 15),
+                                              padding: const EdgeInsets.only(top: 5.0,left: 15,bottom: 5,right: 15),
                                               child:   Container(
                                                 // color: Colors.red,
                                                 width: screenSize.width*0.9,
@@ -1896,7 +1900,7 @@ class _SearchState extends State<Search> {
                                                     print("❌ Exception: $e");
                                                   }
                                                 },
-                                                    label: Text("call",style: TextStyle(
+                                                    label: Text("Call",style: TextStyle(
                                                         color: Colors.black
                                                     ),),
                                                     style: ElevatedButton.styleFrom(

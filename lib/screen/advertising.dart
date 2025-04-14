@@ -52,99 +52,17 @@ class _AdvertisingState extends State<Advertising> {
     return Scaffold(
         backgroundColor: Colors.white,
         bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+        appBar: AppBar(
+          title: const Text(
+              "Advertise", style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold)),
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          iconTheme: const IconThemeData(color: Colors.red),
+          elevation: 1,
+        ),
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
-                  Container(
-                    height: screenSize.height*0.1,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(2.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],),
-                    child:  Stack(
-                      // alignment: Alignment.topCenter,
-                      children: <Widget>[
-                        Padding(
-                          padding: EdgeInsets.only(top: 25),
-                          child: Container(
-                            height: screenSize.height*0.07,
-                            width: double.infinity,
-                            // color: Color(0xFFEEEEEE),
-                            child:   Row(
-                              children: [
-                                GestureDetector(
-                                onTap: (){
-                                  setState(() {
-                                    if(token == ''){
-                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                                    }
-                                    else{
-                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                                    }
-                                  });
-                                  },
-                                child:   Container(
-                                  margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
-                                  height: 35,
-                                  width: 35,
-                                  padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadiusDirectional.circular(20.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey,
-                                        offset: const Offset(
-                                          0.3,
-                                          0.3,
-                                        ),
-                                        blurRadius: 0.3,
-                                        spreadRadius: 0.3,
-                                      ), //BoxShadow
-                                      BoxShadow(
-                                        color: Colors.white,
-                                        offset: const Offset(0.0, 0.0),
-                                        blurRadius: 0.0,
-                                        spreadRadius: 0.0,
-                                      ), //BoxShadow
-                                    ],
-                                  ),
-                                  child: Image.asset("assets/images/ar-left.png",
-                                    width: 15,
-                                    height: 15,
-                                    fit: BoxFit.contain,),
-                                ),
-                              ),
-                                SizedBox(
-                                  width: screenSize.width*0.23,
-                                ),
-                                Padding(padding: const EdgeInsets.all(8.0),
-                                  child: Text("Advertise",style: TextStyle(
-                                      fontWeight: FontWeight.bold,fontSize: 20
-                                  ),),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                   Container(
                     margin: const EdgeInsets.only(left: 10,right: 10,top: 10),
                     height: screenSize.height*0.06,
@@ -317,7 +235,7 @@ class _AdvertisingState extends State<Advertising> {
             enableFeedback: false,
             onPressed: () {
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
 
             },
             icon: pageIndex == 0

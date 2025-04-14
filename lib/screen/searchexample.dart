@@ -92,7 +92,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
                 children: [
                   GestureDetector(
                     onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
                     },
                       child: Icon(Icons.arrow_back, color: Colors.red)),
                   SizedBox(width: 8),

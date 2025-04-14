@@ -1,6 +1,7 @@
 
 import 'dart:convert';
 
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/blogdetailmodel.dart';
 import 'package:Akarat/screen/blog.dart';
@@ -83,7 +84,10 @@ readData();
     Size screenSize = MediaQuery.sizeOf(context);
     if (blogDetailModel == null) {
       return Scaffold(
-        body: Center(child: CircularProgressIndicator()), // Show loading state
+        body: ListView.builder(
+              itemCount: 5,
+              itemBuilder: (context, index) => const ShimmerCard(),) // Show loading state
+      // Show loading state
       );
     }
     return Scaffold(
@@ -342,7 +346,7 @@ readData();
             enableFeedback: false,
             onPressed: () {
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
 
             },
             icon: pageIndex == 0

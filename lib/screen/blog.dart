@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/blogmodel.dart';
 import 'package:Akarat/screen/blog_detail.dart';
@@ -82,8 +83,14 @@ class _BlogDemoState extends State<BlogDemo> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
+    if (blogModel == null) {
+      return Scaffold(
+          body: ListView.builder(
+            itemCount: 5,
+            itemBuilder: (context, index) => const ShimmerCard(),) // Show loading state
+      );
+    }
    return Scaffold(
-
        backgroundColor: Colors.white,
      bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
      body: SingleChildScrollView(
@@ -365,7 +372,7 @@ class _BlogDemoState extends State<BlogDemo> {
             enableFeedback: false,
             onPressed: () {
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
 
             },
             icon: pageIndex == 0

@@ -33,6 +33,8 @@ class Data {
   String? price;
   String? address;
   String? location;
+  String? phoneNumber;
+  String? whatsapp;
   List<Media>? media;
 
   Data(
@@ -40,6 +42,8 @@ class Data {
         this.title,
         this.price,
         this.address,
+        this.phoneNumber,
+        this.whatsapp,
         this.location,
         this.media});
 
@@ -49,6 +53,8 @@ class Data {
     price = json['price'];
     address = json['address'];
     location = json['location'];
+    phoneNumber = json['phone_number'];
+    whatsapp = json['whatsapp'];
     if (json['media'] != null) {
       media = <Media>[];
       json['media'].forEach((v) {
@@ -64,6 +70,8 @@ class Data {
     data['price'] = this.price;
     data['address'] = this.address;
     data['location'] = this.location;
+    data['phone_number'] = this.phoneNumber;
+    data['whatsapp'] = this.whatsapp;
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
     }

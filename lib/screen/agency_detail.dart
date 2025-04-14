@@ -997,10 +997,10 @@ class _Agency_DetailState extends State<Agency_Detail> {
                               child: Text("Listed:",style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
                               ),),),
-                            Padding(padding: const EdgeInsets.only(left: 10,top: 5),
+                            /*Padding(padding: const EdgeInsets.only(left: 10,top: 5),
                               child: Text(productModels!.data!.regulatoryInfo!.listed.toString(),style: TextStyle(
                                   letterSpacing: 0.5,fontSize: 13
-                              ),),),
+                              ),),),*/
                           ],
                         ),
                         Row(
@@ -1166,7 +1166,7 @@ class _Agency_DetailState extends State<Agency_Detail> {
             enableFeedback: false,
             onPressed: () {
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
 
             },
             icon: pageIndex == 0
@@ -1307,7 +1307,7 @@ class _Agency_DetailState extends State<Agency_Detail> {
                   onTap: () async {
                     final Uri emailUri = Uri(
                       scheme: 'mailto',
-                      path: '${productModels!.data!.whatsapp}', // Replace with actual email
+                      path: '${productModels!.data!.email}', // Replace with actual email
                       query: 'subject=Property Inquiry&body=Hi, I saw your property on Akarat.',
                     );
 

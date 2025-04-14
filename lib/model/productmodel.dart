@@ -28,17 +28,19 @@ class Data {
   String? paymentPeriod;
   int? bedrooms;
   int? bathrooms;
+  String? email;
   String? squareFeet;
   String? purpose;
   String? propertyType;
- // String? category;
-  String? latitude;
-  String? longitude;
+  Null? latitude;
+  Null? longitude;
   String? postedOn;
   String? deliveryDate;
   String? project;
   String? developer;
   List<Media>? media;
+  List<Qr>? qr;
+  List<Floor>? floor;
   String? googleMapUrl;
   String? furnishedStatus;
   String? agent;
@@ -47,9 +49,6 @@ class Data {
   String? agentImage;
   List<RecommendedProperties>? recommendedProperties;
   RegulatoryInfo? regulatoryInfo;
-
-
-
 
   Data(
       {this.id,
@@ -65,8 +64,8 @@ class Data {
         this.bathrooms,
         this.squareFeet,
         this.purpose,
+        this.email,
         this.propertyType,
-       // this.category,
         this.latitude,
         this.longitude,
         this.postedOn,
@@ -74,6 +73,8 @@ class Data {
         this.project,
         this.developer,
         this.media,
+        this.qr,
+        this.floor,
         this.googleMapUrl,
         this.furnishedStatus,
         this.agent,
@@ -94,11 +95,11 @@ class Data {
     description = json['description'];
     paymentPeriod = json['payment_period'];
     bedrooms = json['bedrooms'];
+    email = json['email'];
     bathrooms = json['bathrooms'];
     squareFeet = json['square_feet'];
     purpose = json['purpose'];
     propertyType = json['property_type'];
-   // category = json['category'];
     latitude = json['latitude'];
     longitude = json['longitude'];
     postedOn = json['posted_on'];
@@ -109,6 +110,18 @@ class Data {
       media = <Media>[];
       json['media'].forEach((v) {
         media!.add(new Media.fromJson(v));
+      });
+    }
+    if (json['qr'] != null) {
+      qr = <Qr>[];
+      json['qr'].forEach((v) {
+        qr!.add(new Qr.fromJson(v));
+      });
+    }
+    if (json['floor'] != null) {
+      floor = <Floor>[];
+      json['floor'].forEach((v) {
+        floor!.add(new Floor.fromJson(v));
       });
     }
     googleMapUrl = json['google_map_url'];
@@ -140,11 +153,11 @@ class Data {
     data['description'] = this.description;
     data['payment_period'] = this.paymentPeriod;
     data['bedrooms'] = this.bedrooms;
+    data['email'] = this.email;
     data['bathrooms'] = this.bathrooms;
     data['square_feet'] = this.squareFeet;
     data['purpose'] = this.purpose;
     data['property_type'] = this.propertyType;
-   // data['category'] = this.category;
     data['latitude'] = this.latitude;
     data['longitude'] = this.longitude;
     data['posted_on'] = this.postedOn;
@@ -153,6 +166,12 @@ class Data {
     data['developer'] = this.developer;
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
+    }
+    if (this.qr != null) {
+      data['qr'] = this.qr!.map((v) => v.toJson()).toList();
+    }
+    if (this.floor != null) {
+      data['floor'] = this.floor!.map((v) => v.toJson()).toList();
     }
     data['google_map_url'] = this.googleMapUrl;
     data['furnished_status'] = this.furnishedStatus;
@@ -187,12 +206,47 @@ class Media {
   }
 }
 
+class Qr {
+  String? qrUrl;
+
+  Qr({this.qrUrl});
+
+  Qr.fromJson(Map<String, dynamic> json) {
+    qrUrl = json['qr_url'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['qr_url'] = this.qrUrl;
+    return data;
+  }
+}
+
+class Floor {
+  String? floorUrl;
+
+  Floor({this.floorUrl});
+
+  Floor.fromJson(Map<String, dynamic> json) {
+    floorUrl = json['floor_url'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['floor_url'] = this.floorUrl;
+    return data;
+  }
+}
+
 class RecommendedProperties {
   int? id;
   String? title;
   String? price;
   String? address;
   String? location;
+  String? phoneNumber;
+  String? whatsapp;
+  String? email;
   List<Media>? media;
   int? bedrooms;
   int? bathrooms;
@@ -204,6 +258,9 @@ class RecommendedProperties {
         this.price,
         this.address,
         this.location,
+        this.phoneNumber,
+        this.whatsapp,
+        this.email,
         this.media,
         this.bedrooms,
         this.bathrooms,
@@ -215,6 +272,9 @@ class RecommendedProperties {
     price = json['price'];
     address = json['address'];
     location = json['location'];
+    phoneNumber = json['phone_number'];
+    whatsapp = json['whatsapp'];
+    email = json['email'];
     if (json['media'] != null) {
       media = <Media>[];
       json['media'].forEach((v) {
@@ -233,6 +293,9 @@ class RecommendedProperties {
     data['price'] = this.price;
     data['address'] = this.address;
     data['location'] = this.location;
+    data['phone_number'] = this.phoneNumber;
+    data['whatsapp'] = this.whatsapp;
+    data['email'] = this.email;
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
     }
@@ -245,7 +308,6 @@ class RecommendedProperties {
 
 class RegulatoryInfo {
   String? reference;
-  String? listed;
   String? brokerLicense;
   String? zoneName;
   String? dldPermitNumber;
@@ -253,7 +315,6 @@ class RegulatoryInfo {
 
   RegulatoryInfo(
       {this.reference,
-        this.listed,
         this.brokerLicense,
         this.zoneName,
         this.dldPermitNumber,
@@ -261,7 +322,6 @@ class RegulatoryInfo {
 
   RegulatoryInfo.fromJson(Map<String, dynamic> json) {
     reference = json['reference'];
-    listed = json['listed'];
     brokerLicense = json['broker_license'];
     zoneName = json['zone_name'];
     dldPermitNumber = json['dld_permit_number'];
@@ -271,7 +331,6 @@ class RegulatoryInfo {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['reference'] = this.reference;
-    data['listed'] = this.listed;
     data['broker_license'] = this.brokerLicense;
     data['zone_name'] = this.zoneName;
     data['dld_permit_number'] = this.dldPermitNumber;

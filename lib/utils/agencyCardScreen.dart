@@ -1,3 +1,4 @@
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/agencymodel.dart';
 import 'package:Akarat/screen/about_agency.dart';
@@ -14,7 +15,7 @@ class Agencycardscreen extends StatelessWidget {
     if(agencyModel == null){
       return Scaffold(
         body: Center(
-            child: CircularProgressIndicator()), // Show loading state
+            child: ShimmerCard()), // Show loading state
       );
     }
     return SingleChildScrollView(

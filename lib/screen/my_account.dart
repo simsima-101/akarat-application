@@ -6,6 +6,7 @@ import 'package:Akarat/screen/findagent.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/privacy.dart';
 import 'package:Akarat/screen/profile_login.dart';
+import 'package:Akarat/screen/settingstile.dart';
 import 'package:Akarat/screen/support.dart';
 import 'package:Akarat/screen/terms_condition.dart';
 import 'package:Akarat/utils/fav_login.dart';
@@ -144,7 +145,7 @@ class _My_AccountState extends State<My_Account> {
                     child: GestureDetector(
                       onTap: (){
                         setState(() {
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
                         });
                       },
                               child: Image.asset("assets/images/ar-left.png",
@@ -194,7 +195,7 @@ class _My_AccountState extends State<My_Account> {
                                 margin: const EdgeInsets.only(left: 15,top: 5),
                                 height: screenSize.height*0.13,
                                 width: screenSize.width*0.4,
-                                // color: Colors.grey,
+                                 //color: Colors.grey,
                                 padding: const EdgeInsets.only(left: 15,top: 10),
                                 child:   Column(
                                   children: [
@@ -249,6 +250,113 @@ class _My_AccountState extends State<My_Account> {
 
                   ),
                   Container(
+                    height: screenSize.height * 0.9,
+                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        GestureDetector(
+                          child: SettingsTile(
+                            title: "Find My Agent",
+                            iconPath: "assets/images/find-my-agent.png",
+                          ),
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> FindAgent()));
+                          },
+                        ),
+                        GestureDetector(
+                          child: const SettingsTile(
+                            title: "Favorites",
+                            iconPath: "assets/images/favourites.png",
+                          ),
+                          onTap: (){
+                            if(isDataRead == true){
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Login()));
+                            }
+                            else{
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Logout()));
+
+                            }
+                            //  Navigator.push(context, MaterialPageRoute(builder: (context)=> Favorite()));
+                          },
+                        ),
+                        const SettingsTile(
+                          title: "City",
+                          iconPath: "assets/images/cities.png",
+                          trailingText: "UAE",
+                        ),
+                        const SettingsTile(
+                          title: "Languages",
+                          iconPath: "assets/images/languages.png",
+                          trailingText: "English",
+                        ),
+                        GestureDetector(
+                          child: const SettingsTile(
+                            title: "About Us",
+                            iconPath: "assets/images/app_icon.png",
+                          ),
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Us()));
+                          },
+                        ),
+                        GestureDetector(
+                          child: const SettingsTile(
+                            title: "Blogs",
+                            iconPath: "assets/images/blog.png",
+                          ),
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Blog()));
+                          },
+                        ),
+                        GestureDetector(
+                          child: const SettingsTile(
+                            title: "Advertising",
+                            iconPath: "assets/images/advertise10.png",
+                          ),
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Advertising()));
+                          },
+                        ),
+                        GestureDetector(
+                          child: const SettingsTile(
+                            title: "Support",
+                            iconPath: "assets/images/support.png",
+                          ),
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Support()));
+                          },
+                        ),
+                        GestureDetector(
+                          child: const SettingsTile(
+                            title: "Privacy Policy",
+                            iconPath: "assets/images/privacy-policy.png",
+                          ),
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Privacy()));
+                          },
+                        ),
+                        GestureDetector(
+                          child: const SettingsTile(
+                            title: "Terms And Conditions",
+                            iconPath: "assets/images/terms-and-conditions.png",
+                          ),
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> TermsCondition()));
+                          },
+                        ),
+                        GestureDetector(
+                          child: const SettingsTile(
+                            title: "Cookies",
+                            iconPath: "assets/images/cookies.png",
+                          ),
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Cookies()));
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                 /* Container(
                     // color: Colors.grey,
                     height: screenSize.height*0.55,
                     margin:const EdgeInsets.only(left: 20,right: 20,top: 0),
@@ -643,7 +751,7 @@ class _My_AccountState extends State<My_Account> {
                         ),
                       ],
                     ),
-                  ),
+                  ),*/
 
                 ]
             )
@@ -667,7 +775,7 @@ class _My_AccountState extends State<My_Account> {
             enableFeedback: false,
             onPressed: () {
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
 
             },
             icon: pageIndex == 0

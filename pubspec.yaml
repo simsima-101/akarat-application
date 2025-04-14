@@ -46,6 +46,7 @@ dependencies:
   provider:
   cached_network_image:
   http:
+  shimmer:
   html_unescape: ^2.0.0
   flutter_html:
   url_launcher:
@@ -85,7 +86,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: "AppIcon"
-  image_path: "assets/images/app_icon.png"
+  image_path: "assets/images/app-icon_new.png"
   min_sdk_android: 21
   remove_alpha_ios: true
 
@@ -110,6 +111,7 @@ flutter:
   - assets/images/villa-new.png
   - assets/images/city.png
   - assets/images/blog.png
+  - assets/images/avatar.png
   - assets/images/banner1.png
   - assets/images/banner2.png
   - assets/images/banner3.png
@@ -120,6 +122,7 @@ flutter:
   - assets/images/ar-left.png
   - assets/images/share.png
   - assets/images/map.png
+  - assets/images/image.png
   - assets/images/arrow.png
   - assets/images/Residential__1.png
   - assets/images/filter.png
@@ -131,17 +134,23 @@ flutter:
   - assets/images/no-property-search.png
   - assets/images/dot.png
   - assets/images/dis-like.png
+  - assets/images/icon.png
   - assets/images/like.png
+  - assets/images/advertise10.png
   - assets/images/advertise.png
   - assets/images/cities.png
   - assets/images/cookies.png
   - assets/images/favourites.png
+  - assets/images/about.png
   - assets/images/find-my-agent.png
   - assets/images/languages.png
   - assets/images/privacy-policy.png
   - assets/images/support.png
   - assets/images/whats.png
+  - assets/images/app-icon_new.png
+  - assets/images/test.png
   - assets/images/terms-and-conditions.png
+  - assets/images/terms-and-conditions1.png
 
 #        -assets/images/image 2.png
 #        - assets/images/image3.png

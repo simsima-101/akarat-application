@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:Akarat/screen/product_detail.dart';
 import 'package:Akarat/screen/search.dart';
 import 'package:Akarat/screen/searchexample.dart';
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/filtermodel.dart';
 import 'package:Akarat/screen/blog.dart';
@@ -379,6 +380,13 @@ class FliterList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (filterModel == null) {
+      return Scaffold(
+          body: ListView.builder(
+            itemCount: 5,
+            itemBuilder: (context, index) => const ShimmerCard(),) // Show loading state
+      );
+    }
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
       bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
@@ -398,7 +406,7 @@ class FliterList extends StatelessWidget {
                   child: Container(
                     width: 400,
                     height: 70,
-                    padding: const EdgeInsets.only(top: 8,left: 5),
+                    padding: const EdgeInsets.only(top: 0,left: 5),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(25.0),
                       boxShadow: [
@@ -1069,7 +1077,7 @@ class FliterList extends StatelessWidget {
                                       // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
                                     },
                                     child:  Padding(
-                                      padding: const EdgeInsets.only(top: 10.0,left: 15,bottom: 15,right: 15),
+                                      padding: const EdgeInsets.only(top: 5.0,left: 15,bottom: 5,right: 15),
                                       child:   Container(
                                         // color: Colors.red,
                                         width: screenSize.width*0.9,
@@ -1867,7 +1875,7 @@ class FliterList extends StatelessWidget {
                                Padding(padding: const EdgeInsets.only(left: 30,top: 10,bottom: 15),
                                  child: ElevatedButton.icon(
                                      onPressed: () async {
-                                       String phone = 'tel:${filterModel.data![index]}';
+                                       String phone = 'tel:${filterModel.data![index].phoneNumber}';
                                        try {
                                          final bool launched = await launchUrlString(
                                            phone,
@@ -1899,7 +1907,7 @@ class FliterList extends StatelessWidget {
                                Padding(padding: const EdgeInsets.only(left: 15,top: 10,bottom: 15),
                                  child: ElevatedButton.icon(
                                      onPressed: () async {
-                                       final phone = filterModel.data; // without plus
+                                       final phone = filterModel.data![index].whatsapp; // without plus
                                        final message = Uri.encodeComponent("Hello");
                                        // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
                                        // final url = Uri.parse("https://wa.me/?text=hello");
@@ -1970,7 +1978,7 @@ class FliterList extends StatelessWidget {
             enableFeedback: false,
             onPressed: () {
              // setState(() {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
              // });
             },
             icon: pageIndex == 0

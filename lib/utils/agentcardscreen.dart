@@ -1,5 +1,6 @@
 import 'package:Akarat/model/agentsmodel.dart';
 import 'package:Akarat/screen/about_agent.dart';
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:flutter/material.dart';
 
 class Agentcardscreen extends StatelessWidget {
@@ -13,7 +14,7 @@ class Agentcardscreen extends StatelessWidget {
     if (agentsModel == null) {
       return Scaffold(
         body: Center(
-            child: CircularProgressIndicator()), // Show loading state
+            child: ShimmerCard()), // Show loading state
       );
     }
     return SingleChildScrollView(

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:Akarat/model/propertytypemodel.dart';
+import 'package:Akarat/screen/settingstile.dart';
 import 'package:Akarat/screen/search.dart';
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/amenities.dart';
 import 'package:Akarat/model/filtermodel.dart';
@@ -393,68 +395,55 @@ String max_sqrfeet = ' ';
   final TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    if (propertyTypeModel == null) {
+      return Scaffold(
+        body: ListView.builder(
+          itemCount: 5,
+          itemBuilder: (context, index) => const ShimmerCard(),) // Show loading state
+      );
+    }
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
       bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Color(0xFFF9F9F9), // Softer white
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          "Filters",
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.red),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Home())), // ✅ Add close functionality
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              // TODO: Add reset logic
+            },
+            child: const Text(
+              "Reset",
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Column(
             children: <Widget>[
-              //filter
-              Padding(
-                padding: const EdgeInsets.only(top: 30,left: 0,right: 0),
-                child: Container(
-                    margin: const EdgeInsets.only(left: 15,right: 10),
-                    // color: Colors.grey,
-                    width: screenSize.width * 1.0,
-                    height: 50,
-                    padding: const EdgeInsets.only(top: 5),
-                    child: Row(
-                    spacing: screenSize.width*0.27,
-                      children: [
-                        GestureDetector(
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> HomeDemo()));
-                          },
-                          child:  Icon(Icons.close,color: Colors.red,),
-                        ),
-
-
-                        Padding(
-                          padding: const EdgeInsets.only(left: 0.0),
-                          child: Text("Filters",textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: Colors.black,fontSize: 20.0,fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5),),
-                        ),
-
-                        GestureDetector(
-                          onTap: (){
-                            // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
-                            Navigator.pushReplacement(
-                              context,
-                              PageRouteBuilder(
-                                transitionDuration: Duration.zero,
-                                pageBuilder: (_, __, ___) => Filter(data: purpose,),
-                              ),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 0.0),
-                            child: Text("Reset",textAlign: TextAlign.right,
-                              style: TextStyle(color: Colors.red,fontSize: 16.0,fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,),),
-                          ),
-                        ),
-                      ],
-                    )
-                ),
-              ),
               //properties
               Padding(
-                  padding: const EdgeInsets.only(top: 15,left: 15,right: 10),
+                  padding: const EdgeInsets.all(5),
                   child: Container(
-
                     //color: Colors.grey,
                     height: 60,
                     child:  ListView.builder(
@@ -513,9 +502,10 @@ String max_sqrfeet = ' ';
                     ),
                   )
               ),
+              const SizedBox(height: 20),
               //Searchbar
               Padding(
-                padding: const EdgeInsets.only(top: 20, left: 20, right: 15),
+                padding: const EdgeInsets.all(5),
                 child: GestureDetector(
                   onTap: (){
                    // Navigator.push(context, MaterialPageRoute(builder: (context)=> SearchScreen()));
@@ -524,7 +514,7 @@ String max_sqrfeet = ' ';
                   child: Container(
                     width: 400,
                     height: 70,
-                    padding: const EdgeInsets.only(top: 8,left: 5),
+                    padding: const EdgeInsets.only(top: 0,left: 5),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(25.0),
                       boxShadow: [
@@ -560,10 +550,11 @@ String max_sqrfeet = ' ';
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
               //property type
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 25.0,left: 20,bottom: 0),
+                  Padding(padding: const EdgeInsets.all(5),
                       // child:  Text(purpose,
                       child:  Text("Property Type",
                         style: TextStyle(
@@ -574,8 +565,9 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
               Container(
-                margin: const EdgeInsets.only(left: 15,right: 5,top: 5),
+                margin: const EdgeInsets.all(5),
                 height: screenSize.height*0.12,
              //  width: screenSize.width*0.5,
                // color: Colors.grey,
@@ -638,10 +630,11 @@ String max_sqrfeet = ' ';
                   },
                 ),
               ),
+              const SizedBox(height: 24),
               //text
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 15),
+                  Padding(padding: const EdgeInsets.all(5),
                     child:  Text("Price range",
                       style: TextStyle(
                           color: Colors.black,fontSize: 16.0,
@@ -652,6 +645,7 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
               Padding(
                   padding: const EdgeInsets.only(top: 0,left: 20,right: 10),
                   child: Row(
@@ -723,9 +717,10 @@ String max_sqrfeet = ' ';
                       ]
                   )
               ),
+              const SizedBox(height: 10),
               //rangeslider
               Padding(
-                padding: const EdgeInsets.only(top: 15.0,left: 0,bottom: 0),
+                padding: const EdgeInsets.all(5),
                 child: SfRangeSelectorTheme(
                   data: SfRangeSelectorThemeData(
                     tooltipBackgroundColor: Colors.black, // Change tooltip background color
@@ -794,9 +789,10 @@ String max_sqrfeet = ' ';
                   ),
                 ),
               ),
+              const SizedBox(height: 24),
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 15.0,left: 20,bottom: 0),
+                  Padding(padding: const EdgeInsets.all(5),
                     // child:  Text(_values.start.toStringAsFixed(2),
                     child:  Text("Bedrooms",
                       style: TextStyle(
@@ -807,14 +803,16 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
               //studio
               Padding(
-                  padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
+                  padding: const EdgeInsets.all(5),
                   child: Container(
                     //color: Colors.grey,
                     // width: 60,
                     height: 60,
                     child:  ListView.builder(
+                      padding: const EdgeInsets.all(0),
                       scrollDirection: Axis.horizontal,
                       physics: const ScrollPhysics(),
                       itemCount: _bedroom.length,
@@ -868,9 +866,10 @@ String max_sqrfeet = ' ';
                     ),
                   )
               ),
+              const SizedBox(height: 24),
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 0),
+                  Padding(padding: const EdgeInsets.all(5),
                     // child:  Text(bedroom,
                     child:  Text("Bathrooms",
                       style: TextStyle(
@@ -881,8 +880,9 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
               Padding(
-                  padding: const EdgeInsets.only(top: 5,left: 17,right: 10),
+                  padding: const EdgeInsets.all(5),
                   child: Container(
                     //color: Colors.grey,
                     // width: 60,
@@ -942,10 +942,11 @@ String max_sqrfeet = ' ';
                     ),
                   )
               ),
+              const SizedBox(height: 24),
               //area
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 0),
+                  Padding(padding: const EdgeInsets.all(5),
                     child:  Text("Area/Size",
                       style: TextStyle(
                           color: Colors.black,fontSize: 16.0,
@@ -956,8 +957,9 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
               Padding(
-                  padding: const EdgeInsets.only(top: 5,left: 20,right: 10),
+                  padding: const EdgeInsets.only(top: 0,left: 20,right: 10),
                   child: Row(
                     spacing: 15,
                       children: [
@@ -1027,9 +1029,10 @@ String max_sqrfeet = ' ';
                       ]
                   )
               ),
+              const SizedBox(height: 10),
               //rangeslider
               Padding(
-                padding: const EdgeInsets.only(top: 10.0,left: 0,bottom: 0),
+                padding: const EdgeInsets.all(5),
                 child: SfRangeSelectorTheme(
                   data: SfRangeSelectorThemeData(
                     tooltipBackgroundColor: Colors.black, // Change tooltip background color
@@ -1094,10 +1097,11 @@ String max_sqrfeet = ' ';
                   ),
                 ),
               ),
+              const SizedBox(height: 24),
               //furnished
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 0),
+                  Padding(padding: const EdgeInsets.all(5),
                     child:  Text("Furnished Type",
                       style: TextStyle(
                           color: Colors.black,fontSize: 16.0,
@@ -1108,8 +1112,9 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
               Padding(
-                  padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
+                  padding: const EdgeInsets.all(5),
                   child: Container(
                     alignment: Alignment.topLeft,
                     height: 60,
@@ -1166,10 +1171,11 @@ String max_sqrfeet = ' ';
                     ),
                   )
               ),
+              const SizedBox(height: 24),
               //Amenities
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 0),
+                  Padding(padding: const EdgeInsets.all(5),
                     child:  Text("Amenities",
                       style: TextStyle(
                           color: Colors.black,fontSize: 16.0,
@@ -1180,8 +1186,9 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
               Padding(
-                  padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
+                  padding: const EdgeInsets.all(5),
                   child: Container(
                     //color: Colors.grey,
                     // width: 60,
@@ -1255,21 +1262,22 @@ String max_sqrfeet = ' ';
 
                   )
               ),
+              const SizedBox(height: 24),
               //real estate
               Row(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(
-                        top: 20.0,left: 20,bottom: 0),
+                    padding: const EdgeInsets.all(5),
                     child:  Text("Rent is paid",style: TextStyle(
                         color: Colors.black,fontSize: 16.0,
                         fontWeight: FontWeight.bold,letterSpacing: 0.5
                     ),textAlign: TextAlign.left,),
                   ),
                 ],
-              ), 
+              ),
+              const SizedBox(height: 10),
               Padding(
-                  padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
+                  padding: const EdgeInsets.all(5),
                   child: Container(
                     //color: Colors.grey,
                     // width: 60,
@@ -1397,7 +1405,8 @@ Container buildMyNavBar(BuildContext context) {
           enableFeedback: false,
           onPressed: () {
             setState(() {
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+              // Navigator.push(context, MaterialPageRoute(builder: (context)=> FilterScreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
             });
           },
           icon: pageIndex == 0

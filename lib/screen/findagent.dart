@@ -5,6 +5,7 @@ import 'package:Akarat/model/agentsmodel.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/screen/profile_login.dart';
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:Akarat/utils/agencyCardScreen.dart';
 import 'package:Akarat/utils/agentcardscreen.dart';
 import 'package:flutter/material.dart';
@@ -95,10 +96,19 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   final TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    if (agentsmodel == null) {
+      return Scaffold(
+          body: ListView.builder(
+            itemCount: 5,
+            itemBuilder: (context, index) => const ShimmerCard(),)
+        // body: Center(child: const ShimmerCard()), // Show loading state
+      );
+    }
     Size screenSize = MediaQuery.sizeOf(context);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         backgroundColor: Colors.white, // Light grey background
         body: SafeArea(
           child: Column(
@@ -267,7 +277,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     return Container(
       width: 400,
       height: 70,
-      padding: const EdgeInsets.only(top: 8,left: 5),
+      padding: const EdgeInsets.only(top: 0,left: 5),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25.0),
         boxShadow: [
@@ -302,154 +312,145 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
       ),
     );
   }
-Container buildMyNavBar(BuildContext context) {
-  Size screenSize = MediaQuery.sizeOf(context);
-  return Container(
-    height: 40,
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(20),
-        topRight: Radius.circular(20),
+  Container buildMyNavBar(BuildContext context) {
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
       ),
-    ),
-    child: Row(
-     spacing: screenSize.width*0.7,
-      children: [
-        IconButton(
-          alignment: Alignment.bottomLeft,
-          padding: const EdgeInsets.only(left: 15,top: 5),
-          enableFeedback: false,
-          onPressed: () {
-            setState(() {
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
-            });
-          },
-          icon: pageIndex == 0
-              ? const Icon(
-            Icons.home_filled,
-            color: Colors.red,
-            size: 35,
-          )
-              : const Icon(
-            Icons.home_outlined,
-            color: Colors.red,
-            size: 35,
-          ),
-        ),
-       /* Container(
-          margin: const EdgeInsets.only(left: 40),
-          height: 35,
-          width: 35,
-          padding: const EdgeInsets.only(top: 2),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadiusDirectional.circular(20.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey,
-                offset: const Offset(
-                  0.5,
-                  0.5,
-                ),
-                blurRadius: 1.0,
-                spreadRadius: 0.5,
-              ), //BoxShadow
-              BoxShadow(
-                color: Colors.white,
-                offset: const Offset(0.0, 0.0),
-                blurRadius: 0.0,
-                spreadRadius: 0.0,
-              ), //BoxShadow
-            ],
-          ),
-         child: Icon(Icons.call_outlined,color: Colors.red,)
-        ),*/
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
 
-       /* Container(
-            margin: const EdgeInsets.only(left: 1),
-            height: 35,
-            width: 35,
-            padding: const EdgeInsets.only(top: 2),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadiusDirectional.circular(20.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey,
-                  offset: const Offset(
-                    0.5,
-                    0.5,
-                  ),
-                  blurRadius: 1.0,
-                  spreadRadius: 0.5,
-                ), //BoxShadow
-                BoxShadow(
-                  color: Colors.white,
-                  offset: const Offset(0.0, 0.0),
-                  blurRadius: 0.0,
-                  spreadRadius: 0.0,
-                ), //BoxShadow
-              ],
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+
+            },
+            icon: pageIndex == 0
+                ? const Icon(
+              Icons.home_filled,
+              color: Colors.red,
+              size: 35,
+            )
+                : const Icon(
+              Icons.home_outlined,
+              color: Colors.red,
+              size: 35,
             ),
-            child: Image.asset("assets/images/whats.png",height: 20,)
-
-        ),*/
-       /* Container(
-            margin: const EdgeInsets.only(left: 1,right: 40),
-            height: 35,
-            width: 35,
-            padding: const EdgeInsets.only(top: 2),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadiusDirectional.circular(20.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey,
-                  offset: const Offset(
-                    0.5,
-                    0.5,
-                  ),
-                  blurRadius: 1.0,
-                  spreadRadius: 0.5,
-                ), //BoxShadow
-                BoxShadow(
-                  color: Colors.white,
-                  offset: const Offset(0.0, 0.0),
-                  blurRadius: 0.0,
-                  spreadRadius: 0.0,
-                ), //BoxShadow
-              ],
-            ),
-            child: Icon(Icons.mail,color: Colors.red,)
-
-        ),*/
-        IconButton(
-          enableFeedback: false,
-          onPressed: () {
-            setState(() {
-              if(token == ''){
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-              }
-              else{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-              }
-            });
-          },
-          icon: pageIndex == 3
-              ? const Icon(
-            Icons.dehaze,
-            color: Colors.red,
-            size: 35,
-          )
-              : const Icon(
-            Icons.dehaze_outlined,
-            color: Colors.red,
-            size: 35,
           ),
-        ),
-      ],
-    ),
-  );
-}
+          Container(
+              margin: const EdgeInsets.only(left: 40),
+              height: 35,
+              width: 35,
+              padding: const EdgeInsets.only(top: 2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadiusDirectional.circular(20.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey,
+                    offset: const Offset(
+                      0.5,
+                      0.5,
+                    ),
+                    blurRadius: 1.0,
+                    spreadRadius: 0.5,
+                  ), //BoxShadow
+                  BoxShadow(
+                    color: Colors.white,
+                    offset: const Offset(0.0, 0.0),
+                    blurRadius: 0.0,
+                    spreadRadius: 0.0,
+                  ), //BoxShadow
+                ],
+              ),
+              child: Icon(Icons.favorite_border,color: Colors.red,)
+          ),
+
+          Container(
+              margin: const EdgeInsets.only(left: 1),
+              height: 35,
+              width: 35,
+              padding: const EdgeInsets.only(top: 2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadiusDirectional.circular(20.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey,
+                    offset: const Offset(
+                      0.5,
+                      0.5,
+                    ),
+                    blurRadius: 1.0,
+                    spreadRadius: 0.5,
+                  ), //BoxShadow
+                  BoxShadow(
+                    color: Colors.white,
+                    offset: const Offset(0.0, 0.0),
+                    blurRadius: 0.0,
+                    spreadRadius: 0.0,
+                  ), //BoxShadow
+                ],
+              ),
+              child: Icon(Icons.add_location_rounded,color: Colors.red,)
+
+          ),
+          Container(
+              margin: const EdgeInsets.only(left: 1,right: 40),
+              height: 35,
+              width: 35,
+              padding: const EdgeInsets.only(top: 2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadiusDirectional.circular(20.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey,
+                    offset: const Offset(
+                      0.5,
+                      0.5,
+                    ),
+                    blurRadius: 1.0,
+                    spreadRadius: 0.5,
+                  ), //BoxShadow
+                  BoxShadow(
+                    color: Colors.white,
+                    offset: const Offset(0.0, 0.0),
+                    blurRadius: 0.0,
+                    spreadRadius: 0.0,
+                  ), //BoxShadow
+                ],
+              ),
+              child: Icon(Icons.chat,color: Colors.red,)
+
+          ),
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
+
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+
+            },
+            icon: pageIndex == 3
+                ? const Icon(
+              Icons.dehaze,
+              color: Colors.red,
+              size: 35,
+            )
+                : const Icon(
+              Icons.dehaze_outlined,
+              color: Colors.red,
+              size: 35,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 class Page1 extends StatelessWidget {
   const Page1({Key? key}) : super(key: key);

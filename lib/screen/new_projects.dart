@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/projectmodel.dart';
 import 'package:Akarat/screen/home.dart';
@@ -148,6 +149,13 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
   @override
   Widget build(BuildContext context) {
+    if (projectModel == null) {
+      return Scaffold(
+          body: ListView.builder(
+            itemCount: 5,
+            itemBuilder: (context, index) => const ShimmerCard(),) // Show loading state
+      );
+    }
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
@@ -186,7 +194,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
                 child: GestureDetector(
                   onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
                   },
                   child:  Icon(Icons.arrow_back,color: Colors.red,
                 )
@@ -564,7 +572,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               });
             },
             icon: pageIndex == 0

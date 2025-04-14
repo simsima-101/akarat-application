@@ -53,103 +53,22 @@ class _PrivacyState extends State<Privacy> {
     return Scaffold(
         backgroundColor: Colors.white,
         bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+        appBar: AppBar(
+          title: const Text(
+              "Privacy Policy", style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold)),
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          iconTheme: const IconThemeData(color: Colors.red),
+          elevation: 1,
+        ),
         body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
         child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Container(
-            height: screenSize.height*0.1,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadiusDirectional.circular(2.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey,
-                  offset: const Offset(
-                    0.3,
-                    0.3,
-                  ),
-                  blurRadius: 0.3,
-                  spreadRadius: 0.3,
-                ), //BoxShadow
-                BoxShadow(
-                  color: Colors.white,
-                  offset: const Offset(0.0, 0.0),
-                  blurRadius: 0.0,
-                  spreadRadius: 0.0,
-                ), //BoxShadow
-              ],),
-            child:  Stack(
-              // alignment: Alignment.topCenter,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.only(top: 25),
-                  child: Container(
-                    height: screenSize.height*0.07,
-                    width: double.infinity,
-                    // color: Color(0xFFEEEEEE),
-                    child:   Row(
-                      children: [GestureDetector(
-                        onTap: (){
-                          setState(() {
-                            if(token == ''){
-                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                            }
-                            else{
-                              Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                            }
-                          });                        },
-                        child:   Container(
-                          margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
-                          height: 35,
-                          width: 35,
-                          padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadiusDirectional.circular(20.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey,
-                                offset: const Offset(
-                                  0.3,
-                                  0.3,
-                                ),
-                                blurRadius: 0.3,
-                                spreadRadius: 0.3,
-                              ), //BoxShadow
-                              BoxShadow(
-                                color: Colors.white,
-                                offset: const Offset(0.0, 0.0),
-                                blurRadius: 0.0,
-                                spreadRadius: 0.0,
-                              ), //BoxShadow
-                            ],
-                          ),
-                          child: Image.asset("assets/images/ar-left.png",
-                            width: 15,
-                            height: 15,
-                            fit: BoxFit.contain,),
-                        ),
-                      ),
-                        SizedBox(
-                          width: screenSize.width*0.23,
-                        ),
-                        Padding(padding: const EdgeInsets.all(8.0),
-                          child: Text("Privacy Policy",style: TextStyle(
-                              fontWeight: FontWeight.bold,fontSize: 20
-                          ),),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.only(left: 10,right: 10,top: 10),
-            height: screenSize.height*0.06,
-            width: screenSize.width*0.38,
-            //color: Colors.grey,
+          Center(
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Padding(
                   padding: const EdgeInsets.all(3.0),
@@ -162,214 +81,121 @@ class _PrivacyState extends State<Privacy> {
               ],
             ),
           ),
-          Container(
-            margin: const EdgeInsets.only(left: 10,right: 10,top: 5),
-            height: screenSize.height*0.04,
-            width: screenSize.width*0.9,
-            //color: Colors.grey,
-            child: Text("Privacy Policy",
+          const SizedBox(height: 20),
+          Text("Privacy Policy",
             style: TextStyle(
             fontWeight: FontWeight.bold,fontSize: 20,
             letterSpacing: 0.5,
           ),textAlign: TextAlign.left,),
-          ),
-          Container(
-            margin: const EdgeInsets.only(left: 10,right: 10,top: 0),
-            height: screenSize.height*0.03,
-            width: screenSize.width*0.9,
-           // color: Colors.grey,
-            child: Text("Introduction",
+          const SizedBox(height: 6),
+           Text("Introduction",
               style: TextStyle(
                 fontSize: 17,
                 letterSpacing: 0.5,
                 fontWeight: FontWeight.bold
               ),textAlign: TextAlign.left,),
-          ),
-          Container(
-            margin: const EdgeInsets.only(top: 10),
-            height: screenSize.height*0.14,
-            width: screenSize.width*0.9,
-           // color: Colors.grey,
-            child: Text("Welcome to Akarat We value your privacy and are committed "
+          const SizedBox(height: 6),
+          Text("Welcome to Akarat We value your privacy and are committed "
                 "to protecting your personal information. This Privacy Policy explains how "
                 "we collect, use, disclose, and safeguard your information when you visit our website.",style: TextStyle(
-              fontSize: 15.5,letterSpacing: 0.5
+              fontSize: 15.5,letterSpacing: 0.4
             ),),
-          ),
-          Container(
-            margin: const EdgeInsets.only(left: 10,right: 10,top: 0),
-            height: screenSize.height*0.03,
-            width: screenSize.width*0.9,
-            // color: Colors.grey,
-            child: Text("Information We Collect",
+          const SizedBox(height: 16),
+          Text("Information We Collect",
               style: TextStyle(
                   fontSize: 17,
                   letterSpacing: 0.5,
                   fontWeight: FontWeight.bold
               ),textAlign: TextAlign.left,),
-          ),
-          Container(
-            margin: const EdgeInsets.only(top: 10),
-            height: screenSize.height*0.36,
-            width: screenSize.width*0.9,
-             //color: Colors.grey,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("1.Personal Data:We may collect personally identifiable information, "
+      const SizedBox(height: 6),
+          Text("1.Personal Data:We may collect personally identifiable information, "
                       "such as your name, email address, phone number, and other contact information "
                       "that you voluntarily provide to us.",style: TextStyle(
                       fontSize: 16,letterSpacing: 0.5
                   ),),
-                ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text("2.Usage Data: We may also collect information on how our website is accessed "
+      const SizedBox(height: 6),
+                Text("2.Usage Data: We may also collect information on how our website is accessed "
                           "and used. This data may include your IP address, browser type, pages visited, "
                           "and the time and date of your visit.How We Use Your Information",style: TextStyle(
                           fontSize: 16,letterSpacing: 0.5
                       ),),
-                    ),
-              ],
-            ),),
-          Container(
-            margin: const EdgeInsets.only(left: 10,right: 10,top: 0),
-            height: screenSize.height*0.03,
-            width: screenSize.width*0.9,
-            // color: Colors.grey,
-            child: Text("How We Use Your Information ",
+          const SizedBox(height: 16),
+           Text("How We Use Your Information ",
               style: TextStyle(
                   fontSize: 17,
                   letterSpacing: 0.5,
                   fontWeight: FontWeight.bold
               ),textAlign: TextAlign.left,),
-          ),
-          Container(
-            margin: const EdgeInsets.only(top: 10),
-            height: screenSize.height*0.49,
-            width: screenSize.width*0.9,
-           // color: Colors.grey,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("1.To Provide and Maintain Our Service:To ensure our website "
+          const SizedBox(height: 6),
+           Text("1.To Provide and Maintain Our Service:To ensure our website "
                       "functions correctly and to provide you with the services you request.",style: TextStyle(
                       fontSize: 16,letterSpacing: 0.5
                   ),),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("2.To Communicate with You:To respond to your inquiries, "
+      const SizedBox(height: 6),
+               Text("2.To Communicate with You:To respond to your inquiries, "
                       "send you updates, and provide customer support.",style: TextStyle(
                       fontSize: 16,letterSpacing: 0.5
                   ),),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("3.To Improve Our Website:To understand how users interact with our website "
+      const SizedBox(height: 6),
+      Text("3.To Improve Our Website:To understand how users interact with our website "
                       "and to improve our services.",style: TextStyle(
                       fontSize: 16,letterSpacing: 0.5
                   ),),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("4.To Send Promotional Materials:With your consent, "
+      const SizedBox(height: 6),
+      Text("4.To Send Promotional Materials:With your consent, "
                       "we may send you newsletters, marketing, or promotional materials that may be "
                       "of interest to you.",style: TextStyle(
                       fontSize: 16,letterSpacing: 0.5
                   ),),
-                ),
-              ],
-            ),),
-          Container(
-            margin: const EdgeInsets.only(left: 10,right: 10,top: 0),
-            height: screenSize.height*0.03,
-            width: screenSize.width*0.9,
-            // color: Colors.grey,
-            child: Text("Disclosure of Your Information",
+          const SizedBox(height: 16),
+          Text("Disclosure of Your Information",
               style: TextStyle(
                   fontSize: 17,
                   letterSpacing: 0.5,
                   fontWeight: FontWeight.bold
               ),textAlign: TextAlign.left,),
-          ),
-          Container(
-            margin: const EdgeInsets.only(top: 10),
-            height: screenSize.height*0.415,
-            width: screenSize.width*0.9,
-            //color: Colors.grey,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("1.Service Providers:We may employ third-party companies and individuals to "
+          const SizedBox(height: 6),
+          Text("1.Service Providers:We may employ third-party companies and individuals to "
                       "facilitate our website, provide services on our behalf, or assist us in analyzing how our website "
                       "is used. These third parties have access to your personal information only to perform "
                       "these tasks on our behalf and are obligated not to disclose or use it for any other purpose.",style: TextStyle(
                       fontSize: 16,letterSpacing: 0.5
                   ),),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("2.Legal Requirements:We may disclose your personal information if required "
+      const SizedBox(height: 6),
+      Text("2.Legal Requirements:We may disclose your personal information if required "
                       "to do so by law or in response to valid requests by public authorities.",style: TextStyle(
                       fontSize: 16,letterSpacing: 0.5
                   ),),
-                ),
-              ],
-            ),),
-          Container(
-            margin: const EdgeInsets.only(left: 10,right: 10,top: 0),
-            height: screenSize.height*0.03,
-            width: screenSize.width*0.9,
-            // color: Colors.grey,
-            child: Text("Security of Your Information",
+
+          const SizedBox(height: 16),
+          Text("Security of Your Information",
               style: TextStyle(
                   fontSize: 17,
                   letterSpacing: 0.5,
                   fontWeight: FontWeight.bold
               ),textAlign: TextAlign.left,),
-          ),
-          Container(
-            margin: const EdgeInsets.only(top: 10),
-            height: screenSize.height*0.54,
-            width: screenSize.width*0.9,
-            //color: Colors.grey,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("We use administrative, technical, and physical security measures "
+      const SizedBox(height: 6),
+      Text("We use administrative, technical, and physical security measures "
                       "to protect your personal information. While we strive to use commercially acceptable "
                       "means to protect your personal data, we cannot guarantee its absolute security.Your Data"
                       " Protection Rights",style: TextStyle(
                       fontSize: 16,letterSpacing: 0.5
                   ),),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("Depending on your location, you may have the following rights "
+      const SizedBox(height: 6),
+      Text("Depending on your location, you may have the following rights "
                       "regarding your personal information:",style: TextStyle(
                       fontSize: 16,letterSpacing: 0.5
                   ),),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("1.AccessThe right to request copies of your personal data.",style: TextStyle(
+      const SizedBox(height: 6),
+      Text("1.AccessThe right to request copies of your personal data.",style: TextStyle(
                       fontSize: 16,letterSpacing: 0.5
                   ),),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("2.RectificationThe right to request that we correct any information "
+      const SizedBox(height: 6),
+      Text("2.RectificationThe right to request that we correct any information "
                       "you believe is inaccurate or complete information you believe.",style: TextStyle(
                       fontSize: 16,letterSpacing: 0.5
                   ),),
-                ),
-              ],
-            ),),
+
           ]
           )
         )
@@ -392,7 +218,7 @@ class _PrivacyState extends State<Privacy> {
             enableFeedback: false,
             onPressed: () {
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
 
             },
             icon: pageIndex == 0

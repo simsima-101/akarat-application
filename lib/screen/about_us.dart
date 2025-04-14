@@ -54,75 +54,20 @@ class _About_UsState extends State<About_Us> {
         child:  Scaffold(
             backgroundColor: Colors.white,
             bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+            appBar: AppBar(
+              title: const Text(
+                  "About Us", style: TextStyle(color: Colors.black,
+              fontWeight: FontWeight.bold)),
+              centerTitle: true,
+              backgroundColor: Color(0xFFFFFFFF),
+              iconTheme: const IconThemeData(color: Colors.red),
+              elevation: 1,
+            ),
             body: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
                 child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Stack(
-                        // alignment: Alignment.topCenter,
-                        children: <Widget>[
-                          Padding(
-                            padding: EdgeInsets.only(top: 25),
-                            child: Container(
-                              height: screenSize.height*0.07,
-                              width: double.infinity,
-                              // color: Color(0xFFEEEEEE),
-                              child:   Row(
-                                children: [GestureDetector(
-                                  onTap: (){
-                                  setState(() {
-                                    if(token == ''){
-                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                                    }
-                                    else{
-                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                                    }
-                                  });                                  },
-                                  child:   Container(
-                                    margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
-                                    height: 35,
-                                    width: 35,
-                                    padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadiusDirectional.circular(20.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          offset: const Offset(
-                                            0.0,
-                                            0.0,
-                                          ),
-                                          blurRadius: 0.1,
-                                          spreadRadius: 0.1,
-                                        ), //BoxShadow
-                                        BoxShadow(
-                                          color: Colors.white,
-                                          offset: const Offset(0.0, 0.0),
-                                          blurRadius: 0.0,
-                                          spreadRadius: 0.0,
-                                        ), //BoxShadow
-                                      ],
-                                    ),
-                                    child: Image.asset("assets/images/ar-left.png",
-                                      width: 15,
-                                      height: 15,
-                                      fit: BoxFit.contain,),
-                                  ),
-                                ),
-                                  SizedBox(
-                                    width: screenSize.width*0.27,
-                                  ),
-                                  Padding(padding: const EdgeInsets.all(8.0),
-                                    child: Text("About Us",style: TextStyle(
-                                        fontWeight: FontWeight.bold,fontSize: 20
-                                    ),),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
                       //Slider
                       ListView(
                         padding: const EdgeInsets.only(top: 8),
@@ -168,60 +113,41 @@ class _About_UsState extends State<About_Us> {
                           ),
                         ],
                       ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 10,top: 20,right: 10),
-                        height: screenSize.height*0.05,
-                        //color: Colors.grey,
+                      const SizedBox(height: 10),
+                      Center(
                         child: Text("Akarat.com",style: TextStyle(
                           fontSize: 25,fontWeight: FontWeight.bold,
                           color: Colors.red,
                         ),textAlign: TextAlign.center,),
                       ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 15),
-                        height: screenSize.height*0.8,
-                        width: screenSize.width*0.9,
-                        // color: Colors.grey,
-                        child: Column(
-                          children: [
-                            Text("Welcome to Akarat.com, your trusted real estate partner in the UAE. "
+                      const SizedBox(height: 6),
+                      Text("Welcome to Akarat.com, your trusted real estate partner in the UAE. "
                                 "We specialize in connecting buyers, sellers, and investors with the best property "
                                 "opportunities across the region.",style: TextStyle(
-                                fontSize: 16,letterSpacing: 0.5
+                                fontSize: 16,letterSpacing: 0.4
                             ),),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Text("At Akarat.com, we blend cutting-edge technology with "
+                      const SizedBox(height: 6),
+                      Text("At Akarat.com, we blend cutting-edge technology with "
                                   "deep market expertise to provide a seamless property search experience. Whether you're "
                                   "looking for residential, commercial, or investment properties, our platform offers verified "
                                   "listings, real-time market insights, and expert guidance to help you make informed decisions."
                                 ,style: TextStyle(
                                     fontSize: 16,letterSpacing: 0.5
                                 ),),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Text("Our mission is to simplify real estate transactions with transparency, efficiency, "
+                      const SizedBox(height: 6),
+                      Text("Our mission is to simplify real estate transactions with transparency, efficiency, "
                                   "and innovation. With a team of experienced professionals and a commitment to excellence, "
                                   "we strive to be the go-to real estate portal for individuals and businesses alike."
                                 ,style: TextStyle(
                                     fontSize: 16,letterSpacing: 0.5
                                 ),),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Text("Start your real estate journey with Akarat.com today!",style: TextStyle(
+                      const SizedBox(height: 6),
+                      Text("Start your real estate journey with Akarat.com today!",style: TextStyle(
                                   fontSize: 16
                               ),),
-                            )
-
-
                           ],
                         ),
-                      )
-                    ]
                 )
-            )
         ),
         onWillPop: () async {
           Navigator.of(context).pop(true);
@@ -249,7 +175,7 @@ class _About_UsState extends State<About_Us> {
             enableFeedback: false,
             onPressed: () {
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
 
             },
             icon: pageIndex == 0

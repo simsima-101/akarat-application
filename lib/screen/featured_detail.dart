@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/fdetailmodel.dart';
 import 'package:Akarat/screen/home.dart';
@@ -66,7 +67,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
     Size screenSize = MediaQuery.sizeOf(context);
     if (featured_detailModel == null) {
       return Scaffold(
-        body: Center(child: CircularProgressIndicator()), // Show loading state
+        body: ListView.builder(
+          itemCount: 5,
+          itemBuilder: (context, index) => const ShimmerCard(),) // Show loading state
       );
     }
     return Scaffold(
@@ -113,7 +116,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                 ),
                           child: GestureDetector(
                             onTap: (){
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
                             },
                                 child: Image.asset("assets/images/ar-left.png",
                                   width: 15,
@@ -239,9 +242,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
                       )
                   ),
-                  Container(
-                    height: 40,
-                    margin: const EdgeInsets.only(left: 20,top: 10,right: 10,bottom: 0),
+                  SizedBox(height: 5,),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                     // color: Colors.grey,
                     child: Row(
                       children: [
@@ -294,7 +297,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       ],
                     ),
                   ),
-                  Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 0,bottom: 0),
+                  SizedBox(height: 5,),
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                       child:Row(
                         children: [
                           Text(featured_detailModel!.data!.price.toString(),style: TextStyle(
@@ -306,9 +311,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         ],
                       )
                   ),
-                  Container(
-                      margin: const EdgeInsets.only(left: 20,top: 0,right: 10),
-                      height: 40,
+                  SizedBox(height: 5,),
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                       // color: Colors.grey,
                       child:Row(
                         children: [
@@ -342,115 +347,92 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         ],
                       )
                   ),
-                  Container(
-                    height: screenSize.height*0.07,
-                     width: double.infinity,
-                     //color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 10,top: 1,bottom: 0),
-                    child:
-                    Text(featured_detailModel!.data!.title.toString(),style: TextStyle(
-                        fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
-                    ),),
+                  SizedBox(height: 5,),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                        child:
+                        Text(featured_detailModel!.data!.title.toString(),style: TextStyle(
+                            fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
+                        ),),
+                      ),
+                      Text("")
+                    ],
+                  ),
+                  SizedBox(height: 5,),
+                  Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                        child:  Text(featured_detailModel!.data!.description.toString(),
+                          textAlign: TextAlign.left,style: TextStyle(
+                              letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
+                          ),),
 
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
-                    child: Container(
-                        width: double.infinity,
-                        height: screenSize.height*0.2,
-                        //color: Colors.grey,
-                        margin: const EdgeInsets.only(left: 5,top: 5),
-                        child:  ListView(
-                          padding: const EdgeInsets.all(0),
-                            shrinkWrap: true,
-                            scrollDirection: Axis.vertical,
-                            children: <Widget>[
-                              Text(featured_detailModel!.data!.description.toString(),
-                                textAlign: TextAlign.left,style: TextStyle(
-                                    letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
-                                ),),
-                            ]
-                        )
-
-                    ),
-                  ),
-                  Padding(
-                      padding: const EdgeInsets.only(left: 20,right: 0,top: 20,bottom: 0),
-                      child:Row(
-                        children: [
-                          Text("Posted On:",style: TextStyle(
+                  SizedBox(height: 5,),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                          child: Text("Posted On:",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                           ),),
-                           /*Text(featured_detailModel!.data!.pos.toString(),style: TextStyle(
-                            fontSize: 14,letterSpacing: 0.5,
-                          ),),*/
-                        ],
-                      )
+                      ),
+                      Text("")
+                    ],
                   ),
+                  SizedBox(height: 5,),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                        child:Text("Property Details",style: TextStyle(
+                            fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                        ),),
+                      ),
+                      Text("")
+                    ],
+                  ),
+                  SizedBox(height: 5,),
                   Container(
+                    margin: const EdgeInsets.only(left: 20, top: 0, right: 10),
                     height: 30,
-                    width: 200,
-                    // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 200,top: 20,bottom: 0),
-                    child:Text("Property Details",style: TextStyle(
-                        fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                    ),),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          Image.asset("assets/images/Residential__1.png", height: 15),
+                          const SizedBox(width: 6),
+                          Text(
+                            featured_detailModel!.data!.propertyType.toString(),
+                            style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                          ),
+                          const SizedBox(width: 12),
+                          Image.asset("assets/images/bed.png", height: 15),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${featured_detailModel!.data!.bedrooms} beds',
+                            style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                          ),
+                          const SizedBox(width: 12),
+                          Image.asset("assets/images/bath.png", height: 15),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${featured_detailModel!.data!.bathrooms} baths',
+                            style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                          ),
+                          const SizedBox(width: 12),
+                          Image.asset("assets/images/messure.png", height: 15),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${featured_detailModel!.data!.squareFeet} sqft',
+                            style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  Container(
-                      margin: const EdgeInsets.only(left: 20,top: 0,right: 10),
-                      height: 30,
-                      // color: Colors.grey,
-
-                      child:ListView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const ScrollPhysics(),
-                        shrinkWrap: true,
-                       children: [
-                         Row(
-                           children: [
-                             Image.asset("assets/images/Residential__1.png",height: 15,),
-                             Padding(
-                               padding: const EdgeInsets.only(left: 8.0),
-                               child: Text(featured_detailModel!.data!.propertyType.toString(),style: TextStyle(
-                                   fontSize: 14,letterSpacing: 0.5
-                               ),),
-                             ),
-                             Padding(
-                               padding: const EdgeInsets.only(left: 8.0),
-                               child: Image.asset("assets/images/bed.png",height: 15,),
-                             ),
-                             Padding(
-                               padding: const EdgeInsets.only(left: 8.0),
-                               child: Text('${featured_detailModel!.data!.bedrooms} beds',style: TextStyle(
-                                   fontSize: 14,letterSpacing: 0.5
-                               ),),
-                             ),
-                             Padding(
-                               padding: const EdgeInsets.only(left: 8.0),
-                               child: Image.asset("assets/images/bath.png",height: 15),
-                             ),
-                             Padding(
-                               padding: const EdgeInsets.only(left: 8.0),
-                               child: Text('${featured_detailModel!.data!.bathrooms} baths',style: TextStyle(
-                                 fontSize: 14,letterSpacing: 0.5,
-                               ),),
-                             ),
-                             Padding(
-                               padding: const EdgeInsets.only(left: 8.0),
-                               child: Image.asset("assets/images/messure.png",height: 15),
-                             ),
-                             Padding(
-                               padding: const EdgeInsets.only(left: 8.0),
-                               child: Text('${featured_detailModel!.data!.squareFeet} sqft',style: TextStyle(
-                                 fontSize: 14,letterSpacing: 0.5,
-                               ),),
-                             ),
-                           ],
-                         ),
-                       ],
-
-                      )
-                  ),
+                  SizedBox(height: 5,),
                   Container(
                     height: 30,
                     width: 200,
@@ -460,6 +442,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                     ),),
                   ),
+                  SizedBox(height: 5,),
                   Container(
                       margin: const EdgeInsets.only(left: 20,top: 0,right: 1),
                       padding: const EdgeInsets.only(top: 5),
@@ -537,8 +520,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                   ),
                                 ],
                               ),
-
-
                               Row(
                                 spacing: 5,
                                 children: [
@@ -572,174 +553,155 @@ class _Featured_DetailState extends State<Featured_Detail> {
                             ],
                           ),
                         ],
-
                       )
-
                   ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 200,top: 15,bottom: 0),
-                    child:Text("Project Information",style: TextStyle(
-                        fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                    ),),
+                  SizedBox(height: 5,),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                        child:Text("Project Information",style: TextStyle(
+                            fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                        ),),
+                      ),
+                      Text("")
+                    ],
                   ),
+                  SizedBox(height: 5,),
                   Container(
-                    height: screenSize.height*0.12,
-                    margin: const EdgeInsets.only(left: 20,right: 20,top: 10),
-                    // color: Colors.grey,
+                    height: screenSize.height * 0.12,
+                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Column(
-                          children: [
-                            Text("Project            "),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4.0),
-                              child: Text("Mag eye          ",style: TextStyle(
-                                  fontWeight: FontWeight.bold
-                              ),),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10.0),
-                              child: Text("Delivery Date  "),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4.0),
-                              child: Text("25th Jan 2025",style: TextStyle(
-                                  fontWeight: FontWeight.bold
-                              ),),
-                            )
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text("Project"),
+                            SizedBox(height: 4),
+                            Text("Mag Eye", style: TextStyle(fontWeight: FontWeight.bold)),
+                            SizedBox(height: 10),
+                            Text("Delivery Date"),
+                            SizedBox(height: 4),
+                            Text("25th Jan 2025", style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
-                        Padding(padding: const EdgeInsets.only(left: 70),
-                          child:  Column(
-                            children: [
-                              Text("Developer                               "),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4.0),
-                                child: Text("MAG Property Development",style: TextStyle(
-                                    fontWeight: FontWeight.bold
-                                ),),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 10.0),
-                                child: Text("Property type                         "),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4.0),
-                                child: Text("Townhouse,Apartment         ",style: TextStyle(
-                                    fontWeight: FontWeight.bold
-                                ),),
-                              )
-                            ],
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text("Developer"),
+                            SizedBox(height: 4),
+                            Text("MAG Property Development", style: TextStyle(fontWeight: FontWeight.bold)),
+                            SizedBox(height: 10),
+                            Text("Property Type"),
+                            SizedBox(height: 4),
+                            Text("Townhouse, Apartment", style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
                         ),
-
                       ],
                     ),
                   ),
+                  SizedBox(height: 5,),
                   Container(
-                    height: screenSize.height*0.17,
-                    margin: const EdgeInsets.only(left: 20,right: 20,top: 20),
-                    // color: Colors.grey,
+                    height: screenSize.height * 0.17,
+                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Row(
-                      spacing: 1,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
                           height: 150,
                           width: 170,
-                          child:   Image.asset("assets/images/image3.png",height: 100,
-                            fit: BoxFit.fill,),
+                          child: Image.asset(
+                            "assets/images/image3.png",
+                            fit: BoxFit.cover,
+                          ),
                         ),
-
-                        Column(
-                          children: [
-                            Container(
-                                height: 25,
-                                margin: const EdgeInsets.only(top: 30,left: 0,right: 55),
-                                padding: const EdgeInsets.only(top: 4,left: 5,right: 0),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 15,),
+                              Container(
+                                height: 30,
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(8.0),
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(8.0),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.grey,
-                                      offset: const Offset(
-                                        1.5,
-                                        1.5,
-                                      ),
-                                      blurRadius: 0.5,
-                                      spreadRadius: 0.5,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.green,
-                                      offset: const Offset(0.5, 0.5),
-                                      blurRadius: 0.5,
-                                      spreadRadius: 0.5,
-                                    ), //BoxShadow
+                                      offset: Offset(1, 1),
+                                      blurRadius: 1,
+                                      spreadRadius: 0.3,
+                                    ),
                                   ],
                                 ),
-                                child:
-                                Padding(padding: const EdgeInsets.only(left: 1),
-                                    child:   Text("Completed    ",style: TextStyle(
-                                        letterSpacing: 0.5,color: Colors.white,fontSize: 12
-                                    ),textAlign: TextAlign.center,)
-                                )
-                            ),
-                            Padding(padding: const EdgeInsets.only(top: 10),
-                              child: Text("       MAG Property Development        ",style: TextStyle(
-                                  fontSize: 10,fontWeight: FontWeight.bold
-                              ),),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                height: screenSize.height*0.04,
-                                width: screenSize.width*0.4,
-                                // margin: const EdgeInsets.only(left: 15,right: 10,top: 15),
-                                padding: const EdgeInsets.only(top: 8),
-                                // color: Colors.grey,
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  "Completed",
+                                  style: TextStyle(
+                                    letterSpacing: 0.5,
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                "MAG Property Development",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Container(
+                                height: screenSize.height * 0.04,
+                                width: screenSize.width * 0.4,
+                                alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(8.0),
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8.0),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.red,
-                                      offset: const Offset(
-                                        0.5,
-                                        0.5,
-                                      ),
+                                      offset: Offset(0.5, 0.5),
                                       blurRadius: 0.3,
                                       spreadRadius: 0.3,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
+                                    ),
                                   ],
                                 ),
-                                child: Text("View All Project Details",textAlign: TextAlign.center,
+                                child: const Text(
+                                  "View All Project Details",
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      letterSpacing: 0.5,fontSize: 11,fontWeight: FontWeight.bold
-                                  ),),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
-                        )
-
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 200,top: 15,bottom: 0),
-                    child:Text("Location & nearby",style: TextStyle(
-                        fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                    ),),
+                  SizedBox(height: 5,),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                        child:Text("Location & nearby",style: TextStyle(
+                            fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                        ),),
+                      ),
+                      Text("")
+                    ],
                   ),
+                  SizedBox(height: 5,),
                   Container(
                     height: 130,
                     margin: const EdgeInsets.only(top: 15,left: 20,right: 20),
@@ -818,18 +780,21 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       ],
                     ),
                   ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 200,top: 20,bottom: 0),
-                    child:Text("Provided by",style: TextStyle(
-                        fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                    ),),
+                  SizedBox(height: 15,),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                        child:Text("Provided by",style: TextStyle(
+                            fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                        ),),
+                      ),
+                      Text("")
+                    ],
                   ),
-                  Container(
-                    height: 270,
-                    margin: const EdgeInsets.only(left: 20,top: 15,right: 20),
+                  SizedBox(height: 5,),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                     // color: Colors.grey,
                     child: Column(
                       children: [
@@ -944,121 +909,62 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       ],
                     ),
                   ),
+                  SizedBox(height: 5,),
                   Container(
-                    height: screenSize.height*0.3,
                     width: double.infinity,
-                    margin: const EdgeInsets.only(left: 18,right: 14,top: 20),
+                    margin: const EdgeInsets.only(left: 18, right: 14, top: 20),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(8.0),
+                      borderRadius: BorderRadius.circular(8.0),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.grey,
-                          offset: const Offset(
-                            0.5,
-                            0.5,
-                          ),
+                          offset: Offset(0.5, 0.5),
                           blurRadius: 0.5,
                           spreadRadius: 0.3,
-                        ), //BoxShadow
+                        ),
                         BoxShadow(
                           color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
+                          offset: Offset(0.0, 0.0),
                           blurRadius: 0.0,
                           spreadRadius: 0.0,
-                        ), //BoxShadow
+                        ),
                       ],
                     ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 5,top: 5,right: 0),
-                              child: Text("Regulatory Information  ",style: TextStyle(
-                                  fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                              ),textAlign: TextAlign.left,),
-                            ),
-                            Text("")
+                        const Text(
+                          "Regulatory Information",
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 20,
+                          runSpacing: 8,
+                          children: const [
+                            Text("Reference:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                            Text("Listed:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                            Text("Broker License:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                            Text("Agent License:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                            Text("OLD Permit Number:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                            Text("Zone Name:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
                           ],
                         ),
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 5,top: 5),
-                              child: Text("Reference:",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                           /* Padding(padding: const EdgeInsets.only(left: 65,top: 5),
-                              child: Text(featured_detailModel!.data!.regulatoryInfo!.reference.toString(),style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),*/
-                            Padding(padding: const EdgeInsets.only(left: 10,top: 5),
-                              child: Text("Listed:",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                           /* Padding(padding: const EdgeInsets.only(left: 10,top: 5),
-                              child: Text(productModels!.data!.regulatoryInfo!.listed.toString(),style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),*/
-                          ],
+                        const SizedBox(height: 16),
+                        Center(
+                          child: Column(
+                            children: [
+                              Image.asset("assets/images/dld.png", height: screenSize.height * 0.1, fit: BoxFit.contain),
+                              const SizedBox(height: 6),
+                              const Text("OLD Permit Number", style: TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
                         ),
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 5,top: 5),
-                              child: Text("Brocker License:",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                           /* Padding(padding: const EdgeInsets.only(left: 27,top: 5),
-                              child: Text(productModels!.data!.regulatoryInfo!.brokerLicense.toString(),style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),*/
-                            Padding(padding: const EdgeInsets.only(left: 15,top: 5),
-                              child: Text("Agent Licence:",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                           /* Padding(padding: const EdgeInsets.only(left: 10,top: 5),
-                              child: Text(productModels!.data!.regulatoryInfo!.agentLicense.toString(),style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),*/
-
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 5,top: 5),
-                              child: Text("OLD Permit Number:",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                            /*Padding(padding: const EdgeInsets.only(left: 1,top: 5),
-                              child: Text(productModels!.data!.regulatoryInfo!.dldPermitNumber.toString(),style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),*/
-
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 5,top: 5),
-                              child: Text("Zone Name:",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                           /* Padding(padding: const EdgeInsets.only(left: 1,top: 5),
-                              child: Text(productModels!.data!.regulatoryInfo!.zoneName.toString(),overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13,
-                                ),),),*/
-                          ],
-                        ),
-                        Container(
-                          margin: const EdgeInsets.only(top: 10),
-                          height: screenSize.height*0.1,
-                          width: 110,
-                          // color: Colors.grey,
-                          child: Image.asset("assets/images/dld.png",fit: BoxFit.fill,),
-                        ),
-                        Padding(padding: const EdgeInsets.only(top: 10),
-                          child: Text("OLD Permit Number",style: TextStyle(fontWeight: FontWeight.bold),),)
                       ],
                     ),
                   ),
+                  SizedBox(height: 5,),
                   Container(
                     height: 30,
                     width: double.infinity,
@@ -1068,76 +974,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                     ),),
                   ),
-                 /* SizedBox(
-                    height: 250, // Adjust height based on card size
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: productModels?.data?.recommendedProperties?.length ?? 0,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          width: 200, // Adjust width for horizontal layout
-                          margin: EdgeInsets.symmetric(horizontal: 8),
-                          child: Card(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                            elevation: 4,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                                      child: Image.network(
-                                        productModels!.data!.recommendedProperties![index].media![index].originalUrl.toString(),
-                                        height: 120,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-
-                                    Positioned(
-                                      top: 8,
-                                      right: 8,
-                                      child: Icon(Icons.favorite_border, color: Colors.red),
-                                    ),
-                                  ],
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.all(8),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        productModels!.data!.recommendedProperties![index].price.toString()
-                                        ,style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          Icon(Icons.bed, size: 16, color: Colors.grey),
-                                          SizedBox(width: 4),
-                                          Text("${productModels!.data!.recommendedProperties![index].bedrooms} beds"),
-                                          SizedBox(width: 8),
-                                          Icon(Icons.square_foot, size: 16, color: Colors.grey),
-                                          SizedBox(width: 4),
-                                          Text("${productModels!.data!.recommendedProperties![index].squareFeet} sqft"),
-                                        ],
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        "${productModels!.data!.recommendedProperties![index].location} ",
-                                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),*/
                   SizedBox(
                     height: 10,)
                 ]
@@ -1162,7 +998,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
             enableFeedback: false,
             onPressed: () {
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
 
             },
             icon: pageIndex == 0

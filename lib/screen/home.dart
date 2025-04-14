@@ -6,6 +6,7 @@ import 'package:Akarat/screen/login.dart';
 import 'package:Akarat/screen/sample.dart';
 import 'package:Akarat/screen/search.dart';
 import 'package:Akarat/screen/searchexample.dart';
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:Akarat/utils/fav_logout.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/featuredmodel.dart';
@@ -24,11 +25,13 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import 'package:http/io_client.dart';
 
+import 'example.dart';
+
 void main() {
-  runApp(const MyApp());
+  runApp(const Home());
 }
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class Home extends StatelessWidget {
+  const Home({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -225,8 +228,7 @@ class _MyHomePageState extends State<HomeDemo> {
           bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
           //body: pages[pageIndex],
           backgroundColor: Colors.white,
-          body:   SingleChildScrollView(
-            child: Column(
+          body: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
@@ -261,7 +263,7 @@ class _MyHomePageState extends State<HomeDemo> {
                 ),
                 //Searchbar
                 Padding(
-                  padding: const EdgeInsets.only(top: 0, left: 20, right: 15),
+                  padding: const EdgeInsets.only(top: 0, left: 20, right: 15,bottom: 10),
                   child: GestureDetector(
                     onTap: (){
                       Navigator.push(context, MaterialPageRoute(builder: (context)=> LocationSearchScreen()));
@@ -270,7 +272,7 @@ class _MyHomePageState extends State<HomeDemo> {
                     child: Container(
                       width: 400,
                       height: 70,
-                      padding: const EdgeInsets.only(top: 8,left: 5),
+                      padding: const EdgeInsets.only(top: 0,left: 5),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(25.0),
                         boxShadow: [
@@ -307,655 +309,669 @@ class _MyHomePageState extends State<HomeDemo> {
                   ),
                 ),
                 //images gridview
-                Padding(
-                  padding: const EdgeInsets.only(top: 20.0),
-                  child: Row(
-                    children: [
-                      //logo 1
-                      GestureDetector(
-                        onTap: (){
-                          purpose= "Rent";
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data:purpose)));
-                        },
-                        child:  Padding(
-                          padding: const EdgeInsets.all(8),
-                          /*padding: const EdgeInsets.only(
+                Expanded(
+                    child: SingleChildScrollView(
+                        padding: const EdgeInsets.only(top: 0),
+                        child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10.0),
+                                child: Row(
+                                  children: [
+                                    //logo 1
+                                    GestureDetector(
+                                      onTap: (){
+                                        purpose= "Rent";
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data:purpose)));
+                                      },
+                                      child:  Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        /*padding: const EdgeInsets.only(
                               left: 17.0, right: 10.0, top: 10, bottom: 0),
 */
-                          child: Container(
-                              width: screenSize.width * 0.29,
-                              height: screenSize.height*0.11,
-                              padding: const EdgeInsets.only(top: 0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.8),
-                                    offset: Offset(7, 7),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.8),
-                                    offset: Offset(-4, -4),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child:   Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset("assets/images/ak-rent-red.png"
-                                    ,height: 35,),
-                                  Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child:  Text("Property For Rent",style:
-                                    TextStyle(height: 1.2,
-                                        letterSpacing: 0.5,
-                                        fontSize: 11,fontWeight: FontWeight.bold
-                                    ),),
-                                  )
-                                ],
-                              )
-                          ),
-                        ),
-                      ),
-                      //logo2
-                      GestureDetector(
-                        onTap: (){
-                          purpose= "Buy";
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: purpose,)));
-                        },
-                        child:
-                        Padding(
-                          padding: const EdgeInsets.all(8),
-                         /* padding: const EdgeInsets.only(
-                              left: 5.0, right: 10.0, top: 10.0, bottom: 0),*/
-                          child: Container(
-                              width: screenSize.width * 0.29,
-                              height: screenSize.height*0.11,
-                              padding: const EdgeInsets.only(top: 0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.8),
-                                    offset: Offset(7, 7),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.8),
-                                    offset: Offset(-4, -4),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child:   Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset("assets/images/ak-sale.png",height: 35,),
-                                  Padding(padding: const EdgeInsets.all(4),
-                                    child:  Text("Property For Sale",style:
-                                    TextStyle(height: 1.2,
-                                        letterSpacing: 0.5,
-                                        fontSize: 11,fontWeight: FontWeight.bold
-                                    ),),
-                                  )
-                                ],
-                              )
-                          ),
-                        ),
-                      ),
-                      //logo2
-                      GestureDetector(
-                        onTap: (){
-                         // purpose=""
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> New_Projects()));
-                        },
-                        child:
-                        Padding(
-                          padding: const EdgeInsets.all(5),
-                          /*padding: const EdgeInsets.only(
-                              left: 5.0, right: 10.0, top: 10.0, bottom: 0),*/
-                          child: Container(
-                              width: screenSize.width * 0.3,
-                              height: screenSize.height*0.11,
-                              padding: const EdgeInsets.only(top: 0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.8),
-                                    offset: Offset(7, 7),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.8),
-                                    offset: Offset(-4, -4),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child:   Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 2.0),
-                                    child: Image.asset("assets/images/ak-off-plan.png",height: 35,),
-                                  ),
-                                  Padding(padding: const EdgeInsets.only(top: 5),
-                                    child:  Text("Off-Plan-Properties",style:
-                                    TextStyle(height: 1.2,
-                                        letterSpacing: 0.5,
-                                        fontSize: 10,fontWeight: FontWeight.bold
-                                    ),),
-                                  )
-                                ],
-                              )
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Row(
-                    children: [
-                      //logo 1
-                      GestureDetector(
-                        onTap: (){
-                          purpose="Commercial";
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: purpose,)));
-                        },
-                        child:
-                        Padding(
-                          padding: const EdgeInsets.all(8),
-                         /* padding: const EdgeInsets.only(
-                              left: 17.0, right: 10.0, top: 8, bottom: 0),*/
-                          child: Container(
-                              width: screenSize.width * 0.29,
-                              height: screenSize.height*0.11,
-                              padding: const EdgeInsets.only(top: 0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    offset: Offset(7, 7),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.8),
-                                    offset: Offset(-4, -4),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child:   Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 2.0),
-                                    child: Image.asset("assets/images/commercial_new.png",height: 35,),
-                                  ),
-                                  Padding(padding: const EdgeInsets.all(4),
-                                    child:  Text("Commercial",style:
-                                    TextStyle(height: 1.2,
-                                        letterSpacing: 0.5,
-                                        fontSize: 11,fontWeight: FontWeight.bold
-                                    ),),
-                                  )
-
-                                ],
-                              )
-                          ),
-                        ),
-                      ),
-                      //logo2
-                      GestureDetector(
-                        onTap: (){
-                          purpose= "Rent";
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: purpose,)));
-                        },
-                        child:
-                        Padding(
-                          padding: const EdgeInsets.all(8),
-                          /*padding: const EdgeInsets.only(
-                              left: 5.0, right: 10.0, top: 8, bottom: 0),*/
-                          child: Container(
-                              width: screenSize.width * 0.29,
-                              height: screenSize.height*0.11,
-                              padding: const EdgeInsets.only(top: 0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    offset: Offset(7, 7),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.8),
-                                    offset: Offset(-4, -4),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child:   Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 2.0),
-                                    child: Image.asset("assets/images/city.png",height: 35,),
-                                  ),
-                                  Padding(padding: const EdgeInsets.all(5),
-                                    child:  Text("Apartments",style:
-                                    TextStyle(height: 1.2,
-                                        letterSpacing: 0.5,
-                                        fontSize: 11,fontWeight: FontWeight.bold
-                                    ),),
-                                  )
-
-                                ],
-                              )
-                          ),
-                        ),
-                      ),
-                      //logo2
-                      GestureDetector(
-                        onTap: (){
-                          purpose= "Rent";
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: purpose,)));
-                        },
-                        child:
-                        Padding(
-                          padding: const EdgeInsets.all(5),
-                          /*padding: const EdgeInsets.only(
-                              left: 5.0, right: 5.0, top: 8, bottom: 0),*/
-                          child: Container(
-                              width: screenSize.width * 0.3,
-                              height: screenSize.height*0.11,
-                              padding: const EdgeInsets.only(top: 0),
-                              decoration: BoxDecoration(
-
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    offset: Offset(7, 7),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.8),
-                                    offset: Offset(-4, -4),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child:   Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 2.0),
-                                    child: Image.asset("assets/images/villa-new.png",height: 35,),
-                                  ),
-                                  Padding(padding: const EdgeInsets.all(5),
-                                    child:  Text("Villas",style:
-                                    TextStyle(height: 1.2,
-                                        letterSpacing: 0.5,
-                                        fontSize: 11,fontWeight: FontWeight.bold
-                                    ),),
-                                  )
-
-                                ],
-                              )
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                //banner
-                Padding(
-                  padding: const EdgeInsets.only(
-                      left: 10.0, right: 10.0, top: 20.0, bottom: 0),
-                  child:
-                  Container(
-                    width: screenSize.width * 1.0,
-                    height: 150,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          offset: Offset(4, 4),
-                          blurRadius: 8,
-                          spreadRadius: 2,
-                        ),
-                        BoxShadow(
-                          color: Colors.white.withOpacity(0.8),
-                          offset: Offset(-4, -4),
-                          blurRadius: 8,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                     /* mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,*/
-                      children: [
-                        Padding(
-                            padding: const EdgeInsets.only(
-                                top: 10,left: 00,right: 0),
-                            child: Container(
-                              width: screenSize.width*0.4,
-                              height: 100,
-                             // color: Colors.grey,
-                              padding: const EdgeInsets.only(top: 10,left: 10,right: 5),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("New Projects            ",style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 18,fontWeight: FontWeight.bold
-                                  ),textAlign: TextAlign.left,),
-                                  Text("Discover more about the UAE "
-                                      "real estate market",style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 14,
-                                  ),
-                                    softWrap: true,)
-                                ],
-                              ),
-                            )
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 0.0,right: 0),
-                          child: Container(
-                            height: screenSize.height*0.15,
-                              width: screenSize.width*0.5,
-                             // color: Colors.grey,
-                              child: Image.asset('assets/images/banner1.png',fit: BoxFit.contain,)),
-                        ),
-
-                      ],
-                    ),),),
-                //  Text
-                Container(
-                  margin: const EdgeInsets.only(top: 20,left: 5,),
-                  height: screenSize.height*0.03,
-                 // color: Colors.grey,
-                  child:   Row(
-                    spacing: screenSize.width*0.3,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 10.0, right: 15.0, top: 0, bottom: 0),
-                      child:  Text("1,738 Projects",style: TextStyle(
-                        color: Colors.black,fontWeight: FontWeight.bold,
-                        fontSize: 17,
-                      ),textAlign: TextAlign.left,),
-                    ),
-                    Row(
-                      children: [
-                        Padding(
-                            padding: const EdgeInsets.only(
-                                left: 0.0, right: 10.0, top: 0, bottom: 0),
-                            child:  Image.asset("assets/images/filter.png",height: 20,)
-                        ),
-
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              left: 2.0, right: 10.0, top: 0, bottom: 0),
-                          // child:  Text(result,style: TextStyle(
-                          child:  Text("Featured",style: TextStyle(
-                            color: Colors.black,fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),textAlign: TextAlign.right,),
-                        ),
-                      ],
-                    )
-
-                  ],
-                ),
-                ),
-                //Slider
-            featuredModel == null
-                ? Center(child: CircularProgressIndicator())
-                : ListView.builder(
-              padding: EdgeInsets.zero,
-              scrollDirection: Axis.vertical,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: featuredModel?.data?.length ?? 0,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                final item = featuredModel!.data![index];
-                bool isFavorited = favoriteProperties.contains(item.id);
-
-                return GestureDetector(
-                  onTap: () {
-                    String id = item.id.toString();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Featured_Detail(data: id),
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    child: Card(
-                      color: Colors.white,
-                      shadowColor: Colors.white,
-                      elevation: 10,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Stack(
-                                children: [
-                                  AspectRatio(
-                                    aspectRatio: 1.4,
-                                    child: PageView.builder(
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: item.media?.length ?? 0,
-                                      itemBuilder: (context, imgIndex) {
-                                        return CachedNetworkImage(
-                                          imageUrl: item.media![imgIndex].originalUrl.toString(),
-                                          fit: BoxFit.cover,
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 10,
-                                    right: 10,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
-                                            blurRadius: 4,
-                                            offset: Offset(2, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: IconButton(
-                                        icon: Icon(
-                                          isFavorited ? Icons.favorite : Icons.favorite_border,
-                                          color: Colors.red,
+                                        child: Container(
+                                            width: screenSize.width * 0.29,
+                                            height: screenSize.height*0.11,
+                                            padding: const EdgeInsets.only(top: 0),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.8),
+                                                  offset: Offset(7, 7),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
+                                                ),
+                                                BoxShadow(
+                                                  color: Colors.white.withOpacity(0.8),
+                                                  offset: Offset(-4, -4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
+                                                ),
+                                              ],
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child:   Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Image.asset("assets/images/ak-rent-red.png"
+                                                  ,height: 35,),
+                                                Padding(
+                                                  padding: const EdgeInsets.all(4),
+                                                  child:  Text("Property For Rent",style:
+                                                  TextStyle(height: 1.2,
+                                                      letterSpacing: 0.5,
+                                                      fontSize: 11,fontWeight: FontWeight.bold
+                                                  ),),
+                                                )
+                                              ],
+                                            )
                                         ),
-                                        onPressed: () {
-                                          setState(() {
-                                            property_id = item.id;
-                                            if (token == '') {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(builder: (context) => Login()),
-                                              );
-                                            } else {
-                                              toggleFavorite(property_id!);
-                                              toggledApi(token, property_id);
-                                            }
-                                          });
-                                        },
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              item.title.toString(),
-                              style: TextStyle(fontSize: 16, height: 1.4),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              '${item.price} AED',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                                height: 1.4,
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Row(
-                              children: [
-                                Image.asset("assets/images/map.png", height: 14),
-                                SizedBox(width: 5),
-                                Expanded(
-                                  child: Text(
-                                    item.location.toString(),
-                                    style: TextStyle(fontSize: 13),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                    //logo2
+                                    GestureDetector(
+                                      onTap: (){
+                                        purpose= "Buy";
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: purpose,)));
+                                      },
+                                      child:
+                                      Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        /* padding: const EdgeInsets.only(
+                              left: 5.0, right: 10.0, top: 10.0, bottom: 0),*/
+                                        child: Container(
+                                            width: screenSize.width * 0.29,
+                                            height: screenSize.height*0.11,
+                                            padding: const EdgeInsets.only(top: 0),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.8),
+                                                  offset: Offset(7, 7),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
+                                                ),
+                                                BoxShadow(
+                                                  color: Colors.white.withOpacity(0.8),
+                                                  offset: Offset(-4, -4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
+                                                ),
+                                              ],
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child:   Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Image.asset("assets/images/ak-sale.png",height: 35,),
+                                                Padding(padding: const EdgeInsets.all(4),
+                                                  child:  Text("Property For Sale",style:
+                                                  TextStyle(height: 1.2,
+                                                      letterSpacing: 0.5,
+                                                      fontSize: 11,fontWeight: FontWeight.bold
+                                                  ),),
+                                                )
+                                              ],
+                                            )
+                                        ),
+                                      ),
+                                    ),
+                                    //logo2
+                                    GestureDetector(
+                                      onTap: (){
+                                        // purpose=""
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> New_Projects()));
+                                      },
+                                      child:
+                                      Padding(
+                                        padding: const EdgeInsets.all(5),
+                                        /*padding: const EdgeInsets.only(
+                              left: 5.0, right: 10.0, top: 10.0, bottom: 0),*/
+                                        child: Container(
+                                            width: screenSize.width * 0.3,
+                                            height: screenSize.height*0.11,
+                                            padding: const EdgeInsets.only(top: 0),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.8),
+                                                  offset: Offset(7, 7),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
+                                                ),
+                                                BoxShadow(
+                                                  color: Colors.white.withOpacity(0.8),
+                                                  offset: Offset(-4, -4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
+                                                ),
+                                              ],
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child:   Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Padding(
+                                                  padding: const EdgeInsets.only(bottom: 2.0),
+                                                  child: Image.asset("assets/images/ak-off-plan.png",height: 35,),
+                                                ),
+                                                Padding(padding: const EdgeInsets.only(top: 5),
+                                                  child:  Text("Off-Plan-Properties",style:
+                                                  TextStyle(height: 1.2,
+                                                      letterSpacing: 0.5,
+                                                      fontSize: 10,fontWeight: FontWeight.bold
+                                                  ),),
+                                                )
+                                              ],
+                                            )
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Image.asset("assets/images/bed.png", height: 13),
-                                SizedBox(width: 5),
-                                Text(item.bedrooms.toString()),
-                                SizedBox(width: 10),
-                                Image.asset("assets/images/bath.png", height: 13),
-                                SizedBox(width: 5),
-                                Text(item.bathrooms.toString()),
-                                SizedBox(width: 10),
-                                Image.asset("assets/images/messure.png", height: 13),
-                                SizedBox(width: 5),
-                                Text(item.squareFeet.toString()),
-                              ],
-                            ),
-                            SizedBox(height: 15),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                ElevatedButton.icon(
-                                  onPressed: () async {
-                                    String phone = 'tel:${item.phoneNumber}';
-                                    try {
-                                      final bool launched = await launchUrlString(
-                                        phone,
-                                        mode: LaunchMode.externalApplication, // ✅ Force external
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Row(
+                                  children: [
+                                    //logo 1
+                                    GestureDetector(
+                                      onTap: (){
+                                        purpose="Commercial";
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: purpose,)));
+                                      },
+                                      child:
+                                      Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        /* padding: const EdgeInsets.only(
+                              left: 17.0, right: 10.0, top: 8, bottom: 0),*/
+                                        child: Container(
+                                            width: screenSize.width * 0.29,
+                                            height: screenSize.height*0.11,
+                                            padding: const EdgeInsets.only(top: 0),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  offset: Offset(7, 7),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
+                                                ),
+                                                BoxShadow(
+                                                  color: Colors.white.withOpacity(0.8),
+                                                  offset: Offset(-4, -4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
+                                                ),
+                                              ],
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child:   Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Padding(
+                                                  padding: const EdgeInsets.only(bottom: 2.0),
+                                                  child: Image.asset("assets/images/commercial_new.png",height: 35,),
+                                                ),
+                                                Padding(padding: const EdgeInsets.all(4),
+                                                  child:  Text("Commercial",style:
+                                                  TextStyle(height: 1.2,
+                                                      letterSpacing: 0.5,
+                                                      fontSize: 11,fontWeight: FontWeight.bold
+                                                  ),),
+                                                )
+
+                                              ],
+                                            )
+                                        ),
+                                      ),
+                                    ),
+                                    //logo2
+                                    GestureDetector(
+                                      onTap: (){
+                                        purpose= "Rent";
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: purpose,)));
+                                      },
+                                      child:
+                                      Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        /*padding: const EdgeInsets.only(
+                              left: 5.0, right: 10.0, top: 8, bottom: 0),*/
+                                        child: Container(
+                                            width: screenSize.width * 0.29,
+                                            height: screenSize.height*0.11,
+                                            padding: const EdgeInsets.only(top: 0),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  offset: Offset(7, 7),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
+                                                ),
+                                                BoxShadow(
+                                                  color: Colors.white.withOpacity(0.8),
+                                                  offset: Offset(-4, -4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
+                                                ),
+                                              ],
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child:   Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Padding(
+                                                  padding: const EdgeInsets.only(bottom: 2.0),
+                                                  child: Image.asset("assets/images/city.png",height: 35,),
+                                                ),
+                                                Padding(padding: const EdgeInsets.all(5),
+                                                  child:  Text("Apartments",style:
+                                                  TextStyle(height: 1.2,
+                                                      letterSpacing: 0.5,
+                                                      fontSize: 11,fontWeight: FontWeight.bold
+                                                  ),),
+                                                )
+
+                                              ],
+                                            )
+                                        ),
+                                      ),
+                                    ),
+                                    //logo2
+                                    GestureDetector(
+                                      onTap: (){
+                                        purpose= "Rent";
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: purpose,)));
+                                      },
+                                      child:
+                                      Padding(
+                                        padding: const EdgeInsets.all(5),
+                                        /*padding: const EdgeInsets.only(
+                              left: 5.0, right: 5.0, top: 8, bottom: 0),*/
+                                        child: Container(
+                                            width: screenSize.width * 0.3,
+                                            height: screenSize.height*0.11,
+                                            padding: const EdgeInsets.only(top: 0),
+                                            decoration: BoxDecoration(
+
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  offset: Offset(7, 7),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
+                                                ),
+                                                BoxShadow(
+                                                  color: Colors.white.withOpacity(0.8),
+                                                  offset: Offset(-4, -4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
+                                                ),
+                                              ],
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child:   Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Padding(
+                                                  padding: const EdgeInsets.only(bottom: 2.0),
+                                                  child: Image.asset("assets/images/villa-new.png",height: 35,),
+                                                ),
+                                                Padding(padding: const EdgeInsets.all(5),
+                                                  child:  Text("Villas",style:
+                                                  TextStyle(height: 1.2,
+                                                      letterSpacing: 0.5,
+                                                      fontSize: 11,fontWeight: FontWeight.bold
+                                                  ),),
+                                                )
+
+                                              ],
+                                            )
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              //banner
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 10.0, right: 10.0, top: 20.0, bottom: 0),
+                                child:
+                                Container(
+                                  width: screenSize.width * 1.0,
+                                  height: 150,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.5),
+                                        offset: Offset(4, 4),
+                                        blurRadius: 8,
+                                        spreadRadius: 2,
+                                      ),
+                                      BoxShadow(
+                                        color: Colors.white.withOpacity(0.8),
+                                        offset: Offset(-4, -4),
+                                        blurRadius: 8,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    /* mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,*/
+                                    children: [
+                                      Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 10,left: 00,right: 0),
+                                          child: Container(
+                                            width: screenSize.width*0.4,
+                                            height: 100,
+                                            // color: Colors.grey,
+                                            padding: const EdgeInsets.only(top: 10,left: 10,right: 5),
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text("New Projects            ",style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 18,fontWeight: FontWeight.bold
+                                                ),textAlign: TextAlign.left,),
+                                                Text("Discover more about the UAE "
+                                                    "real estate market",style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 14,
+                                                ),
+                                                  softWrap: true,)
+                                              ],
+                                            ),
+                                          )
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 0.0,right: 0),
+                                        child: Container(
+                                            height: screenSize.height*0.15,
+                                            width: screenSize.width*0.5,
+                                            decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(10)
+                                            ),
+                                            // color: Colors.grey,
+                                            child: Image.asset('assets/images/banner1.png',fit: BoxFit.contain,)
+                                        ),
+                                      ),
+
+                                    ],
+                                  ),),),
+                              //  Text
+                              Container(
+                                margin: const EdgeInsets.only(top: 20,left: 5,),
+                                height: screenSize.height*0.03,
+                                // color: Colors.grey,
+                                child:   Row(
+                                  spacing: screenSize.width*0.3,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 10.0, right: 15.0, top: 0, bottom: 0),
+                                      child:  Text("1,738 Projects",style: TextStyle(
+                                        color: Colors.black,fontWeight: FontWeight.bold,
+                                        fontSize: 17,
+                                      ),textAlign: TextAlign.left,),
+                                    ),
+                                    Row(
+                                      children: [
+                                        Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 0.0, right: 10.0, top: 0, bottom: 0),
+                                            child:  Image.asset("assets/images/filter.png",height: 20,)
+                                        ),
+
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 2.0, right: 10.0, top: 0, bottom: 0),
+                                          // child:  Text(result,style: TextStyle(
+                                          child:  Text("Featured",style: TextStyle(
+                                            color: Colors.black,fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                          ),textAlign: TextAlign.right,),
+                                        ),
+                                      ],
+                                    )
+
+                                  ],
+                                ),
+                              ),
+                              //Slider
+                              featuredModel == null
+                                  ? Center(child: const ShimmerCard())
+                                  : ListView.builder(
+                                padding: EdgeInsets.zero,
+                                scrollDirection: Axis.vertical,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemCount: featuredModel?.data?.length ?? 0,
+                                shrinkWrap: true,
+                                itemBuilder: (context, index) {
+                                  final item = featuredModel!.data![index];
+                                  bool isFavorited = favoriteProperties.contains(item.id);
+
+                                  return GestureDetector(
+                                    onTap: () {
+                                      String id = item.id.toString();
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => Featured_Detail(data: id),
+                                        ),
                                       );
-                                      if (!launched) {
-                                        print("❌ Could not launch dialer");
-                                      }
-                                    } catch (e) {
-                                      print("❌ Exception: $e");
-                                    }
-                                  },
-                                  icon: Icon(Icons.call, color: Colors.red),
-                                  label: Text("Call", style: TextStyle(color: Colors.black)),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.grey[100],
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    elevation: 2,
-                                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 8),
-                                  ),
-                                ),
-                                ElevatedButton.icon(
-                                  onPressed: () async {
-                                    final phone = item.whatsapp; // without plus
-                                    final message = Uri.encodeComponent("Hello");
-                                    // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
-                                   // final url = Uri.parse("https://wa.me/?text=hello");
-                                   final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                      child: Card(
+                                        color: Colors.white,
+                                        shadowColor: Colors.white,
+                                        elevation: 10,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(10),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(12),
+                                                child: Stack(
+                                                  children: [
+                                                    AspectRatio(
+                                                      aspectRatio: 1.4,
+                                                      child: PageView.builder(
+                                                        scrollDirection: Axis.horizontal,
+                                                        itemCount: item.media?.length ?? 0,
+                                                        itemBuilder: (context, imgIndex) {
+                                                          return CachedNetworkImage(
+                                                            imageUrl: item.media![imgIndex].originalUrl.toString(),
+                                                            fit: BoxFit.cover,
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
+                                                    Positioned(
+                                                      top: 10,
+                                                      right: 10,
+                                                      child: Container(
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.white,
+                                                          shape: BoxShape.circle,
+                                                          boxShadow: [
+                                                            BoxShadow(
+                                                              color: Colors.grey.withOpacity(0.5),
+                                                              blurRadius: 4,
+                                                              offset: Offset(2, 2),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        child: IconButton(
+                                                          icon: Icon(
+                                                            isFavorited ? Icons.favorite : Icons.favorite_border,
+                                                            color: Colors.red,
+                                                          ),
+                                                          onPressed: () {
+                                                            setState(() {
+                                                              property_id = item.id;
+                                                              if (token == '') {
+                                                                Navigator.push(
+                                                                  context,
+                                                                  MaterialPageRoute(builder: (context) => Login()),
+                                                                );
+                                                              } else {
+                                                                toggleFavorite(property_id!);
+                                                                toggledApi(token, property_id);
+                                                              }
+                                                            });
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                item.title.toString(),
+                                                style: TextStyle(fontSize: 16, height: 1.4),
+                                              ),
+                                              SizedBox(height: 5),
+                                              Text(
+                                                '${item.price} AED',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 22,
+                                                  height: 1.4,
+                                                ),
+                                              ),
+                                              SizedBox(height: 5),
+                                              Row(
+                                                children: [
+                                                  Image.asset("assets/images/map.png", height: 14),
+                                                  SizedBox(width: 5),
+                                                  Expanded(
+                                                    child: Text(
+                                                      item.location.toString(),
+                                                      style: TextStyle(fontSize: 13),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              SizedBox(height: 8),
+                                              Row(
+                                                children: [
+                                                  Image.asset("assets/images/bed.png", height: 13),
+                                                  SizedBox(width: 5),
+                                                  Text(item.bedrooms.toString()),
+                                                  SizedBox(width: 10),
+                                                  Image.asset("assets/images/bath.png", height: 13),
+                                                  SizedBox(width: 5),
+                                                  Text(item.bathrooms.toString()),
+                                                  SizedBox(width: 10),
+                                                  Image.asset("assets/images/messure.png", height: 13),
+                                                  SizedBox(width: 5),
+                                                  Text(item.squareFeet.toString()),
+                                                ],
+                                              ),
+                                              SizedBox(height: 15),
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                spacing: 5,
+                                                children: [
+                                                  ElevatedButton.icon(
+                                                    onPressed: () async {
+                                                      String phone = 'tel:${item.phoneNumber}';
+                                                      try {
+                                                        final bool launched = await launchUrlString(
+                                                          phone,
+                                                          mode: LaunchMode.externalApplication, // ✅ Force external
+                                                        );
+                                                        if (!launched) {
+                                                          print("❌ Could not launch dialer");
+                                                        }
+                                                      } catch (e) {
+                                                        print("❌ Exception: $e");
+                                                      }
+                                                    },
+                                                    icon: Icon(Icons.call, color: Colors.red),
+                                                    label: Text("Call", style: TextStyle(color: Colors.black)),
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.grey[100],
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                      elevation: 2,
+                                                      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 8),
+                                                    ),
+                                                  ),
+                                                  ElevatedButton.icon(
+                                                    onPressed: () async {
+                                                      final phone = item.whatsapp; // without plus
+                                                      final message = Uri.encodeComponent("Hello");
+                                                      // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
+                                                      // final url = Uri.parse("https://wa.me/?text=hello");
+                                                      final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
 
-                                    if (await canLaunchUrl(url)) {
-                                      try {
-                                        final launched = await launchUrl(
-                                          url,
-                                          mode: LaunchMode.externalApplication, // 💥 critical on Android 15
-                                        );
+                                                      if (await canLaunchUrl(url)) {
+                                                        try {
+                                                          final launched = await launchUrl(
+                                                            url,
+                                                            mode: LaunchMode.externalApplication, // 💥 critical on Android 15
+                                                          );
 
-                                        if (!launched) {
-                                          print("❌ Could not launch WhatsApp");
-                                        }
-                                      } catch (e) {
-                                        print("❌ Exception: $e");
-                                      }
-                                    } else {
-                                      print("❌ WhatsApp not available or URL not supported");
-                                    }
-                                  },
-                                  icon: Image.asset("assets/images/whats.png", height: 20),
-                                  label: Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.grey[100],
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
+                                                          if (!launched) {
+                                                            print("❌ Could not launch WhatsApp");
+                                                          }
+                                                        } catch (e) {
+                                                          print("❌ Exception: $e");
+                                                        }
+                                                      } else {
+                                                        print("❌ WhatsApp not available or URL not supported");
+                                                      }
+                                                    },
+                                                    icon: Image.asset("assets/images/whats.png", height: 20),
+                                                    label: Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.grey[100],
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                      elevation: 2,
+                                                      padding: EdgeInsets.symmetric(horizontal: 35, vertical: 8),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                    elevation: 2,
-                                    padding: EdgeInsets.symmetric(horizontal: 25, vertical: 8),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+                                  );
+                                },
+                              ),
+
+                            ]
+                        )
+                    )
+                ),
               ],
             ),
-          ),
         )
     );
   }
@@ -994,7 +1010,7 @@ class _MyHomePageState extends State<HomeDemo> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-            //    Navigator.push(context, MaterialPageRoute(builder: (context)=> AgentAgencyScreen()));
+              //  Navigator.push(context, MaterialPageRoute(builder: (context)=> PriceRangeWidget()));
 
               });
             },

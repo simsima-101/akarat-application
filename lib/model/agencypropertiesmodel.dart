@@ -34,6 +34,8 @@ class Data {
   String? paymentPeriod;
   String? address;
   String? location;
+  String? phoneNumber;
+  String? whatsapp;
   List<Media>? media;
 
   Data(
@@ -43,6 +45,8 @@ class Data {
         this.paymentPeriod,
         this.address,
         this.location,
+        this.phoneNumber,
+        this.whatsapp,
         this.media});
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -52,6 +56,8 @@ class Data {
     paymentPeriod = json['payment_period'];
     address = json['address'];
     location = json['location'];
+    phoneNumber = json['phone_number'];
+    whatsapp = json['whatsapp'];
     if (json['media'] != null) {
       media = <Media>[];
       json['media'].forEach((v) {
@@ -68,6 +74,8 @@ class Data {
     data['payment_period'] = this.paymentPeriod;
     data['address'] = this.address;
     data['location'] = this.location;
+    data['phone_number'] = this.phoneNumber;
+    data['whatsapp'] = this.whatsapp;
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
     }

@@ -6,6 +6,7 @@ class AgencyDetailmodel {
   String? website;
   String? email;
   String? phone;
+  String? whatsapp;
   String? address;
   String? location;
   String? statusId;
@@ -22,6 +23,7 @@ class AgencyDetailmodel {
         this.website,
         this.email,
         this.phone,
+        this.whatsapp,
         this.address,
         this.location,
         this.statusId,
@@ -38,6 +40,7 @@ class AgencyDetailmodel {
     website = json['website'];
     email = json['email'];
     phone = json['phone'];
+    whatsapp = json['whatsapp'];
     address = json['address'];
     location = json['location'];
     statusId = json['status_id'];
@@ -56,6 +59,7 @@ class AgencyDetailmodel {
     data['website'] = this.website;
     data['email'] = this.email;
     data['phone'] = this.phone;
+    data['whatsapp'] = this.whatsapp;
     data['address'] = this.address;
     data['location'] = this.location;
     data['status_id'] = this.statusId;

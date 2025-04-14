@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:Akarat/model/agencyagentmodel.dart';
 import 'package:Akarat/model/agencypropertiesmodel.dart';
 import 'package:Akarat/screen/agency_detail.dart';
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/agency_detailModel.dart';
 import 'package:Akarat/screen/findagent.dart';
@@ -184,7 +185,10 @@ AgencyAgentsModel? agencyAgentsModel;
     Size screenSize = MediaQuery.sizeOf(context);
     if (agencyDetailmodel == null) {
       return Scaffold(
-        body: Center(child: CircularProgressIndicator()), // Show loading state
+          body: ListView.builder(
+            itemCount: 5,
+            itemBuilder: (context, index) => const ShimmerCard(),)
+        // body: Center(child: const ShimmerCard()), // Show loading state
       );
     }
     return Scaffold(
@@ -944,9 +948,12 @@ AgencyAgentsModel? agencyAgentsModel;
                                         itemCount: agencyPropertiesModel?.data?.length ?? 0,
                                         shrinkWrap: true,
                                         itemBuilder: (context, index) {
-                                          if(agencyPropertiesModel== null){
+                                          if (agencyPropertiesModel == null) {
                                             return Scaffold(
-                                              body: Center(child: CircularProgressIndicator()), // Show loading state
+                                                body: ListView.builder(
+                                                  itemCount: 5,
+                                                  itemBuilder: (context, index) => const ShimmerCard(),)
+                                              // body: Center(child: const ShimmerCard()), // Show loading state
                                             );
                                           }
                                           bool isFavorited = favoriteProperties.contains(agencyPropertiesModel!.data![index].id);
@@ -1108,7 +1115,7 @@ AgencyAgentsModel? agencyAgentsModel;
                                                             children: [
                                                               Padding(padding: const EdgeInsets.only(left: 10,top: 20,bottom: 15),
                                                                 child: ElevatedButton.icon( onPressed: () async {
-                                                                  String phone = 'tel:${agencyPropertiesModel!.data![index]}';
+                                                                  String phone = 'tel:${agencyPropertiesModel!.data![index].phoneNumber}';
                                                                   try {
                                                                     final bool launched = await launchUrlString(
                                                                       phone,
@@ -1140,7 +1147,7 @@ AgencyAgentsModel? agencyAgentsModel;
                                                               Padding(padding: const EdgeInsets.only(left: 15,top: 20,bottom: 15),
                                                                 child: ElevatedButton.icon(
                                                                     onPressed: () async {
-                                                                      final phone = agencyPropertiesModel!.data![index]; // without plus
+                                                                      final phone = agencyPropertiesModel!.data![index].whatsapp; // without plus
                                                                       final message = Uri.encodeComponent("Hello");
                                                                       // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
                                                                       // final url = Uri.parse("https://wa.me/?text=hello");
@@ -1549,7 +1556,7 @@ AgencyAgentsModel? agencyAgentsModel;
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> MyApp()));
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               });
             },
             icon: pageIndex == 0
@@ -1635,7 +1642,7 @@ AgencyAgentsModel? agencyAgentsModel;
               ),
               child: GestureDetector(
                   onTap: () async {
-                    final phone = agencyDetailmodel!.phone; // without plus
+                    final phone = agencyDetailmodel!.whatsapp; // without plus
                     final message = Uri.encodeComponent("Hello");
                     // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
                     // final url = Uri.parse("https://wa.me/?text=hello");
