@@ -4,6 +4,7 @@ import 'package:Akarat/utils/fav_login.dart';
 import 'package:Akarat/utils/fav_logout.dart';
 import 'package:flutter/material.dart';
 import '../utils/shared_preference_manager.dart';
+import 'my_account.dart';
 
 class Favorite extends StatefulWidget {
   Favorite({super.key,}) ;
@@ -352,7 +353,15 @@ class _FavoriteState extends State<Favorite> {
             enableFeedback: false,
             onPressed: () {
 
-              //   Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+
+                }
+              });
 
             },
             icon: pageIndex == 3

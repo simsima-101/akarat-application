@@ -14,6 +14,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:html_unescape/html_unescape.dart';
+
+import '../utils/shared_preference_manager.dart';
+import 'my_account.dart';
 //import 'package:flutter_html/flutter_html.dart';
 
 
@@ -37,6 +40,22 @@ class _Product_DetailState extends State<Product_Detail> {
     SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.manual, overlays: [SystemUiOverlay.bottom]);
     fetchProducts(widget.data);
+  }
+
+  String token = '';
+  String email = '';
+  String result = '';
+  bool isDataRead = false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
   }
 
   String cleanHtml(String htmlText) {
@@ -1208,8 +1227,15 @@ class _Product_DetailState extends State<Product_Detail> {
           IconButton(
             enableFeedback: false,
             onPressed: () {
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+              });
 
             },
             icon: pageIndex == 3

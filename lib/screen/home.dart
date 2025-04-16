@@ -1010,7 +1010,7 @@ class _MyHomePageState extends State<HomeDemo> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-              //  Navigator.push(context, MaterialPageRoute(builder: (context)=> PriceRangeWidget()));
+              //  Navigator.push(context, MaterialPageRoute(builder: (context)=> PriceRangeSelector()));
 
               });
             },

@@ -9,6 +9,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+
+import '../utils/shared_preference_manager.dart';
+import 'my_account.dart';
 class Featured_Detail extends StatefulWidget {
   const Featured_Detail({super.key, required this.data});
   final String data;
@@ -30,6 +35,24 @@ class _Featured_DetailState extends State<Featured_Detail> {
         SystemUiMode.manual, overlays: [SystemUiOverlay.bottom]);
     fetchProducts(widget.data);
   }
+
+
+  bool isDataRead = false;
+  String token = '';
+  String email = '';
+  String result = '';
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
+
 
   Future<void> fetchProducts(String data) async {
     try {
@@ -242,7 +265,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
                       )
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 10,),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                     // color: Colors.grey,
@@ -365,11 +388,11 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                         child:  Text(featured_detailModel!.data!.description.toString(),
                           textAlign: TextAlign.left,style: TextStyle(
-                              letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
+                              letterSpacing: 0.4,color: Colors.black87
                           ),),
 
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 10,),
                   Row(
                     children: [
                       Padding(
@@ -401,32 +424,32 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          Image.asset("assets/images/Residential__1.png", height: 15),
+                          Image.asset("assets/images/Residential__1.png", height: 17),
                           const SizedBox(width: 6),
                           Text(
                             featured_detailModel!.data!.propertyType.toString(),
-                            style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                            style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
                           ),
                           const SizedBox(width: 12),
-                          Image.asset("assets/images/bed.png", height: 15),
+                          Image.asset("assets/images/bed.png", height: 17),
                           const SizedBox(width: 6),
                           Text(
                             '${featured_detailModel!.data!.bedrooms} beds',
-                            style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                            style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
                           ),
                           const SizedBox(width: 12),
-                          Image.asset("assets/images/bath.png", height: 15),
+                          Image.asset("assets/images/bath.png", height: 17),
                           const SizedBox(width: 6),
                           Text(
                             '${featured_detailModel!.data!.bathrooms} baths',
-                            style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                            style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
                           ),
                           const SizedBox(width: 12),
-                          Image.asset("assets/images/messure.png", height: 15),
+                          Image.asset("assets/images/messure.png", height: 17),
                           const SizedBox(width: 6),
                           Text(
                             '${featured_detailModel!.data!.squareFeet} sqft',
-                            style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                            style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
                           ),
                         ],
                       ),
@@ -444,116 +467,90 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   ),
                   SizedBox(height: 5,),
                   Container(
-                      margin: const EdgeInsets.only(left: 20,top: 0,right: 1),
-                      padding: const EdgeInsets.only(top: 5),
-                      height: screenSize.height*0.11,
-                      // color: Colors.grey,
-                      child:ListView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const ScrollPhysics(),
-                        shrinkWrap: true,
-                        children: [
-                          Column(
-                            spacing: 15,
-                            children: [
-                              Row(
-                                spacing: 5,
-                                children: [
-                                  Image.asset("assets/images/Residential__1.png",height: 15,),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Swimming Pool ",style: TextStyle(
-                                        fontSize: 14,letterSpacing: 0.5
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/bed.png",height: 15,),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Balcony/Terrace ",style: TextStyle(
-                                        fontSize: 14,letterSpacing: 0.5
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/bed.png",height: 15,),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Gym ",style: TextStyle(
-                                        fontSize: 14,letterSpacing: 0.5
-                                    ),),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                spacing: 5,
-                                children: [
-                                  Image.asset("assets/images/bath.png",height: 15),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Barbeque Area ",style: TextStyle(
-                                      fontSize: 14,letterSpacing: 0.5,
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/Residential__1.png",height: 15,),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Elevators ",style: TextStyle(
-                                        fontSize: 14,letterSpacing: 0.5
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/bath.png",height: 15),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text("Parking Space ",style: TextStyle(
-                                      fontSize: 14,letterSpacing: 0.5,
-                                    ),),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                spacing: 5,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Image.asset("assets/images/messure.png",height: 15),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text("Pet Allowed ",style: TextStyle(
-                                      fontSize: 14,letterSpacing: 0.5,
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/messure.png",height: 15),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text("Security ",style: TextStyle(
-                                      fontSize: 14,letterSpacing: 0.5,
-                                    ),),
-                                  ),
-                                  Text("    "),
-                                  Text("    "),
-                                  Text("    "),
-                                  Text("    "),
-                                  Text("    ")
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      )
+                    margin: const EdgeInsets.only(left: 20, top: 0, right: 1),
+                    padding: const EdgeInsets.only(top: 5),
+                    height: screenSize.height * 0.11,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const ScrollPhysics(),
+                      shrinkWrap: true,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Image.asset("assets/images/Residential__1.png", height: 17),
+                                const SizedBox(width: 3),
+                                const Text(
+                                  " Swimming Pool ",
+                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                ),
+                                const SizedBox(width: 8),
+                                Image.asset("assets/images/bed.png", height: 17),
+                                const SizedBox(width: 3),
+                                const Text(
+                                  " Balcony/Terrace ",
+                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                ),
+                                const SizedBox(width: 8),
+                                Image.asset("assets/images/bed.png", height: 17),
+                                const SizedBox(width: 3),
+                                const Text(
+                                  " Gym ",
+                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Image.asset("assets/images/bath.png", height: 17),
+                                const SizedBox(width: 3),
+                                const Text(
+                                  " Barbeque Area ",
+                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                ),
+                                const SizedBox(width: 8),
+                                Image.asset("assets/images/Residential__1.png", height: 17),
+                                const SizedBox(width: 3),
+                                const Text(
+                                  " Elevators ",
+                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                ),
+                                const SizedBox(width: 8),
+                                Image.asset("assets/images/bath.png", height: 17),
+                                const SizedBox(width: 3),
+                                const Text(
+                                  "Parking Space ",
+                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const SizedBox(width: 3),
+                                Image.asset("assets/images/messure.png", height: 17),
+                                const SizedBox(width: 3),
+                                const Text(
+                                  "Pet Allowed ",
+                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                ),
+                                const SizedBox(width: 8),
+                                Image.asset("assets/images/messure.png", height: 17),
+                                const SizedBox(width: 3),
+                                const Text(
+                                  "Security ",
+                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                ),
+                                const SizedBox(width: 20), // Padding at the end
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 5,),
                   Row(
@@ -823,17 +820,17 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               ), //BoxShadow
                             ],
                           ),
-                          /* child: CachedNetworkImage( // this is to fetch the image
-                            imageUrl: (productModels!.data!.media.toString()),
+                           child: CachedNetworkImage( // this is to fetch the image
+                            imageUrl: (featured_detailModel!.data!.agentImage.toString()),
                             fit: BoxFit.cover,
                             height: 100,
-                          ),*/
+                          ),
                         ),
-                        /*Padding(padding: const EdgeInsets.only(top: 10),
-                          child: Text(featured_detailModel!.data!..toString(),style: TextStyle(
+                        Padding(padding: const EdgeInsets.only(top: 10),
+                          child: Text(featured_detailModel!.data!.agent.toString(),style: TextStyle(
                               fontWeight: FontWeight.bold,letterSpacing: 0.5
                           ),),
-                        ),*/
+                        ),
                         Row(
                           children: [
                             Padding(padding: const EdgeInsets.only(top: 5,left: 80),
@@ -939,31 +936,126 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
                         ),
                         const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 20,
-                          runSpacing: 8,
-                          children: const [
-                            Text("Reference:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
-                            Text("Listed:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
-                            Text("Broker License:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
-                            Text("Agent License:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
-                            Text("OLD Permit Number:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
-                            Text("Zone Name:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
-                          ],
+
+                        // Info Rows
+                        _buildInfoRow("DLD Permit Number:",
+                            featured_detailModel!.data!.regulatoryInfo!.dldPermitNumber.toString()
                         ),
-                        const SizedBox(height: 16),
+                        _buildInfoRow("DED",
+                            featured_detailModel!.data!.regulatoryInfo!.ded.toString()
+                          ),
+                        _buildInfoRow("RERA",
+                            featured_detailModel!.data!.regulatoryInfo!.rera.toString()
+                        ),
+                        _buildInfoRow("BRN",
+                            featured_detailModel!.data!.regulatoryInfo!.brn.toString()
+                        ),
+
+                        const SizedBox(height: 5),
+
+                        // Logo and label
                         Center(
                           child: Column(
                             children: [
-                              Image.asset("assets/images/dld.png", height: screenSize.height * 0.1, fit: BoxFit.contain),
+                              ListView.builder(
+                                padding: const EdgeInsets.all(0),
+                                shrinkWrap: true,
+                                //scrollDirection: Axis.vertical,
+                                physics: const ScrollPhysics(),
+                                itemCount: featured_detailModel?.data?.qr?.length ?? 0,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return  CachedNetworkImage(imageUrl:featured_detailModel!.data!.qr![index].qrUrl.toString() ,
+                                    height: 120,);
+                                },
+                              ),
                               const SizedBox(height: 6),
-                              const Text("OLD Permit Number", style: TextStyle(fontWeight: FontWeight.bold)),
+                              const Text("DLD Permit Number", style: TextStyle(fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),
                       ],
                     ),
                   ),
+                 /* Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(left: 18, right: 14, top: 20),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: Offset(0.5, 0.5),
+                          blurRadius: 0.5,
+                          spreadRadius: 0.3,
+                        ),
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Left Side: Title + Info
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Regulatory Information",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                spacing: 20,
+                                runSpacing: 8,
+                                children: const [
+                                  Text("Reference:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("Listed:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("Broker License:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("Agent License:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("OLD Permit Number:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("Zone Name:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        // Right Side: DLD Image
+                        Column(
+                         // crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 0),
+                              child: Image.asset(
+                                "assets/images/dld.png",
+                                height: screenSize.height * 0.1,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                              Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 0),
+                              child: const Text(
+                                "OLD Permit Number",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),*/
                   SizedBox(height: 5,),
                   Container(
                     height: 30,
@@ -979,6 +1071,24 @@ class _Featured_DetailState extends State<Featured_Detail> {
                 ]
             )
         )
+    );
+  }
+
+  Widget _buildInfoRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 130,
+            child: Text("$title:", style: const TextStyle(fontSize: 13, letterSpacing: 0.5)),
+          ),
+          Expanded(
+            child: Text(value, style: const TextStyle(fontSize: 13, letterSpacing: 0.5)),
+          ),
+        ],
+      ),
     );
   }
   Container buildMyNavBar(BuildContext context) {
@@ -1038,7 +1148,23 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.call_outlined,color: Colors.red,)
+              child:GestureDetector(
+                  onTap:  () async {
+                    String phone = 'tel:${featured_detailModel!.data!.phoneNumber}';
+                    try {
+                      final bool launched = await launchUrlString(
+                        phone,
+                        mode: LaunchMode.externalApplication, // ✅ Force external
+                      );
+                      if (!launched) {
+                        print("❌ Could not launch dialer");
+                      }
+                    } catch (e) {
+                      print("❌ Exception: $e");
+                    }
+
+                  },
+                  child: Icon(Icons.call_outlined,color: Colors.red,))
           ),
 
           Container(
@@ -1066,7 +1192,32 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   ), //BoxShadow
                 ],
               ),
-              child: Image.asset("assets/images/whats.png",height: 20,)
+              child:  GestureDetector(
+                  onTap: () async {
+                    final phone = featured_detailModel!.data!.whatsapp; // without plus
+                    final message = Uri.encodeComponent("Hello");
+                    // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
+                    // final url = Uri.parse("https://wa.me/?text=hello");
+                    final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+
+                    if (await canLaunchUrl(url)) {
+                      try {
+                        final launched = await launchUrl(
+                          url,
+                          mode: LaunchMode.externalApplication, // 💥 critical on Android 15
+                        );
+
+                        if (!launched) {
+                          print("❌ Could not launch WhatsApp");
+                        }
+                      } catch (e) {
+                        print("❌ Exception: $e");
+                      }
+                    } else {
+                      print("❌ WhatsApp not available or URL not supported");
+                    }
+                  },
+                  child: Image.asset("assets/images/whats.png",height: 20,))
 
           ),
           Container(
@@ -1094,14 +1245,35 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   ), //BoxShadow
                 ],
               ),
-              child: Icon(Icons.mail,color: Colors.red,)
+              child:  GestureDetector(
+                  onTap: () async {
+                    final Uri emailUri = Uri(
+                      scheme: 'mailto',
+                      path: '${featured_detailModel!.data!.whatsapp}', // Replace with actual email
+                      query: 'subject=Property Inquiry&body=Hi, I saw your property on Akarat.',
+                    );
+
+                    if (await canLaunchUrl(emailUri)) {
+                      await launchUrl(emailUri);
+                    } else {
+                      throw 'Could not launch $emailUri';
+                    }
+                  },
+                  child: Icon(Icons.mail,color: Colors.red,))
 
           ),
           IconButton(
             enableFeedback: false,
             onPressed: () {
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+              });
 
             },
             icon: pageIndex == 3

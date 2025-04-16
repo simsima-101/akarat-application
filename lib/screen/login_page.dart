@@ -23,9 +23,11 @@ class LoginPageDemo extends StatefulWidget {
   _LoginPageDemoState createState() => _LoginPageDemoState();
 }
 class _LoginPageDemoState extends State<LoginPageDemo> {
-  final emailController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -51,251 +53,171 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
                         child: Image.asset('assets/images/logo-text.png')),
                   ),
                 ),
-                Container(
-      height: 380,
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 25,left: 20,right: 20),
-      padding: const EdgeInsets.only(top: 15,bottom: 00),
-       decoration: BoxDecoration(
-         borderRadius: BorderRadiusDirectional.circular(10.0),
-         color: Color(0xFFF5F5F5),
-         boxShadow: [
-           BoxShadow(
-             color: Colors.grey,
-             offset: const Offset(
-               0.0,
-               0.0,
-             ),
-             blurRadius: 0.1,
-             spreadRadius: 0.1,
-           ), //BoxShadow
-           BoxShadow(
-             color: Colors.white,
-             offset: const Offset(0.0, 0.0),
-             blurRadius: 0.0,
-             spreadRadius: 0.0,
-           ), //BoxShadow
-         ],
-         /* border: Border.all(
-                    color: Color(0xFFEEEEEE))*/
-       ),
-       child: Column(
-         children: [
-           Text("Create an account",style: TextStyle(
-            color: Colors.black,
-          fontSize: 20,
-            ),textAlign: TextAlign.center,),
-          //google button
-          Padding(
-            padding: const EdgeInsets.only(
-                left: 15.0, right: 15.0, top: 10, bottom: 0),
-            child: Container(
-            width: 300,
-            height: 50,
-            padding: const EdgeInsets.only(top: 5),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(10.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.3,
-                        0.3,
-                      ),
-                      blurRadius: 0.3,
-                      spreadRadius: 0.3,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
-            ),
-              child: Row(
-                children: [
-                  Padding(padding: const EdgeInsets.only(left: 60,top: 0),
-                    child:  Image.asset("assets/images/gi.webp",height: 25,
-                      alignment: Alignment.center,) ,
+                Padding(
+                  padding: const EdgeInsets.only(top: 25.0, left: 20, right: 20),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10.0),
+                            color: Color(0xFFF5F5F5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: Offset(0.0, 0.0),
+                                blurRadius: 0.1,
+                                spreadRadius: 0.1,
+                              ),
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: Offset(0.0, 0.0),
+                                blurRadius: 0.0,
+                                spreadRadius: 0.0,
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              const Text(
+                                "Create an account",
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 10),
+
+                              // Google Button
+                              _socialButton(
+                                context,
+                                image: "assets/images/gi.webp",
+                                text: "Continue with Google",
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              const Text("or", style: TextStyle(color: Colors.grey, fontSize: 17)),
+
+                              const SizedBox(height: 10),
+
+                              // Email Field
+                              Container(
+                                width: screenSize.width * 0.85,
+                                decoration: _boxDecoration(),
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                child: TextFormField(
+                                  controller: emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: 'Email',
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your email';
+                                    }
+                                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                      return 'Invalid email format';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+
+                              const SizedBox(height: 15),
+
+                              // Continue Button
+                              SizedBox(
+                                width: screenSize.width * 0.85,
+                                height: 50,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFEEEEEE),
+                                    elevation: 1,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    if (_formKey.currentState!.validate()) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              CreatePassword(data: emailController.text),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: const Text("Continue",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold, color: Colors.black)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        // Already have account
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text("Already have an account?",
+                                style: TextStyle(color: Color(0xFF424242), fontSize: 13)),
+                            const SizedBox(width: 4),
+                            InkWell(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => Login()));
+                              },
+                              child: const Text("Login Here",
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black)),
+                            )
+                          ],
+                        )
+                      ],
+                    ),
                   ),
-                  Padding(padding: const EdgeInsets.only(left: 5,top: 0),
-                    child:  Text("Continue with Google",style: TextStyle(fontWeight: FontWeight.bold),) ,
-                  )
-
-                ],
-              ),
-            ),
-            ),
-          //facebook button
-         /*  Padding(
-             padding: const EdgeInsets.only(
-                 left: 15.0, right: 15.0, top: 15, bottom: 0),
-             child: Container(
-               width: 300,
-               height: 50,
-               padding: const EdgeInsets.only(top: 5),
-               decoration: BoxDecoration(
-                 borderRadius: BorderRadiusDirectional.circular(10.0),
-                 boxShadow: [
-                   BoxShadow(
-                     color: Colors.grey,
-                     offset: const Offset(
-                       0.3,
-                       0.3,
-                     ),
-                     blurRadius: 0.3,
-                     spreadRadius: 0.3,
-                   ), //BoxShadow
-                   BoxShadow(
-                     color: Colors.white,
-                     offset: const Offset(0.0, 0.0),
-                     blurRadius: 0.0,
-                     spreadRadius: 0.0,
-                   ), //BoxShadow
-                 ],
-               ),
-               child: Row(
-                 children: [
-                   Padding(padding: const EdgeInsets.only(left: 60,top: 0),
-                     child:  Image.asset("assets/images/blog.png",height: 20,
-                       alignment: Alignment.center,) ,
-                   ),
-                   Padding(padding: const EdgeInsets.only(left: 5,top: 0),
-                     child:  Text("Continue with Facebook",style: TextStyle(fontWeight: FontWeight.bold),) ,
-                   )
-
-                 ],
-               ),
-
-             ),
-           ),*/
-          //  Text
-           Padding(
-         padding: const EdgeInsets.only(
-             left: 15.0, right: 15.0, top: 10, bottom: 0),
-         child:  Text("or",style: TextStyle(
-           color: Colors.grey,
-           fontSize: 17,
-         ),textAlign: TextAlign.center,),
-       ),
-           //edittext
-           Padding(
-             padding: const EdgeInsets.only(
-                 left: 15.0, right: 15.0, top: 10, bottom: 0),
-             child: Container(
-               width: 300,
-               height: 50,
-               padding: const EdgeInsets.only(top: 3,left: 12),
-               decoration: BoxDecoration(
-                 borderRadius: BorderRadiusDirectional.circular(10.0),
-                 boxShadow: [
-                   BoxShadow(
-                     color: Colors.grey,
-                     offset: const Offset(
-                       0.3,
-                       0.3,
-                     ),
-                     blurRadius: 0.3,
-                     spreadRadius: 0.3,
-                   ), //BoxShadow
-                   BoxShadow(
-                     color: Colors.white,
-                     offset: const Offset(0.0, 0.0),
-                     blurRadius: 0.0,
-                     spreadRadius: 0.0,
-                   ), //BoxShadow
-                 ],
-               ),
-                 child: TextFormField(
-                   validator: (value) =>
-                       Validator.validateEmail(value ?? ""),
-                   controller: emailController,
-                   keyboardType: TextInputType.emailAddress,
-                   decoration: InputDecoration(
-                      /* border: OutlineInputBorder(
-                       ),*/
-                     border: InputBorder.none,
-                       hintText: 'Email',
-                   ),
-                textAlign: TextAlign.left,
-               ),
-             ),
-           ),
-           //button
-            GestureDetector(
-         onTap: (){
-           Navigator.push(context, MaterialPageRoute(builder: (context)=> CreatePassword(data: emailController.text)));
-         },
-         child:
-           Padding(
-             padding: const EdgeInsets.only(
-                 left: 15.0, right: 15.0, top: 15, bottom: 0),
-             child: Container(
-               width: 300,
-               height: 50,
-               padding: const EdgeInsets.only(top: 13),
-               decoration: BoxDecoration(
-                 color: Color(0xFFEEEEEE),
-                 borderRadius: BorderRadiusDirectional.circular(10.0),
-                 boxShadow: [
-                   BoxShadow(
-                     color: Colors.grey,
-                     offset: const Offset(
-                       0.3,
-                       0.3,
-                     ),
-                     blurRadius: 0.3,
-                     spreadRadius: 0.3,
-                   ), //BoxShadow
-                   BoxShadow(
-                     color: Colors.white,
-                     offset: const Offset(0.0, 0.0),
-                     blurRadius: 0.0,
-                     spreadRadius: 0.0,
-                   ), //BoxShadow
-                 ],
-               ),
-
-             child: Text("Continue",style: TextStyle(
-               color: Colors.black,
-               fontSize: 15,
-               fontWeight: FontWeight.bold,
-             ),textAlign: TextAlign.center,),
-             ),
-           ),
-       ),
-            //text
-            Padding(
-             padding: const EdgeInsets.only(
-                 left:0.0,top: 15.0),
-             child: Center(
-               child: Row(
-                 children: [
-                   Padding(
-                     padding: const EdgeInsets.only(left: 62),
-                     child: Text('Already have an account? ',style: TextStyle(
-                       color: Color(0xFF424242),fontSize: 13,
-                     ),),
-                   ),
-                   Padding(
-                     padding: const EdgeInsets.only(left:1.0),
-                     child: InkWell(
-                         onTap: (){
-                           Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                         },
-                         child: Text('Login Here', style: TextStyle(fontSize: 14, color: Colors.black,
-                         fontWeight: FontWeight.bold),)),
-                   )
-                 ],
-               ),
-             ),
-
-           ),
-         ],
-       ),
-     ),
+                ),
     ]))
+    );
+  }
+  Widget _socialButton(BuildContext context,
+      {required String image, required String text}) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.85,
+      height: 50,
+      decoration: _boxDecoration(),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: [
+          Image.asset(image, height: 24),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(text,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center),
+          )
+        ],
+      ),
+    );
+  }
+
+  BoxDecoration _boxDecoration() {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.2),
+          blurRadius: 2,
+          offset: const Offset(0, 1),
+        ),
+      ],
     );
   }
   }

@@ -11,6 +11,8 @@ import 'package:Akarat/screen/support.dart';
 import 'package:Akarat/screen/terms_condition.dart';
 import 'package:flutter/material.dart';
 
+import '../utils/shared_preference_manager.dart';
+import 'my_account.dart';
 import 'settingstile.dart';
 
 void main(){
@@ -42,6 +44,23 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
     const Page3(),
     const Page4(),
   ];
+
+
+  String token = '';
+  String email = '';
+  String result = '';
+  bool isDataRead = false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -496,9 +515,15 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
           IconButton(
             enableFeedback: false,
             onPressed: () {
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-
+                }
+              });
             },
             icon: pageIndex == 3
                 ? const Icon(

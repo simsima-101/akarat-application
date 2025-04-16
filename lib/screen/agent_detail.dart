@@ -11,7 +11,9 @@ import '../model/productmodel.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../utils/shared_preference_manager.dart';
 import 'about_agent.dart';
+import 'my_account.dart';
 
 
 class Agent_Detail extends StatefulWidget {
@@ -60,6 +62,22 @@ class _Agent_DetailState extends State<Agent_Detail> {
       // Handle error if needed
     }
   }
+  String token = '';
+  String email = '';
+  String result = '';
+  bool isDataRead = false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -1419,7 +1437,15 @@ class _Agent_DetailState extends State<Agent_Detail> {
             enableFeedback: false,
             onPressed: () {
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+
+                }
+              });
 
             },
             icon: pageIndex == 3

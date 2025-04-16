@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:Akarat/screen/filter.dart';
 import 'package:Akarat/screen/product_detail.dart';
+import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/screen/searchexample.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -24,6 +25,7 @@ import '../utils/shared_preference_manager.dart';
 import 'filter_list.dart';
 import 'home.dart';
 import 'login.dart';
+import 'my_account.dart';
 
 class Search extends StatefulWidget {
   const Search({super.key, required this.data});
@@ -2060,10 +2062,10 @@ class _SearchState extends State<Search> {
             onPressed: () {
               setState(() {
                 if(token == ''){
-                //  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
                 }
                 else{
-               //   Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
                 }
               });

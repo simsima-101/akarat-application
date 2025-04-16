@@ -387,7 +387,6 @@ AgencyAgentsModel? agencyAgentsModel;
                     tabAlignment: TabAlignment.center,
                     // onTap: (int index) => setState(() =>  screens[about_tb()]),
                     tabs: [
-
                       Container(
                         margin: const EdgeInsets.only(left: 10),
                         width: 80,
@@ -759,7 +758,6 @@ AgencyAgentsModel? agencyAgentsModel;
                                       ),
                                       SizedBox(height: 10,)
                                       //ending about details
-
                                     ],
                                   ),
                                 )
@@ -1144,7 +1142,8 @@ AgencyAgentsModel? agencyAgentsModel;
                                                                     icon: Icon(Icons.call,color: Colors.red,)),
                                                               ),
                                                               // Text(product.description),
-                                                              Padding(padding: const EdgeInsets.only(left: 15,top: 20,bottom: 15),
+                                                              Padding(
+                                                                padding: const EdgeInsets.only(left: 15,top: 20,bottom: 15),
                                                                 child: ElevatedButton.icon(
                                                                     onPressed: () async {
                                                                       final phone = agencyPropertiesModel!.data![index].whatsapp; // without plus
@@ -1204,7 +1203,7 @@ AgencyAgentsModel? agencyAgentsModel;
 
                                     ),
                                   ],
-                                                                ),
+                                  ),
                                 ),
                             ),
                             //Agent
@@ -1614,7 +1613,6 @@ AgencyAgentsModel? agencyAgentsModel;
                   },
                   child: Icon(Icons.call_outlined,color: Colors.red,))
           ),
-
           Container(
               margin: const EdgeInsets.only(left: 1),
               height: 35,
@@ -1714,13 +1712,14 @@ AgencyAgentsModel? agencyAgentsModel;
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                if(isDataRead == true){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
                 }
                 else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
-                }              });
+                }
+              });
             },
             icon: pageIndex == 3
                 ? const Icon(

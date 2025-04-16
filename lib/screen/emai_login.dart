@@ -18,14 +18,14 @@ class EmaiLogin extends StatefulWidget {
 }
 class _EmaiLoginState extends State<EmaiLogin> {
 
-  bool passwordVisible=false;
+  final _formKey = GlobalKey<FormState>();
+  final passwordController = TextEditingController();
+  bool passwordVisible = false;
   // Create an object of SharedPreferencesManager class
   SharedPreferencesManager prefManager = SharedPreferencesManager();
-  final passwordController = TextEditingController();
   @override
   void initState(){
     super.initState();
-    passwordVisible=true;
   }
 RegisterModel? registerModel;
   LoginModel? loginModel;
@@ -107,246 +107,154 @@ RegisterModel? registerModel;
     ),
     ),
           Container(
-            height: screenSize.height*0.36,
-            width: double.infinity,
-            margin: const EdgeInsets.only(top: 25,left: 20,right: 20),
-            padding: const EdgeInsets.only(top: 15,bottom: 00),
+            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              borderRadius: BorderRadiusDirectional.circular(10.0),
+              borderRadius: BorderRadius.circular(10.0),
               color: Color(0xFFF5F5F5),
               boxShadow: [
                 BoxShadow(
                   color: Colors.grey,
-                  offset: const Offset(
-                    0.0,
-                    0.0,
-                  ),
+                  offset: Offset(0.0, 0.0),
                   blurRadius: 0.1,
                   spreadRadius: 0.1,
-                ), //BoxShadow
+                ),
                 BoxShadow(
                   color: Colors.white,
-                  offset: const Offset(0.0, 0.0),
+                  offset: Offset(0.0, 0.0),
                   blurRadius: 0.0,
                   spreadRadius: 0.0,
-                ), //BoxShadow
-              ],
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-            GestureDetector(
-            onTap: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-          },
-            child:
-            Text("   Back",style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 17,
-                    ),textAlign: TextAlign.left,),
-            ),
-
-                  ],
-                ),
-        Padding(padding: const EdgeInsets.only(top: 10,left: 14),
-         child:  Text("Welcome to Akarat!                                  ",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,letterSpacing: 0.5
-          ),),
-        ),
-      Padding(padding: const EdgeInsets.only(left: 14,top: 8),
-       child:  Text("View saved Properties Keep Search history across devices see"
-            " which properties you have contacted.",
-          style: TextStyle(fontSize: 14,letterSpacing: 0.5),
-          softWrap: true,),
-      ),
-
-                //google button
-                Padding(
-                  padding: const EdgeInsets.only(
-                      left: 14, right: 14.0, top: 15, bottom: 0),
-                  child: Container(
-                    width: screenSize.width*0.9,
-                    height: screenSize.height*0.05,
-                    padding: const EdgeInsets.only(top: 2,left: 8),
-                    decoration: BoxDecoration(
-
-                      borderRadius: BorderRadiusDirectional.circular(10.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Text(    widget.data,style:
-                        TextStyle(color: Colors.grey),),
-                        Container(
-                          width: screenSize.width*0.35
-                        ),
-                        Icon(Icons.check,color: Colors.green,)
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                      left: 14.0, right: 14.0, top: 15, bottom: 0),
-                  child: Container(
-                    width: screenSize.width*0.9,
-                    height: screenSize.height*0.05,
-                    padding: const EdgeInsets.only(top: 5,left: 8),
-                    decoration: BoxDecoration(
-
-                      borderRadius: BorderRadiusDirectional.circular(10.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-
-                    child:   TextFormField(
-                      obscureText: passwordVisible,
-                      controller: passwordController,
-                      validator: (value){
-                        if(value!.isEmpty) {
-                          return 'Empty';
-                        }
-                        else{
-                          Validator.validatePassword(value ?? "");
-                        }
-                        return null;
-                      },
-                      // validator: (value) => Validator.validatePassword(value ?? ""),
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        //  fillColor: Colors.white,
-                        hintText: '  Password',
-                        hintStyle: TextStyle(color: Colors.grey),
-                        suffixIcon: IconButton(
-                          icon: Icon(passwordVisible
-                              ? Icons.visibility
-                              : Icons.visibility_off),
-                          onPressed: () {
-                            setState(
-                                  () {
-                                passwordVisible = !passwordVisible;
-                              },
-                            );
-                          },
-                        ),
-                        alignLabelWithHint: false,
-                        // filled: true,
-                      ),
-                      keyboardType: TextInputType.visiblePassword,
-                      textInputAction: TextInputAction.done,
-                    ),
-                        ),
-
-                  ),
-                //button
-        Padding(
-                  padding: const EdgeInsets.only(
-                      left: 14.0, right: 14.0, top: 15, bottom: 0),
-                  child: Container(
-                    width: screenSize.width*0.9,
-                    height: screenSize.height*0.05,
-                    padding: const EdgeInsets.only(top: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadiusDirectional.circular(10.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],
-                    ),
-                    child: InkWell(
-                        onTap: (){
-                          loginUsers(widget.data);
-                         // Navigator.push(context, MaterialPageRoute(builder: (context)=> CreatePassword()));
-                        },
-                        child: Text('Log in',textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 17,
-                              color: Colors.white),)),
-                  ),
                 ),
               ],
             ),
-          ),
-          //text
-          Padding(
-            padding: const EdgeInsets.only(
-                left:0.0,top: 15.0),
-
-            child: Center(
-              child: Row(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 62),
-                    child: Text('Not registered yet? ',style: TextStyle(
-                      color: Color(0xFF424242),fontSize: 13,
-                    ),),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: const Text("← Back", style: TextStyle(color: Colors.blue, fontSize: 17)),
                   ),
-
-                  Padding(
-                    padding: const EdgeInsets.only(left:1.0),
-                    child: InkWell(
-                        onTap: (){
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginPage()));
-                        },
-                        child: Text('Create new account', style: TextStyle(fontSize: 15, color: Colors.black,
-                        fontWeight: FontWeight.bold),)),
-                  )
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Welcome to Akarat!",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "View saved properties, keep search history across devices, and see which properties you have contacted.",
+                    style: TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+                  const SizedBox(height: 15),
+                  _infoCard(context, widget.data),
+                  const SizedBox(height: 15),
+                  _passwordField(),
+                  const SizedBox(height: 15),
+                  _loginButton(context),
                 ],
               ),
             ),
-
           ),
+          const SizedBox(height: 1),
+          _registerPrompt(context),
             ]
           )
         )
     ),
     );
   }
+
+  Widget _infoCard(BuildContext context, String data) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: _boxDecoration(),
+      height: 50,
+      width: double.infinity,
+      child: Row(
+        children: [
+          Text(data, style: const TextStyle(color: Colors.grey)),
+          const Spacer(),
+          const Icon(Icons.check, color: Colors.green),
+        ],
+      ),
+    );
+  }
+
+  Widget _passwordField() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: _boxDecoration(),
+      child: TextFormField(
+        controller: passwordController,
+        obscureText: !passwordVisible,
+        keyboardType: TextInputType.visiblePassword,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          hintText: 'Password',
+          suffixIcon: IconButton(
+            icon: Icon(passwordVisible ? Icons.visibility : Icons.visibility_off),
+            onPressed: () => setState(() => passwordVisible = !passwordVisible),
+          ),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) return 'Please enter your password';
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _loginButton(BuildContext context) {
+    return SizedBox(
+      height: 50,
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          elevation: 2,
+        ),
+        onPressed: () {
+          if (_formKey.currentState!.validate()) {
+            loginUsers(widget.data);
+          }
+        },
+        child: const Text('Log in', style: TextStyle(fontSize: 17, color: Colors.white)),
+      ),
+    );
+  }
+
+  Widget _registerPrompt(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text("Not registered yet?", style: TextStyle(fontSize: 13)),
+        const SizedBox(width: 5),
+        InkWell(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => LoginPage())),
+          child: const Text(
+            'Create new account',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+        )
+      ],
+    );
+  }
+
+  BoxDecoration _boxDecoration() {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.2),
+          blurRadius: 4,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    );
+  }
+
+
 }

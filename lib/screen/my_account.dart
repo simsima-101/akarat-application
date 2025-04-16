@@ -293,7 +293,7 @@ class _My_AccountState extends State<My_Account> {
                         GestureDetector(
                           child: const SettingsTile(
                             title: "About Us",
-                            iconPath: "assets/images/app_icon.png",
+                            iconPath: "assets/images/about.png",
                           ),
                           onTap: (){
                             Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Us()));
@@ -311,7 +311,7 @@ class _My_AccountState extends State<My_Account> {
                         GestureDetector(
                           child: const SettingsTile(
                             title: "Advertising",
-                            iconPath: "assets/images/advertise10.png",
+                            iconPath: "assets/images/advertise.png",
                           ),
                           onTap: (){
                             Navigator.push(context, MaterialPageRoute(builder: (context)=> Advertising()));
@@ -877,8 +877,15 @@ class _My_AccountState extends State<My_Account> {
           IconButton(
             enableFeedback: false,
             onPressed: () {
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
-             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+              });
 
             },
             icon: pageIndex == 3

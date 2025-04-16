@@ -1466,11 +1466,11 @@ class _AboutAgentState extends State<AboutAgent> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                if(isDataRead == true){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
                 }
                 else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
                 }
               });

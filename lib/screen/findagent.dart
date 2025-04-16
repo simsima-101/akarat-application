@@ -173,9 +173,11 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                   ],
                 ),
                 child: TabBar(
+                  dividerColor: Colors.transparent,
+                  indicatorColor: Colors.transparent,
+                  indicator: BoxDecoration(),
                   labelColor: Colors.lightBlueAccent,
                   unselectedLabelColor: Colors.grey,
-                  indicatorColor: Colors.transparent,
                   tabs: [
                     Tab(child: Text('Agents', style: TextStyle(fontSize: 16))),
                     Tab(child: Text('Agency', style: TextStyle(fontSize: 16))),
@@ -432,7 +434,15 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
             enableFeedback: false,
             onPressed: () {
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+
+                }
+              });
 
             },
             icon: pageIndex == 3

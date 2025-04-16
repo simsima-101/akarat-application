@@ -10,6 +10,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
+import '../utils/shared_preference_manager.dart';
+import 'my_account.dart';
+
 class Property_Detail extends StatefulWidget {
   Property_Detail({super.key, required this.data});
   final String data;
@@ -27,6 +30,23 @@ class _Property_DetailState extends State<Property_Detail> {
     const Page3(),
     const Page4(),
   ];
+
+
+  String token = '';
+  String email = '';
+  String result = '';
+  bool isDataRead = false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
 
   @override
   void initState() {
@@ -927,8 +947,15 @@ class _Property_DetailState extends State<Property_Detail> {
           IconButton(
             enableFeedback: false,
             onPressed: () {
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+              });
 
             },
             icon: pageIndex == 3

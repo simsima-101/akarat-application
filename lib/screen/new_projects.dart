@@ -15,6 +15,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../model/togglemodel.dart';
 import '../utils/shared_preference_manager.dart';
 import 'login.dart';
+import 'my_account.dart';
 
 void main(){
   runApp(const New_Projects());
@@ -675,7 +676,13 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+
+                }
               });
             },
             icon: pageIndex == 3

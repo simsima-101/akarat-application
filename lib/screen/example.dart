@@ -1,128 +1,81 @@
-import 'dart:ui';
-
+import 'package:Akarat/screen/sample.dart';
 import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_core/theme.dart';
-import 'package:syncfusion_flutter_sliders/sliders.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 
-void main() {
-  runApp(MyApp());
-}
+import '../model/amenities.dart';
 
-class Data {
-  final double x;
-  final double y;
-
-  Data(this.x, this.y);
-}
-
-class MyApp extends StatelessWidget {
+class AmenitiesPreview extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(title: Text("Custom AED Range Selector")),
-        body: PriceRangeWidget(),
-      ),
-    );
-  }
+  _AmenitiesPreviewState createState() => _AmenitiesPreviewState();
 }
 
-class PriceRangeWidget extends StatefulWidget {
-  @override
-  _PriceRangeWidgetState createState() => _PriceRangeWidgetState();
-}
-
-class _PriceRangeWidgetState extends State<PriceRangeWidget> {
-  late SfRangeValues _values;
-  late List<Data> chartData;
-
-  @override
-  void initState() {
-    super.initState();
-    _values = SfRangeValues(5000.0, 50000.0);
-    chartData = List.generate(30, (index) => Data(index * 2000, (index % 5 + 1) * 10));
-  }
+class _AmenitiesPreviewState extends State<AmenitiesPreview> {
+  List<Amenities> selectedAmenities = [];
+  Set<int> selectedIndexes = {};
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: SfRangeSelector(
-        min: 1000.0,
-        max: 100000.0,
-        interval: 5000,
-        showTicks: false,
-        activeColor: Colors.blue,
-        inactiveColor: Colors.grey.shade300,
-        enableTooltip: true,
-        shouldAlwaysShowTooltip: true,
-        tooltipTextFormatterCallback: (actualValue, formattedText) {
-          return 'AED ${actualValue.toStringAsFixed(0)}';
-        },
-       // trackShape: DashedRangeTrackShape(),
-        initialValues: _values,
-        onChanged: (SfRangeValues value) {
-          setState(() {
-            _values = value;
-          });
-        },
-        child: SizedBox(
-          height: 60,
-          width: double.infinity,
-          child: SfCartesianChart(
-            plotAreaBorderWidth: 0,
-            primaryXAxis: NumericAxis(isVisible: false),
-            primaryYAxis: NumericAxis(isVisible: false),
-            series: <ColumnSeries<Data, double>>[
-              ColumnSeries<Data, double>(
-                dataSource: chartData,
-                xValueMapper: (Data sales, _) => sales.x,
-                yValueMapper: (Data sales, _) => sales.y,
-                pointColorMapper: (_, __) => Colors.blue.shade200,
-              ),
-            ],
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          // Horizontal selected chips
+          SizedBox(height: 50,),
+          SizedBox(
+            height: 60,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: selectedAmenities.length,
+              itemBuilder: (context, index) {
+                final item = selectedAmenities[index];
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 4)
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Image.network(item.icon!, height: 18, color: Colors.red),
+                      const SizedBox(width: 5),
+                      Text(item.title!, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
-        ),
+
+          // Show all
+        /*  Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () async {
+               *//* final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AmenitiesFilterScreen(
+                      initiallySelected: selectedAmenities,
+                    ),
+                  ),
+                );*//*
+
+                if (result != null && result is List<Amenities>) {
+                  setState(() {
+                    selectedAmenities = result;
+                  });
+                }
+              },
+              icon: const Icon(Icons.arrow_forward, size: 16),
+              label: const Text("Show all", style: TextStyle(color: Colors.blue)),
+            ),
+          ),*/
+          Text(selectedIndexes.toString()),
+        ],
       ),
     );
   }
 }
-
-/*class DashedRangeTrackShape extends SfRangeTrackShape {
-  void paint(
-      PaintingContext context,
-      Offset offset,
-      RenderBox parentBox,
-      SfSliderThemeData themeData,
-      SfRangeValues currentValues,
-      Paint trackPaint,
-      Offset startThumbCenter,
-      Offset endThumbCenter,
-      TextDirection textDirection,
-      ) {
-    final Paint dashedPaint = Paint()
-      ..color = themeData.activeTrackColor!
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    final Path path = Path()
-      ..moveTo(startThumbCenter.dx, startThumbCenter.dy)
-      ..lineTo(endThumbCenter.dx, endThumbCenter.dy);
-
-    const dashWidth = 5.0;
-    const dashSpace = 3.0;
-    double distance = 0.0;
-
-    final pathMetrics = path.computeMetrics();
-    for (final metric in pathMetrics) {
-      while (distance < metric.length) {
-        final segment = metric.extractPath(distance, distance + dashWidth);
-        context.canvas.drawPath(segment, dashedPaint);
-        distance += dashWidth + dashSpace;
-      }
-    }
-  }
-}*/
-

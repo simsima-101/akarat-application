@@ -11,6 +11,9 @@ import '../model/productmodel.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../utils/shared_preference_manager.dart';
+import 'my_account.dart';
+
 
 class Agency_Detail extends StatefulWidget {
   const Agency_Detail({super.key, required this.data});
@@ -58,6 +61,23 @@ class _Agency_DetailState extends State<Agency_Detail> {
       // Handle error if needed
     }
   }
+
+  String token = '';
+  String email = '';
+  String result = '';
+  bool isDataRead = false;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -1324,7 +1344,15 @@ class _Agency_DetailState extends State<Agency_Detail> {
             enableFeedback: false,
             onPressed: () {
 
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+
+                }
+              });
 
             },
             icon: pageIndex == 3

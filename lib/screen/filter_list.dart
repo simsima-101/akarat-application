@@ -26,6 +26,7 @@ import '../model/togglemodel.dart';
 import '../utils/shared_preference_manager.dart';
 import 'filter.dart';
 import 'login.dart';
+import 'my_account.dart';
 
 
 class FliterList extends StatelessWidget {
@@ -207,6 +208,8 @@ class FliterList extends StatelessWidget {
     String min_price = '';
     String max_price = ' ';
     SearchModel? searchModel;
+
+
 
     Future<void> searchApi(location) async {
       final response = await http.get(Uri.parse(
@@ -1819,7 +1822,8 @@ class FliterList extends StatelessWidget {
                                )
                            ),
 
-                           Padding(padding: const EdgeInsets.only(top: 5),
+                           Padding(
+                             padding: const EdgeInsets.only(top: 5),
                              child: ListTile(
                                 title: Text(filterModel.data![index].title.toString(),
                                   style: TextStyle(
@@ -2034,9 +2038,15 @@ class FliterList extends StatelessWidget {
           IconButton(
             enableFeedback: false,
             onPressed: () {
-            //  setState(() {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-             // });
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+
+                }
+              });
             },
             icon: pageIndex == 3
                 ? const Icon(

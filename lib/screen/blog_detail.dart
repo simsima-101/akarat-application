@@ -368,13 +368,15 @@ readData();
               alignment: Alignment.bottomRight,
               onPressed: () {
 
-                if(isDataRead == true){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-                }
-                else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                setState(() {
+                  if(token == ''){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                  }
+                  else{
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
-                }
+                  }
+                });
               },
               icon: pageIndex == 3
                   ? const Icon(
