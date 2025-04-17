@@ -160,7 +160,7 @@ class _About_UsState extends State<About_Us> {
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 60,
+      height: 40,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(

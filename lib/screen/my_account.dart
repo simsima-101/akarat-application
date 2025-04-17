@@ -760,7 +760,7 @@ class _My_AccountState extends State<My_Account> {
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 60,
+      height: 40,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(

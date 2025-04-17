@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:Akarat/model/propertytypemodel.dart';
-import 'package:Akarat/screen/sample.dart';
 import 'package:Akarat/screen/settingstile.dart';
 import 'package:Akarat/screen/search.dart';
 import 'package:Akarat/screen/shimmer.dart';
@@ -16,7 +15,6 @@ import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:http/http.dart' as http;
 import '../utils/shared_preference_manager.dart';
-import 'example.dart';
 import 'filter_list.dart';
 import 'locationsearch.dart';
 import 'my_account.dart';
@@ -120,7 +118,7 @@ final List _product = [
     'Townhouse',
   ];
   final List _bedroom = [
-    'studio', '1', '2', '3','4','5','6','7','8','9+'
+    'Studio', '1', '2', '3','4','5','6','7','8','9+'
   ];
   final List _bathroom = [
     '1', '2', '3','4','5','6+'
@@ -465,69 +463,64 @@ String max_sqrfeet = ' ';
             children: <Widget>[
               //properties
               Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Container(
-                    //color: Colors.grey,
-                    height: 60,
-                    child:  ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      physics: const ScrollPhysics(),
-                      itemCount: _product.length,
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        // Colors.grey;
-                        return Container(
-                            alignment: Alignment.topLeft,
-                            // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                            margin: const EdgeInsets.only(left: 5,right: 3,top: 5,bottom: 5),
-                            //  width: screenSize.width * 0.25,
-                            // height: 20,
-                            padding: const EdgeInsets.only(top: 0,left: 14,right: 14),
-                            decoration: BoxDecoration(
-                              color: selectedproduct == index ? Colors.blueAccent : Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: Offset(0, 2),
-                                  blurRadius: 4,
-                                  spreadRadius: 0,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: Offset(-4, -4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                padding: const EdgeInsets.all(5),
+                child: SizedBox(
+                  height: 60,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _product.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () async {
+                          setState(() {
+                            selectedproduct = index;
+                            purpose = _product[index];
+                            _isLoading = true;
+                          });
 
-                            child: GestureDetector(
-                              child:   Center(
-                                child: Text(_product[index],style: TextStyle(
-                                  //color: Colors.black,
-                                  color: selectedproduct == index ? Colors.white : Colors.black,
-                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 16),textAlign: TextAlign.center,),
+                          await propertyApi(purpose);
+
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        },
+                        child: Container(
+                          alignment: Alignment.center,
+                          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: selectedproduct == index ? Colors.blueAccent : Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                offset: Offset(0, 2),
+                                blurRadius: 4,
+                                spreadRadius: 0,
                               ),
-                              onTap: (){
-                                setState(() {
-                                //  if(isSelected=true) {
-                                  selectedproduct = index;
-                                  purpose = _product[index];
-                                  _isLoading = true;
-                                    //  Color(0xFF212121);
-                                //  }
-                                });
-                                propertyApi(purpose);
-                                setState(() {
-                                  _isLoading = false;
-                                });
-                              },
-                            )
-                        );
-                      },
-                    ),
-                  )
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.8),
+                                offset: Offset(-4, -4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _product[index],
+                            style: TextStyle(
+                              color: selectedproduct == index ? Colors.white : Colors.black,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
               //Searchbar
@@ -575,69 +568,73 @@ String max_sqrfeet = ' ';
               ),
               const SizedBox(height: 12),
               AnimatedOpacity(
-                opacity: _isLoading ? 0.0 : 1.0,
-                duration: const Duration(milliseconds: 1000),
-                child: Container (
-                  margin: const EdgeInsets.all(5),
-                  height: screenSize.height*0.12,
-                             //  width: screenSize.width*0.5,
-                 // color: Colors.grey,
-                  child:  ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: propertyTypeModel?.data?.length ?? 0,
-                    itemBuilder: (context, index) {
-                      return Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: selectedtype == index ? Color(0xFFEEEEEE) : Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                offset: Offset(0, 2),
-                                blurRadius: 4,
-                              ),
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.8),
-                                offset: Offset(-4, -4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(8),
+          opacity: _isLoading ? 0.0 : 1.0,
+          duration: const Duration(milliseconds: 500),
+          child: Container(
+            margin: const EdgeInsets.all(5),
+            height: screenSize.height * 0.125,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: propertyTypeModel?.data?.length ?? 0,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () async {
+                    setState(() {
+                      selectedtype = index;
+                      property_type = propertyTypeModel!.data![index].name.toString();
+                    });
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: selectedtype == index ? Color(0xFFEEEEEE) : Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                        ),
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.8),
+                          offset: Offset(-4, -4),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: CachedNetworkImage(
+                            imageUrl: propertyTypeModel!.data![index].icon.toString(),
+                            height: 35,
                           ),
-                          child: GestureDetector(
-                            child:   Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                  child: CachedNetworkImage(
-                                    imageUrl: propertyTypeModel!.data![index].icon.toString(),height: 35,),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                  child: Text(propertyTypeModel!.data![index].name.toString(),
-                                    style: TextStyle(
-                                      color: selectedtype == index ? Colors.black : Colors.black,
-                                    letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 16),
-                                    textAlign: TextAlign.center,),
-                                ),
-                              ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: Text(
+                            propertyTypeModel!.data![index].name.toString(),
+                            style: TextStyle(
+                              color: selectedtype == index ? Colors.black : Colors.black,
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
                             ),
-                            onTap: (){
-                              setState(() {
-                                selectedtype = index;
-                                  property_type = propertyTypeModel!.data![index].name.toString();
-                                // }
-                              });
-                            },
-                          )
-                      );
-                      // return Amenitiescardscreen(amenities: amenities[index]);
-                    },
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
+            ),
+          ),
+        ),
               const SizedBox(height: 20),
               //text
               Row(
@@ -653,7 +650,7 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 15),
               Padding(
                   padding: const EdgeInsets.only(top: 0,left: 20,right: 10),
                   child: Row(
@@ -684,7 +681,7 @@ String max_sqrfeet = ' ';
                               ],
                             ),
                             child: Text(_values.start.toStringAsFixed(0),style: TextStyle(
-                                fontWeight: FontWeight.bold,fontSize: 18 ))
+                                fontWeight: FontWeight.bold,fontSize: 15 ))
 
                         ),
 
@@ -720,19 +717,22 @@ String max_sqrfeet = ' ';
                               ],
                             ),
                             child: Text(_values.end.toStringAsFixed(0),style: TextStyle(
-                                fontWeight: FontWeight.bold ,fontSize: 18))
+                                fontWeight: FontWeight.bold ,fontSize: 15))
                         ),
                       ]
                   )
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 25),
               //rangeslider
               Padding(
                 padding: const EdgeInsets.all(0),
                 child: SfRangeSelectorTheme(
                   data: SfRangeSelectorThemeData(
                     overlappingTooltipStrokeColor: Color(0x80E0E0E0),
-                    tooltipBackgroundColor: Colors.black, // Change tooltip background color
+                    tooltipBackgroundColor: Colors.black,
+                    activeDividerStrokeWidth: 1,
+                    activeDividerRadius: 2,
+                    thumbStrokeWidth: 0.5,// Change tooltip background color
                     tooltipTextStyle: TextStyle(
                       color: Colors.white, // Change tooltip text color
                       fontWeight: FontWeight.bold,
@@ -819,65 +819,58 @@ String max_sqrfeet = ' ';
               const SizedBox(height: 5),
               //studio
               Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Container(
-                    //color: Colors.grey,
-                    // width: 60,
-                    height: 60,
-                    child:  ListView.builder(
-                      padding: const EdgeInsets.all(0),
-                      scrollDirection: Axis.horizontal,
-                      physics: const ScrollPhysics(),
-                      itemCount: _bedroom.length,
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        // Colors.grey;
-                        return Container(
-                          // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                            margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                            // width: screenSize.width * 0.25,
-                            // height: 20,
-                            padding: const EdgeInsets.only(top: 0,left: 15,right: 15),
-                            decoration: BoxDecoration(
-                              color: selectedbedroom == index ? Colors.blueAccent : Colors.white,
-                             // color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: Offset(0, 2),
-                                  blurRadius: 4,
-                                  spreadRadius: 0,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: Offset(-4, -4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: GestureDetector(
-                              child:   Center(
-                                child: Text(_bedroom[index],
-                                  style: TextStyle(
-                                    color: selectedbedroom == index ? Colors.white : Colors.black,
-                                  letterSpacing: 0.5,fontWeight: FontWeight.bold,
-                                  fontSize: 18),textAlign: TextAlign.center,),
+                padding: const EdgeInsets.all(5),
+                child: SizedBox(
+                  height: 60,
+                  child: ListView.builder(
+                    padding: EdgeInsets.zero,
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _bedroom.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedbedroom = index;
+                            bedroom = _bedroom[index];
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          decoration: BoxDecoration(
+                            color: selectedbedroom == index ? Colors.blueAccent : Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                offset: Offset(0, 2),
+                                blurRadius: 4,
+                                spreadRadius: 0,
                               ),
-                              onTap: (){
-                                setState(() {
-                                //  if(isSelected=true) {
-                                  selectedbedroom = index;
-                                    bedroom = _bedroom[index];
-                                //  }
-                                });
-                              },
-                            )
-                        );
-                      },
-                    ),
-                  )
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.8),
+                                offset: Offset(-4, -4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            _bedroom[index],
+                            style: TextStyle(
+                              color: selectedbedroom == index ? Colors.white : Colors.black,
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
               Row(
@@ -895,65 +888,57 @@ String max_sqrfeet = ' ';
               ),
               const SizedBox(height: 5),
               Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Container(
-                    //color: Colors.grey,
-                    // width: 60,
-                    alignment: Alignment.topLeft,
-                    height: 60,
-                    child:  ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      physics: const ScrollPhysics(),
-                      itemCount: _bathroom.length,
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        // Colors.grey;
-                        return Container(
-                          // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                            margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                            // width: screenSize.width * 0.25,
-                            // height: 20,
-                            padding: const EdgeInsets.only(top: 0,left: 15,right: 15),
-                            decoration: BoxDecoration(
-                              color: selectedbathroom == index ? Colors.blueAccent : Colors.white,
-                             // color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: Offset(4, 4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: Offset(-4, -4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: GestureDetector(
-                              child:   Center(
-                                child: Text(_bathroom[index],
-                                  style: TextStyle(
-                                    color: selectedbathroom == index ? Colors.white : Colors.black,
-                                  letterSpacing: 0.5,fontSize: 18,
-                                    fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                padding: const EdgeInsets.all(5),
+                child: SizedBox(
+                  height: 60,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _bathroom.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedbathroom = index;
+                            bathroom = _bathroom[index];
+                          });
+                        },
+                        child: Container(
+                          alignment: Alignment.center,
+                          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          decoration: BoxDecoration(
+                            color: selectedbathroom == index ? Colors.blueAccent : Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                offset: Offset(4, 4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
                               ),
-                              onTap: (){
-                                setState(() {
-                                //  if(isSelected=true) {
-                                  selectedbathroom = index;
-                                    bathroom = _bathroom[index];
-                                 // }
-                                });
-                              },
-                            )
-                        );
-                      },
-                    ),
-                  )
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.8),
+                                offset: Offset(-4, -4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _bathroom[index],
+                            style: TextStyle(
+                              color: selectedbathroom == index ? Colors.white : Colors.black,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
               //area
@@ -970,7 +955,7 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 15),
               Padding(
                   padding: const EdgeInsets.only(top: 0,left: 20,right: 10),
                   child: Row(
@@ -1001,7 +986,7 @@ String max_sqrfeet = ' ';
                               ],
                             ),
                             child: Text(_valuesArea.start.toStringAsFixed(0),style: TextStyle(
-                              fontWeight: FontWeight.bold,fontSize: 18
+                              fontWeight: FontWeight.bold,fontSize: 15
                             ),)
                         ),
 
@@ -1037,12 +1022,12 @@ String max_sqrfeet = ' ';
                               ],
                             ),
                             child: Text(_valuesArea.end.toStringAsFixed(0),style: TextStyle(
-                                fontWeight: FontWeight.bold ,fontSize: 18))
+                                fontWeight: FontWeight.bold ,fontSize: 15))
                         ),
                       ]
                   )
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 25),
               //rangeslider
               Padding(
                 padding: const EdgeInsets.all(5),
@@ -1127,63 +1112,59 @@ String max_sqrfeet = ' ';
               ),
               const SizedBox(height: 5),
               Padding(
-                  padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.all(5),
+          child: SizedBox(
+            height: 60,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const ScrollPhysics(),
+              itemCount: _ftype.length,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedIndex = index;
+                      ftype = _ftype[index];
+                    });
+                  },
                   child: Container(
-                    alignment: Alignment.topLeft,
-                    height: 60,
-                    child:  ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      physics: const ScrollPhysics(),
-                      itemCount: _ftype.length,
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        // Colors.grey;
-                        return Container(
-                          margin: const EdgeInsets.all(5),
-                          padding: const EdgeInsets.only(top: 0, left: 15, right: 15),
-                          decoration: BoxDecoration(
-                            color: selectedIndex == index ? Colors.blueAccent : Colors.white, // Change color if selected
-                           // color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                offset: Offset(4, 4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.8),
-                                offset: Offset(-4, -4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                selectedIndex = index; // Update selected index
-                                ftype = _ftype[index]; // Update selected value
-                              });
-                            },
-                            child: Center(
-                              child: Text(
-                                _ftype[index],
-                                style: TextStyle(
-                                  color: selectedIndex == index ? Colors.white : Colors.black,
-                                  letterSpacing: 0.5,fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                    margin: const EdgeInsets.all(5),
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    decoration: BoxDecoration(
+                      color: selectedIndex == index ? Colors.blueAccent : Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          offset: Offset(4, 4),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.8),
+                          offset: Offset(-4, -4),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  )
-              ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      _ftype[index],
+                      style: TextStyle(
+                        color: selectedIndex == index ? Colors.white : Colors.black,
+                        letterSpacing: 0.5,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
               const SizedBox(height: 20),
               //Amenities
               Row(
@@ -1199,7 +1180,7 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 15),
               Padding(
                 padding: const EdgeInsets.all(5),
                 child: SizedBox(
@@ -1207,7 +1188,7 @@ String max_sqrfeet = ' ';
                   child: GridView.builder(
                     itemCount: amenities.length,
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3, // 3 items per row
+                      crossAxisCount: 2, // 3 items per row
                       crossAxisSpacing: 15,
                       mainAxisSpacing: 15,
                       childAspectRatio: 3.5,
@@ -1215,7 +1196,7 @@ String max_sqrfeet = ' ';
                     itemBuilder: (context, index) {
                       final isSelected = selectedIndexes.contains(index);
                       return GestureDetector(
-                        onTap: () {
+                        onTap: () async{
                           setState(() {
                             isSelected
                                 ? selectedIndexes.remove(index)
@@ -1230,7 +1211,7 @@ String max_sqrfeet = ' ';
                               color: isSelected ? Colors.black : Colors.white,
                               width: isSelected ? 2 : 1,
                             ),
-                           //  color: isSelected ? Colors.blueAccent : Colors.white,
+                            //  color: isSelected ? Colors.blueAccent : Colors.white,
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.5),
@@ -1249,24 +1230,24 @@ String max_sqrfeet = ' ';
                           ),
                           child: Row(
                             children: [
-                              Padding(
+                              /*Padding(
                                 padding: const EdgeInsets.all(2.0),
                                 child: CachedNetworkImage(
                                   imageUrl: amenities[index].icon.toString(),
                                   height: 17,
                                 ),
-                              ),
+                              ),*/
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   amenities[index].title.toString(),
                                   style: TextStyle(
                                     color: isSelected ? Colors.black : Colors.black,
-                                    fontSize: 14,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 0.5,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
+                                  // overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -1277,98 +1258,6 @@ String max_sqrfeet = ' ';
                   ),
                 ),
               ),
-             /* Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Container(
-                    //color: Colors.grey,
-                    // width: 60,
-                    alignment: Alignment.topLeft,
-                    height: 60,
-                    child:  ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      physics: const ScrollPhysics(),
-                      itemCount: amenities.length,
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        return Container(
-                            margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                            padding: const EdgeInsets.only(top: 0,left: 10,right: 10),
-                            decoration: BoxDecoration(
-                              color: selectedIndexes.contains(index) ? Colors.blueAccent : Colors.white,
-                              // color: selectedamenities == index ? Colors.grey : Colors.white,
-                             // color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: Offset(0, 2),
-                                  blurRadius: 4,
-                                  spreadRadius: 0,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: Offset(-4, -4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: GestureDetector(
-                              child:   Row(
-                                spacing: 5,
-                                children: [
-                                   Padding(
-                                     padding: const EdgeInsets.all(2.0),
-                                     child: CachedNetworkImage(imageUrl: amenities[index].icon.toString(),height: 17,),
-                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(1.0),
-                                    child: Text(amenities[index].title.toString(),
-                                      style: TextStyle(
-                                        color: selectedIndexes.contains(index) ? Colors.white : Colors.black,
-                                      letterSpacing: 0.5,fontSize: 16,
-                                        fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
-                                  ),
-                                ],
-                              ),
-                              onTap: (){
-                                setState(() {
-                                 // if(isSelected=true) {
-                                  if (selectedIndexes.contains(index)) {
-                                    selectedIndexes.remove(index);
-                                  } else {
-                                    selectedIndexes.add(index);
-                                  }
-                                  // selectedamenities = index;
-                                  //   amnities = amenities[index].title.toString();
-                                 // }
-                                });
-                              },
-                            )
-                        );
-                        // return Amenitiescardscreen(amenities: amenities[index]);
-                      },
-                    ),
-
-                  )
-              ),*/
-             /* const SizedBox(height: 5),
-              GestureDetector(
-                onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> AmenitiesPreview()));
-                },
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Text("Show all ",style: TextStyle(
-                        color: Colors.blue
-                      ),),
-                    ),
-                    Icon(Icons.arrow_forward_ios_rounded,color: Colors.blue,size: 15,)
-                  ],
-                ),
-              ),*/
               const SizedBox(height: 20),
               //real estate
               Row(
@@ -1384,65 +1273,61 @@ String max_sqrfeet = ' ';
               ),
               const SizedBox(height: 5),
               Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Container(
-                    //color: Colors.grey,
-                    // width: 60,
-                    alignment: Alignment.topLeft,
-                    height: 60,
-                    child:  ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      physics: const ScrollPhysics(),
-                      itemCount: _rent.length,
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        // Colors.grey;
-                        return Container(
-                          // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                            margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                            // width: screenSize.width * 0.25,
-                            // height: 20,
-                            padding: const EdgeInsets.only(top: 0,left: 15,right: 15),
-                            decoration: BoxDecoration(
-                              color: selectedrent == index ? Colors.blueAccent : Colors.white,
-                             // color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: Offset(0, 2),
-                                  blurRadius: 4,
-                                  spreadRadius: 0,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: Offset(-4, -4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: GestureDetector(
-                              child:   Center(
-                                child: Text(_rent[index],
-                                  style: TextStyle(
-                                    color: selectedrent == index ? Colors.white : Colors.black,
-                                  letterSpacing: 0.5,fontSize: 16,
-                                    fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                padding: const EdgeInsets.all(5),
+                child: SizedBox(
+                  height: 60,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const ScrollPhysics(),
+                    itemCount: _rent.length,
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      final isSelected = selectedrent == index;
+
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedrent = index;
+                            rent = _rent[index];
+                          });
+                        },
+                        child: Container(
+                          alignment: Alignment.center,
+                          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          decoration: BoxDecoration(
+                            color: isSelected ? Colors.blueAccent : Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                offset: Offset(0, 2),
+                                blurRadius: 4,
+                                spreadRadius: 0,
                               ),
-                              onTap: (){
-                                setState(() {
-                                 // if(isSelected=true) {
-                                  selectedrent = index;
-                                    rent = _rent[index];
-                                 // }
-                                });
-                              },
-                            )
-                        );
-                      },
-                    ),
-                  )
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.8),
+                                offset: Offset(-4, -4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _rent[index],
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              letterSpacing: 0.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
               Container(
                 height: 150,
@@ -1497,7 +1382,7 @@ String max_sqrfeet = ' ';
   }
 Container buildMyNavBar(BuildContext context) {
   return Container(
-    height: 60,
+    height: 40,
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: const BorderRadius.only(

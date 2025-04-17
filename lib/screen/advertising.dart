@@ -220,7 +220,7 @@ class _AdvertisingState extends State<Advertising> {
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 60,
+      height: 40,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(

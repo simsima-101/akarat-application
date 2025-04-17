@@ -506,20 +506,22 @@ AgencyAgentsModel? agencyAgentsModel;
                                   child: Column(
                                     children: [
                                       //About details
+                                      const SizedBox(height: 10,),
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 0, left: 10.0, right: 0),
-                                        child: Row(
-                                          children: [
-                                            Text("About  ", style: TextStyle(
-                                                fontSize: 20, color: Colors.black, letterSpacing: 0.5,
-                                              fontWeight: FontWeight.bold
-                                            ),textAlign: TextAlign.start,),
-                                            Text(""),
-                                          ],
-                                        ),
-                                      ),
+                                           padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                           child: Row(
+                                            children: [
+                                              Text("About  ", style: TextStyle(
+                                                  fontSize: 20, color: Colors.black, letterSpacing: 0.5,
+                                                fontWeight: FontWeight.bold
+                                              ),textAlign: TextAlign.start,),
+                                              Text(""),
+                                            ],
+                                                                                   ),
+                                         ),
+                                      const SizedBox(height: 10,),
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 5, left: 10.0, right: 0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
                                         child: Row(
                                           children: [
                                             Text("Description ", style: TextStyle(
@@ -529,28 +531,19 @@ AgencyAgentsModel? agencyAgentsModel;
                                           ],
                                         ),
                                       ),
+                                      const SizedBox(height: 10,),
                                       Padding(
-                                          padding: const EdgeInsets.only(top: 0, left: 10.0, right: 0),
-                                          child: Container(
-                                           // color: Colors.grey,
-                                            width: screenSize.width*1,
-                                            height: screenSize.height*0.2,
-                                            child:  ListView(
-                                                shrinkWrap: true,
-                                                scrollDirection: Axis.vertical,
-                                                children: <Widget>[
-                                                  Text(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                              child:Text(
                                                     agencyDetailmodel!.description.toString(),
                                                     style: TextStyle(
                                                         fontSize: 13, color: Colors.black,
-                                                        letterSpacing: 0.5,fontWeight: FontWeight.bold,height: 1.5
-                                                    ),),
-                                                ]
-                                            ),
-                                          )
+                                                        letterSpacing: 0.5,fontWeight: FontWeight.bold,height: 1.5),
+                                              ),
                                       ),
+                                      const SizedBox(height: 10,),
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 20, left: 10.0, right: 0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
                                         child: Row(
                                           children: [
                                             Text("Properties", style: TextStyle(
@@ -560,111 +553,31 @@ AgencyAgentsModel? agencyAgentsModel;
                                           ],
                                         ),
                                       ),
+                                      const SizedBox(height: 10,),
                                       Container(
-                                        margin: EdgeInsets.only(left: 10,right: 0,top: 5),
-                                        height: screenSize.height*0.06,
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                        height: MediaQuery.of(context).size.height * 0.06,
                                         alignment: Alignment.centerLeft,
-                                        // color: Colors.grey,
                                         child: ListView(
                                           scrollDirection: Axis.horizontal,
+                                          physics: const BouncingScrollPhysics(),
                                           shrinkWrap: true,
                                           children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(left: 5.0, right: 5, top: 8, bottom: 8),
-                                              child: Container(
-                                                // width: 130,
-                                                  height: 35,
-                                                  padding: const EdgeInsets.only(
-                                                      top: 5, left: 10, right: 8),
-                                                  decoration: BoxDecoration(
-                                                    borderRadius: BorderRadiusDirectional.circular(8.0),
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.red,
-                                                        offset: const Offset(
-                                                          0.3,
-                                                          0.5,
-                                                        ),
-                                                        blurRadius: 0.5,
-                                                        spreadRadius: 0.8,
-                                                      ), //BoxShadow
-                                                      BoxShadow(
-                                                        color: Colors.white,
-                                                        offset: const Offset(0.5, 0.5),
-                                                        blurRadius: 0.5,
-                                                        spreadRadius: 0.5,
-                                                      ), //BoxShadow
-                                                    ],
-                                                  ),
-
-                                                  child: Row(
-                                                    children: [
-                                                      Text("18 Properties for Rent", style: TextStyle(
-                                                          letterSpacing: 0.5,
-                                                          color: Colors.black,
-                                                          fontSize: 13
-                                                      ), textAlign: TextAlign.left,),
-                                                      Padding(
-                                                          padding: const EdgeInsets.only(left: 5, right: 5),
-                                                          child: Image.asset("assets/images/arrow.png",
-                                                            width: 15,
-                                                            height: 15,
-                                                            fit: BoxFit.contain,)
-                                                      ),
-
-                                                    ],
-                                                  )
-                                              ),
+                                            _buildTagContainer(
+                                              text: "18 Properties for Rent",
+                                              iconPath: "assets/images/arrow.png",
                                             ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(left: 10.0, right: 5, top: 8, bottom: 8),
-                                              child: Container(
-                                                // width: 130,
-                                                  height: 35,
-                                                  padding: const EdgeInsets.only(top: 8, left: 10, right: 8,bottom: 8),
-                                                  decoration: BoxDecoration(
-                                                    borderRadius: BorderRadiusDirectional.circular(8.0),
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.red,
-                                                        offset: const Offset(
-                                                          0.3,
-                                                          0.5,
-                                                        ),
-                                                        blurRadius: 0.5,
-                                                        spreadRadius: 0.8,
-                                                      ), //BoxShadow
-                                                      BoxShadow(
-                                                        color: Colors.white,
-                                                        offset: const Offset(0.5, 0.5),
-                                                        blurRadius: 0.5,
-                                                        spreadRadius: 0.5,
-                                                      ), //BoxShadow
-                                                    ],
-                                                  ),
-                                                  child: Row(
-                                                    children: [
-                                                      Text("18 Properties for Sale", style: TextStyle(
-                                                          letterSpacing: 0.5,
-                                                          color: Colors.black,
-                                                          fontSize: 13
-                                                      ), textAlign: TextAlign.left,),
-                                                      Padding(
-                                                          padding: const EdgeInsets.only(left: 5, right: 5),
-                                                          child: Image.asset("assets/images/arrow.png",
-                                                            width: 15,
-                                                            height: 15,
-                                                            fit: BoxFit.contain,)
-                                                      ),
-                                                    ],
-                                                  )
-                                              ),
+                                            const SizedBox(width: 4,),
+                                            _buildTagContainer(
+                                              text: "18 Properties for Sale",
+                                              iconPath: "assets/images/arrow.png",
                                             ),
                                           ],
                                         ),
                                       ),
+                                      const SizedBox(height: 10,),
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 15, left: 10.0, right: 0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
                                         child: Row(
                                           children: [
                                             Text("Service Areas", style: TextStyle(
@@ -675,8 +588,9 @@ AgencyAgentsModel? agencyAgentsModel;
                                           ],
                                         ),
                                       ),
+                                      const SizedBox(height: 10,),
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 8, left: 10.0, right: 0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
                                         child: Row(
                                           children: [
                                             Text("Meydan City, Al Marjan Island, Dubailand", style: TextStyle(
@@ -687,8 +601,9 @@ AgencyAgentsModel? agencyAgentsModel;
                                           ],
                                         ),
                                       ),
+                                      const SizedBox(height: 10,),
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 15, left: 10.0, right: 0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
                                         child: Row(
                                           children: [
                                             Text("Property Type", style: TextStyle(
@@ -698,11 +613,12 @@ AgencyAgentsModel? agencyAgentsModel;
                                           ],
                                         ),
                                       ),
+                                      const SizedBox(height: 10,),
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 8, left: 8.0, right: 0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
                                         child: Row(
                                           children: [
-                                            Text(" Villas, Townhouses,Apartments", style: TextStyle(
+                                            Text("Villas, Townhouses,Apartments", style: TextStyle(
                                                 fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
                                                 height: 1.0
                                             ),),
@@ -710,8 +626,9 @@ AgencyAgentsModel? agencyAgentsModel;
                                           ],
                                         ),
                                       ),
+                                      const SizedBox(height: 10,),
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 15, left: 10.0, right: 0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
                                         child: Row(
                                           children: [
                                             Text("DED", style: TextStyle(
@@ -721,8 +638,9 @@ AgencyAgentsModel? agencyAgentsModel;
                                           ],
                                         ),
                                       ),
+                                      const SizedBox(height: 10,),
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 8, left: 10.0, right: 0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
                                         child: Row(
                                           children: [
                                             Text(agencyDetailmodel!.ded.toString(), style: TextStyle(
@@ -733,8 +651,9 @@ AgencyAgentsModel? agencyAgentsModel;
                                           ],
                                         ),
                                       ),
+                                      const SizedBox(height: 10,),
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 15, left: 10.0, right: 0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
                                         child: Row(
                                           children: [
                                             Text("RERA", style: TextStyle(
@@ -744,8 +663,9 @@ AgencyAgentsModel? agencyAgentsModel;
                                           ],
                                         ),
                                       ),
+                                      const SizedBox(height: 10,),
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 8, left: 10.0, right: 0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
                                         child: Row(
                                           children: [
                                             Text(agencyDetailmodel!.rera.toString(), style: TextStyle(
@@ -756,7 +676,7 @@ AgencyAgentsModel? agencyAgentsModel;
                                           ],
                                         ),
                                       ),
-                                      SizedBox(height: 10,)
+                                      SizedBox(height: 20,)
                                       //ending about details
                                     ],
                                   ),
@@ -941,6 +861,7 @@ AgencyAgentsModel? agencyAgentsModel;
                                     Padding(
                                       padding: const EdgeInsets.only(left: 0,right: 0,top: 15),
                                       child:   ListView.builder(
+                                        padding: const EdgeInsets.all(0),
                                         scrollDirection: Axis.vertical,
                                         physics: const ScrollPhysics(),
                                         itemCount: agencyPropertiesModel?.data?.length ?? 0,
@@ -1054,7 +975,6 @@ AgencyAgentsModel? agencyAgentsModel;
                                                                   )
                                                               )
                                                           ),
-
                                                           Padding(
                                                             padding: const EdgeInsets.only(top: 5),
                                                             child: ListTile(
@@ -1086,108 +1006,64 @@ AgencyAgentsModel? agencyAgentsModel;
                                                               ),
                                                             ],
                                                           ),
-                                                          /*  Row(
-                                                  children: [
-                                                    Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 5),
-                                                      child: Image.asset("assets/images/bed.png",height: 13,),
-                                                    ),
-                                                    Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                                        child: Text(agentProperties!.data![index].bedrooms.toString())
-                                                    ),
-                                                    Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
-                                                      child: Image.asset("assets/images/bath.png",height: 13,),
-                                                    ),
-                                                    Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                                        child: Text(featuredModel!.data![index].bathrooms.toString())
-                                                    ),
-                                                    Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
-                                                      child: Image.asset("assets/images/messure.png",height: 13,),
-                                                    ),
-                                                    Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                                        child: Text(featuredModel!.data![index].squareFeet.toString())
-                                                    ),
-                                                  ],
-                                                ),*/
                                                           Row(
-                                                            spacing: screenSize.width*0.03,
                                                             children: [
-                                                              Padding(padding: const EdgeInsets.only(left: 10,top: 20,bottom: 15),
-                                                                child: ElevatedButton.icon( onPressed: () async {
-                                                                  String phone = 'tel:${agencyPropertiesModel!.data![index].phoneNumber}';
-                                                                  try {
-                                                                    final bool launched = await launchUrlString(
-                                                                      phone,
-                                                                      mode: LaunchMode.externalApplication, // ✅ Force external
-                                                                    );
-                                                                    if (!launched) {
-                                                                      print("❌ Could not launch dialer");
-                                                                    }
-                                                                  } catch (e) {
-                                                                    print("❌ Exception: $e");
-                                                                  }
-                                                                },
-                                                                    label: Text("call",style: TextStyle(
-                                                                        color: Colors.black
-                                                                    ),),
-                                                                    style: ElevatedButton.styleFrom(
-                                                                      backgroundColor: Colors.grey[50],
-                                                                      alignment: Alignment.center,
-                                                                      elevation: 1,
-                                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                                      padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 40),
-                                                                      textStyle: TextStyle(letterSpacing: 0.5,
-                                                                          color: Colors.black,fontSize: 15,fontWeight: FontWeight.bold
-                                                                      ),
-                                                                    ),
-                                                                    icon: Icon(Icons.call,color: Colors.red,)),
-                                                              ),
-                                                              // Text(product.description),
-                                                              Padding(
-                                                                padding: const EdgeInsets.only(left: 15,top: 20,bottom: 15),
+                                                              const SizedBox(width: 10),
+                                                              Expanded(
                                                                 child: ElevatedButton.icon(
-                                                                    onPressed: () async {
-                                                                      final phone = agencyPropertiesModel!.data![index].whatsapp; // without plus
-                                                                      final message = Uri.encodeComponent("Hello");
-                                                                      // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
-                                                                      // final url = Uri.parse("https://wa.me/?text=hello");
-                                                                      final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-
-                                                                      if (await canLaunchUrl(url)) {
-                                                                        try {
-                                                                          final launched = await launchUrl(
-                                                                            url,
-                                                                            mode: LaunchMode.externalApplication, // 💥 critical on Android 15
-                                                                          );
-
-                                                                          if (!launched) {
-                                                                            print("❌ Could not launch WhatsApp");
-                                                                          }
-                                                                        } catch (e) {
-                                                                          print("❌ Exception: $e");
-                                                                        }
-                                                                      } else {
-                                                                        print("❌ WhatsApp not available or URL not supported");
-                                                                      }
-                                                                    },
-                                                                    label: Text("Watsapp",style: TextStyle(
-                                                                        color: Colors.black
-                                                                    ),),
-                                                                    style: ElevatedButton.styleFrom(
-                                                                      backgroundColor: Colors.grey[50],
-                                                                      alignment: Alignment.center,
-                                                                      elevation: 1,
-                                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                                      padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 30),
-                                                                      textStyle: TextStyle(letterSpacing: 0.5,
-                                                                          color: Colors.black,fontSize: 12,fontWeight: FontWeight.bold
-                                                                      ),
-                                                                    ),
-                                                                    icon: Image.asset("assets/images/whats.png",height: 20,)
+                                                                  onPressed: () async {
+                                                                    String phone = 'tel:${agencyPropertiesModel!.data![index].phoneNumber}';
+                                                                    try {
+                                                                      final bool launched = await launchUrlString(
+                                                                        phone,
+                                                                        mode: LaunchMode.externalApplication,
+                                                                      );
+                                                                      if (!launched) print("❌ Could not launch dialer");
+                                                                    } catch (e) {
+                                                                      print("❌ Exception: $e");
+                                                                    }
+                                                                  },
+                                                                  icon: const Icon(Icons.call, color: Colors.red),
+                                                                  label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                                                  style: ElevatedButton.styleFrom(
+                                                                    backgroundColor: Colors.grey[100],
+                                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                                    elevation: 3,
+                                                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                                                  ),
                                                                 ),
                                                               ),
+                                                              const SizedBox(width: 10),
+                                                              Expanded(
+                                                                child: ElevatedButton.icon(
+                                                                  onPressed: () async {
+                                                                    final phone = agencyPropertiesModel!.data![index].whatsapp;
+                                                                    final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+                                                                    if (await canLaunchUrl(url)) {
+                                                                      try {
+                                                                        final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                                        if (!launched) print("❌ Could not launch WhatsApp");
+                                                                      } catch (e) {
+                                                                        print("❌ Exception: $e");
+                                                                      }
+                                                                    } else {
+                                                                      print("❌ WhatsApp not available");
+                                                                    }
+                                                                  },
+                                                                  icon: Image.asset("assets/images/whats.png", height: 20),
+                                                                  label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                                                  style: ElevatedButton.styleFrom(
+                                                                    backgroundColor: Colors.grey[100],
+                                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                                    elevation: 1,
+                                                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              const SizedBox(width: 10),
                                                             ],
                                                           ),
-
+                                                          const SizedBox(height: 10),
                                                         ],
                                                       ),
                                                     ),
@@ -1734,6 +1610,53 @@ AgencyAgentsModel? agencyAgentsModel;
             ),
           ),
         ],
+      ),
+    );
+  }
+  Widget _buildTagContainer({required String text, required String iconPath}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3.0, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.red,
+              offset: const Offset(0.3, 0.5),
+              blurRadius: 0.5,
+              spreadRadius: 0.8,
+            ),
+            BoxShadow(
+              color: Colors.white,
+              offset: const Offset(0.5, 0.5),
+              blurRadius: 0.5,
+              spreadRadius: 0.5,
+            ),
+          ],
+          color: Colors.white,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              text,
+              style: const TextStyle(
+                letterSpacing: 0.5,
+                color: Colors.black,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Image.asset(
+              iconPath,
+              width: 15,
+              height: 15,
+              fit: BoxFit.contain,
+            ),
+          ],
+        ),
       ),
     );
   }

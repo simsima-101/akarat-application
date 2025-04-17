@@ -10,6 +10,8 @@ import 'package:Akarat/utils/agencyCardScreen.dart';
 import 'package:Akarat/utils/agentcardscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../model/language.dart';
+import '../model/nationality.dart';
 import '../utils/shared_preference_manager.dart';
 
 void main(){
@@ -61,18 +63,47 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     });
   }
 
+  String? selectedService;
+  String? selectedAgencyService;
+  String? selectedLanguage;
+  String? selectedNationality;
+  late Future<Nationality> nationalityFuture;
 
+  final TextEditingController locationController = TextEditingController();
+
+  // final List<String> services = ["Residential For Sale", "Residential For Rent", "Commercial For Sale","Commercial For Rent"];
+  final serviceOptions = [
+    {'label': 'Services needed', 'value': ''},
+    {'label': 'Residential For Sale', 'value': 'residential-for-sale'},
+    {'label': 'Residential For Rent', 'value': 'residential-for-rent'},
+    {'label': 'Commercial For Sale', 'value': 'commercial-for-sale'},
+    {'label': 'Commercial For Rent', 'value': 'commercial-for-rent'},
+  ];
+  final services = [
+    {'label': 'Services needed', 'value': ''},
+    {'label': 'Residential For Sale', 'value': 'residential-for-sale'},
+    {'label': 'Residential For Rent', 'value': 'residential-for-rent'},
+    {'label': 'Commercial For Sale', 'value': 'commercial-for-sale'},
+    {'label': 'Commercial For Rent', 'value': 'commercial-for-rent'},
+  ];// final List<String> agencyservices = ["Residential For Sale", "Residential For Rent", "Commercial For Sale","Commercial For Rent"];
+ // final List<String> languages = ["English", "Arabic", "Hindi"];
+ // final List<String> nationalities = ["Indian", "Emirati", "Pakistani"];
+  late Future<Language> languageFuture;
   @override
   void initState() {
     super.initState();
     agentfetch();
     agencyfetch();
+    languageFuture = fetchLanguageData();
+    nationalityFuture = fetchNationalities();
     readData();
   }
 
-  Future<void> agentfetch() async {
+  /*Future<void> agentfetch() async {
     // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/agents'));
+    final response = await http.get(Uri.parse('https://akarat.com/api/agents?search=${locationController.text}'
+        '&service_needed=$selectedService&nationality=$selectedNationality&language=$selectedLanguage'));
+    // final response = await http.get(Uri.parse('https://akarat.com/api/agents'));
     if (response.statusCode == 200) {
       List<dynamic> jsonData = json.decode(response.body);
       setState(() {
@@ -80,29 +111,77 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
       });
     } else {
     }
+  }*/
+
+  Future<void> agentfetch() async {
+    final queryParams = {
+      'search': locationController.text,
+      'service_needed': selectedService ?? '',
+      'language': selectedLanguage ?? '',
+    };
+
+    if (selectedNationality != null && selectedNationality!.isNotEmpty) {
+      queryParams['nationality'] = selectedNationality!;
+    }
+
+    final uri = Uri.https('akarat.com', '/api/agents', queryParams);
+
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = json.decode(response.body);
+      setState(() {
+        agentsmodel = jsonData.map((data) => AgentsModel.fromJson(data)).toList();
+      });
+    } else {
+      // Handle error
+    }
   }
+
   Future<void> agencyfetch() async {
-    // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/companies'));
+    final queryParams = {
+      'search': locationController.text,
+      'service_needed': selectedAgencyService ?? ''
+    };
+    final uri = Uri.https('akarat.com', '/api/companies', queryParams);
+
+    final response = await http.get(uri);
+
     if (response.statusCode == 200) {
       List<dynamic> jsonData = json.decode(response.body);
       setState(() {
         agentcymodel = jsonData.map((data) => AgencyModel.fromJson(data)).toList();
       });
     } else {
+      // Handle error
+    }
+  }
+
+  Future<Nationality> fetchNationalities() async {
+    final response = await http.get(Uri.parse('https://akarat.com/api/agents/nationalities'));
+
+    if (response.statusCode == 200) {
+      return Nationality.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to load nationalities');
+    }
+  }
+
+  Future<Language> fetchLanguageData() async {
+    final response = await http.get(Uri.parse('https://akarat.com/api/agents/languages'));
+
+    if (response.statusCode == 200) {
+      return Language.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to load languages');
     }
   }
 
   final TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    if (agentsmodel == null) {
-      return Scaffold(
-          body: ListView.builder(
-            itemCount: 5,
-            itemBuilder: (context, index) => const ShimmerCard(),)
-        // body: Center(child: const ShimmerCard()), // Show loading state
-      );
+    if (nationalityFuture == null) {
+      return const SizedBox(height: 50); // or a placeholder
     }
     Size screenSize = MediaQuery.sizeOf(context);
     return DefaultTabController(
@@ -192,7 +271,206 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          buildSearchBar(_agentSearchController, 'Search for a locality, area or city', Icons.search),
+                          Container(
+                            padding: const EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                buildSearchBar(_agentSearchController, 'Search for a locality, area or city', Icons.search),
+                                const SizedBox(height: 10),
+
+                                // Services Dropdown
+                                SafeArea(
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      children: [
+                                        DropdownButtonFormField<String>(
+                                          isExpanded: true,
+                                          decoration: _dropdownDecoration("Services needed"),
+                                          dropdownColor: Colors.white,
+                                          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.black,
+                                          ),
+                                          value: selectedService,
+                                          items: services.map((option){
+                                            return DropdownMenuItem<String>(
+                                              alignment: Alignment.bottomLeft,
+                                              value: option['value'],
+                                              child: Text(
+                                                option['label']!,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            );
+                                          }).toList(),
+                                          onChanged: (value) => setState(() => selectedService = value!),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                // Language Dropdown
+                                FutureBuilder<Language>(
+                                  future: languageFuture,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return DropdownButtonFormField<String>(
+                                        decoration: _dropdownDecoration("Language"),
+                                        items: [
+                                          const DropdownMenuItem(
+                                            value: '',
+                                            child: Text('Loading...'),
+                                          ),
+                                        ],
+                                        onChanged: null, // disables dropdown
+                                      );// shows nothing
+                                    } else if (snapshot.hasError) {
+                                      return Text("Error: ${snapshot.error}");
+                                    } else {
+                                      final language = ["Language"]; // add default item
+                                      language.addAll(snapshot.data?.languages?.toSet().toList() ?? []);
+                                      return DropdownButtonFormField<String>(
+                                        isExpanded: true, // ✅ Important to avoid overflow
+                                        decoration: _dropdownDecoration("Language"),
+                                        dropdownColor: Colors.white,
+                                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
+                                        ),
+                                        value: language.contains(selectedLanguage) ? selectedLanguage : null,
+                                        items: language.map((item) {
+                                          if (item == "Language") {
+                                            return DropdownMenuItem<String>(
+                                              value: '',
+                                              enabled: true,
+                                              child: Text(
+                                                item,
+                                                style: const TextStyle(color: Colors.grey),
+                                              ),
+                                            );
+                                          } else {
+                                            return DropdownMenuItem<String>(
+                                              value: item,
+                                              child: Text(item),
+                                            );
+                                          }
+                                        }).toList(),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            selectedLanguage = value!;
+                                          });
+                                        },
+                                      );
+                                    }
+                                  },
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                FutureBuilder<Nationality>(
+                                  future: nationalityFuture,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return DropdownButtonFormField<String>(
+                                        decoration: _dropdownDecoration("Nationality"),
+                                        items: const [
+                                          DropdownMenuItem(
+                                            value: null,
+                                            child: Text("Loading..."),
+                                          )
+                                        ],
+                                        onChanged: null,
+                                      );
+                                    } else if (snapshot.hasError) {
+                                      return Text("Error: ${snapshot.error}");
+                                    } else {
+                                      final nationalities = ["Nationality"]; // add default item
+                                      nationalities.addAll(snapshot.data?.nationalities?.toSet().toList() ?? []);
+
+                                      // Prevent mismatch
+                                      if (!nationalities.contains(selectedNationality)) {
+                                        selectedNationality = null;
+                                      }
+
+                                      return DropdownButtonFormField<String>(
+                                        isExpanded: true,
+                                        decoration: _dropdownDecoration("Nationality"),
+                                        dropdownColor: Colors.white,
+                                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
+                                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black),
+                                        value: selectedNationality,
+                                        items: nationalities.map((item) {
+                                          if (item == "Nationality") {
+                                            return DropdownMenuItem<String>(
+                                              value: '',
+                                              enabled: true,
+                                              child: Text(
+                                                item,
+                                                style: const TextStyle(color: Colors.grey),
+                                              ),
+                                            );
+                                          } else {
+                                            return DropdownMenuItem<String>(
+                                              value: item,
+                                              child: Text(item),
+                                            );
+                                          }
+                                        }).toList(),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            selectedNationality = value!;
+                                          });
+                                        },
+                                      );
+                                    }
+                                  },
+                                ),
+
+                                const SizedBox(height: 20),
+
+                                // Search Button
+                                ElevatedButton(
+                                  onPressed: () {
+                                    // Your search logic here
+                                    print("Searching with:");
+                                    print("Location: ${locationController.text}");
+                                    print("Service: $selectedService");
+                                    print("Language: $selectedLanguage");
+                                    print("Nationality: $selectedNationality");
+
+                                    agentfetch();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    minimumSize: const Size.fromHeight(45),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  child: const Text("Search", style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
+                                ),
+                              ],
+                            ),
+                          ),
+
                           SizedBox(height: 10),
                           Padding(
                             padding:  EdgeInsets.only(left: 5.0, right: 5.0, top: 8, bottom: 8),
@@ -250,7 +528,81 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          buildSearchBar(_agencySearchController, 'Dubai', Icons.location_on),
+                          Container(
+                            padding: const EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                buildSearchBar(_agentSearchController, 'Search for a locality, area or city', Icons.search),
+                                const SizedBox(height: 10),
+                                // Services Dropdown
+                                SafeArea(
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      children: [
+                                        DropdownButtonFormField<String>(
+                                          isExpanded: true,
+                                          decoration: _dropdownDecoration("Services needed"),
+                                          dropdownColor: Colors.white,
+                                          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.black,
+                                          ),
+                                          value: selectedAgencyService,
+                                          items: serviceOptions.map((option){
+                                            return DropdownMenuItem<String>(
+                                              alignment: Alignment.bottomLeft,
+                                              value: option['value'],
+                                              child: Text(
+                                                option['label']!,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            );
+                                          }).toList(),
+                                          onChanged: (value) => setState(() => selectedAgencyService = value!),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 20),
+
+                                // Search Button
+                                ElevatedButton(
+                                  onPressed: () {
+                                    // Your search logic here
+                                    print("Searching with:");
+                                    print("Location: ${locationController.text}");
+                                    print("Service: $selectedAgencyService");
+
+                                    agencyfetch();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    minimumSize: const Size.fromHeight(45),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  child: const Text("Find", style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
+                                ),
+                              ],
+                            ),
+                          ),
                           SizedBox(height: 20),
                           Text("Featured Agencies", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           SizedBox(height: 10),
@@ -275,16 +627,30 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
       ),
     );
   }
+  InputDecoration _dropdownDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: Colors.grey.shade100,
+      //prefixIcon: Icon(Icons.language, color: Colors.blueAccent),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+    );
+
+  }
   Widget buildSearchBar(TextEditingController controller, String hint, IconData icon) {
     return Container(
       width: 400,
-      height: 70,
-      padding: const EdgeInsets.only(top: 0,left: 5),
+      height: 50,
+      padding: const EdgeInsets.only(top: 0, left: 5),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25.0),
+        borderRadius: BorderRadius.circular(10.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.red,
+            color: Colors.grey,
             offset: Offset(0.0, 0.0),
             blurRadius: 0.0,
             spreadRadius: 0.3,
@@ -297,20 +663,22 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
           ),
         ],
       ),
-      child: Center(
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Icon(Icons.search, color: Colors.red),
+      child: Row(
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(left: 8.0),
+            child: Icon(Icons.search, color: Colors.red),
+          ),
+          Expanded(
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: "Search for a locality, area or city",
+                hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                border: InputBorder.none,
+              ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text("Search for a locality, area or city",
-                style: TextStyle(color: Colors.grey,fontSize: 14),),
-            )
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -87,7 +87,9 @@ class _Property_DetailState extends State<Property_Detail> {
     Size screenSize = MediaQuery.sizeOf(context);
     if (projectDetailModel == null) {
       return Scaffold(
-        body: Center(child: ShimmerCard()), // Show loading state
+          body: ListView.builder(
+            itemCount: 5,
+            itemBuilder: (context, index) => const ShimmerCard(),) // Show loading state
       );
     }
     return Scaffold(
@@ -97,81 +99,48 @@ class _Property_DetailState extends State<Property_Detail> {
             child: Column(
                 children: <Widget>[
                   Stack(
-                    // alignment: Alignment.topCenter,
                     children: <Widget>[
                       Padding(
-                        padding: EdgeInsets.only(top: 0),
-                        child: Container(
+                        padding: const EdgeInsets.only(top: 0),
+                        child: SizedBox(
                           height: 50,
                           width: double.infinity,
-                         // color: Color(0xFFEEEEEE),
-                          child:   Row(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+                              // Back Button
                               Container(
-                                margin: const EdgeInsets.only(left: 19,top: 10,bottom: 0),
+                                margin: const EdgeInsets.only(left: 10),
                                 height: 35,
                                 width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
+                                padding: const EdgeInsets.all(7),
+                                decoration: _iconBoxDecoration(),
                                 child: GestureDetector(
-                                  onTap: (){
+                                  onTap: () {
                                     Navigator.push(context, MaterialPageRoute(builder: (context) => New_Projects()));
                                   },
-                                  child: Image.asset("assets/images/ar-left.png",
+                                  child: Image.asset(
+                                    "assets/images/ar-left.png",
                                     width: 15,
                                     height: 15,
-                                    fit: BoxFit.contain,),
-                                )
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
                               ),
+
+                              // Like Button
                               Container(
-                                margin: const EdgeInsets.only(left: 290,top: 5,bottom: 0,),
+                                margin: const EdgeInsets.only(right: 10),
                                 height: 35,
                                 width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Image.asset("assets/images/lov.png",
+                                padding: const EdgeInsets.all(7),
+                                decoration: _iconBoxDecoration(),
+                                child: Image.asset(
+                                  "assets/images/lov.png",
                                   width: 15,
                                   height: 15,
-                                  fit: BoxFit.contain,),
-                                //child: Image(image: Image.asset("assets/images/share.png")),
+                                  fit: BoxFit.contain,
+                                ),
                               ),
                             ],
                           ),
@@ -180,9 +149,10 @@ class _Property_DetailState extends State<Property_Detail> {
                     ],
                   ),
                   Container(
-                                height: screenSize.height*0.4,
-                                 margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
+                      height: screenSize.height*0.6,
+                      margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
                       child:  ListView.builder(
+                        padding: const EdgeInsets.all(0),
                         shrinkWrap: true,
                         scrollDirection: Axis.vertical,
                         physics: const ScrollPhysics(),
@@ -196,59 +166,75 @@ class _Property_DetailState extends State<Property_Detail> {
                         },
 
                       )
-                  ) ,
-                  Padding(padding: const EdgeInsets.only(top: 23,left: 15,right: 0),
-                  child: Container(
-                    width: double.infinity,
-                    height: 30,
-                   // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 5,top: 5),
-                    child: Text(projectDetailModel!.data!.title.toString(),textAlign: TextAlign.left,style: TextStyle(
-                        fontSize: 23,fontWeight: FontWeight.bold,letterSpacing: 0.5
-                    ),),
                   ),
+                  const SizedBox(height: 25,),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Text(
+                            projectDetailModel!.data!.title.toString(),
+                            style: const TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(), // or remove this if not needed
+                    ],
                   ),
+                  const SizedBox(height: 5,),
                   Padding(
-                    padding: const EdgeInsets.only(top: 10,left: 15,right: 0),
-                    child: Container(
-                      width: double.infinity,
-                      height: 30,
-                      //color: Colors.grey,
-                      margin: const EdgeInsets.only(left: 5,top: 1),
-                      child: Row(
-                        children: [
-                          Text("Launch prize",
-                            textAlign: TextAlign.left,style: TextStyle(
-                                letterSpacing: 0.5,fontSize: 15,fontWeight: FontWeight.bold
-                            ),),
-                          Text('AED ${projectDetailModel!.data!.price}',
-                            textAlign: TextAlign.left,style: TextStyle(
-                                letterSpacing: 0.5,fontSize: 18,fontWeight: FontWeight.bold
-                            ),),
-                        ],
-                      )
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                    child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Launch price",
+                              style: TextStyle(
+                                letterSpacing: 0.5,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold
+                              ),
+                            ),
+                            const SizedBox(width: 10,),
+                            Text(
+                              'AED ${projectDetailModel!.data!.price}',
+                              style: const TextStyle(
+                                letterSpacing: 0.5,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
 
-                    ),
+                            Text(
+                              ' /${projectDetailModel!.data!.paymentPeriod}',
+                              style: const TextStyle(
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
                   ),
+                  const SizedBox(height: 10,),
                   Padding(
-                    padding: const EdgeInsets.only(top: 0,left: 15,right: 0),
-                    child: Container(
-                      width: double.infinity,
-                      height: screenSize.height*0.35,
-                     // color: Colors.grey,
-                      margin: const EdgeInsets.only(left: 5,top: 0),
-                      child: Text(projectDetailModel!.data!.description.toString(),
-                        textAlign: TextAlign.left,style: TextStyle(
-                          letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
+                    padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                    child:  Text(projectDetailModel!.data!.description.toString(),
+                      textAlign: TextAlign.left,style: TextStyle(
+                          letterSpacing: 0.4,color: Colors.black87
                       ),),
-                    ),
+
                   ),
+                  const SizedBox(height: 10,),
                   Padding(
-                    padding: const EdgeInsets.only(top: 15,left: 15,right: 15),
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                     child: Container(
-                      width: screenSize.width*1,
-                      height: screenSize.height*0.13,
-                      margin: const EdgeInsets.only(left: 5,top: 5),
+                      height: screenSize.height * 0.13,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(15.0),
                         boxShadow: [
@@ -270,47 +256,68 @@ class _Property_DetailState extends State<Property_Detail> {
                         ],
                       ),
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 40,right: 0,top: 0,bottom: 0),
-                            child: Container(
-                            margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                            width: 100,
-                            height: 50,
-                            //color: Colors.grey,
+                          // SOBHA logo text block
+                          Container(
+                            width: screenSize.width * 0.3,
+                            alignment: Alignment.center,
                             child: Column(
-                              children: [
-                                Text("SOBHA",style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,letterSpacing: 0.5
-                                ),textAlign: TextAlign.center,),
-                                Text("REALITY",style: TextStyle(
-                                    fontSize: 7,
-                                    letterSpacing: 0.5,height: 0.5,fontWeight: FontWeight.bold
-                                ),textAlign: TextAlign.center,),
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Text(
+                                  "SOBHA",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                Text(
+                                  "REALITY",
+                                  style: TextStyle(
+                                    fontSize: 8,
+                                    letterSpacing: 0.5,
+                                    height: 0.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ],
                             ),
                           ),
-                          ),
-                          Padding(padding: const EdgeInsets.only(left: 35,right: 10,top: 0,bottom: 0),
+
+                          // Developer details block
+                          Expanded(
                             child: Container(
-                              margin: const EdgeInsets.only(left:1,right: 10,top: 5,bottom: 5),
-                              width: 120,
-                              height: 80,
-                             // color: Colors.grey,
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                               child: Column(
-                                children: [
-                                  Text("Developer",style: TextStyle(
-                                      fontSize: 15,letterSpacing: 0.5
-                                  ),textAlign: TextAlign.center,),
-                                  Text("Sobha Reality",style: TextStyle(
-                                      fontSize: 18,
-                                      letterSpacing: 0.5,fontWeight: FontWeight.bold
-                                  ),textAlign: TextAlign.center,),
-                                  Text("View Developer Details",style: TextStyle(
-                                      fontSize: 10,color: Colors.blue,height: 1.8,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Text(
+                                    "Developer",
+                                    style: TextStyle(fontSize: 14, letterSpacing: 0.5),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    "Sobha Realty",
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
                                       letterSpacing: 0.5,
-                                  ),textAlign: TextAlign.center,),
+                                    ),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    "View Developer Details",
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.blue,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -319,508 +326,346 @@ class _Property_DetailState extends State<Property_Detail> {
                       ),
                     ),
                   ),
-                  Container(
-                    margin: const EdgeInsets.only(left:0,right: 205,top: 15,bottom: 0),
-                    width: 150,
-                    height: 270,
-                   // color: Colors.grey,
-                    child: Column(
+                  const SizedBox(height: 10,),
+                   Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Padding(padding: const EdgeInsets.only(left: 0,top: 5),
-                          child: Text("Key Information",style: TextStyle(
-                            fontWeight: FontWeight.bold,fontSize: 18,
+                        Row(
+                          children: [
+                            const SizedBox(width: 15,),
+                            const Text(
+                              "Key Information",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            Text("")
+                          ],
+                        ),
+                        const SizedBox(height: 10,),
+                        _infoItem("Delivery date", projectDetailModel!.data!.deliveryDate.toString()),
+                        _infoItem("Property Type", projectDetailModel!.data!.propertyType.toString()),
+                        _infoItem("Payment Plan", projectDetailModel!.data!.paymentPlan.toString()),
+                        _infoItem("Government Fee", "${projectDetailModel!.data!.governmentFee}%"),
+                      ],
+                    ),
+                  const SizedBox(height: 10,),
+                  Row(
+                    children: [
+                      const SizedBox(width: 15,),
+                      Text("Payment Plan",style: TextStyle(fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        letterSpacing: 0.5,),),
+                      Text("")
+                    ],
+                  ),
+                  const SizedBox(height: 10,),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    child: Container(
+                      height: 130,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadiusDirectional.circular(15.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            offset: const Offset(
+                              0.3,
+                              0.3,
+                            ),
+                            blurRadius: 0.3,
+                            spreadRadius: 0.3,
+                          ), //BoxShadow
+                          BoxShadow(
+                            color: Color(0xFFEEEEEE),
+                            offset: const Offset(0.0, 0.0),
+                            blurRadius: 0.0,
+                            spreadRadius: 0.0,
+                          ), //BoxShadow
+                        ],
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '${projectDetailModel!.data!.downPayment}%',
+                              style: const TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              "Down Payment",
+                              style: TextStyle(
+                                fontSize: 13,
+                                letterSpacing: 0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10,),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    child: Container(
+                      height: 130,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadiusDirectional.circular(15.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            offset: const Offset(
+                              0.3,
+                              0.3,
+                            ),
+                            blurRadius: 0.3,
+                            spreadRadius: 0.3,
+                          ), //BoxShadow
+                          BoxShadow(
+                            color: Color(0xFFEEEEEE),
+                            offset: const Offset(0.0, 0.0),
+                            blurRadius: 0.0,
+                            spreadRadius: 0.0,
+                          ), //BoxShadow
+                        ],
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '${projectDetailModel!.data!.duringConstruction}%',
+                              style: const TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              "During Construction",
+                              style: TextStyle(
+                                fontSize: 13,
+                                letterSpacing: 0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10,),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    child: Container(
+                      height: 130,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadiusDirectional.circular(15.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            offset: const Offset(
+                              0.3,
+                              0.3,
+                            ),
+                            blurRadius: 0.3,
+                            spreadRadius: 0.3,
+                          ), //BoxShadow
+                          BoxShadow(
+                            color: Color(0xFFEEEEEE),
+                            offset: const Offset(0.0, 0.0),
+                            blurRadius: 0.0,
+                            spreadRadius: 0.0,
+                          ), //BoxShadow
+                        ],
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '${projectDetailModel!.data!.onHandover}%',
+                              style: const TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              "On Handover",
+                              style: TextStyle(
+                                fontSize: 13,
+                                letterSpacing: 0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10,),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 0, left: 15, right: 15),
+                    child: Row(
+                      children: const [
+                        Text(
+                          "Project Timeline",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
                             letterSpacing: 0.5,
-                          ),textAlign: TextAlign.left,),
-                        ),
-                        Padding(padding: const EdgeInsets.only(left: 0,top: 5,right: 63),
-                          child: Text("Delivery date",style: TextStyle(
-                            letterSpacing: 0.5,color: Colors.grey,fontSize: 12,
-                          ),textAlign: TextAlign.left,),
-                        ),
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 8,top: 5,right: 0),
-                              child: Text(projectDetailModel!.data!.deliveryDate.toString(),style: TextStyle(
-                                letterSpacing: 0.5,fontWeight: FontWeight.bold,
-                              ),textAlign: TextAlign.left,),
-                            ),
-                            Text("")
-                          ],
-                        ),
-                        Padding(padding: const EdgeInsets.only(left: 5,top: 5,right: 60),
-                          child: Text("Property Type",style: TextStyle(
-                            letterSpacing: 0.5,color: Colors.grey,fontSize: 12,
-                          ),textAlign: TextAlign.left,),
-                        ),
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 8,top: 5,right: 0),
-                              child: Text(projectDetailModel!.data!.propertyType.toString(),style: TextStyle(
-                                letterSpacing: 0.5,fontWeight: FontWeight.bold
-                              ),textAlign: TextAlign.left,),
-                            ),
-                            Text("")
-                          ],
-                        ),
-                        Padding(padding: const EdgeInsets.only(left: 0,top: 5,right: 53),
-                          child: Text("Payment Plan",style: TextStyle(
-                            letterSpacing: 0.5,color: Colors.grey,fontSize: 12,
-                          ),textAlign: TextAlign.left,),
-                        ),
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 8,top: 5,right: 0),
-                              child: Text(projectDetailModel!.data!.paymentPlan.toString(),style: TextStyle(
-                                letterSpacing: 0.5,fontWeight: FontWeight.bold,
-                              ),textAlign: TextAlign.left,),
-                            ),
-                            Text("")
-                          ],
-                        ),
-                        Padding(padding: const EdgeInsets.only(left: 0,top: 5,right: 43),
-                          child: Text("Government Fee",style: TextStyle(
-                            letterSpacing: 0.5,color: Colors.grey,fontSize: 12,
-                          ),textAlign: TextAlign.left,),
-                        ),
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 8,top: 5,right: 0),
-                              child: Text('${projectDetailModel!.data!.governmentFee}%',style: TextStyle(
-                                letterSpacing: 0.5,fontWeight: FontWeight.bold,
-                              ),textAlign: TextAlign.left,),
-                            ),
-                          ],
-                        ),
-                        Padding(padding: const EdgeInsets.only(left: 0,top: 20,right: 20),
-                          child: Text("Payment Plan",style: TextStyle(
-                            fontWeight: FontWeight.bold,fontSize: 18,
-                            letterSpacing: 0.5,
-                          ),textAlign: TextAlign.left,),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 5,left: 15,right: 15),
-                    child: Container(
-                      width: 500,
-                      height: 130,
-                      margin: const EdgeInsets.only(left: 5,top: 5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(15.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Color(0xFFEEEEEE),
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
-                      ),
-                            child: Container(
-                              margin: const EdgeInsets.only(left: 100,right: 100,top: 32,bottom: 32),
-                              width: 50,
-                              height: 50,
-                              alignment: Alignment.center,
-                             // color: Colors.grey,
-                              child: Column(
-                                children: [
-                                  Text('${projectDetailModel!.data!.downPayment} %',style: TextStyle(
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.bold,letterSpacing: 0.5
-                                  ),textAlign: TextAlign.center,),
-                                  Text("Down Payment",style: TextStyle(
-                                      fontSize: 13,
-                                      letterSpacing: 0.5,height: 1.0,
-                                      //fontWeight: FontWeight.bold
-                                  ),textAlign: TextAlign.center,),
-                                ],
-                              ),
-                            ),
-                         // ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10,left: 15,right: 15),
-                    child: Container(
-                      width: 500,
-                      height: 130,
-                      margin: const EdgeInsets.only(left: 5,top: 5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(15.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Color(0xFFEEEEEE),
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
-                      ),
-                      child: Container(
-                        margin: const EdgeInsets.only(left: 100,right: 100,top: 32,bottom: 32),
-                        width: 50,
-                        height: 50,
-                        alignment: Alignment.center,
-                        // color: Colors.grey,
-                        child: Column(
-                          children: [
-                            Text('${projectDetailModel!.data!.duringConstruction} %',style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,letterSpacing: 0.5
-                            ),textAlign: TextAlign.center,),
-                            Text("During Construction",style: TextStyle(
-                              fontSize: 13,
-                              letterSpacing: 0.5,height: 1.0,
-                              //fontWeight: FontWeight.bold
-                            ),textAlign: TextAlign.center,),
-                          ],
-                        ),
-                      ),
-                      // ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10,left: 15,right: 15),
-                    child: Container(
-                      width: 500,
-                      height: 130,
-                      margin: const EdgeInsets.only(left: 5,top: 5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(15.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Color(0xFFEEEEEE),
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
-                      ),
-                      child: Container(
-                        margin: const EdgeInsets.only(left: 100,right: 100,top: 32,bottom: 32),
-                        width: 50,
-                        height: 50,
-                        alignment: Alignment.center,
-                        // color: Colors.grey,
-                        child: Column(
-                          children: [
-                            Text('${projectDetailModel!.data!.onHandover} %',style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,letterSpacing: 0.5
-                            ),textAlign: TextAlign.center,),
-                            Text("On Handover",style: TextStyle(
-                              fontSize: 13,
-                              letterSpacing: 0.5,height: 1.0,
-                              //fontWeight: FontWeight.bold
-                            ),textAlign: TextAlign.center,),
-                          ],
-                        ),
-                      ),
-                      // ),
-                    ),
-                  ),
-                  Padding(padding: const EdgeInsets.only(top: 20,left: 0,right: 210),
-                  child: Text("Project Timeline",style: TextStyle(
-                    fontWeight: FontWeight.bold,fontSize: 18,
-                    letterSpacing: 0.5,
-                  ),textAlign: TextAlign.left,),
-                  ),
+                  const SizedBox(height: 10,),
                   Container(
                     width: double.infinity,
-                    height: 220,
-                    margin: const EdgeInsets.only(left: 20,top: 20,right: 20,bottom: 0),
-                   // color: Colors.grey,
+                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(15.0),
+                      borderRadius: BorderRadius.circular(15),
+                      color: Colors.white,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
+                          color: Colors.grey.withOpacity(0.3),
+                          offset: const Offset(0.3, 0.3),
+                          blurRadius: 2,
+                          spreadRadius: 0.5,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Project Announcement",
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          projectDetailModel!.data!.projectAnnouncement.toString(),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
+                        ),
+                        const SizedBox(height: 15),
+
+                        const Text(
+                          "Construction Started",
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          projectDetailModel!.data!.constructionStarted.toString(),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+
+                        const Text(
+                          "Expected Completion",
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          projectDetailModel!.data!.expectedCompletion.toString(),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                       ],
                     ),
+                  ),
+                  const SizedBox(height: 10,),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 0, left: 15, right: 15),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Units from Developer",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5, left: 15, right: 15),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Apartments",
+                        style: TextStyle(
+                          fontSize: 14,
+                          letterSpacing: 0.5,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10,),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                     child: Column(
                       children: [
-                        Padding(padding: const EdgeInsets.only(top: 20),
-                            child: Text("Project Announcement")
-                        ),
-                        Padding(padding: const EdgeInsets.only(top: 10),
-                            child: Text(projectDetailModel!.data!.projectAnnouncement.toString(),style: TextStyle(
-                              fontWeight: FontWeight.bold
-                            ),)
-                        ),
-                        Padding(padding: const EdgeInsets.only(top: 15),
-                            child: Text("Construction Started")
-                        ),
-                        Padding(padding: const EdgeInsets.only(top: 10),
-                            child: Text(projectDetailModel!.data!.constructionStarted.toString(),
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold
-                            ),)
-                        ),
-                        Padding(padding: const EdgeInsets.only(top: 15),
-                            child: Text("Expected Completion")
-                        ),
-                        Padding(padding: const EdgeInsets.only(top: 10,bottom: 10),
-                            child: Text(projectDetailModel!.data!.expectedCompletion.toString(),
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold
-                            ),)
-                        ),
+                        _unitRow("3 beds"),
+                        const SizedBox(height: 15),
+                        _unitRow("4 beds"),
                       ],
                     ),
                   ),
-                  Padding(padding: const EdgeInsets.only(top: 20,left: 0,right: 170),
-                    child: Text("Units from Developer",style: TextStyle(
-                      fontWeight: FontWeight.bold,fontSize: 18,
-                      letterSpacing: 0.5,
-                    ),textAlign: TextAlign.left,),
-                  ),
+                  const SizedBox(height: 10,),
                   Padding(
-                    padding: const EdgeInsets.only(top: 5,left: 0,right: 270),
-                    child: Text("Apartments",style: TextStyle(
-                      letterSpacing: 0.5,
-                    ),textAlign: TextAlign.left,),
-                  ),
-                  Container(
-                    width: double.infinity,
-                    height: 100,
-                    padding: const EdgeInsets.only(left: 2,top: 0,right: 2),
-                    margin: const EdgeInsets.only(left: 18,top: 18,right: 20),
-                   // color: Colors.grey,
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              height: 40,
-                              width: 220,
-                              padding: const EdgeInsets.only(top: 2),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadiusDirectional.circular(10.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey,
-                                    offset: const Offset(
-                                      0.5,
-                                      0.5,
-                                    ),
-                                    blurRadius: 1.0,
-                                    spreadRadius: 0.5,
-                                  ), //BoxShadow
-                                  BoxShadow(
-                                    color: Colors.white,
-                                    offset: const Offset(0.0, 0.0),
-                                    blurRadius: 0.0,
-                                    spreadRadius: 0.0,
-                                  ), //BoxShadow
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Padding(padding: const EdgeInsets.only(left: 10),
-                                  child: Text("3 beds",style: TextStyle(
-                                    color: Colors.black
-                                  ),),
-                                  ),
-                                  Padding(padding: const EdgeInsets.only(left: 135,right: 5),
-                                    child: Icon(Icons.arrow_forward_ios_rounded,color: Colors.red,size: 15,)
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              height: 40,
-                              width: 120,
-                              margin: const EdgeInsets.only(left: 10,right: 0),
-                              padding: const EdgeInsets.only(top: 2),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadiusDirectional.circular(8.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey,
-                                    offset: const Offset(
-                                      0.5,
-                                      0.5,
-                                    ),
-                                    blurRadius: 1.0,
-                                    spreadRadius: 0.5,
-                                  ), //BoxShadow
-                                  BoxShadow(
-                                    color: Colors.white,
-                                    offset: const Offset(0.0, 0.0),
-                                    blurRadius: 0.0,
-                                    spreadRadius: 0.0,
-                                  ), //BoxShadow
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Padding(padding: const EdgeInsets.only(left: 25,right: 5),
-                                      child: Icon(Icons.call,color: Colors.red,size: 15,)
-                                  ),
-                                  Padding(padding: const EdgeInsets.only(left: 1),
-                                    child: Text("Call?",style: TextStyle(
-                                        color: Colors.black
-                                    ),),
-                                  ),
-
-                                ],
-                              ),
-                            ),
-                          ],
+                        const Text(
+                          "About the Project",
+                          style: TextStyle(
+                            letterSpacing: 0.5,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        Row(
-                          children: [
-                            Container(
-                              height: 40,
-                              width: 220,
-                              margin: const EdgeInsets.only(top: 15),
-                              padding: const EdgeInsets.only(top: 2),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadiusDirectional.circular(10.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey,
-                                    offset: const Offset(
-                                      0.3,
-                                      0.3,
-                                    ),
-                                    blurRadius: 0.3,
-                                    spreadRadius: 0.3,
-                                  ), //BoxShadow
-                                  BoxShadow(
-                                    color: Colors.white,
-                                    offset: const Offset(0.0, 0.0),
-                                    blurRadius: 0.0,
-                                    spreadRadius: 0.0,
-                                  ), //BoxShadow
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Padding(padding: const EdgeInsets.only(left: 10),
-                                    child: Text("4 beds",style: TextStyle(
-                                        color: Colors.black
-                                    ),),
-                                  ),
-                                  Padding(padding: const EdgeInsets.only(left: 135,right: 5),
-                                      child: Icon(Icons.arrow_forward_ios_rounded,color: Colors.red,size: 15,)
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              height: 40,
-                              width: 120,
-                              margin: const EdgeInsets.only(left: 10,right: 0,top: 15),
-                              padding: const EdgeInsets.only(top: 2),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadiusDirectional.circular(8.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey,
-                                    offset: const Offset(
-                                      0.3,
-                                      0.3,
-                                    ),
-                                    blurRadius: 0.3,
-                                    spreadRadius: 0.3,
-                                  ), //BoxShadow
-                                  BoxShadow(
-                                    color: Colors.white,
-                                    offset: const Offset(0.0, 0.0),
-                                    blurRadius: 0.0,
-                                    spreadRadius: 0.0,
-                                  ), //BoxShadow
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Padding(padding: const EdgeInsets.only(left: 25,right: 5),
-                                      child: Icon(Icons.call,color: Colors.red,size: 15,)
-                                  ),
-                                  Padding(padding: const EdgeInsets.only(left: 1),
-                                    child: Text("Call?",style: TextStyle(
-                                        color: Colors.black
-                                    ),),
-                                  ),
-
-                                ],
-                              ),
-                            ),
-                          ],
+                        const SizedBox(height: 10),
+                        Text(
+                          projectDetailModel!.data!.description.toString(),
+                          style: const TextStyle(
+                            letterSpacing: 0.2,
+                          ),
+                          textAlign: TextAlign.left,
                         ),
                       ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 15,left: 15,right: 0),
-                    child: Container(
-                      width: double.infinity,
-                      height: 25,
-                      //color: Colors.grey,
-                      margin: const EdgeInsets.only(left: 5,top: 5),
-                      child: Text("About the Project",
-                        textAlign: TextAlign.left,style: TextStyle(
-                            letterSpacing: 0.5,fontSize: 18,fontWeight: FontWeight.bold
-                        ),),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 0,left: 15,right: 0),
-                    child: Container(
-                      width: double.infinity,
-                      height: screenSize.height*0.35,
-                       //color: Colors.grey,
-                      margin: const EdgeInsets.only(left: 5,top: 0),
-                      child: Text(projectDetailModel!.data!.description.toString(),
-                        textAlign: TextAlign.left,style: TextStyle(
-                            letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
-                        ),),
                     ),
                   ),
                   SizedBox(
-                    height: 100,
+                    height: 10,
                   )
                 ]
             )
@@ -830,7 +675,7 @@ class _Property_DetailState extends State<Property_Detail> {
 
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 60,
+      height: 40,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -974,6 +819,121 @@ class _Property_DetailState extends State<Property_Detail> {
       ),
     );
   }
+}
+Widget _unitRow(String title) {
+  return Row(
+    children: [
+      Expanded(
+        flex: 2,
+        child: Container(
+          height: 40,
+          decoration: _cardBoxDecoration(),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(title, style: const TextStyle(color: Colors.black)),
+              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.red, size: 15),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(width: 10),
+      Expanded(
+        flex: 1,
+        child: Container(
+          height: 40,
+          decoration: _cardBoxDecoration(),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.call, color: Colors.red, size: 15),
+              SizedBox(width: 5),
+              Text("Call?", style: TextStyle(color: Colors.black)),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+BoxDecoration _cardBoxDecoration() {
+  return BoxDecoration(
+    borderRadius: BorderRadius.circular(10),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.withOpacity(0.4),
+        offset: const Offset(0.3, 0.3),
+        blurRadius: 1,
+        spreadRadius: 0.3,
+      ),
+      const BoxShadow(
+        color: Colors.white,
+        offset: Offset(0.0, 0.0),
+        blurRadius: 0.0,
+        spreadRadius: 0.0,
+      ),
+    ],
+  );
+}
+Widget _infoItem(String label, String value) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const SizedBox(width: 15,),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                letterSpacing: 0.5,
+              ),
+            ),
+            Text("")
+          ],
+        ),
+        const SizedBox(height: 2),
+        Row(
+          children: [
+            const SizedBox(width: 15,),
+            Text(
+              value,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+BoxDecoration _iconBoxDecoration() {
+  return BoxDecoration(
+    borderRadius: BorderRadius.circular(20),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.withOpacity(0.3),
+        blurRadius: 2,
+        spreadRadius: 0.1,
+        offset: const Offset(0, 1),
+      ),
+      const BoxShadow(
+        color: Colors.white,
+        offset: Offset(0.0, 0.0),
+        blurRadius: 0.0,
+        spreadRadius: 0.0,
+      ),
+    ],
+  );
 }
 class Page1 extends StatelessWidget {
   const Page1({Key? key}) : super(key: key);

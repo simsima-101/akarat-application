@@ -94,146 +94,49 @@ class _Agent_DetailState extends State<Agent_Detail> {
             child: Column(
                 children: <Widget>[
                   Stack(
-                    // alignment: Alignment.topCenter,
                     children: <Widget>[
                       Padding(
-                        padding: EdgeInsets.only(top: 0),
+                        padding: const EdgeInsets.only(top: 0),
                         child: SizedBox(
                           height: 50,
                           width: double.infinity,
-                          // color: Color(0xFFEEEEEE),
-                          child:   Row(
-                            spacing: screenSize.width*0.75,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              GestureDetector(
-                                onTap: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                                      AboutAgent(data:productModels!.data!.id.toString())));
-                                },
-                                child: Container(
-                                  margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
-                                  height: 35,
-                                  width: 35,
-                                  padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadiusDirectional.circular(20.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey,
-                                        offset: const Offset(
-                                          0.0,
-                                          0.0,
-                                        ),
-                                        blurRadius: 0.1,
-                                        spreadRadius: 0.1,
-                                      ), //BoxShadow
-                                      BoxShadow(
-                                        color: Colors.white,
-                                        offset: const Offset(0.0, 0.0),
-                                        blurRadius: 0.0,
-                                        spreadRadius: 0.0,
-                                      ), //BoxShadow
-                                    ],
-                                  ),
-                                  child: Image.asset("assets/images/ar-left.png",
+                              // Back Button
+                              Container(
+                                margin: const EdgeInsets.only(left: 10),
+                                height: 35,
+                                width: 35,
+                                padding: const EdgeInsets.all(7),
+                                decoration: _iconBoxDecoration(),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => AboutAgent(data: productModels!.data!.agentId.toString())));
+                                  },
+                                  child: Image.asset(
+                                    "assets/images/ar-left.png",
                                     width: 15,
                                     height: 15,
-                                    fit: BoxFit.contain,),
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
                               ),
+
+                              // Like Button
                               Container(
-                                margin: const EdgeInsets.only(left: 0,top: 5,bottom: 0,),
+                                margin: const EdgeInsets.only(right: 10),
                                 height: 35,
                                 width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Image.asset("assets/images/lov.png",
+                                padding: const EdgeInsets.all(7),
+                                decoration: _iconBoxDecoration(),
+                                child: Image.asset(
+                                  "assets/images/lov.png",
                                   width: 15,
                                   height: 15,
-                                  fit: BoxFit.contain,),
-                                //child: Image(image: Image.asset("assets/images/share.png")),
+                                  fit: BoxFit.contain,
+                                ),
                               ),
-                              /*Container(
-                                margin: const EdgeInsets.only(left: 5,top: 5,bottom: 0,),
-                                height: 35,
-                                width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Image.asset("assets/images/forward.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,),
-                                //child: Image(image: Image.asset("assets/images/share.png")),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(left: 5,top: 5,bottom: 0,),
-                                height: 35,
-                                width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Image.asset("assets/images/arrow_right.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,),
-                                //child: Image(image: Image.asset("assets/images/share.png")),
-                              ),*/
                             ],
                           ),
                         ),
@@ -241,7 +144,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                     ],
                   ),
                   Container(
-                      height: screenSize.height*0.5,
+                      height: screenSize.height*0.55,
                       margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
                       child:  ListView.builder(
                         padding: const EdgeInsets.all(0),
@@ -258,10 +161,10 @@ class _Agent_DetailState extends State<Agent_Detail> {
                         },
 
                       )
-                  ) ,
-                  Container(
-                    height: 40,
-                    margin: const EdgeInsets.only(left: 20,top: 10,right: 10,bottom: 0),
+                  ),
+                  SizedBox(height: 25,),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                     // color: Colors.grey,
                     child: Row(
                       children: [
@@ -314,7 +217,9 @@ class _Agent_DetailState extends State<Agent_Detail> {
                       ],
                     ),
                   ),
-                  Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 10,bottom: 0),
+                  SizedBox(height: 5,),
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                       child:Row(
                         children: [
                           Text(productModels!.data!.price.toString(),style: TextStyle(
@@ -323,28 +228,15 @@ class _Agent_DetailState extends State<Agent_Detail> {
                           Text("  AED",style: TextStyle(
                               fontSize: 19,letterSpacing: 0.5
                           ),),
+                          Text("/${productModels!.data!.paymentPeriod}",style: TextStyle(
+                              fontSize: 19,letterSpacing: 0.5
+                          ),),
                         ],
                       )
                   ),
-                  /* Padding(
-                      padding: const EdgeInsets.only(left: 20,right: 0,top: 5,bottom: 0),
-                      child:Row(
-                        children: [
-                          Text("Est.Mortgage:",style: TextStyle(
-                              fontSize: 14,letterSpacing: 0.5
-                          ),),
-                          Text("  12,750",style: TextStyle(
-                              fontSize: 19,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                          ),),
-                          Text("  AED/month",style: TextStyle(
-                            fontSize: 17,letterSpacing: 0.5,
-                          ),),
-                        ],
-                      )
-                  ),*/
-                  Container(
-                      margin: const EdgeInsets.only(left: 20,top: 5,right: 10),
-                      height: 40,
+                  SizedBox(height: 5,),
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                       // color: Colors.grey,
                       child:Row(
                         children: [
@@ -356,7 +248,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                             ),),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 3.0),
+                            padding: const EdgeInsets.only(left: 15.0),
                             child: Image.asset("assets/images/bath.png",height: 20),
                           ),
                           Padding(
@@ -366,7 +258,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                             ),),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 3.0),
+                            padding: const EdgeInsets.only(left: 15.0),
                             child: Image.asset("assets/images/messure.png",height: 20),
                           ),
                           Padding(
@@ -378,299 +270,206 @@ class _Agent_DetailState extends State<Agent_Detail> {
                         ],
                       )
                   ),
-                  Container(
-                    height: screenSize.height*0.08,
-                    // color: Colors.grey,
-                    padding: const EdgeInsets.only(left: 20,right: 0,top: 1,bottom: 0),
-                    child:
-                    Text(productModels!.data!.title.toString(),style: TextStyle(
-                        fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
-                    ),),
-
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
-                    child: Container(
-                        width: double.infinity,
-                        height: screenSize.height*0.2,
-                        //color: Colors.grey,
-                        margin: const EdgeInsets.only(left: 5,top: 5),
-                        child:  ListView(
-                            padding: const EdgeInsets.all(0),
-                            shrinkWrap: true,
-                            scrollDirection: Axis.vertical,
-                            children: <Widget>[
-                              Text(productModels!.data!.description.toString(),
-                                textAlign: TextAlign.left,style: TextStyle(
-                                    letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
-                                ),),
-                            ]
-                        )
-
-                    ),
-                  ),
-                  /* Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      height: screenSize.height*0.05,
-                      width: screenSize.width*0.9,
-                      margin: const EdgeInsets.only(left: 20,right: 20,top: 10),
-                      padding: const EdgeInsets.only(top: 8),
-                      // color: Colors.grey,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(8.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.red,
-                            offset: const Offset(
-                              0.0,
-                              0.0,
+                  SizedBox(height: 10,),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Text(
+                            productModels!.data!.title.toString(),
+                            style: const TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
                             ),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
                       ),
-                      child: Text("Show Full Description",textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
-                        ),),
-                    ),
-                  ),*/
+                      const SizedBox(), // or remove this if not needed
+                    ],
+                  ),
+                  SizedBox(height: 10,),
                   Padding(
-                      padding: const EdgeInsets.only(left: 20,right: 0,top: 20,bottom: 0),
-                      child:Row(
-                        spacing: 5,
-                        children: [
-                          Text("Posted On:",style: TextStyle(
-                              fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                          ),),
-                          Text(productModels!.data!.postedOn.toString(),style: TextStyle(
-                            fontSize: 14,letterSpacing: 0.5,
-                          ),),
-                        ],
-                      )
+                    padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                    child:  Text(productModels!.data!.description.toString(),
+                      textAlign: TextAlign.left,style: TextStyle(
+                          letterSpacing: 0.4,color: Colors.black87
+                      ),),
+
                   ),
+                  SizedBox(height: 10,),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                        child: Text("Posted On:",style: TextStyle(
+                            fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                        ),),
+                      ),
+                      Text(productModels!.data!.postedOn.toString())
+                    ],
+                  ),
+                  SizedBox(height: 15,),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                        child:Text("Property Details",style: TextStyle(
+                            fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                        ),),
+                      ),
+                      Text("")
+                    ],
+                  ),
+                  SizedBox(height: 15,),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 22.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Image.asset("assets/images/Residential__1.png", height: 17),
+                            const SizedBox(width: 6),
+                            Text(
+                              productModels!.data!.propertyType.toString(),
+                              style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            Text("")
+                          ],
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Row(
+                          children: [
+                            Image.asset("assets/images/bed.png", height: 17),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${productModels!.data!.bedrooms} beds',
+                              style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 12),
+                            Image.asset("assets/images/bath.png", height: 17),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${productModels!.data!.bathrooms} baths',
+                              style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 12),
+                            Image.asset("assets/images/messure.png", height: 17),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${productModels!.data!.squareFeet} sqft',
+                              style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 5,),
                   Container(
                     height: 30,
                     width: 200,
                     // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 200,top: 20,bottom: 5),
-                    child:Text("Property Details",style: TextStyle(
-                        fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                    ),),
-                  ),
-                  Container(
-                      margin: const EdgeInsets.only(left: 20,top: 0,right: 10),
-                      height: 20,
-                      // color: Colors.grey,
-                      child:ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: Image.asset("assets/images/Residential__1.png",height: 15,),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 5.0,right: 6),
-                            child: Text(productModels!.data!.propertyType.toString(),style: TextStyle(
-                                fontSize: 14,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all( 2.0),
-                            child: Image.asset("assets/images/bed.png",height: 15,),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 5.0,right: 6),
-                            child: Text('${productModels!.data!.bedrooms} beds',style: TextStyle(
-                                fontSize: 14,letterSpacing: 0.5
-                            ),),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all( 2.0),
-                            child: Image.asset("assets/images/bath.png",height: 15),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 5.0,right: 6),
-                            child: Text('${productModels!.data!.bathrooms} baths',style: TextStyle(
-                              fontSize: 14,letterSpacing: 0.5,
-                            ),),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all( 2.0),
-                            child: Image.asset("assets/images/messure.png",height: 15),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: Text('${productModels!.data!.squareFeet} sqft',style: TextStyle(
-                              fontSize: 14,letterSpacing: 0.5,
-                            ),),
-                          ),
-                        ],
-                      )
-                  ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 200,top: 15,bottom: 0),
+                    margin: const EdgeInsets.only(left: 20,right: 200,top: 10,bottom: 0),
                     child:Text("Amnesties",style: TextStyle(
                         fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                     ),),
                   ),
-                  Container(
-                      margin: const EdgeInsets.only(left: 20,top: 0,right: 1),
-                      padding: const EdgeInsets.only(top: 5),
-                      height: screenSize.height*0.118,
-                      // color: Colors.grey,
-                      child:ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          Column(
-                            spacing: 15,
-                            children: [
-                              Row(
-                                spacing: 5,
-                                children: [
-                                  Image.asset("assets/images/Residential__1.png",height: 15,),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Swimming Pool ",style: TextStyle(
-                                        fontSize: 14,letterSpacing: 0.5
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/bed.png",height: 15,),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Balcony/Terrace ",style: TextStyle(
-                                        fontSize: 14,letterSpacing: 0.5
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/bed.png",height: 15,),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Gym ",style: TextStyle(
-                                        fontSize: 14,letterSpacing: 0.5
-                                    ),),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                spacing: 5,
-                                children: [
-                                  Image.asset("assets/images/bath.png",height: 15),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Barbeque Area ",style: TextStyle(
-                                      fontSize: 14,letterSpacing: 0.5,
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/Residential__1.png",height: 15,),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Elevators ",style: TextStyle(
-                                        fontSize: 14,letterSpacing: 0.5
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/bath.png",height: 15),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text("Parking Space ",style: TextStyle(
-                                      fontSize: 14,letterSpacing: 0.5,
-                                    ),),
-                                  ),
-                                ],
-                              ),
+                  SizedBox(height: 5,),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 22.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Image.asset("assets/images/Residential__1.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              " Swimming Pool ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 20),
+                            Image.asset("assets/images/bed.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              " Balcony/Terrace ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Image.asset("assets/images/bath.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              " Barbeque Area ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 20),
+                            Image.asset("assets/images/Residential__1.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              " Elevators ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
 
-
-                              Row(
-                                spacing: 5,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Image.asset("assets/images/messure.png",height: 15),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text("Pet Allowed ",style: TextStyle(
-                                      fontSize: 14,letterSpacing: 0.5,
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/messure.png",height: 15),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text("Security ",style: TextStyle(
-                                      fontSize: 14,letterSpacing: 0.5,
-                                    ),),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      )
-
-                  ),
-                  /*  Container(
-                    height: screenSize.height*0.05,
-                    width: screenSize.width*0.9,
-                    margin: const EdgeInsets.only(left: 20,right: 20,top: 15),
-                    padding: const EdgeInsets.only(top: 8),
-                    // color: Colors.grey,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(8.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.red,
-                          offset: const Offset(
-                            0.0,
-                            0.0,
-                          ),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const SizedBox(width: 3),
+                            Image.asset("assets/images/messure.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              "Pet Allowed ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 45),
+                            Image.asset("assets/images/messure.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              "Security ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 20), // Padding at the end
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const SizedBox(width: 3),
+                            Image.asset("assets/images/bed.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              " Gym ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 85),
+                            Image.asset("assets/images/bath.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              "Parking Space ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                          ],
+                        )
                       ],
                     ),
-                    child: Text("Show All Amenities(8) ",textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,fontSize: 17,letterSpacing: 0.5
-                      ),),
-                  ),*/
+                  ),
+                  SizedBox(height: 15,),
                   Row(
                     children: [
-                      Container(
-                        height: 30,
-                        width: 200,
-                        // color: Colors.grey,
-                        margin: const EdgeInsets.only(left: 20,right: 0,top: 15,bottom: 0),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                         child:Text("Project Information",style: TextStyle(
                             fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                         ),),
@@ -678,187 +477,144 @@ class _Agent_DetailState extends State<Agent_Detail> {
                       Text("")
                     ],
                   ),
+                  SizedBox(height: 5,),
                   Container(
-                    height: screenSize.height*0.122,
-                    margin: const EdgeInsets.only(left: 10,right: 5,top: 10),
-                    // color: Colors.grey,
+                    height: screenSize.height * 0.122,
+                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Column(
-                          children: [
-                            Text("Project            "),
-                            Row(
-                              spacing: 5,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4.0,right: 27),
-                                  child: Text(productModels!.data!.project.toString(),style: TextStyle(
-                                      fontWeight: FontWeight.bold
-                                  ),),
-                                ),
-                                Text("")
-                              ],
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10.0),
-                              child: Text("Delivery Date  "),
-                            ),
-                            Row(
-                              spacing: 5,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left:10,top: 4.0,right: 27),
-                                  child: Text(productModels!.data!.deliveryDate.toString(),style: TextStyle(
-                                      fontWeight: FontWeight.bold
-                                  ),textAlign: TextAlign.left,),
-                                ),
-                                Text("  "),
-
-                              ],
-                            )
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children:  [
+                            Text("Project"),
+                            SizedBox(height: 4),
+                            Text(productModels!.data!.project.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
+                            SizedBox(height: 10),
+                            Text("Delivery Date"),
+                            SizedBox(height: 4),
+                            Text(productModels!.data!.deliveryDate.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 40),
-                          child:  Column(
-                            children: [
-                              Text("Developer                               "),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4.0),
-                                child: Text(productModels!.data!.developer.toString(),style: TextStyle(
-                                    fontWeight: FontWeight.bold
-                                ),),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 10.0),
-                                child: Text("Property type                         "),
-                              ),
-                              Row(
-                                spacing: 5,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 4.0,right: 10),
-                                    child: Text(productModels!.data!.propertyType.toString(),style: TextStyle(
-                                        fontWeight: FontWeight.bold
-                                    ),),
-                                  ),
-                                  Text("     "),
-                                  Text("     "),
-                                  Text("     "),
-                                  Text("      "),
-                                ],
-                              )
-                            ],
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children:  [
+                            Text("Developer"),
+                            SizedBox(height: 4),
+                            Text(productModels!.data!.developer.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
+                            SizedBox(height: 10),
+                            Text("Property Type"),
+                            SizedBox(height: 4),
+                            Text(productModels!.data!.propertyType.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
                         ),
-
                       ],
                     ),
                   ),
+                  SizedBox(height: 5,),
                   Container(
-                    height: screenSize.height*0.18,
-                    margin: const EdgeInsets.only(left: 20,right: 5,top: 20),
-                    // color: Colors.grey,
+                    height: screenSize.height * 0.17,
+                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Row(
-                      spacing: 1,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
                           height: 150,
                           width: 170,
-                          child:   Image.asset("assets/images/image3.png",height: 100,
-                            fit: BoxFit.contain,),
+                          child: Image.asset(
+                            "assets/images/image3.png",
+                            fit: BoxFit.cover,
+                          ),
                         ),
-
-                        Column(
-                          children: [
-                            Container(
-                                height: 25,
-                                margin: const EdgeInsets.only(top: 30,left: 0,right: 55),
-                                padding: const EdgeInsets.only(top: 4,left: 5,right: 0),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 15,),
+                              Container(
+                                height: 30,
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(8.0),
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(8.0),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.grey,
-                                      offset: const Offset(
-                                        1.5,
-                                        1.5,
-                                      ),
-                                      blurRadius: 0.5,
-                                      spreadRadius: 0.5,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.green,
-                                      offset: const Offset(0.5, 0.5),
-                                      blurRadius: 0.5,
-                                      spreadRadius: 0.5,
-                                    ), //BoxShadow
+                                      offset: Offset(1, 1),
+                                      blurRadius: 1,
+                                      spreadRadius: 0.3,
+                                    ),
                                   ],
                                 ),
-                                child:
-                                Padding(padding: const EdgeInsets.only(left: 1),
-                                    child:   Text("Completed    ",style: TextStyle(
-                                        letterSpacing: 0.5,color: Colors.white,fontSize: 12
-                                    ),textAlign: TextAlign.center,)
-                                )
-                            ),
-                            Padding(padding: const EdgeInsets.only(top: 10),
-                              child: Text(productModels!.data!.developer.toString(),style: TextStyle(
-                                  fontSize: 12,fontWeight: FontWeight.bold
-                              ),),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                height: screenSize.height*0.04,
-                                width: screenSize.width*0.4,
-                                // margin: const EdgeInsets.only(left: 15,right: 10,top: 15),
-                                padding: const EdgeInsets.only(top: 8),
-                                // color: Colors.grey,
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  "Completed",
+                                  style: TextStyle(
+                                    letterSpacing: 0.5,
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                productModels!.data!.developer.toString(),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Container(
+                                height: screenSize.height * 0.04,
+                                width: screenSize.width * 0.4,
+                                alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(8.0),
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8.0),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.red,
-                                      offset: const Offset(
-                                        0.5,
-                                        0.5,
-                                      ),
+                                      offset: Offset(0.5, 0.5),
                                       blurRadius: 0.3,
                                       spreadRadius: 0.3,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
+                                    ),
                                   ],
                                 ),
-                                child: Text("View All Project Details",textAlign: TextAlign.center,
+                                child: const Text(
+                                  "View All Project Details",
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      letterSpacing: 0.5,fontSize: 11,fontWeight: FontWeight.bold
-                                  ),),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
-                        )
-
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 200,top: 15,bottom: 0),
-                    child:Text("Location & nearby",style: TextStyle(
-                        fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                    ),),
+                  SizedBox(height: 15,),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                        child:Text("Location & nearby",style: TextStyle(
+                            fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                        ),),
+                      ),
+                      Text("")
+                    ],
                   ),
+                  SizedBox(height: 10,),
                   Container(
-                    height: 130,
-                    margin: const EdgeInsets.only(top: 15,left: 20,right: 20),
+                    height: screenSize.height*0.3,
+                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadiusDirectional.circular(15.0),
                       boxShadow: [
@@ -879,73 +635,90 @@ class _Agent_DetailState extends State<Agent_Detail> {
                         ), //BoxShadow
                       ],
                     ),
-                    child: Stack(
-                      children: [
-                        FlutterMap(
-                          options: MapOptions(
-                            initialCenter: LatLng(25.0657, 55.2030), // Updated
-                            initialZoom: 13.0, // Updated
-                          ),
-                          children: [
-                            TileLayer(
-                              urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                              subdomains: ['a', 'b', 'c'],
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: Stack(
+                        children: [
+                          FlutterMap(
+                            options: MapOptions(
+                              initialCenter: LatLng(25.0657, 55.2030),
+                              initialZoom: 13.0,
                             ),
-                            MarkerLayer(
-                              markers: [
-                                Marker(
-                                  point: LatLng(25.0657, 55.2030),
-                                  width: 40,
-                                  height: 40,
-                                  child: Icon(Icons.location_pin, color: Colors.red, size: 40), // Fixed
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Positioned(
-                          bottom: 20,
-                          left: 60,
-                          right: 60,
-                          child: Card(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(1.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    "AAA Residence, JVC District 13,\nJumeirah Village Circle (JVC), Dubai",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                  ),
-                                  // SizedBox(height: 4),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      // Implement map navigation
-                                    },
-                                    child: Text("View on map"),
+                            children: [
+                              TileLayer(
+                                urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                subdomains: ['a', 'b', 'c'],
+                              ),
+                              MarkerLayer(
+                                markers: [
+                                  Marker(
+                                    point: LatLng(25.0657, 55.2030),
+                                    width: 40,
+                                    height: 40,
+                                    child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
                                   ),
                                 ],
                               ),
+                            ],
+                          ),
+
+                          // Bottom overlay card
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Card(
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text(
+                                        "AAA Residence, JVC District 13,\nJumeirah Village Circle (JVC), Dubai",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      SizedBox(
+                                        height: 28,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                                            textStyle: const TextStyle(fontSize: 12),
+                                          ),
+                                          onPressed: () {
+                                            // Handle navigation logic here
+                                          },
+                                          child: const Text("View on map"),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 200,top: 20,bottom: 0),
-                    child:Text("Provided by",style: TextStyle(
-                        fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                    ),),
+                  SizedBox(height: 10,),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                        child:Text("Provided by",style: TextStyle(
+                            fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                        ),),
+                      ),
+                      Text("")
+                    ],
                   ),
-                  Container(
-                    height: 270,
-                    margin: const EdgeInsets.only(left: 20,top: 15,right: 20),
+                  SizedBox(height: 5,),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                     // color: Colors.grey,
                     child: Column(
                       children: [
@@ -993,11 +766,11 @@ class _Agent_DetailState extends State<Agent_Detail> {
                             Padding(padding: const EdgeInsets.only(top: 5,left: 5),
                               child: Row(
                                 children: [
-                                  Icon(Icons.star,color: Colors.yellowAccent,),
-                                  Icon(Icons.star,color: Colors.yellowAccent,),
-                                  Icon(Icons.star,color: Colors.yellowAccent,),
-                                  Icon(Icons.star,color: Colors.yellowAccent,),
-                                  Icon(Icons.star,color: Colors.yellowAccent,),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
                                 ],
                               ),
                             ),
@@ -1060,121 +833,157 @@ class _Agent_DetailState extends State<Agent_Detail> {
                       ],
                     ),
                   ),
+                  SizedBox(height: 5,),
                   Container(
-                    height: screenSize.height*0.33,
                     width: double.infinity,
-                    margin: const EdgeInsets.only(left: 18,right: 14,top: 20),
+                    margin: const EdgeInsets.only(left: 18, right: 14, top: 20),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(8.0),
+                      borderRadius: BorderRadius.circular(8.0),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.grey,
-                          offset: const Offset(
-                            0.5,
-                            0.5,
-                          ),
+                          offset: Offset(0.5, 0.5),
                           blurRadius: 0.5,
                           spreadRadius: 0.3,
-                        ), //BoxShadow
+                        ),
                         BoxShadow(
                           color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
+                          offset: Offset(0.0, 0.0),
                           blurRadius: 0.0,
                           spreadRadius: 0.0,
-                        ), //BoxShadow
+                        ),
                       ],
                     ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 5,top: 5,right: 0),
-                              child: Text("Regulatory Information  ",style: TextStyle(
-                                  fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                              ),textAlign: TextAlign.left,),
-                            ),
-                            Text("")
-                          ],
+                        const Text(
+                          "Regulatory Information",
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
                         ),
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 5,top: 5),
-                              child: Text("Reference:",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                            Padding(padding: const EdgeInsets.only(left: 65,top: 5),
-                              child: Text(productModels!.data!.regulatoryInfo!.reference.toString(),style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                            Padding(padding: const EdgeInsets.only(left: 10,top: 5),
-                              child: Text("Listed:",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                           /* Padding(padding: const EdgeInsets.only(left: 10,top: 5),
-                              child: Text(productModels!.data!.regulatoryInfo!.listed.toString(),style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),*/
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 5,top: 5),
-                              child: Text("Brocker License:",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                            Padding(padding: const EdgeInsets.only(left: 27,top: 5),
-                              child: Text(productModels!.data!.regulatoryInfo!.brokerLicense.toString(),style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                            Padding(padding: const EdgeInsets.only(left: 15,top: 5),
-                              child: Text("Agent Licence:",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                            Padding(padding: const EdgeInsets.only(left: 10,top: 5),
-                              child: Text(productModels!.data!.regulatoryInfo!.agentLicense.toString(),style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
+                        const SizedBox(height: 10),
 
-                          ],
+                        // Info Rows
+                        _buildInfoRow("DLD Permit Number:",
+                            productModels!.data!.regulatoryInfo!.dldPermitNumber.toString()
                         ),
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 5,top: 5),
-                              child: Text("OLD Permit Number:",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                            Padding(padding: const EdgeInsets.only(left: 1,top: 5),
-                              child: Text(productModels!.data!.regulatoryInfo!.dldPermitNumber.toString(),style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
+                        _buildInfoRow("DED",
+                            productModels!.data!.regulatoryInfo!.ded.toString()
+                        ),
+                        _buildInfoRow("RERA",
+                            productModels!.data!.regulatoryInfo!.rera.toString()
+                        ),
+                        _buildInfoRow("BRN",
+                            productModels!.data!.regulatoryInfo!.brn.toString()
+                        ),
 
-                          ],
+                        const SizedBox(height: 5),
+
+                        // Logo and label
+                        Center(
+                          child: Column(
+                            children: [
+                              ListView.builder(
+                                padding: const EdgeInsets.all(0),
+                                shrinkWrap: true,
+                                //scrollDirection: Axis.vertical,
+                                physics: const ScrollPhysics(),
+                                itemCount: productModels?.data?.qr?.length ?? 0,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return  CachedNetworkImage(imageUrl:productModels!.data!.qr![index].qrUrl.toString() ,
+                                    height: 120,);
+                                },
+                              ),
+                              const SizedBox(height: 6),
+                              const Text("DLD Permit Number", style: TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
                         ),
-                        Row(
-                          children: [
-                            Padding(padding: const EdgeInsets.only(left: 5,top: 5),
-                              child: Text("Zone Name:",style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13
-                              ),),),
-                            Padding(padding: const EdgeInsets.only(left: 1,top: 5),
-                              child: Text(productModels!.data!.regulatoryInfo!.zoneName.toString(),overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  letterSpacing: 0.5,fontSize: 13,
-                                ),),),
-                          ],
-                        ),
-                        Container(
-                          margin: const EdgeInsets.only(top: 10),
-                          height: screenSize.height*0.1,
-                          width: 110,
-                          // color: Colors.grey,
-                          child: Image.asset("assets/images/dld.png",fit: BoxFit.fill,),
-                        ),
-                        Padding(padding: const EdgeInsets.only(top: 10),
-                          child: Text("OLD Permit Number",style: TextStyle(fontWeight: FontWeight.bold),),)
                       ],
                     ),
                   ),
+                  /* Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(left: 18, right: 14, top: 20),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: Offset(0.5, 0.5),
+                          blurRadius: 0.5,
+                          spreadRadius: 0.3,
+                        ),
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Left Side: Title + Info
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Regulatory Information",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                spacing: 20,
+                                runSpacing: 8,
+                                children: const [
+                                  Text("Reference:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("Listed:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("Broker License:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("Agent License:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("OLD Permit Number:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("Zone Name:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        // Right Side: DLD Image
+                        Column(
+                         // crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 0),
+                              child: Image.asset(
+                                "assets/images/dld.png",
+                                height: screenSize.height * 0.1,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                              Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 0),
+                              child: const Text(
+                                "OLD Permit Number",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),*/
+                  SizedBox(height: 5,),
                   Container(
                     height: 30,
                     width: double.infinity,
@@ -1185,14 +994,19 @@ class _Agent_DetailState extends State<Agent_Detail> {
                     ),),
                   ),
                   SizedBox(
-                    height: 250, // Adjust height based on card size
+                    height: 220,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: productModels?.data?.recommendedProperties?.length ?? 0,
                       itemBuilder: (context, index) {
+                        final property = productModels!.data!.recommendedProperties![index];
+                        final imageUrl = (property.media?.isNotEmpty ?? false)
+                            ? property.media!.first.originalUrl.toString()
+                            : "";
+
                         return Container(
-                          width: 200, // Adjust width for horizontal layout
-                          margin: EdgeInsets.symmetric(horizontal: 8),
+                          width: 200,
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
                           child: Card(
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                             elevation: 4,
@@ -1202,16 +1016,22 @@ class _Agent_DetailState extends State<Agent_Detail> {
                                 Stack(
                                   children: [
                                     ClipRRect(
-                                      borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                                      child: Image.network(
-                                        productModels!.data!.recommendedProperties![index].media!.first.originalUrl.toString(),
+                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                                      child: imageUrl.isNotEmpty
+                                          ? Image.network(
+                                        imageUrl,
                                         height: 120,
                                         width: double.infinity,
                                         fit: BoxFit.cover,
+                                      )
+                                          : Container(
+                                        height: 120,
+                                        width: double.infinity,
+                                        color: Colors.grey.shade300,
+                                        child: const Center(child: Icon(Icons.image_not_supported)),
                                       ),
                                     ),
-
-                                    Positioned(
+                                    const Positioned(
                                       top: 8,
                                       right: 8,
                                       child: Icon(Icons.favorite_border, color: Colors.red),
@@ -1219,30 +1039,32 @@ class _Agent_DetailState extends State<Agent_Detail> {
                                   ],
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.all(8),
+                                  padding: const EdgeInsets.all(8),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        productModels!.data!.recommendedProperties![index].price.toString()
-                                        ,style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                        "${property.price} AED",
+                                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                       ),
-                                      SizedBox(height: 4),
+                                      const SizedBox(height: 4),
                                       Row(
                                         children: [
-                                          Icon(Icons.bed, size: 16, color: Colors.red),
-                                          SizedBox(width: 4),
-                                          Text("${productModels!.data!.recommendedProperties![index].bedrooms} beds"),
-                                          SizedBox(width: 8),
-                                          Icon(Icons.square_foot, size: 16, color: Colors.red),
-                                          SizedBox(width: 4),
-                                          Text("${productModels!.data!.recommendedProperties![index].squareFeet} sqft"),
+                                          const Icon(Icons.bed, size: 16, color: Colors.red),
+                                          const SizedBox(width: 4),
+                                          Text("${property.bedrooms} beds"),
+                                          const SizedBox(width: 8),
+                                          const Icon(Icons.square_foot, size: 16, color: Colors.red),
+                                          const SizedBox(width: 4),
+                                          Text("${property.squareFeet} sqft"),
                                         ],
                                       ),
-                                      SizedBox(height: 4),
+                                      const SizedBox(height: 4),
                                       Text(
-                                        "${productModels!.data!.recommendedProperties![index].location} ",
-                                        style: TextStyle(fontSize: 12, color: Colors.black),
+                                        property.location ?? "",
+                                        style: const TextStyle(fontSize: 12, color: Colors.black),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ],
                                   ),
@@ -1255,11 +1077,28 @@ class _Agent_DetailState extends State<Agent_Detail> {
                     ),
                   ),
                   SizedBox(
-                    height: 10,
-                  )
+                    height: 10,),
+
                 ]
             )
         )
+    );
+  }
+  Widget _buildInfoRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 130,
+            child: Text("$title:", style: const TextStyle(fontSize: 13, letterSpacing: 0.5)),
+          ),
+          Expanded(
+            child: Text(value, style: const TextStyle(fontSize: 13, letterSpacing: 0.5)),
+          ),
+        ],
+      ),
     );
   }
   Container buildMyNavBar(BuildContext context) {
@@ -1464,6 +1303,25 @@ class _Agent_DetailState extends State<Agent_Detail> {
       ),
     );
   }
+}
+BoxDecoration _iconBoxDecoration() {
+  return BoxDecoration(
+    borderRadius: BorderRadius.circular(20),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.withOpacity(0.3),
+        blurRadius: 2,
+        spreadRadius: 0.1,
+        offset: const Offset(0, 1),
+      ),
+      const BoxShadow(
+        color: Colors.white,
+        offset: Offset(0.0, 0.0),
+        blurRadius: 0.0,
+        spreadRadius: 0.0,
+      ),
+    ],
+  );
 }
 class Page1 extends StatelessWidget {
   const Page1({super.key});

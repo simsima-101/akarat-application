@@ -39,11 +39,14 @@ class Data {
   String? purpose;
   String? propertyType;
   String? agent;
+  Null? latitude;
+  Null? longitude;
   int? agentId;
   String? agentImage;
+  String? postedOn;
   List<Media>? media;
   List<Qr>? qr;
-  List<Floor>? floor;
+  Null? floor;
   RegulatoryInfo? regulatoryInfo;
 
   Data(
@@ -63,8 +66,11 @@ class Data {
         this.purpose,
         this.propertyType,
         this.agent,
+        this.latitude,
+        this.longitude,
         this.agentId,
         this.agentImage,
+        this.postedOn,
         this.media,
         this.qr,
         this.floor,
@@ -87,8 +93,11 @@ class Data {
     purpose = json['purpose'];
     propertyType = json['property_type'];
     agent = json['agent'];
+    latitude = json['latitude'];
+    longitude = json['longitude'];
     agentId = json['agent_id'];
     agentImage = json['agent_image'];
+    postedOn = json['posted_on'];
     if (json['media'] != null) {
       media = <Media>[];
       json['media'].forEach((v) {
@@ -101,12 +110,7 @@ class Data {
         qr!.add(new Qr.fromJson(v));
       });
     }
-    if (json['floor'] != null) {
-      floor = <Floor>[];
-      json['floor'].forEach((v) {
-        floor!.add(new Floor.fromJson(v));
-      });
-    }
+    floor = json['floor'];
     regulatoryInfo = json['regulatory_info'] != null
         ? new RegulatoryInfo.fromJson(json['regulatory_info'])
         : null;
@@ -130,17 +134,18 @@ class Data {
     data['purpose'] = this.purpose;
     data['property_type'] = this.propertyType;
     data['agent'] = this.agent;
+    data['latitude'] = this.latitude;
+    data['longitude'] = this.longitude;
     data['agent_id'] = this.agentId;
     data['agent_image'] = this.agentImage;
+    data['posted_on'] = this.postedOn;
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
     }
     if (this.qr != null) {
       data['qr'] = this.qr!.map((v) => v.toJson()).toList();
     }
-    if (this.floor != null) {
-      data['floor'] = this.floor!.map((v) => v.toJson()).toList();
-    }
+    data['floor'] = this.floor;
     if (this.regulatoryInfo != null) {
       data['regulatory_info'] = this.regulatoryInfo!.toJson();
     }
@@ -176,21 +181,6 @@ class Qr {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['qr_url'] = this.qrUrl;
-    return data;
-  }
-}
-class Floor {
-  String? floorUrl;
-
-  Floor({this.floorUrl});
-
-  Floor.fromJson(Map<String, dynamic> json) {
-    floorUrl = json['floor_url'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['floor_url'] = this.floorUrl;
     return data;
   }
 }

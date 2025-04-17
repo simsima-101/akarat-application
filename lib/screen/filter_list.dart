@@ -84,7 +84,9 @@ class FliterList extends StatelessWidget {
   @override
   void initState() {
     super.initState();
-    _rangeController = RangeController(start: 500.0, end: 10000.0);
+    _rangeController = RangeController(
+        start: start.toString(),
+        end: end.toString());
     _loadFavorites();
     readData();
     filterModel = widget.filterModel;
@@ -96,9 +98,8 @@ class FliterList extends StatelessWidget {
     late bool isSelected = true;
     double start = 3000;
     double end = 5000;
-    late SfRangeValues _values = SfRangeValues(1000.0, 5000.0);
-    late RangeController _rangeController =
-    RangeController(start: 1000.0, end: 5000.0);
+    SfRangeValues _values = SfRangeValues(3000 ,5000);
+    late RangeController _rangeController;
 
     @override
     void dispose() {
@@ -366,20 +367,6 @@ class FliterList extends StatelessWidget {
         'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
   }
 
-/*
-  Future<void> fetchProducts() async {
-    // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/properties'));
-    if (response.statusCode == 200) {
-      List<dynamic> jsonData = json.decode(response.body);
-      setState(() {
-        products = jsonData.map((data) => Product.fromJson(data)).toList();
-      });
-    } else {
-    }
-  }
-*/
-
 
   @override
   Widget build(BuildContext context) {
@@ -398,6 +385,56 @@ class FliterList extends StatelessWidget {
         child: Column(
          // mainAxisSize: MainAxisSize.min,
             children: <Widget>[
+              Stack(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: SizedBox(
+                      height: 50,
+                      width: double.infinity,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Back Button
+                          Container(
+                            margin: const EdgeInsets.only(left: 10),
+                            height: 35,
+                            width: 35,
+                            padding: const EdgeInsets.all(7),
+                            decoration: _iconBoxDecoration(),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => Filter(data: "Rent")));
+                              },
+                              child: Image.asset(
+                                "assets/images/ar-left.png",
+                                width: 15,
+                                height: 15,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+
+                          // Like Button
+                          Container(
+                            margin: const EdgeInsets.only(right: 10),
+                            height: 35,
+                            width: 35,
+                            padding: const EdgeInsets.all(7),
+                            decoration: _iconBoxDecoration(),
+                            child: Image.asset(
+                              "assets/images/lov.png",
+                              width: 15,
+                              height: 15,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               //Searchbar
               Padding(
                 padding: const EdgeInsets.only(top: 40, left: 20, right: 15),
@@ -485,675 +522,420 @@ class FliterList extends StatelessWidget {
                       ),
                       //buy
                       GestureDetector(
-                        onTap: (){
+                        onTap: () {
                           showModalBottomSheet(
                             context: context,
-                            shape: RoundedRectangleBorder(
+                            shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                             ),
                             isScrollControlled: true,
-
                             builder: (context) {
                               return StatefulBuilder(
-                                builder: (BuildContext context, StateSetter setModalState) {
-                                  return  Container(
-                                    height: screenSize.height*0.35,
+                                builder: (context, setModalState) {
+                                  return Container(
+                                    height: screenSize.height * 0.4,
                                     width: double.infinity,
-                                    color: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    decoration: const BoxDecoration(color: Colors.white),
                                     child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Row(
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(left: 8.0,top: 30),
-                                              child: Text("Purpose",textAlign: TextAlign.start,style: TextStyle(
-                                                  fontSize: 18,fontWeight: FontWeight.bold
-                                              ),),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: Text(""),
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: Text("Choose your purpose"),
-                                            ),
-                                            Text("")
-                                          ],
-                                        ),
-                                        Padding(
-                                            padding: const EdgeInsets.only(top: 0,left: 0,right: 10),
-                                            child: Container(
-                                              //color: Colors.grey,
-                                              height: 60,
-                                              child: ListView.builder(
-                                                scrollDirection: Axis.horizontal,
-                                                itemCount: _product.length,
-                                                itemBuilder: (context, index) {
-                                                  return GestureDetector(
-                                                    onTap: () {
-                                                      setModalState(() {
-                                                        selectedproduct = index;
-                                                        purpose = _product[index];
-                                                        propertyApi(purpose);
-                                                      });
-                                                      setState(() {}); // update main UI too
-                                                    },
-                                                    child: Container(
-                                                      alignment: Alignment.topLeft,
-                                                      // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                                                      margin: const EdgeInsets.only(left: 10,right: 3,top: 5,bottom: 5),
-                                                      //  width: screenSize.width * 0.25,
-                                                      // height: 20,
-                                                      padding: const EdgeInsets.only(top: 0,left: 14,right: 14),
-                                                      /* margin: EdgeInsets.symmetric(horizontal: 8),
-                                                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),*/
-                                                      decoration: BoxDecoration(
-                                                        color: selectedproduct == index ? Colors.blueAccent : Colors.white,
-                                                        borderRadius: BorderRadius.circular(6),
-                                                        //border: Border.all(color: Colors.grey),
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                            color: Colors.grey.withOpacity(0.5),
-                                                            offset: Offset(0, 2),
-                                                            blurRadius: 4,
-                                                            spreadRadius: 0,
-                                                          ),
-                                                          BoxShadow(
-                                                            color: Colors.white.withOpacity(0.8),
-                                                            offset: Offset(-4, -4),
-                                                            blurRadius: 8,
-                                                            spreadRadius: 2,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      child: Center(
-                                                        child: Text(
-                                                          _product[index],
-                                                          style: TextStyle(
-                                                            color: selectedproduct == index ? Colors.white : Colors.black,
-                                                            fontWeight: FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                            )
-                                        ),
-                                        Padding(
-                                            padding: const EdgeInsets.only(top: 5,left: 0,right: 10),
-                                            child: Container(
-                                              //color: Colors.grey,
-                                              height: 60,
-                                              child: ListView.builder(
-                                                scrollDirection: Axis.horizontal,
-                                                itemCount: propertyTypeModel?.availability?.length ?? 0,
-                                                itemBuilder: (context, index) {
-                                                  return GestureDetector(
-                                                    onTap: () {
-                                                      setModalState(() {
-                                                        selectedrent = index;
-                                                        rent = propertyTypeModel!.availability![index].toString();
-                                                        //propertyApi(purpose);
-                                                      });
-                                                      setState(() {}); // update main UI too
-                                                    },
-                                                    child: Container(
-                                                      alignment: Alignment.topLeft,
-                                                      // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                                                      margin: const EdgeInsets.only(left: 10,right: 3,top: 5,bottom: 5),
-                                                      //  width: screenSize.width * 0.25,
-                                                      // height: 20,
-                                                      padding: const EdgeInsets.only(top: 0,left: 14,right: 14),
-                                                      /* margin: EdgeInsets.symmetric(horizontal: 8),
-                                                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),*/
-                                                      decoration: BoxDecoration(
-                                                        color: selectedrent == index ? Colors.blueAccent : Colors.white,
-                                                        borderRadius: BorderRadius.circular(6),
-                                                        //border: Border.all(color: Colors.grey),
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                            color: Colors.grey.withOpacity(0.5),
-                                                            offset: Offset(0, 2),
-                                                            blurRadius: 4,
-                                                            spreadRadius: 0,
-                                                          ),
-                                                          BoxShadow(
-                                                            color: Colors.white.withOpacity(0.8),
-                                                            offset: Offset(-4, -4),
-                                                            blurRadius: 8,
-                                                            spreadRadius: 2,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      child: Center(
-                                                        child: Text(
-                                                          propertyTypeModel!.availability![index].toString(),
-                                                          style: TextStyle(
-                                                            color: selectedrent == index ? Colors.white : Colors.black,
-                                                            fontWeight: FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                            )
-                                        ),
-                                        GestureDetector(
-                                          onTap: (){
-                                            showResult();
-                                            // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
-                                          },
-                                          child:  Padding(
-                                            padding: const EdgeInsets.only(top: 10.0,left: 15,bottom: 15,right: 15),
-                                            child:   Container(
-                                              // color: Colors.red,
-                                              width: screenSize.width*0.9,
-                                              height: 45,
-                                              // color: Colors.red,
-                                              padding: const EdgeInsets.only(top: 10,left: 0),
-                                              decoration: BoxDecoration(
-                                                color: Colors.red,
-                                                borderRadius: BorderRadiusDirectional.circular(6.0),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.grey,
-                                                    offset: const Offset(
-                                                      0.3,
-                                                      0.3,
-                                                    ),
-                                                    blurRadius: 0.3,
-                                                    spreadRadius: 0.3,
-                                                  ), //BoxShadow
-                                                  BoxShadow(
-                                                    color: Colors.white,
-                                                    offset: const Offset(0.0, 0.0),
-                                                    blurRadius: 0.0,
-                                                    spreadRadius: 0.0,
-                                                  ), //BoxShadow
-                                                ],),
-                                              child: Text("Showing Results",style: TextStyle(
+                                        const SizedBox(height: 10),
+                                        const Text("Purpose", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                        const SizedBox(height: 4),
+                                        const Text("Choose your purpose"),
+                                        const SizedBox(height: 10),
 
-                                                  color: Colors.white,letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 15
-                                              ),textAlign: TextAlign.center,),
+                                        // Purpose list
+                                        SizedBox(
+                                          height: 50,
+                                          child: ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: _product.length,
+                                            itemBuilder: (context, index) {
+                                              bool isSelected = selectedproduct == index;
+                                              return GestureDetector(
+                                                onTap: () {
+                                                  setModalState(() {
+                                                    selectedproduct = index;
+                                                    purpose = _product[index];
+                                                    propertyApi(purpose);
+                                                  });
+                                                  setState(() {});
+                                                },
+                                                child: Container(
+                                                  margin: const EdgeInsets.only(right: 10),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                                  decoration: BoxDecoration(
+                                                    color: isSelected ? Colors.blueAccent : Colors.white,
+                                                    borderRadius: BorderRadius.circular(6),
+                                                    boxShadow: [
+                                                      BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2)),
+                                                    ],
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      _product[index],
+                                                      style: TextStyle(
+                                                        color: isSelected ? Colors.white : Colors.black,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        const SizedBox(height: 15),
+                                        // Availability list
+                                        SizedBox(
+                                          height: 50,
+                                          child: ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: propertyTypeModel?.availability?.length ?? 0,
+                                            itemBuilder: (context, index) {
+                                              bool isSelected = selectedrent == index;
+                                              final label = propertyTypeModel!.availability![index].toString();
+                                              return GestureDetector(
+                                                onTap: () {
+                                                  setModalState(() {
+                                                    selectedrent = index;
+                                                    rent = label;
+                                                  });
+                                                  setState(() {});
+                                                },
+                                                child: Container(
+                                                  margin: const EdgeInsets.only(right: 10),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                                  decoration: BoxDecoration(
+                                                    color: isSelected ? Colors.blueAccent : Colors.white,
+                                                    borderRadius: BorderRadius.circular(6),
+                                                    boxShadow: [
+                                                      BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2)),
+                                                    ],
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      label,
+                                                      style: TextStyle(
+                                                        color: isSelected ? Colors.white : Colors.black,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                       // const Spacer(),
+                                        SizedBox(height: 10,),
+                                        // Submit Button
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                            onPressed: showResult,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            ),
+                                            child: const Text(
+                                              "Showing Results",
+                                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
                                   );
-
                                 },
                               );
                             },
                           );
                         },
-                        child: Padding (
-                          padding: const EdgeInsets.only(top: 3,bottom: 3,right: 10),
-                          child:  Container(
-                            width: 70,
-                            height: 10,
-                            padding: const EdgeInsets.only(left: 0,top: 10),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.rectangle,
-                              border: Border.all(
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],),
-                            child:
-                            Text("Rent",style: TextStyle(
-                                fontWeight: FontWeight.bold
-                            ),textAlign: TextAlign.center,),
-
-                            // Icon(Icons.keyboard_arrow_down,color: Colors.black,)
-
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+                          margin: const EdgeInsets.only(right: 10),
+                          decoration: BoxDecoration(
+                            border: Border.all(width: 1),
+                            borderRadius: BorderRadius.circular(6),
+                            boxShadow: [
+                              BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 2, offset: const Offset(0.5, 0.5)),
+                            ],
+                            color: Colors.white,
                           ),
+                          child: const Text("Rent", style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ),
                       //type
                       GestureDetector(
-                        onTap: (){
+                        onTap: () {
                           showModalBottomSheet(
                             context: context,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(20)),
-                            ),
                             isScrollControlled: true,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                            ),
                             builder: (context) {
                               return StatefulBuilder(
-                                builder: (BuildContext context, StateSetter setModalState) {
+                                builder: (context, setModalState) {
                                   return Container(
-                                      height: screenSize.height*0.3,
-                                      width: double.infinity,
-                                      color: Colors.white,
-                                      child:  Column(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Padding(
-                                                  padding: const EdgeInsets.only(top: 25.0,left: 20,bottom: 0),
-                                                  // child:  Text(purpose,
-                                                  child:  Text("Property Type",
-                                                    style: TextStyle(
-                                                        color: Colors.black,fontSize: 16.0,
-                                                        fontWeight: FontWeight.bold,
-                                                        letterSpacing: 0.5),
-                                                    textAlign: TextAlign.left,)
-                                              ),
-                                            ],
-                                          ),
-                                          Container(
-                                            margin: const EdgeInsets.only(left: 15,right: 5,top: 20,bottom: 20),
-                                            height: screenSize.height*0.12,
-                                            //  width: screenSize.width*0.5,
-                                            // color: Colors.grey,
-                                            child:  ListView.builder(
-                                              scrollDirection: Axis.horizontal,
-                                              physics: const ScrollPhysics(),
-                                              itemCount: propertyTypeModel?.data?.length ?? 0,
-                                              shrinkWrap: true,
-                                              itemBuilder: (context, index) {
-                                                return GestureDetector(
-                                                  onTap: (){
-                                                    setModalState(() {
-                                                      selectedtype = index;
-                                                      property_type = propertyTypeModel!.data![index].name.toString();
-                                                    });
-                                                    setState(() {
-                                                    });
-                                                  },
-                                                  child: Container(
-                                                    margin: const EdgeInsets.only(left: 8,right: 8,top: 5,bottom: 5),
-                                                    padding: const EdgeInsets.only(top: 5,left: 15,right: 15),
-                                                    decoration: BoxDecoration(
-                                                      color: selectedtype == index ? Color(0xFFEEEEEE): Colors.white,
-                                                      //color: Colors.white,
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: Colors.grey.withOpacity(0.5),
-                                                          offset: Offset(0, 2),
-                                                          blurRadius: 4,
-                                                          spreadRadius: 0,
-                                                        ),
-                                                        BoxShadow(
-                                                          color: Colors.white.withOpacity(0.8),
-                                                          offset: Offset(-4, -4),
-                                                          blurRadius: 8,
-                                                          spreadRadius: 2,
-                                                        ),
-                                                      ],
-                                                      borderRadius: BorderRadius.circular(8),
-                                                    ),
-                                                    child:   Column(
-                                                      children: [
-                                                        Padding(
-                                                          padding: const EdgeInsets.all(5.0),
-                                                          child: CachedNetworkImage(
-                                                            imageUrl: propertyTypeModel!.data![index].icon.toString(),height: 35,),
-                                                        ),
-                                                        Padding(
-                                                          padding: const EdgeInsets.all(5.0),
-                                                          child: Text(propertyTypeModel!.data![index].name.toString(),
-                                                            style: TextStyle(
-                                                                color: selectedtype == index ? Colors.black : Colors.black,
-                                                                letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 16),
-                                                            textAlign: TextAlign.center,),
-                                                        ),
-                                                      ],
-                                                    ),
+                                    height: screenSize.height * 0.35,
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                                    decoration: const BoxDecoration(color: Colors.white),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          "Property Type",
+                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                                        ),
+                                        const SizedBox(height: 15),
 
+                                        // Property Type Cards
+                                        SizedBox(
+                                          height: screenSize.height * 0.12,
+                                          child: ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: propertyTypeModel?.data?.length ?? 0,
+                                            itemBuilder: (context, index) {
+                                              final item = propertyTypeModel!.data![index];
+                                              final isSelected = selectedtype == index;
 
-                                                  ),
-                                                );
-                                                // return Amenitiescardscreen(amenities: amenities[index]);
-                                              },
-                                            ),
-                                          ),
-                                          GestureDetector(
-                                            onTap: (){
-                                              showResult();
-                                              // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
-                                            },
-                                            child:  Padding(
-                                              padding: const EdgeInsets.only(top: 5.0,left: 15,bottom: 15,right: 15),
-                                              child:   Container(
-                                                // color: Colors.red,
-                                                width: screenSize.width*0.9,
-                                                height: 45,
-                                                // color: Colors.red,
-                                                padding: const EdgeInsets.only(top: 10,left: 0),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.red,
-                                                  borderRadius: BorderRadiusDirectional.circular(6.0),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.grey,
-                                                      offset: const Offset(
-                                                        0.3,
-                                                        0.3,
+                                              return GestureDetector(
+                                                onTap: () {
+                                                  setModalState(() {
+                                                    selectedtype = index;
+                                                    property_type = item.name.toString();
+                                                  });
+                                                  setState(() {});
+                                                },
+                                                child: Container(
+                                                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                                                  decoration: BoxDecoration(
+                                                    color: isSelected ? const Color(0xFFEEEEEE) : Colors.white,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.grey.withOpacity(0.3),
+                                                        blurRadius: 4,
+                                                        offset: const Offset(0, 2),
                                                       ),
-                                                      blurRadius: 0.3,
-                                                      spreadRadius: 0.3,
-                                                    ), //BoxShadow
-                                                    BoxShadow(
-                                                      color: Colors.white,
-                                                      offset: const Offset(0.0, 0.0),
-                                                      blurRadius: 0.0,
-                                                      spreadRadius: 0.0,
-                                                    ), //BoxShadow
-                                                  ],),
-                                                child: Text("Showing Results",style: TextStyle(
+                                                    ],
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      CachedNetworkImage(
+                                                        imageUrl: item.icon.toString(),
+                                                        height: 35,
+                                                      ),
+                                                      const SizedBox(height: 6),
+                                                      Text(
+                                                        item.name.toString(),
+                                                        style: TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 14,
+                                                          color: isSelected ? Colors.black : Colors.black87,
+                                                        ),
+                                                        textAlign: TextAlign.center,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
 
-                                                    color: Colors.white,letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 15
-                                                ),textAlign: TextAlign.center,),
+                                        const SizedBox(height: 10),
+
+
+                                        // Confirm Button
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                            onPressed: showResult,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                            ),
+                                            child: const Text(
+                                              "Showing Results",
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                                letterSpacing: 0.5,
                                               ),
                                             ),
                                           ),
-                                        ],
-                                      )  //property type
-
+                                        ),
+                                      ],
+                                    ),
                                   );
-
                                 },
                               );
                             },
-
-
                           );
                         },
-                        child: Padding (
-                          padding: const EdgeInsets.only(top: 3,bottom: 3,right: 10),
-                          child:  Container(
-                            width: 120,
-                            height: 10,
-                            padding: const EdgeInsets.only(left: 0,top: 10),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.rectangle,
-                              border: Border.all(
-                                width: 1,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          margin: const EdgeInsets.only(right: 10),
+                          decoration: BoxDecoration(
+                            border: Border.all(width: 1),
+                            borderRadius: BorderRadius.circular(6),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.3),
+                                blurRadius: 3,
+                                offset: const Offset(0.5, 0.5),
                               ),
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],),
-                            child:
-                            Text(" All Residential",style: TextStyle(
-                                fontWeight: FontWeight.bold
-                            ),textAlign: TextAlign.center,),
-
+                            ],
+                          ),
+                          child: const Text(
+                            "All Residential",
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
                       //Price Range
                       GestureDetector(
-                        onTap: (){
+                        onTap: () {
                           showModalBottomSheet(
                             context: context,
-                            shape: RoundedRectangleBorder(
+                            isScrollControlled: true,
+                            shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                             ),
-                            isScrollControlled: true,
-                            builder: (_) => Container(
-                              height: screenSize.height*0.3,
-                              width: double.infinity,
-                              color: Colors.white,
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Padding(padding: const EdgeInsets.only(top: 20.0,left: 20,bottom: 15),
-                                        child:  Text("Price range",
-                                          style: TextStyle(
-                                            color: Colors.black,fontSize: 16.0,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 0.5,
-                                          ),
-                                          textAlign: TextAlign.left,),
-                                      ),
-                                    ],
-                                  ),
-                                  Padding(
-                                      padding: const EdgeInsets.only(top: 0,left: 20,right: 10),
-                                      child: Row(
-                                          spacing: 15,
+                            builder: (context) {
+                              return StatefulBuilder(
+                                builder: (context, setModalState) {
+                                  return Container(
+                                    height: screenSize.height * 0.38,
+                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                                    decoration: const BoxDecoration(color: Colors.white),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          "Price range",
+                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(height: 12),
+
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Container(
-                                                width: screenSize.width*0.38,
-                                                height: 40,
-                                                padding: const EdgeInsets.only(top: 8,left: 8),
-                                                decoration: BoxDecoration(
-                                                  borderRadius: BorderRadiusDirectional.circular(6.0),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.grey,
-                                                      offset: const Offset(
-                                                        0.3,
-                                                        0.3,
-                                                      ),
-                                                      blurRadius: 0.3,
-                                                      spreadRadius: 0.3,
-                                                    ), //BoxShadow
-                                                    BoxShadow(
-                                                      color: Colors.white,
-                                                      offset: const Offset(0.0, 0.0),
-                                                      blurRadius: 0.0,
-                                                      spreadRadius: 0.0,
-                                                    ), //BoxShadow
-                                                  ],
-                                                ),
-                                                child: Text(_values.start.toStringAsFixed(0),style: TextStyle(
-                                                    fontWeight: FontWeight.bold,fontSize: 18 ))
-
-                                            ),
-
-                                            Padding(padding: const EdgeInsets.only(top: 5),
-                                              child:  Text("to",
-                                                style: TextStyle(
-                                                    color: Colors.black,fontSize: 15.0),
-                                                textAlign: TextAlign.left,),
-                                            ),
-
-                                            Container(
-                                                width: screenSize.width*0.38,
-                                                height: 40,
-                                                padding: const EdgeInsets.only(top: 8,left: 8),
-                                                decoration: BoxDecoration(
-                                                  borderRadius: BorderRadiusDirectional.circular(6.0),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.grey,
-                                                      offset: const Offset(
-                                                        0.3,
-                                                        0.3,
-                                                      ),
-                                                      blurRadius: 0.3,
-                                                      spreadRadius: 0.3,
-                                                    ), //BoxShadow
-                                                    BoxShadow(
-                                                      color: Colors.white,
-                                                      offset: const Offset(0.0, 0.0),
-                                                      blurRadius: 0.0,
-                                                      spreadRadius: 0.0,
-                                                    ), //BoxShadow
-                                                  ],
-                                                ),
-                                                child: Text(_values.end.toStringAsFixed(0),style: TextStyle(
-                                                    fontWeight: FontWeight.bold ,fontSize: 18))
-                                            ),
-                                          ]
-                                      )
-                                  ),
-                                  //rangeslider
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 10),
-                                    child: SfRangeSelectorTheme(
-                                      data: SfRangeSelectorThemeData(
-                                        tooltipBackgroundColor: Colors.black,
-                                        tooltipTextStyle: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
+                                            _rangeDisplayBox(_values.start.toStringAsFixed(0)),
+                                            const Text("to", style: TextStyle(fontSize: 15)),
+                                            _rangeDisplayBox(_values.end.toStringAsFixed(0)),
+                                          ],
                                         ),
-                                      ),
-                                      child: SfRangeSelector(
-                                        min: 500.0,
-                                        max: 10000.0,
-                                        interval: 100,
-                                        activeColor: Colors.black,
-                                        inactiveColor: Color(0x80E0E0E0),
-                                        enableTooltip: true,
-                                        shouldAlwaysShowTooltip: true,
-                                        initialValues: _values,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _values=SfRangeValues(value.start, value.end);
-                                            min_price=value.start.toStringAsFixed(0);
-                                            max_price=value.end.toStringAsFixed(0);
-                                          });
 
-                                        },
-                                        child: SizedBox(
-                                          height: 60,
-                                          width: double.infinity,
-                                          child: SfCartesianChart(
-                                            backgroundColor: Colors.transparent,
-                                            primaryXAxis: NumericAxis(isVisible: false),
-                                            primaryYAxis: NumericAxis(isVisible: false),
-                                            plotAreaBorderWidth: 0,
-                                            plotAreaBackgroundColor: Colors.transparent,
-                                            series: <ColumnSeries<Data, double>>[
-                                              ColumnSeries<Data, double>(
-                                                dataSource: chartData,
-                                                xValueMapper: (Data sales, _) => sales.x,
-                                                yValueMapper: (Data sales, _) => sales.y,
-                                                pointColorMapper: (_, __) => const Color.fromARGB(255, 37, 117, 212),
-                                                animationDuration: 0,
+                                        const SizedBox(height: 16),
+
+                                        SfRangeSelectorTheme(
+                                          data: SfRangeSelectorThemeData(
+                                            tooltipBackgroundColor: Colors.black,
+                                            tooltipTextStyle: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          child: SfRangeSelector(
+                                            min: 500,
+                                            max: 10000,
+                                            interval: 1000,
+                                            activeColor: Colors.black,
+                                            inactiveColor: const Color(0x80F1EEEE),
+                                            enableTooltip: true,
+                                            shouldAlwaysShowTooltip: true,
+                                            initialValues: _values,
+                                            tooltipTextFormatterCallback: (actualValue, _) =>
+                                            'AED ${actualValue.toInt()}',
+                                            onChanged: (value) {
+                                              setModalState(() {
+                                                _values = SfRangeValues(value.start, value.end);
+                                                min_price = value.start.toStringAsFixed(0);
+                                                max_price = value.end.toStringAsFixed(0);
+                                              });
+                                            },
+                                            child: SizedBox(
+                                              height: 60,
+                                              width: double.infinity,
+                                              child: SfCartesianChart(
+                                                backgroundColor: Colors.transparent,
+                                                plotAreaBorderColor: Colors.transparent,
+                                                margin: const EdgeInsets.all(0),
+                                                primaryXAxis: NumericAxis(minimum: 500, maximum: 10000, isVisible: false),
+                                                primaryYAxis: NumericAxis(isVisible: false),
+                                                plotAreaBorderWidth: 0,
+                                                plotAreaBackgroundColor: Colors.transparent,
+                                                series: <ColumnSeries<Data, double>>[
+                                                  ColumnSeries<Data, double>(
+                                                    dataSource: chartData,
+                                                    xValueMapper: (Data sales, _) => sales.x,
+                                                    yValueMapper: (Data sales, _) => sales.y,
+                                                    pointColorMapper: (_, __) => const Color.fromARGB(255, 37, 117, 212),
+                                                    animationDuration: 0,
+                                                    borderWidth: 0,
+                                                  ),
+                                                ],
                                               ),
-                                            ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: (){
-                                      // showResult();
-                                      // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
-                                    },
-                                    child:  Padding(
-                                      padding: const EdgeInsets.only(top: 5.0,left: 15,bottom: 5,right: 15),
-                                      child:   Container(
-                                        // color: Colors.red,
-                                        width: screenSize.width*0.9,
-                                        height: 45,
-                                        // color: Colors.red,
-                                        padding: const EdgeInsets.only(top: 10,left: 0),
-                                        decoration: BoxDecoration(
-                                          color: Colors.red,
-                                          borderRadius: BorderRadiusDirectional.circular(6.0),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey,
-                                              offset: const Offset(
-                                                0.3,
-                                                0.3,
-                                              ),
-                                              blurRadius: 0.3,
-                                              spreadRadius: 0.3,
-                                            ), //BoxShadow
-                                            BoxShadow(
-                                              color: Colors.white,
-                                              offset: const Offset(0.0, 0.0),
-                                              blurRadius: 0.0,
-                                              spreadRadius: 0.0,
-                                            ), //BoxShadow
-                                          ],),
-                                        child: Text("Showing Results",style: TextStyle(
 
-                                            color: Colors.white,letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 15
-                                        ),textAlign: TextAlign.center,),
-                                      ),
+                                        const SizedBox(height: 20),
+
+                                        SizedBox(
+                                          width: double.infinity,
+                                          height: 45,
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              // showResult();
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                            ),
+                                            child: const Text(
+                                              "Showing Results",
+                                              style: TextStyle(
+                                                  color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                                  );
+                                },
+                              );
+                            },
                           );
                         },
-                        child: Padding (
-                          padding: const EdgeInsets.only(top: 3,bottom: 3,right: 10),
-                          child:  Container(
-                            width: 100,
-                            height: 10,
-                            padding: const EdgeInsets.only(left: 0,top: 10),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.rectangle,
-                              border: Border.all(
-                                width: 1,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          margin: const EdgeInsets.only(right: 10),
+                          decoration: BoxDecoration(
+                            border: Border.all(width: 1),
+                            borderRadius: BorderRadius.circular(6),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.3),
+                                blurRadius: 2,
+                                offset: const Offset(0.5, 0.5),
                               ),
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],),
-                            child:
-                            Text(" Price Range",style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),textAlign: TextAlign.center,),
-
+                            ],
                           ),
+                          child: const Text("Price Range", style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ),
                       //bedroom
@@ -1621,52 +1403,6 @@ class FliterList extends StatelessWidget {
                 ),
 
               ),
-              //toggle
-             /* Padding(
-                padding: const EdgeInsets.only(
-                    left: 15.0, right: 15.0, top: 20, bottom: 0),
-                child: Container(
-                  width: screenSize.width*1,
-                  height: 32,
-                  padding: const EdgeInsets.only(top: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        offset: Offset(4, 4),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                      ),
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.8),
-                        offset: Offset(-4, -4),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Row(
-                    spacing: screenSize.width*0.2,
-                    children: [
-                      Text("    Show verified properties first",style: TextStyle(
-                        letterSpacing: 0.5
-                      ),),
-
-                      SlidingSwitch(value: true,
-                          onChanged: (value) {
-                          },
-                          onTap: (){},
-                          onDoubleTap: (){},
-                          onSwipe: (){},
-                      height: 20,
-                      width: 45,colorOn: Colors.blue,
-                      colorOff: Colors.grey,contentSize: 10,textOff: "",textOn: "",)
-                    ],
-                  ),
-                ),
-              ),*/
               //filter
               Padding(
                   padding: const EdgeInsets.only(top: 5,left: 15,right: 0,bottom: 15),
@@ -1714,7 +1450,7 @@ class FliterList extends StatelessWidget {
                                 _ftype[index],
                                 style: TextStyle(
                                   color: selectedIndex == index ? Colors.white : Colors.black,
-                                  letterSpacing: 0.5,fontSize: 16,
+                                  letterSpacing: 0.5,fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 textAlign: TextAlign.center,
@@ -1967,7 +1703,7 @@ class FliterList extends StatelessWidget {
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 60,
+      height: 40,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -2064,6 +1800,44 @@ class FliterList extends StatelessWidget {
       ),
     );
   }
+}
+BoxDecoration _iconBoxDecoration() {
+  return BoxDecoration(
+    borderRadius: BorderRadius.circular(20),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.withOpacity(0.3),
+        blurRadius: 2,
+        spreadRadius: 0.1,
+        offset: const Offset(0, 1),
+      ),
+      const BoxShadow(
+        color: Colors.white,
+        offset: Offset(0.0, 0.0),
+        blurRadius: 0.0,
+        spreadRadius: 0.0,
+      ),
+    ],
+  );
+}
+Widget _rangeDisplayBox(String value) {
+  return Container(
+    width: 100,
+    height: 40,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(6),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.3),
+          offset: const Offset(0.5, 0.5),
+          blurRadius: 2,
+        ),
+      ],
+    ),
+    child: Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+  );
 }
 class SwitchExample extends StatefulWidget {
   const SwitchExample({super.key});

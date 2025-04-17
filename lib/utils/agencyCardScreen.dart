@@ -76,13 +76,10 @@ class Agencycardscreen extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
                             shape: BoxShape.rectangle,
-                            border: Border.all(
-                              width: 1,
-                            ),
-                            color: Colors.white,
+                            border: Border.all(width: 1,color: Color(0xFFE0E0E0)),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
+                                color: Colors.grey.withOpacity(0.2),
                                 offset: Offset(4, 4),
                                 blurRadius: 8,
                                 spreadRadius: 2,
@@ -98,7 +95,7 @@ class Agencycardscreen extends StatelessWidget {
                           ),
                           child: Text(
                             "${agencyModel.propertiesCount}  Properties",
-                            style: TextStyle(letterSpacing: 0.5, color: Colors.black),
+                            style: TextStyle(letterSpacing: 0.5, color: Colors.black,fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],

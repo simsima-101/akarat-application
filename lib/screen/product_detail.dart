@@ -104,78 +104,49 @@ class _Product_DetailState extends State<Product_Detail> {
             child: Column(
                 children: <Widget>[
                   Stack(
-                    // alignment: Alignment.topCenter,
                     children: <Widget>[
                       Padding(
-                        padding: EdgeInsets.only(top: 0),
+                        padding: const EdgeInsets.only(top: 0),
                         child: SizedBox(
                           height: 50,
                           width: double.infinity,
-                          // color: Color(0xFFEEEEEE),
-                          child:   Row(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+                              // Back Button
                               Container(
-                                margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
+                                margin: const EdgeInsets.only(left: 10),
                                 height: 35,
                                 width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
+                                padding: const EdgeInsets.all(7),
+                                decoration: _iconBoxDecoration(),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+                                  },
+                                  child: Image.asset(
+                                    "assets/images/ar-left.png",
+                                    width: 15,
+                                    height: 15,
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
-                                child: Image.asset("assets/images/ar-left.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(left: 300,top: 5,bottom: 0,),
-                                height: 35,
-                                width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Image.asset("assets/images/lov.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,),
-                                //child: Image(image: Image.asset("assets/images/share.png")),
                               ),
 
+                              // Like Button
+                              Container(
+                                margin: const EdgeInsets.only(right: 10),
+                                height: 35,
+                                width: 35,
+                                padding: const EdgeInsets.all(7),
+                                decoration: _iconBoxDecoration(),
+                                child: Image.asset(
+                                  "assets/images/lov.png",
+                                  width: 15,
+                                  height: 15,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -183,7 +154,7 @@ class _Product_DetailState extends State<Product_Detail> {
                     ],
                   ),
                   Container(
-                      height: screenSize.height*0.5,
+                      height: screenSize.height*0.55,
                       margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
                       child:  ListView.builder(
                         padding: const EdgeInsets.all(0),
@@ -201,7 +172,7 @@ class _Product_DetailState extends State<Product_Detail> {
 
                       )
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 25,),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                     // color: Colors.grey,
@@ -267,6 +238,9 @@ class _Product_DetailState extends State<Product_Detail> {
                           Text("  AED",style: TextStyle(
                               fontSize: 19,letterSpacing: 0.5
                           ),),
+                          Text("/${productModels!.data!.paymentPeriod}",style: TextStyle(
+                              fontSize: 16,letterSpacing: 0.5
+                          ),),
                         ],
                       )
                   ),
@@ -284,7 +258,7 @@ class _Product_DetailState extends State<Product_Detail> {
                             ),),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 3.0),
+                            padding: const EdgeInsets.only(left: 15.0),
                             child: Image.asset("assets/images/bath.png",height: 20),
                           ),
                           Padding(
@@ -294,7 +268,7 @@ class _Product_DetailState extends State<Product_Detail> {
                             ),),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 3.0),
+                            padding: const EdgeInsets.only(left: 15.0),
                             child: Image.asset("assets/images/messure.png",height: 20),
                           ),
                           Padding(
@@ -306,7 +280,7 @@ class _Product_DetailState extends State<Product_Detail> {
                         ],
                       )
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 10,),
                   Row(
                     children: [
                       Padding(
@@ -319,16 +293,16 @@ class _Product_DetailState extends State<Product_Detail> {
                       Text("")
                     ],
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 10,),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                     child:  Text(productModels!.data!.description.toString(),
                       textAlign: TextAlign.left,style: TextStyle(
-                          letterSpacing: 0.2,fontWeight: FontWeight.bold,color: Colors.black87
+                          letterSpacing: 0.4,color: Colors.black87
                       ),),
 
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 10,),
                   Row(
                     children: [
                       Padding(
@@ -337,10 +311,10 @@ class _Product_DetailState extends State<Product_Detail> {
                             fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                         ),),
                       ),
-                      Text(productModels!.data!.postedOn.toString())
+                       Text(productModels!.data!.postedOn.toString())
                     ],
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 15,),
                   Row(
                     children: [
                       Padding(
@@ -352,43 +326,51 @@ class _Product_DetailState extends State<Product_Detail> {
                       Text("")
                     ],
                   ),
-                  SizedBox(height: 5,),
-                  Container(
-                    margin: const EdgeInsets.only(left: 20, top: 0, right: 10),
-                    height: 30,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          Image.asset("assets/images/Residential__1.png", height: 15),
-                          const SizedBox(width: 6),
-                          Text(
-                            productModels!.data!.propertyType.toString(),
-                            style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
-                          ),
-                          const SizedBox(width: 12),
-                          Image.asset("assets/images/bed.png", height: 15),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${productModels!.data!.bedrooms} beds',
-                            style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
-                          ),
-                          const SizedBox(width: 12),
-                          Image.asset("assets/images/bath.png", height: 15),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${productModels!.data!.bathrooms} baths',
-                            style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
-                          ),
-                          const SizedBox(width: 12),
-                          Image.asset("assets/images/messure.png", height: 15),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${productModels!.data!.squareFeet} sqft',
-                            style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
-                          ),
-                        ],
-                      ),
+                  SizedBox(height: 15,),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 22.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Image.asset("assets/images/Residential__1.png", height: 17),
+                            const SizedBox(width: 6),
+                            Text(
+                              productModels!.data!.propertyType.toString(),
+                              style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            Text("")
+                          ],
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Row(
+                          children: [
+                            Image.asset("assets/images/bed.png", height: 17),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${productModels!.data!.bedrooms} beds',
+                              style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 12),
+                            Image.asset("assets/images/bath.png", height: 17),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${productModels!.data!.bathrooms} baths',
+                              style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 12),
+                            Image.asset("assets/images/messure.png", height: 17),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${productModels!.data!.squareFeet} sqft',
+                              style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                          ],
+                        )
+                      ],
                     ),
                   ),
                   SizedBox(height: 5,),
@@ -402,119 +384,90 @@ class _Product_DetailState extends State<Product_Detail> {
                     ),),
                   ),
                   SizedBox(height: 5,),
-                  Container(
-                      margin: const EdgeInsets.only(left: 20,top: 0,right: 1),
-                      padding: const EdgeInsets.only(top: 5),
-                      height: screenSize.height*0.11,
-                      // color: Colors.grey,
-                      child:ListView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const ScrollPhysics(),
-                        shrinkWrap: true,
-                        children: [
-                          Column(
-                            spacing: 15,
-                            children: [
-                              Row(
-                                spacing: 5,
-                                children: [
-                                  Image.asset("assets/images/Residential__1.png",height: 15,),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Swimming Pool ",style: TextStyle(
-                                        fontSize: 14,letterSpacing: 0.5
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/bed.png",height: 15,),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Balcony/Terrace ",style: TextStyle(
-                                        fontSize: 14,letterSpacing: 0.5
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/bed.png",height: 15,),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Gym ",style: TextStyle(
-                                        fontSize: 14,letterSpacing: 0.5
-                                    ),),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                spacing: 5,
-                                children: [
-                                  Image.asset("assets/images/bath.png",height: 15),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Barbeque Area ",style: TextStyle(
-                                      fontSize: 14,letterSpacing: 0.5,
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/Residential__1.png",height: 15,),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text(" Elevators ",style: TextStyle(
-                                        fontSize: 14,letterSpacing: 0.5
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/bath.png",height: 15),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text("Parking Space ",style: TextStyle(
-                                      fontSize: 14,letterSpacing: 0.5,
-                                    ),),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                spacing: 5,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Image.asset("assets/images/messure.png",height: 15),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text("Pet Allowed ",style: TextStyle(
-                                      fontSize: 14,letterSpacing: 0.5,
-                                    ),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Image.asset("assets/images/messure.png",height: 15),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 3.0),
-                                    child: Text("Security ",style: TextStyle(
-                                      fontSize: 14,letterSpacing: 0.5,
-                                    ),),
-                                  ),
-                                  Text("    "),
-                                  Text("    "),
-                                  Text("    "),
-                                  Text("    "),
-                                  Text("    ")
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      )
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 22.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Image.asset("assets/images/Residential__1.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              " Swimming Pool ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 20),
+                            Image.asset("assets/images/bed.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              " Balcony/Terrace ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Image.asset("assets/images/bath.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              " Barbeque Area ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 20),
+                            Image.asset("assets/images/Residential__1.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              " Elevators ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const SizedBox(width: 3),
+                            Image.asset("assets/images/messure.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              "Pet Allowed ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 45),
+                            Image.asset("assets/images/messure.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              "Security ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 20), // Padding at the end
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const SizedBox(width: 3),
+                            Image.asset("assets/images/bed.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              " Gym ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(width: 85),
+                            Image.asset("assets/images/bath.png", height: 17),
+                            const SizedBox(width: 3),
+                            const Text(
+                              "Parking Space ",
+                              style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 15,),
                   Row(
                     children: [
                       Padding(
@@ -528,7 +481,7 @@ class _Product_DetailState extends State<Product_Detail> {
                   ),
                   SizedBox(height: 5,),
                   Container(
-                    height: screenSize.height * 0.12,
+                    height: screenSize.height * 0.122,
                     margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -551,11 +504,11 @@ class _Product_DetailState extends State<Product_Detail> {
                           children:  [
                             Text("Developer"),
                             SizedBox(height: 4),
-                            Text( productModels!.data!.developer.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(productModels!.data!.developer.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
                             SizedBox(height: 10),
                             Text("Property Type"),
                             SizedBox(height: 4),
-                            Text( productModels!.data!.propertyType.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(productModels!.data!.propertyType.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ],
@@ -648,7 +601,7 @@ class _Product_DetailState extends State<Product_Detail> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 15,),
                   Row(
                     children: [
                       Padding(
@@ -660,10 +613,10 @@ class _Product_DetailState extends State<Product_Detail> {
                       Text("")
                     ],
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 10,),
                   Container(
-                    height: 130,
-                    margin: const EdgeInsets.only(top: 15,left: 20,right: 20),
+                    height: screenSize.height*0.3,
+                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadiusDirectional.circular(15.0),
                       boxShadow: [
@@ -684,62 +637,76 @@ class _Product_DetailState extends State<Product_Detail> {
                         ), //BoxShadow
                       ],
                     ),
-                    child: Stack(
-                      children: [
-                        FlutterMap(
-                          options: MapOptions(
-                            initialCenter: LatLng(25.0657, 55.2030), // Updated
-                            initialZoom: 13.0, // Updated
-                          ),
-                          children: [
-                            TileLayer(
-                              urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                              subdomains: ['a', 'b', 'c'],
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: Stack(
+                        children: [
+                          FlutterMap(
+                            options: MapOptions(
+                              initialCenter: LatLng(25.0657, 55.2030),
+                              initialZoom: 13.0,
                             ),
-                            MarkerLayer(
-                              markers: [
-                                Marker(
-                                  point: LatLng(25.0657, 55.2030),
-                                  width: 40,
-                                  height: 40,
-                                  child: Icon(Icons.location_pin, color: Colors.red, size: 40), // Fixed
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Positioned(
-                          bottom: 10,
-                          left: 60,
-                          right: 60,
-                          child: Card(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(1.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    "AAA Residence, JVC District 13,\nJumeirah Village Circle (JVC), Dubai",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                  ),
-                                  // SizedBox(height: 4),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      // Implement map navigation
-                                    },
-                                    child: Text("View on map"),
+                            children: [
+                              TileLayer(
+                                urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                subdomains: ['a', 'b', 'c'],
+                              ),
+                              MarkerLayer(
+                                markers: [
+                                  Marker(
+                                    point: LatLng(25.0657, 55.2030),
+                                    width: 40,
+                                    height: 40,
+                                    child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
                                   ),
                                 ],
                               ),
+                            ],
+                          ),
+
+                          // Bottom overlay card
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Card(
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text(
+                                        "AAA Residence, JVC District 13,\nJumeirah Village Circle (JVC), Dubai",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      SizedBox(
+                                        height: 28,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                                            textStyle: const TextStyle(fontSize: 12),
+                                          ),
+                                          onPressed: () {
+                                            // Handle navigation logic here
+                                          },
+                                          child: const Text("View on map"),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                  SizedBox(height: 15,),
+                  SizedBox(height: 10,),
                   Row(
                     children: [
                       Padding(
@@ -782,7 +749,7 @@ class _Product_DetailState extends State<Product_Detail> {
                               ), //BoxShadow
                             ],
                           ),
-                           child: CachedNetworkImage( // this is to fetch the image
+                          child: CachedNetworkImage( // this is to fetch the image
                             imageUrl: (productModels!.data!.agentImage.toString()),
                             fit: BoxFit.cover,
                             height: 100,
@@ -801,11 +768,11 @@ class _Product_DetailState extends State<Product_Detail> {
                             Padding(padding: const EdgeInsets.only(top: 5,left: 5),
                               child: Row(
                                 children: [
-                                  Icon(Icons.star,color: Colors.yellow,),
-                                  Icon(Icons.star,color: Colors.yellow,),
-                                  Icon(Icons.star,color: Colors.yellow,),
-                                  Icon(Icons.star,color: Colors.yellow,),
-                                  Icon(Icons.star,color: Colors.yellow,),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
                                 ],
                               ),
                             ),
@@ -900,12 +867,18 @@ class _Product_DetailState extends State<Product_Detail> {
                         const SizedBox(height: 10),
 
                         // Info Rows
-                        _buildInfoRow("Reference", productModels!.data!.regulatoryInfo!.reference.toString()),
-                        // _buildInfoRow("Listed", productModels!.data!.regulatoryInfo!.listed.toString()),
-                        _buildInfoRow("Broker License", productModels!.data!.regulatoryInfo!.brokerLicense.toString()),
-                        _buildInfoRow("Agent License", productModels!.data!.regulatoryInfo!.agentLicense.toString()),
-                        _buildInfoRow("DLD Permit Number", productModels!.data!.regulatoryInfo!.dldPermitNumber.toString()),
-                        _buildInfoRow("Zone Name", productModels!.data!.regulatoryInfo!.zoneName.toString()),
+                        _buildInfoRow("DLD Permit Number:",
+                            productModels!.data!.regulatoryInfo!.dldPermitNumber.toString()
+                        ),
+                        _buildInfoRow("DED",
+                            productModels!.data!.regulatoryInfo!.ded.toString()
+                        ),
+                        _buildInfoRow("RERA",
+                            productModels!.data!.regulatoryInfo!.rera.toString()
+                        ),
+                        _buildInfoRow("BRN",
+                            productModels!.data!.regulatoryInfo!.brn.toString()
+                        ),
 
                         const SizedBox(height: 5),
 
@@ -919,10 +892,10 @@ class _Product_DetailState extends State<Product_Detail> {
                                 //scrollDirection: Axis.vertical,
                                 physics: const ScrollPhysics(),
                                 itemCount: productModels?.data?.qr?.length ?? 0,
-                                  itemBuilder: (BuildContext context, int index) {
-                                   return  CachedNetworkImage(imageUrl:productModels!.data!.qr![index].qrUrl.toString() ,
-                                   height: 120,);
-                                  },
+                                itemBuilder: (BuildContext context, int index) {
+                                  return  CachedNetworkImage(imageUrl:productModels!.data!.qr![index].qrUrl.toString() ,
+                                    height: 120,);
+                                },
                               ),
                               const SizedBox(height: 6),
                               const Text("DLD Permit Number", style: TextStyle(fontWeight: FontWeight.bold)),
@@ -932,17 +905,95 @@ class _Product_DetailState extends State<Product_Detail> {
                       ],
                     ),
                   ),
+                  /* Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(left: 18, right: 14, top: 20),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: Offset(0.5, 0.5),
+                          blurRadius: 0.5,
+                          spreadRadius: 0.3,
+                        ),
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Left Side: Title + Info
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Regulatory Information",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                spacing: 20,
+                                runSpacing: 8,
+                                children: const [
+                                  Text("Reference:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("Listed:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("Broker License:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("Agent License:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("OLD Permit Number:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                  Text("Zone Name:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        // Right Side: DLD Image
+                        Column(
+                         // crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 0),
+                              child: Image.asset(
+                                "assets/images/dld.png",
+                                height: screenSize.height * 0.1,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                              Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 0),
+                              child: const Text(
+                                "OLD Permit Number",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),*/
                   SizedBox(height: 5,),
-                  Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
-                        child:Text("Recommended Properties",style: TextStyle(
-                            fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                        ),),
-                      ),
-                      Text("")
-                    ],
+                  Container(
+                    height: 30,
+                    width: double.infinity,
+                    // color: Colors.grey,
+                    margin: const EdgeInsets.only(left: 20,right: 20,top: 20,bottom: 0),
+                    child:Text("Recommended Properties",style: TextStyle(
+                        fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                    ),),
                   ),
                   SizedBox(
                     height: 220,
@@ -1055,7 +1106,7 @@ class _Product_DetailState extends State<Product_Detail> {
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 60,
+      height: 40,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -1254,6 +1305,26 @@ class _Product_DetailState extends State<Product_Detail> {
       ),
     );
   }
+}
+
+BoxDecoration _iconBoxDecoration() {
+  return BoxDecoration(
+    borderRadius: BorderRadius.circular(20),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.withOpacity(0.3),
+        blurRadius: 2,
+        spreadRadius: 0.1,
+        offset: const Offset(0, 1),
+      ),
+      const BoxShadow(
+        color: Colors.white,
+        offset: Offset(0.0, 0.0),
+        blurRadius: 0.0,
+        spreadRadius: 0.0,
+      ),
+    ],
+  );
 }
 class Page1 extends StatelessWidget {
   const Page1({super.key});

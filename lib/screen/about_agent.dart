@@ -427,264 +427,196 @@ class _AboutAgentState extends State<AboutAgent> {
                 children: [
                   SingleChildScrollView(
                       child: Padding(
-                        padding: const EdgeInsets.all(15.0),
+                        padding: const EdgeInsets.all(8.0),
                         child: Column(
                           children: [
-                            Row(
-                              children: [
-                                Text("About", style: TextStyle(
-                                    fontSize: 18, color: Colors.black, letterSpacing: 0.5
-                                ),textAlign: TextAlign.left,),
-                                Text("")
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 10, left: 10.0, right: 0),
-                                  child: Text("Language(s)", style: TextStyle(
-                                      fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                  ),),
-                                ),
-                                Text("")
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 5, left: 8.0, right: 0),
-                                  child: Text('${agentDetail!.languages}', style: TextStyle(
-                                      fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                                  ),),
-                                ),
-                                Text("")
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 15, left: 10.0, right: 0),
-                                  child: Text("Expertise", style: TextStyle(
-                                      fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                  ),),
-                                ),
-                                Text("")
-                              ],
-                            ),
+                            const SizedBox(height: 10,),
                             Padding(
-                              padding: const EdgeInsets.only(top: 5, left: 10.0, right: 0),
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                children: [
+                                  Text("About", style: TextStyle(
+                                      fontSize: 18, color: Colors.black, letterSpacing: 0.5
+                                  ),textAlign: TextAlign.left,),
+                                  Text("")
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10,),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                children: [
+                                    Text("Language(s)", style: TextStyle(
+                                        fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+                                    ),),
+
+                                  Text("")
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10,),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                children: [
+                                   Text('${agentDetail!.languages}', style: TextStyle(
+                                        fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                                    ),),
+
+                                  Text("")
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10,),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                children: [
+                                  Text("Expertise", style: TextStyle(
+                                        fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+                                    ),),
+                                  Text("")
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10,),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
                               child: Text(agentDetail!.expertise.toString(), style: TextStyle(
                                   fontSize: 15, color: Colors.black, letterSpacing: 0.5
                               ),),
                             ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 0, left: 13.0, right: 0),
-                                  child: Text("Services Area", style: TextStyle(
-                                      fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                  ),),
-                                ),Text("")
-                              ],
-                            ),
+                            const SizedBox(height: 10,),
                             Padding(
-                              padding: const EdgeInsets.only(top: 5, left: 10.0, right: 0),
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                children: [
+                                  Text("Services Area", style: TextStyle(
+                                        fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+                                    ),),
+                                  Text("")
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10,),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
                               child: Text(agentDetail!.serviceAreas!.toString(), style: TextStyle(
                                   fontSize: 15, color: Colors.black, letterSpacing: 0.5
                               ),
                               ),
                             ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 5, left: 12.0, right: 0),
-                                  child: Text("Properties", style: TextStyle(
-                                      fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                  ),),
-                                ),
-                                Text("")
-                              ],
+                            const SizedBox(height: 10,),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                children: [
+                                    Text("Properties", style: TextStyle(
+                                        fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+                                    ),),
+                                  Text("")
+                                ],
+                              ),
                             ),
+                            const SizedBox(height: 10,),
                             Container(
-                              margin: EdgeInsets.only(left: 10,right: 0,top: 5),
-                              height: screenSize.height*0.06,
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                              height: MediaQuery.of(context).size.height * 0.06,
                               alignment: Alignment.centerLeft,
-                              // color: Colors.grey,
                               child: ListView(
                                 scrollDirection: Axis.horizontal,
+                                physics: const BouncingScrollPhysics(),
                                 shrinkWrap: true,
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 5.0, right: 5, top: 8, bottom: 8),
-                                    child: Container(
-                                      // width: 130,
-                                        height: 35,
-                                        padding: const EdgeInsets.only(
-                                            top: 5, left: 10, right: 8),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadiusDirectional.circular(8.0),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.red,
-                                              offset: const Offset(
-                                                0.3,
-                                                0.5,
-                                              ),
-                                              blurRadius: 0.5,
-                                              spreadRadius: 0.8,
-                                            ), //BoxShadow
-                                            BoxShadow(
-                                              color: Colors.white,
-                                              offset: const Offset(0.5, 0.5),
-                                              blurRadius: 0.5,
-                                              spreadRadius: 0.5,
-                                            ), //BoxShadow
-                                          ],
-                                        ),
-
-                                        child: Row(
-                                          children: [
-                                            Text("${agentDetail!.rent} Properties for Rent", style: TextStyle(
-                                                letterSpacing: 0.5,
-                                                color: Colors.black,
-                                                fontSize: 13
-                                            ), textAlign: TextAlign.left,),
-                                            Padding(
-                                                padding: const EdgeInsets.only(left: 5, right: 5),
-                                                child: Image.asset("assets/images/arrow.png",
-                                                  width: 15,
-                                                  height: 15,
-                                                  fit: BoxFit.contain,)
-                                            ),
-
-                                          ],
-                                        )
-                                    ),
+                                  _buildTagContainer(
+                                    text: "${agentDetail!.rent} Properties for Rent",
+                                    iconPath: "assets/images/arrow.png",
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 10.0, right: 5, top: 8, bottom: 8),
-                                    child: Container(
-                                      // width: 130,
-                                        height: 35,
-                                        padding: const EdgeInsets.only(top: 8, left: 10, right: 8,bottom: 8),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadiusDirectional.circular(8.0),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.red,
-                                              offset: const Offset(
-                                                0.3,
-                                                0.5,
-                                              ),
-                                              blurRadius: 0.5,
-                                              spreadRadius: 0.8,
-                                            ), //BoxShadow
-                                            BoxShadow(
-                                              color: Colors.white,
-                                              offset: const Offset(0.5, 0.5),
-                                              blurRadius: 0.5,
-                                              spreadRadius: 0.5,
-                                            ), //BoxShadow
-                                          ],
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Text("${agentDetail!.sale} Properties for Sale", style: TextStyle(
-                                                letterSpacing: 0.5,
-                                                color: Colors.black,
-                                                fontSize: 13
-                                            ), textAlign: TextAlign.left,),
-                                            Padding(
-                                                padding: const EdgeInsets.only(left: 5, right: 5),
-                                                child: Image.asset("assets/images/arrow.png",
-                                                  width: 15,
-                                                  height: 15,
-                                                  fit: BoxFit.contain,)
-                                            ),
-                                          ],
-                                        )
-                                    ),
+                                  const SizedBox(width: 4,),
+                                  _buildTagContainer(
+                                    text: "${agentDetail!.sale} Properties for Sale",
+                                    iconPath: "assets/images/arrow.png",
                                   ),
                                 ],
                               ),
                             ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 10, left: 12.0, right: 0),
-                                  child: Text("Description", style: TextStyle(
-                                      fontSize: 13, color: Colors.black, letterSpacing: 0.5
-                                  ),),
-                                ),
-                                Text("")
-                              ],
-                            ),
+
+                            const SizedBox(height: 10,),
                             Padding(
-                                padding: const EdgeInsets.only(top: 8, left: 12.0, right: 5),
-                                child: SizedBox(
-                                  width: screenSize.width*0.9,
-                                  height: screenSize.height*0.2,
-                                  child:  ListView(
-                                      padding: const EdgeInsets.all(0),
-                                      shrinkWrap: true,
-                                      scrollDirection: Axis.vertical,
-                                      children: <Widget>[
-                                        Text(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                children: [
+                                 Text("Description", style: TextStyle(
+                                        fontSize: 13, color: Colors.black, letterSpacing: 0.5
+                                    ),),
+
+                                  Text("")
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10,),
+                            Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                child: Text(
                                           agentDetail!.about.toString(),
                                           style: TextStyle(
                                               fontSize: 13, color: Colors.black,
                                               letterSpacing: 0.5,fontWeight: FontWeight.bold,height: 1.5
                                           ),),
-                                      ]
-                                  ),
+                            ),
+                            const SizedBox(height: 10,),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                children: [
+                                   Text("BRN", style: TextStyle(
+                                        fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+                                    ),),
 
-                                )
-                            ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 15, left: 12.0, right: 0),
-                                  child: Text("BRN", style: TextStyle(
-                                      fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                  ),),
-                                ),
-                                Text("")
-                              ],
-                            ),
-                            Container(
-                              height: 25,
-                              width: screenSize.width*0.9,
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 5, left: 9.0, right: 0),
-                                child: Text(agentDetail!.brokerRegisterationNumber.toString(), style: TextStyle(
-                                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                                ),),
+                                  Text("")
+                                ],
                               ),
                             ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 15, left: 12.0, right: 0),
-                                  child: Text("Experience", style: TextStyle(
-                                      fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                  ),),
-                                ),
-                                Text("")
-                              ],
+                            const SizedBox(height: 10,),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                children: [
+                                  Text(agentDetail!.brokerRegisterationNumber.toString(), style: TextStyle(
+                                          fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                                      ),),
+                                  Text("")
+                                ],
+                              ),
                             ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 5, left: 10.0, right: 0),
-                                  child: Text("${agentDetail!.experience} Years", style: TextStyle(
-                                      fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                                  ),),
-                                ),
-                                Text("")
-                              ],
+
+                            const SizedBox(height: 10,),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                children: [
+                                  Text("Experience", style: TextStyle(
+                                        fontSize: 12, color: Colors.grey, letterSpacing: 0.5
+                                    ),),
+                                  Text("")
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10,),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                children: [
+                                  Text("${agentDetail!.experience} Years", style: TextStyle(
+                                        fontSize: 15, color: Colors.black, letterSpacing: 0.5
+                                    ),),
+                                  Text("")
+                                ],
+                              ),
                             ),
                             SizedBox(
-                              height: 10,
+                              height: 20,
                             )
                           ],
 
@@ -1005,106 +937,64 @@ class _AboutAgentState extends State<AboutAgent> {
                                                     ),
                                                   ],
                                                 ),
-                                                /*Row(
-                                    children: [
-                                      Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 5),
-                                        child: Image.asset("assets/images/bed.png",height: 13,),
-                                      ),
-                                      Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                          child: Text(agentProperties!.data![index].bedrooms.toString())
-                                      ),
-                                      Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
-                                        child: Image.asset("assets/images/bath.png",height: 13,),
-                                      ),
-                                      Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                          child: Text(featuredModel!.data![index].bathrooms.toString())
-                                      ),
-                                      Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
-                                        child: Image.asset("assets/images/messure.png",height: 13,),
-                                      ),
-                                      Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                          child: Text(featuredModel!.data![index].squareFeet.toString())
-                                      ),
-                                    ],
-                                  ),*/
                                                 Row(
                                                   children: [
-                                                    Padding(padding: const EdgeInsets.only(left: 30,top: 20,bottom: 15),
+                                                    const SizedBox(width: 10),
+                                                    Expanded(
                                                       child: ElevatedButton.icon(
-                                                          onPressed: () async {
-                                                            String phone = 'tel:${agentProperties!.data![index].phoneNumber}';
+                                                        onPressed: () async {
+                                                          String phone = 'tel:${agentProperties!.data![index].phoneNumber}';
+                                                          try {
+                                                            final bool launched = await launchUrlString(
+                                                              phone,
+                                                              mode: LaunchMode.externalApplication,
+                                                            );
+                                                            if (!launched) print("❌ Could not launch dialer");
+                                                          } catch (e) {
+                                                            print("❌ Exception: $e");
+                                                          }
+                                                        },
+                                                        icon: const Icon(Icons.call, color: Colors.red),
+                                                        label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: Colors.grey[100],
+                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                          elevation: 3,
+                                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 10),
+                                                    Expanded(
+                                                      child: ElevatedButton.icon(
+                                                        onPressed: () async {
+                                                          final phone = agentProperties!.data![index].whatsapp;
+                                                          final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+                                                          if (await canLaunchUrl(url)) {
                                                             try {
-                                                              final bool launched = await launchUrlString(
-                                                                phone,
-                                                                mode: LaunchMode.externalApplication, // ✅ Force external
-                                                              );
-                                                              if (!launched) {
-                                                                print("❌ Could not launch dialer");
-                                                              }
+                                                              final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                              if (!launched) print("❌ Could not launch WhatsApp");
                                                             } catch (e) {
                                                               print("❌ Exception: $e");
                                                             }
-                                                          },
-                                                          label: Text("call",style: TextStyle(
-                                                              color: Colors.black
-                                                          ),),
-                                                          style: ElevatedButton.styleFrom(
-                                                            backgroundColor: Colors.grey[50],
-                                                            alignment: Alignment.center,
-                                                            elevation: 1,
-                                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                            padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 40),
-                                                            textStyle: TextStyle(letterSpacing: 0.5,
-                                                                color: Colors.black,fontSize: 15,fontWeight: FontWeight.bold
-                                                            ),
-                                                          ),
-                                                          icon: Icon(Icons.call,color: Colors.red,)),
-                                                    ),
-                                                    // Text(product.description),
-                                                    Padding(padding: const EdgeInsets.only(left: 15,top: 20,bottom: 15),
-                                                      child: ElevatedButton.icon(
-                                                          onPressed: () async {
-                                                            final phone = agentProperties!.data![index].whatsapp; // without plus
-                                                            final message = Uri.encodeComponent("Hello");
-                                                            // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
-                                                            // final url = Uri.parse("https://wa.me/?text=hello");
-                                                            final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-
-                                                            if (await canLaunchUrl(url)) {
-                                                              try {
-                                                                final launched = await launchUrl(
-                                                                  url,
-                                                                  mode: LaunchMode.externalApplication, // 💥 critical on Android 15
-                                                                );
-
-                                                                if (!launched) {
-                                                                  print("❌ Could not launch WhatsApp");
-                                                                }
-                                                              } catch (e) {
-                                                                print("❌ Exception: $e");
-                                                              }
-                                                            } else {
-                                                              print("❌ WhatsApp not available or URL not supported");
-                                                            }
-                                                          },
-                                                          label: Text("Watsapp",style: TextStyle(
-                                                              color: Colors.black
-                                                          ),),
-                                                          style: ElevatedButton.styleFrom(
-                                                            backgroundColor: Colors.grey[50],
-                                                            alignment: Alignment.center,
-                                                            elevation: 1,
-                                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                            padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 30),
-                                                            textStyle: TextStyle(letterSpacing: 0.5,
-                                                                color: Colors.black,fontSize: 12,fontWeight: FontWeight.bold
-                                                            ),
-                                                          ),
-                                                          icon: Image.asset("assets/images/whats.png",height: 20,)
+                                                          } else {
+                                                            print("❌ WhatsApp not available");
+                                                          }
+                                                        },
+                                                        icon: Image.asset("assets/images/whats.png", height: 20),
+                                                        label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: Colors.grey[100],
+                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                          elevation: 1,
+                                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                                        ),
                                                       ),
                                                     ),
+                                                    const SizedBox(width: 10),
                                                   ],
                                                 ),
+                                                const SizedBox(height: 10),
 
                                               ],
                                             ),
@@ -1121,140 +1011,87 @@ class _AboutAgentState extends State<AboutAgent> {
                           ],
                         ),
                       )),
-                  SingleChildScrollView(child: Padding(
+                  SingleChildScrollView(
+                    child: Padding(
                       padding: const EdgeInsets.all(15.0),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    top: 10, left: 10, right: 0),
-                                child: Text("Reviews", style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
-                                ), textAlign: TextAlign.left,),
-                              ),
-                              Text("")
-                            ],
+                          const Text(
+                            "Reviews",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 15, left: 5, right: 10),
-                            child: Container(
-                              //   width: 250,
-                                height: screenSize.height * 0.18,
-                                padding: const EdgeInsets.only(top: 5),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.5),
-                                      offset: Offset(4, 4),
-                                      blurRadius: 8,
-                                      spreadRadius: 2,
-                                    ),
-                                    BoxShadow(
-                                      color: Colors.white.withOpacity(0.8),
-                                      offset: Offset(-4, -4),
-                                      blurRadius: 8,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
-                                  borderRadius: BorderRadius.circular(10),),
-                                child: Column(
+                          const SizedBox(height: 15),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.3),
+                                  offset: const Offset(2, 2),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
                                   children: [
-                                    Row(
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Container(
-                                                alignment: Alignment.topCenter,
-                                                margin: const EdgeInsets.only(top: 5,
-                                                    left: 15,
-                                                    bottom: 0),
-                                                height: 30,
-                                                width: 30,
-                                                padding: const EdgeInsets.only(top: 6),
-                                                decoration: BoxDecoration(
-                                                  borderRadius: BorderRadiusDirectional
-                                                      .circular(15.0),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.grey,
-                                                      offset: const Offset(
-                                                        0.5,
-                                                        0.5,
-                                                      ),
-                                                      blurRadius: 1.0,
-                                                      spreadRadius: 0.5,
-                                                    ), //BoxShadow
-                                                    BoxShadow(
-                                                      color: Colors.white,
-                                                      offset: const Offset(0.0, 0.0),
-                                                      blurRadius: 0.0,
-                                                      spreadRadius: 0.0,
-                                                    ), //BoxShadow
-                                                  ],
-                                                ),
-                                                child: Text("DM", style:
-                                                TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12,
-                                                    color: Colors.black
-                                                ), textAlign: TextAlign.center,)
-                                            ),
-
-                                            //logo2
-                                            Container(
-                                              alignment: Alignment.topCenter,
-                                              margin: const EdgeInsets.only(top: 5,
-                                                  left: 10,
-                                                  right: 10,
-                                                  bottom: 0),
-                                              height: 30,
-                                              width: 125,
-
-                                              child: Text("Bilsay Citak",
-                                                style: TextStyle(
-                                                    color: Colors.black,
-                                                    letterSpacing: 0.5,
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold
-                                                ),),
-                                            ),
-                                            Row(
-                                              spacing: screenSize.width * 0.3,
-                                              children: [
-                                                Text(""),
-                                                Container(
-                                                    margin: const EdgeInsets.only(
-                                                        left: 10, top: 5, bottom: 0),
-                                                    //  padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                                    child: Icon(
-                                                      Icons.star, color: Colors.yellow,)
-                                                  //child: Image(image: Image.asset("assets/images/share.png")),
-                                                ),
-
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                                    // Avatar initials
+                                    Container(
+                                      height: 30,
+                                      width: 30,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[300],
+                                        borderRadius: BorderRadius.circular(15),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.3),
+                                            offset: const Offset(0.5, 0.5),
+                                            blurRadius: 1,
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Text(
+                                        "DM",
+                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                      ),
                                     ),
-                                    Padding(padding: const EdgeInsets.only(
-                                        top: 10, left: 10, right: 10, bottom: 10),
+                                    const SizedBox(width: 10),
+                                    const Expanded(
                                       child: Text(
-                                          "In the realm of real estate, Ben Caballero's name"
-                                              " is synonymous with unparalleled success, particularly in the new homes market."),
-                                    )
+                                        "Bilsay Citak",
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                    const Icon(Icons.star, color: Colors.amber),
                                   ],
-
-                                )
-                            ),)
+                                ),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  "In the realm of real estate, Ben Caballero's name is synonymous with unparalleled success, particularly in the new homes market.",
+                                  style: TextStyle(fontSize: 14, height: 1.4),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
-                      )
-                  )),
+                      ),
+                    ),
+                  )
                 ],
               ),
             )
@@ -1488,6 +1325,53 @@ class _AboutAgentState extends State<AboutAgent> {
             ),
           ),
         ],
+      ),
+    );
+  }
+  Widget _buildTagContainer({required String text, required String iconPath}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3.0, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.red,
+              offset: const Offset(0.3, 0.5),
+              blurRadius: 0.5,
+              spreadRadius: 0.8,
+            ),
+            BoxShadow(
+              color: Colors.white,
+              offset: const Offset(0.5, 0.5),
+              blurRadius: 0.5,
+              spreadRadius: 0.5,
+            ),
+          ],
+          color: Colors.white,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              text,
+              style: const TextStyle(
+                letterSpacing: 0.5,
+                color: Colors.black,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Image.asset(
+              iconPath,
+              width: 15,
+              height: 15,
+              fit: BoxFit.contain,
+            ),
+          ],
+        ),
       ),
     );
   }

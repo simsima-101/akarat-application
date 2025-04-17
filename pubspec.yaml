@@ -133,6 +133,8 @@ flutter:
   - assets/images/messure.png
   - assets/images/no-property-search.png
   - assets/images/dot.png
+  - assets/images/close.png
+  - assets/images/close1.png
   - assets/images/dis-like.png
   - assets/images/icon.png
   - assets/images/like.png

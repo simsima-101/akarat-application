@@ -102,144 +102,49 @@ class _Featured_DetailState extends State<Featured_Detail> {
             child: Column(
                 children: <Widget>[
                   Stack(
-                    // alignment: Alignment.topCenter,
                     children: <Widget>[
                       Padding(
-                        padding: EdgeInsets.only(top: 0),
+                        padding: const EdgeInsets.only(top: 0),
                         child: SizedBox(
                           height: 50,
                           width: double.infinity,
-                          // color: Color(0xFFEEEEEE),
-                          child:   Row(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+                              // Back Button
                               Container(
-                                margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
+                                margin: const EdgeInsets.only(left: 10),
                                 height: 35,
                                 width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
+                                padding: const EdgeInsets.all(7),
+                                decoration: _iconBoxDecoration(),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+                                  },
+                                  child: Image.asset(
+                                    "assets/images/ar-left.png",
+                                    width: 15,
+                                    height: 15,
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
-                          child: GestureDetector(
-                            onTap: (){
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-                            },
-                                child: Image.asset("assets/images/ar-left.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,),
-                          ),
                               ),
+
+                              // Like Button
                               Container(
-                                margin: const EdgeInsets.only(left: 300,top: 5,bottom: 0,),
+                                margin: const EdgeInsets.only(right: 10),
                                 height: 35,
                                 width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Image.asset("assets/images/lov.png",
+                                padding: const EdgeInsets.all(7),
+                                decoration: _iconBoxDecoration(),
+                                child: Image.asset(
+                                  "assets/images/lov.png",
                                   width: 15,
                                   height: 15,
-                                  fit: BoxFit.contain,),
-                                //child: Image(image: Image.asset("assets/images/share.png")),
+                                  fit: BoxFit.contain,
+                                ),
                               ),
-                             /* Container(
-                                margin: const EdgeInsets.only(left: 5,top: 5,bottom: 0,),
-                                height: 35,
-                                width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Image.asset("assets/images/forward.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,),
-                                //child: Image(image: Image.asset("assets/images/share.png")),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(left: 5,top: 5,bottom: 0,),
-                                height: 35,
-                                width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.0,
-                                        0.0,
-                                      ),
-                                      blurRadius: 0.1,
-                                      spreadRadius: 0.1,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Image.asset("assets/images/arrow_right.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,),
-                                //child: Image(image: Image.asset("assets/images/share.png")),
-                              ),*/
                             ],
                           ),
                         ),
@@ -247,7 +152,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     ],
                   ),
                   Container(
-                      height: screenSize.height*0.4,
+                      height: screenSize.height*0.55,
                       margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
                       child:  ListView.builder(
                         padding: const EdgeInsets.all(0),
@@ -265,7 +170,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
                       )
                   ),
-                  SizedBox(height: 10,),
+                  SizedBox(height: 25,),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                     // color: Colors.grey,
@@ -331,6 +236,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           Text("  AED",style: TextStyle(
                               fontSize: 19,letterSpacing: 0.5
                           ),),
+                          Text("/${featured_detailModel!.data!.paymentPeriod}",style: TextStyle(
+                              fontSize: 16,letterSpacing: 0.5
+                          ),),
                         ],
                       )
                   ),
@@ -348,7 +256,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                             ),),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 3.0),
+                            padding: const EdgeInsets.only(left: 15.0),
                             child: Image.asset("assets/images/bath.png",height: 20),
                           ),
                           Padding(
@@ -358,7 +266,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                             ),),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 3.0),
+                            padding: const EdgeInsets.only(left: 15.0),
                             child: Image.asset("assets/images/messure.png",height: 20),
                           ),
                           Padding(
@@ -370,20 +278,28 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         ],
                       )
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 10,),
                   Row(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
-                        child:
-                        Text(featured_detailModel!.data!.title.toString(),style: TextStyle(
-                            fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
-                        ),),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Text(
+                            featured_detailModel!.data!.title.toString(),
+                            style: const TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
                       ),
-                      Text("")
+                      const SizedBox(), // or remove this if not needed
                     ],
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 10,),
                   Padding(
                   padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                         child:  Text(featured_detailModel!.data!.description.toString(),
@@ -401,10 +317,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                           ),),
                       ),
-                      Text("")
+                      Text(featured_detailModel!.data!.postedOn.toString())
                     ],
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 15,),
                   Row(
                     children: [
                       Padding(
@@ -416,44 +332,52 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       Text("")
                     ],
                   ),
-                  SizedBox(height: 5,),
-                  Container(
-                    margin: const EdgeInsets.only(left: 20, top: 0, right: 10),
-                    height: 30,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          Image.asset("assets/images/Residential__1.png", height: 17),
-                          const SizedBox(width: 6),
-                          Text(
-                            featured_detailModel!.data!.propertyType.toString(),
-                            style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
-                          ),
-                          const SizedBox(width: 12),
-                          Image.asset("assets/images/bed.png", height: 17),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${featured_detailModel!.data!.bedrooms} beds',
-                            style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
-                          ),
-                          const SizedBox(width: 12),
-                          Image.asset("assets/images/bath.png", height: 17),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${featured_detailModel!.data!.bathrooms} baths',
-                            style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
-                          ),
-                          const SizedBox(width: 12),
-                          Image.asset("assets/images/messure.png", height: 17),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${featured_detailModel!.data!.squareFeet} sqft',
-                            style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
-                          ),
-                        ],
-                      ),
-                    ),
+                  SizedBox(height: 15,),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 22.0),
+                    child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Image.asset("assets/images/Residential__1.png", height: 17),
+                                const SizedBox(width: 6),
+                                Text(
+                                  featured_detailModel!.data!.propertyType.toString(),
+                                  style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                ),
+                                Text("")
+                              ],
+                            ),
+                            SizedBox(
+                              height: 5,
+                            ),
+                            Row(
+                              children: [
+                                Image.asset("assets/images/bed.png", height: 17),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '${featured_detailModel!.data!.bedrooms} beds',
+                                  style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                ),
+                                const SizedBox(width: 12),
+                                Image.asset("assets/images/bath.png", height: 17),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '${featured_detailModel!.data!.bathrooms} baths',
+                                  style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                ),
+                                const SizedBox(width: 12),
+                                Image.asset("assets/images/messure.png", height: 17),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '${featured_detailModel!.data!.squareFeet} sqft',
+                                  style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
                   ),
                   SizedBox(height: 5,),
                   Container(
@@ -466,93 +390,90 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     ),),
                   ),
                   SizedBox(height: 5,),
-                  Container(
-                    margin: const EdgeInsets.only(left: 20, top: 0, right: 1),
-                    padding: const EdgeInsets.only(top: 5),
-                    height: screenSize.height * 0.11,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      physics: const ScrollPhysics(),
-                      shrinkWrap: true,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Image.asset("assets/images/Residential__1.png", height: 17),
-                                const SizedBox(width: 3),
-                                const Text(
-                                  " Swimming Pool ",
-                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                ),
-                                const SizedBox(width: 8),
-                                Image.asset("assets/images/bed.png", height: 17),
-                                const SizedBox(width: 3),
-                                const Text(
-                                  " Balcony/Terrace ",
-                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                ),
-                                const SizedBox(width: 8),
-                                Image.asset("assets/images/bed.png", height: 17),
-                                const SizedBox(width: 3),
-                                const Text(
-                                  " Gym ",
-                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Image.asset("assets/images/bath.png", height: 17),
-                                const SizedBox(width: 3),
-                                const Text(
-                                  " Barbeque Area ",
-                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                ),
-                                const SizedBox(width: 8),
-                                Image.asset("assets/images/Residential__1.png", height: 17),
-                                const SizedBox(width: 3),
-                                const Text(
-                                  " Elevators ",
-                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                ),
-                                const SizedBox(width: 8),
-                                Image.asset("assets/images/bath.png", height: 17),
-                                const SizedBox(width: 3),
-                                const Text(
-                                  "Parking Space ",
-                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const SizedBox(width: 3),
-                                Image.asset("assets/images/messure.png", height: 17),
-                                const SizedBox(width: 3),
-                                const Text(
-                                  "Pet Allowed ",
-                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                ),
-                                const SizedBox(width: 8),
-                                Image.asset("assets/images/messure.png", height: 17),
-                                const SizedBox(width: 3),
-                                const Text(
-                                  "Security ",
-                                  style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                ),
-                                const SizedBox(width: 20), // Padding at the end
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 22.0),
+                    child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Image.asset("assets/images/Residential__1.png", height: 17),
+                                  const SizedBox(width: 3),
+                                  const Text(
+                                    " Swimming Pool ",
+                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Image.asset("assets/images/bed.png", height: 17),
+                                  const SizedBox(width: 3),
+                                  const Text(
+                                    " Balcony/Terrace ",
+                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Image.asset("assets/images/bath.png", height: 17),
+                                  const SizedBox(width: 3),
+                                  const Text(
+                                    " Barbeque Area ",
+                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Image.asset("assets/images/Residential__1.png", height: 17),
+                                  const SizedBox(width: 3),
+                                  const Text(
+                                    " Elevators ",
+                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                  ),
+
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const SizedBox(width: 3),
+                                  Image.asset("assets/images/messure.png", height: 17),
+                                  const SizedBox(width: 3),
+                                  const Text(
+                                    "Pet Allowed ",
+                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                  ),
+                                  const SizedBox(width: 45),
+                                  Image.asset("assets/images/messure.png", height: 17),
+                                  const SizedBox(width: 3),
+                                  const Text(
+                                    "Security ",
+                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                  ),
+                                  const SizedBox(width: 20), // Padding at the end
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const SizedBox(width: 3),
+                                  Image.asset("assets/images/bed.png", height: 17),
+                                  const SizedBox(width: 3),
+                                  const Text(
+                                    " Gym ",
+                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                  ),
+                                  const SizedBox(width: 85),
+                                  Image.asset("assets/images/bath.png", height: 17),
+                                  const SizedBox(width: 3),
+                                  const Text(
+                                    "Parking Space ",
+                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 15,),
                   Row(
                     children: [
                       Padding(
@@ -566,7 +487,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   ),
                   SizedBox(height: 5,),
                   Container(
-                    height: screenSize.height * 0.12,
+                    height: screenSize.height * 0.122,
                     margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -686,7 +607,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 15,),
                   Row(
                     children: [
                       Padding(
@@ -698,10 +619,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       Text("")
                     ],
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 10,),
                   Container(
-                    height: 130,
-                    margin: const EdgeInsets.only(top: 15,left: 20,right: 20),
+                    height: screenSize.height*0.3,
+                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadiusDirectional.circular(15.0),
                       boxShadow: [
@@ -722,62 +643,76 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         ), //BoxShadow
                       ],
                     ),
-                    child: Stack(
-                      children: [
-                        FlutterMap(
-                          options: MapOptions(
-                            initialCenter: LatLng(25.0657, 55.2030), // Updated
-                            initialZoom: 13.0, // Updated
-                          ),
-                          children: [
-                            TileLayer(
-                              urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                              subdomains: ['a', 'b', 'c'],
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: Stack(
+                        children: [
+                          FlutterMap(
+                            options: MapOptions(
+                              initialCenter: LatLng(25.0657, 55.2030),
+                              initialZoom: 13.0,
                             ),
-                            MarkerLayer(
-                              markers: [
-                                Marker(
-                                  point: LatLng(25.0657, 55.2030),
-                                  width: 40,
-                                  height: 40,
-                                  child: Icon(Icons.location_pin, color: Colors.red, size: 40), // Fixed
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Positioned(
-                          bottom: 10,
-                          left: 60,
-                          right: 60,
-                          child: Card(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(1.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    "AAA Residence, JVC District 13,\nJumeirah Village Circle (JVC), Dubai",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                  ),
-                                  // SizedBox(height: 4),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      // Implement map navigation
-                                    },
-                                    child: Text("View on map"),
+                            children: [
+                              TileLayer(
+                                urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                subdomains: ['a', 'b', 'c'],
+                              ),
+                              MarkerLayer(
+                                markers: [
+                                  Marker(
+                                    point: LatLng(25.0657, 55.2030),
+                                    width: 40,
+                                    height: 40,
+                                    child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
                                   ),
                                 ],
                               ),
+                            ],
+                          ),
+
+                          // Bottom overlay card
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Card(
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text(
+                                        "AAA Residence, JVC District 13,\nJumeirah Village Circle (JVC), Dubai",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      SizedBox(
+                                        height: 28,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                                            textStyle: const TextStyle(fontSize: 12),
+                                          ),
+                                          onPressed: () {
+                                            // Handle navigation logic here
+                                          },
+                                          child: const Text("View on map"),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                  SizedBox(height: 15,),
+                  SizedBox(height: 10,),
                   Row(
                     children: [
                       Padding(
@@ -839,11 +774,11 @@ class _Featured_DetailState extends State<Featured_Detail> {
                             Padding(padding: const EdgeInsets.only(top: 5,left: 5),
                               child: Row(
                                 children: [
-                                  Icon(Icons.star,color: Colors.yellow,),
-                                  Icon(Icons.star,color: Colors.yellow,),
-                                  Icon(Icons.star,color: Colors.yellow,),
-                                  Icon(Icons.star,color: Colors.yellow,),
-                                  Icon(Icons.star,color: Colors.yellow,),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
+                                  Icon(Icons.star,color: Color(0xFFFBC02D),),
                                 ],
                               ),
                             ),
@@ -1093,7 +1028,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 60,
+      height: 40,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -1249,7 +1184,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   onTap: () async {
                     final Uri emailUri = Uri(
                       scheme: 'mailto',
-                      path: '${featured_detailModel!.data!.whatsapp}', // Replace with actual email
+                      path: '${featured_detailModel!.data!.email}', // Replace with actual email
                       query: 'subject=Property Inquiry&body=Hi, I saw your property on Akarat.',
                     );
 
@@ -1292,6 +1227,26 @@ class _Featured_DetailState extends State<Featured_Detail> {
       ),
     );
   }
+}
+
+BoxDecoration _iconBoxDecoration() {
+  return BoxDecoration(
+    borderRadius: BorderRadius.circular(20),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.withOpacity(0.3),
+        blurRadius: 2,
+        spreadRadius: 0.1,
+        offset: const Offset(0, 1),
+      ),
+      const BoxShadow(
+        color: Colors.white,
+        offset: Offset(0.0, 0.0),
+        blurRadius: 0.0,
+        spreadRadius: 0.0,
+      ),
+    ],
+  );
 }
 class Page1 extends StatelessWidget {
   const Page1({super.key});

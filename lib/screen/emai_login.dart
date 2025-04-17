@@ -5,6 +5,7 @@ import 'package:Akarat/model/registermodel.dart';
 import 'package:Akarat/screen/login.dart';
 import 'package:Akarat/screen/login_page.dart';
 import 'package:Akarat/screen/my_account.dart';
+import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/utils/Validator.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -75,7 +76,7 @@ RegisterModel? registerModel;
       });
     }
   }
-
+  bool _showClose = true;
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
@@ -86,26 +87,68 @@ RegisterModel? registerModel;
         body: SingleChildScrollView(
         child: Column(
         children: <Widget>[
+          Stack(
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 0, right: 16),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() => _showClose = false);
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => Profile_Login(),
+                      ));
+                    },
+                    child: AnimatedScale(
+                      scale: _showClose ? 1.0 : 0.0,
+                      duration: Duration(milliseconds: 1000),
+                      curve: Curves.easeInOut,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 6,
+                              offset: Offset(2, 2),
+                            ),
+                          ],
+                        ),
+                        child: Image.asset(
+                          "assets/images/close1.png",
+                          height: 18,
+                          width: 18,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         //logo
           Padding(
-        padding: const EdgeInsets.only(top: 150.0),
-    child: Center(
-    child: SizedBox(
-    width: screenSize.width*0.3,
-    height: screenSize.height*0.06,
-    child: Image.asset('assets/images/app_icon.png')),
-    ),
-    ),
+            padding: const EdgeInsets.only(top: 100.0),
+            child: Center(
+              child: SizedBox(
+                  width: screenSize.width*0.3,
+                  height: screenSize.height*0.06,
+                  child: Image.asset('assets/images/app_icon.png')),
+            ),
+          ),
           //textlogo
           Padding(
-    padding: const EdgeInsets.only(top:5),
-    child: Center(
-    child: SizedBox(
-        width: screenSize.width*0.5,
-        height: screenSize.height*0.05,
-    child: Image.asset('assets/images/logo-text.png')),
-    ),
-    ),
+            padding: const EdgeInsets.only(top:5),
+            child: Center(
+              child: SizedBox(
+                  width: screenSize.width*0.5,
+                  height: screenSize.height*0.05,
+                  child: Image.asset('assets/images/logo-text.png')),
+            ),
+          ),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
             padding: const EdgeInsets.all(16),
@@ -173,7 +216,7 @@ RegisterModel? registerModel;
       width: double.infinity,
       child: Row(
         children: [
-          Text(data, style: const TextStyle(color: Colors.grey)),
+          Text(data, style: const TextStyle(color: Colors.grey,fontSize: 16)),
           const Spacer(),
           const Icon(Icons.check, color: Colors.green),
         ],
@@ -183,8 +226,9 @@ RegisterModel? registerModel;
 
   Widget _passwordField() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      height: 50,
       decoration: _boxDecoration(),
+      padding:  EdgeInsets.symmetric(horizontal: 12,vertical: 4),
       child: TextFormField(
         controller: passwordController,
         obscureText: !passwordVisible,

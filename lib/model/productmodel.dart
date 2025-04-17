@@ -23,12 +23,12 @@ class Data {
   String? address;
   String? phoneNumber;
   String? whatsapp;
+  String? email;
   String? location;
   String? description;
   String? paymentPeriod;
   int? bedrooms;
   int? bathrooms;
-  String? email;
   String? squareFeet;
   String? purpose;
   String? propertyType;
@@ -45,7 +45,10 @@ class Data {
   String? furnishedStatus;
   String? agent;
   int? agentId;
+  int? agencyId;
   int? closedDeals;
+  String? zoneName;
+  String? reference;
   String? agentImage;
   List<RecommendedProperties>? recommendedProperties;
   RegulatoryInfo? regulatoryInfo;
@@ -57,6 +60,7 @@ class Data {
         this.address,
         this.phoneNumber,
         this.whatsapp,
+        this.email,
         this.location,
         this.description,
         this.paymentPeriod,
@@ -64,7 +68,6 @@ class Data {
         this.bathrooms,
         this.squareFeet,
         this.purpose,
-        this.email,
         this.propertyType,
         this.latitude,
         this.longitude,
@@ -79,7 +82,10 @@ class Data {
         this.furnishedStatus,
         this.agent,
         this.agentId,
+        this.agencyId,
         this.closedDeals,
+        this.zoneName,
+        this.reference,
         this.agentImage,
         this.recommendedProperties,
         this.regulatoryInfo});
@@ -91,11 +97,11 @@ class Data {
     address = json['address'];
     phoneNumber = json['phone_number'];
     whatsapp = json['whatsapp'];
+    email = json['email'];
     location = json['location'];
     description = json['description'];
     paymentPeriod = json['payment_period'];
     bedrooms = json['bedrooms'];
-    email = json['email'];
     bathrooms = json['bathrooms'];
     squareFeet = json['square_feet'];
     purpose = json['purpose'];
@@ -128,7 +134,10 @@ class Data {
     furnishedStatus = json['furnished_status'];
     agent = json['agent'];
     agentId = json['agent_id'];
+    agencyId = json['agency_id'];
     closedDeals = json['closed_deals'];
+    zoneName = json['zone_name'];
+    reference = json['reference'];
     agentImage = json['agent_image'];
     if (json['recommended_properties'] != null) {
       recommendedProperties = <RecommendedProperties>[];
@@ -149,11 +158,11 @@ class Data {
     data['address'] = this.address;
     data['phone_number'] = this.phoneNumber;
     data['whatsapp'] = this.whatsapp;
+    data['email'] = this.email;
     data['location'] = this.location;
     data['description'] = this.description;
     data['payment_period'] = this.paymentPeriod;
     data['bedrooms'] = this.bedrooms;
-    data['email'] = this.email;
     data['bathrooms'] = this.bathrooms;
     data['square_feet'] = this.squareFeet;
     data['purpose'] = this.purpose;
@@ -177,7 +186,10 @@ class Data {
     data['furnished_status'] = this.furnishedStatus;
     data['agent'] = this.agent;
     data['agent_id'] = this.agentId;
+    data['agency_id'] = this.agencyId;
     data['closed_deals'] = this.closedDeals;
+    data['zone_name'] = this.zoneName;
+    data['reference'] = this.reference;
     data['agent_image'] = this.agentImage;
     if (this.recommendedProperties != null) {
       data['recommended_properties'] =
@@ -246,7 +258,6 @@ class RecommendedProperties {
   String? location;
   String? phoneNumber;
   String? whatsapp;
-  String? email;
   List<Media>? media;
   int? bedrooms;
   int? bathrooms;
@@ -260,7 +271,6 @@ class RecommendedProperties {
         this.location,
         this.phoneNumber,
         this.whatsapp,
-        this.email,
         this.media,
         this.bedrooms,
         this.bathrooms,
@@ -274,7 +284,6 @@ class RecommendedProperties {
     location = json['location'];
     phoneNumber = json['phone_number'];
     whatsapp = json['whatsapp'];
-    email = json['email'];
     if (json['media'] != null) {
       media = <Media>[];
       json['media'].forEach((v) {
@@ -295,7 +304,6 @@ class RecommendedProperties {
     data['location'] = this.location;
     data['phone_number'] = this.phoneNumber;
     data['whatsapp'] = this.whatsapp;
-    data['email'] = this.email;
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
     }
@@ -307,34 +315,26 @@ class RecommendedProperties {
 }
 
 class RegulatoryInfo {
-  String? reference;
-  String? brokerLicense;
-  String? zoneName;
+  String? ded;
   String? dldPermitNumber;
-  String? agentLicense;
+  String? rera;
+  String? brn;
 
-  RegulatoryInfo(
-      {this.reference,
-        this.brokerLicense,
-        this.zoneName,
-        this.dldPermitNumber,
-        this.agentLicense});
+  RegulatoryInfo({this.ded, this.dldPermitNumber, this.rera, this.brn});
 
   RegulatoryInfo.fromJson(Map<String, dynamic> json) {
-    reference = json['reference'];
-    brokerLicense = json['broker_license'];
-    zoneName = json['zone_name'];
+    ded = json['ded'];
     dldPermitNumber = json['dld_permit_number'];
-    agentLicense = json['agent_license'];
+    rera = json['rera'];
+    brn = json['brn'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['reference'] = this.reference;
-    data['broker_license'] = this.brokerLicense;
-    data['zone_name'] = this.zoneName;
+    data['ded'] = this.ded;
     data['dld_permit_number'] = this.dldPermitNumber;
-    data['agent_license'] = this.agentLicense;
+    data['rera'] = this.rera;
+    data['brn'] = this.brn;
     return data;
   }
 }

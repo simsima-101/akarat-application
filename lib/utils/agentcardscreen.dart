@@ -101,7 +101,7 @@ class Agentcardscreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                        )
+                        ),const SizedBox(height: 5,)
                       ],
                     ),
                   ),
@@ -120,10 +120,10 @@ class Agentcardscreen extends StatelessWidget {
         height: screenSize.height * 0.035,
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(width: 1),
+          border: Border.all(width: 1,color: Color(0xFFE0E0E0)),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
+              color: Colors.grey.withOpacity(0.2),
               offset: Offset(4, 4),
               blurRadius: 8,
               spreadRadius: 2,

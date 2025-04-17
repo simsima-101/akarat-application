@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:Akarat/model/searchmodel.dart';
 import 'package:Akarat/model/togglemodel.dart';
 import 'package:Akarat/screen/login.dart';
-import 'package:Akarat/screen/sample.dart';
 import 'package:Akarat/screen/search.dart';
 import 'package:Akarat/screen/searchexample.dart';
 import 'package:Akarat/screen/shimmer.dart';
@@ -24,8 +23,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import 'package:http/io_client.dart';
-
-import 'example.dart';
 
 void main() {
   runApp(const Home());
@@ -337,13 +334,13 @@ class _MyHomePageState extends State<HomeDemo> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.8),
+                                                  color: Colors.grey.withOpacity(0.4),
                                                   offset: Offset(7, 7),
                                                   blurRadius: 8,
                                                   spreadRadius: 2,
                                                 ),
                                                 BoxShadow(
-                                                  color: Colors.white.withOpacity(0.8),
+                                                  color: Colors.white.withOpacity(0.3),
                                                   offset: Offset(-4, -4),
                                                   blurRadius: 8,
                                                   spreadRadius: 2,
@@ -474,7 +471,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
+                                padding: const EdgeInsets.only(top: 2.0),
                                 child: Row(
                                   children: [
                                     //logo 1
@@ -496,7 +493,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey.withOpacity(0.8),
                                                   offset: Offset(7, 7),
                                                   blurRadius: 8,
                                                   spreadRadius: 2,
@@ -549,7 +546,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey.withOpacity(0.8),
                                                   offset: Offset(7, 7),
                                                   blurRadius: 8,
                                                   spreadRadius: 2,
@@ -603,7 +600,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey.withOpacity(0.8),
                                                   offset: Offset(7, 7),
                                                   blurRadius: 8,
                                                   spreadRadius: 2,
@@ -645,72 +642,77 @@ class _MyHomePageState extends State<HomeDemo> {
                                 padding: const EdgeInsets.only(
                                     left: 10.0, right: 10.0, top: 20.0, bottom: 0),
                                 child:
-                                Container(
-                                  width: screenSize.width * 1.0,
-                                  height: 150,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.5),
-                                        offset: Offset(4, 4),
-                                        blurRadius: 8,
-                                        spreadRadius: 2,
-                                      ),
-                                      BoxShadow(
-                                        color: Colors.white.withOpacity(0.8),
-                                        offset: Offset(-4, -4),
-                                        blurRadius: 8,
-                                        spreadRadius: 2,
-                                      ),
-                                    ],
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    /* mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,*/
-                                    children: [
-                                      Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 10,left: 00,right: 0),
-                                          child: Container(
-                                            width: screenSize.width*0.4,
-                                            height: 100,
-                                            // color: Colors.grey,
-                                            padding: const EdgeInsets.only(top: 10,left: 10,right: 5),
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text("New Projects            ",style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 18,fontWeight: FontWeight.bold
-                                                ),textAlign: TextAlign.left,),
-                                                Text("Discover more about the UAE "
-                                                    "real estate market",style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 14,
-                                                ),
-                                                  softWrap: true,)
-                                              ],
-                                            ),
-                                          )
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 0.0,right: 0),
-                                        child: Container(
-                                            height: screenSize.height*0.15,
-                                            width: screenSize.width*0.5,
-                                            decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(10)
-                                            ),
-                                            // color: Colors.grey,
-                                            child: Image.asset('assets/images/banner1.png',fit: BoxFit.contain,)
+                                GestureDetector(
+                                  onTap: ()async{
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> New_Projects()));
+                                  },
+                                  child: Container(
+                                    width: screenSize.width * 1.0,
+                                    height: 150,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.5),
+                                          offset: Offset(4, 4),
+                                          blurRadius: 8,
+                                          spreadRadius: 2,
                                         ),
-                                      ),
+                                        BoxShadow(
+                                          color: Colors.white.withOpacity(0.8),
+                                          offset: Offset(-4, -4),
+                                          blurRadius: 8,
+                                          spreadRadius: 2,
+                                        ),
+                                      ],
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      /* mainAxisAlignment: MainAxisAlignment.start,
+                                                        crossAxisAlignment: CrossAxisAlignment.center,*/
+                                      children: [
+                                        Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 10,left: 00,right: 0),
+                                            child: Container(
+                                              width: screenSize.width*0.4,
+                                              height: 100,
+                                              // color: Colors.grey,
+                                              padding: const EdgeInsets.only(top: 10,left: 10,right: 5),
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.start,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text("New Projects            ",style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 18,fontWeight: FontWeight.bold
+                                                  ),textAlign: TextAlign.left,),
+                                                  Text("Discover more about the UAE "
+                                                      "real estate market",style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 14,
+                                                  ),
+                                                    softWrap: true,)
+                                                ],
+                                              ),
+                                            )
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 0.0,right: 0),
+                                          child: Container(
+                                              height: screenSize.height*0.15,
+                                              width: screenSize.width*0.5,
+                                              decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(10)
+                                              ),
+                                              // color: Colors.grey,
+                                              child: Image.asset('assets/images/banner1.png',fit: BoxFit.contain,)
+                                          ),
+                                        ),
 
-                                    ],
-                                  ),),),
+                                      ],
+                                    ),),
+                                ),),
                               //  Text
                               Container(
                                 margin: const EdgeInsets.only(top: 20,left: 5,),
@@ -847,7 +849,8 @@ class _MyHomePageState extends State<HomeDemo> {
                                               SizedBox(height: 10),
                                               Text(
                                                 item.title.toString(),
-                                                style: TextStyle(fontSize: 16, height: 1.4),
+                                                style: TextStyle(fontSize: 16, height: 1.4),overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
                                               ),
                                               SizedBox(height: 5),
                                               Text(
@@ -868,6 +871,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                                       item.location.toString(),
                                                       style: TextStyle(fontSize: 13),
                                                       overflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
                                                     ),
                                                   ),
                                                 ],
@@ -890,69 +894,56 @@ class _MyHomePageState extends State<HomeDemo> {
                                               ),
                                               SizedBox(height: 15),
                                               Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                spacing: 5,
                                                 children: [
-                                                  ElevatedButton.icon(
-                                                    onPressed: () async {
-                                                      String phone = 'tel:${item.phoneNumber}';
-                                                      try {
-                                                        final bool launched = await launchUrlString(
-                                                          phone,
-                                                          mode: LaunchMode.externalApplication, // ✅ Force external
-                                                        );
-                                                        if (!launched) {
-                                                          print("❌ Could not launch dialer");
-                                                        }
-                                                      } catch (e) {
-                                                        print("❌ Exception: $e");
-                                                      }
-                                                    },
-                                                    icon: Icon(Icons.call, color: Colors.red),
-                                                    label: Text("Call", style: TextStyle(color: Colors.black)),
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.grey[100],
-                                                      shape: RoundedRectangleBorder(
-                                                        borderRadius: BorderRadius.circular(10),
-                                                      ),
-                                                      elevation: 2,
-                                                      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 8),
-                                                    ),
-                                                  ),
-                                                  ElevatedButton.icon(
-                                                    onPressed: () async {
-                                                      final phone = item.whatsapp; // without plus
-                                                      final message = Uri.encodeComponent("Hello");
-                                                      // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
-                                                      // final url = Uri.parse("https://wa.me/?text=hello");
-                                                      final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-
-                                                      if (await canLaunchUrl(url)) {
+                                                  Expanded(
+                                                    child: ElevatedButton.icon(
+                                                      onPressed: () async {
+                                                        String phone = 'tel:${item.phoneNumber}';
                                                         try {
-                                                          final launched = await launchUrl(
-                                                            url,
-                                                            mode: LaunchMode.externalApplication, // 💥 critical on Android 15
+                                                          final bool launched = await launchUrlString(
+                                                            phone,
+                                                            mode: LaunchMode.externalApplication,
                                                           );
-
-                                                          if (!launched) {
-                                                            print("❌ Could not launch WhatsApp");
-                                                          }
+                                                          if (!launched) print("❌ Could not launch dialer");
                                                         } catch (e) {
                                                           print("❌ Exception: $e");
                                                         }
-                                                      } else {
-                                                        print("❌ WhatsApp not available or URL not supported");
-                                                      }
-                                                    },
-                                                    icon: Image.asset("assets/images/whats.png", height: 20),
-                                                    label: Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.grey[100],
-                                                      shape: RoundedRectangleBorder(
-                                                        borderRadius: BorderRadius.circular(10),
+                                                      },
+                                                      icon: const Icon(Icons.call, color: Colors.red),
+                                                      label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: Colors.grey[100],
+                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                        elevation: 2,
+                                                        padding: const EdgeInsets.symmetric(vertical: 10),
                                                       ),
-                                                      elevation: 2,
-                                                      padding: EdgeInsets.symmetric(horizontal: 35, vertical: 8),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 10),
+                                                  Expanded(
+                                                    child: ElevatedButton.icon(
+                                                      onPressed: () async {
+                                                        final phone = item.whatsapp;
+                                                        final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+                                                        if (await canLaunchUrl(url)) {
+                                                          try {
+                                                            final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                            if (!launched) print("❌ Could not launch WhatsApp");
+                                                          } catch (e) {
+                                                            print("❌ Exception: $e");
+                                                          }
+                                                        } else {
+                                                          print("❌ WhatsApp not available");
+                                                        }
+                                                      },
+                                                      icon: Image.asset("assets/images/whats.png", height: 20),
+                                                      label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: Colors.grey[100],
+                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                        elevation: 2,
+                                                        padding: const EdgeInsets.symmetric(vertical: 10),
+                                                      ),
                                                     ),
                                                   ),
                                                 ],

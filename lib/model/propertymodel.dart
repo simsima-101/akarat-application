@@ -19,7 +19,7 @@ class ProjectDetailModel {
 class Data {
   int? id;
   String? title;
-  int? price;
+  String? price;
   String? phoneNumber;
   String? whatsapp;
   String? description;
@@ -32,10 +32,10 @@ class Data {
   String? agentImage;
   String? deliveryDate;
   int? paymentPlan;
-  int? governmentFee;
-  int? downPayment;
-  int? duringConstruction;
-  int? onHandover;
+  Null? governmentFee;
+  Null? downPayment;
+  Null? duringConstruction;
+  Null? onHandover;
   String? projectAnnouncement;
   String? constructionStarted;
   String? expectedCompletion;
