@@ -53,6 +53,15 @@ class _SearchState extends State<Search> {
     purpose = "Rent"; // Set initial purpose
     propertyApi(purpose);
     selectedtype=0;
+
+
+    chartData = List.generate(
+      96,
+          (index) => Data(
+        500 + index * 100.0,
+        yValues[index % yValues.length].toDouble(),
+      ),
+    );
   }
 
   @override
@@ -60,8 +69,8 @@ class _SearchState extends State<Search> {
     _rangeController.dispose();
     super.dispose();
   }
-  final List<Data> chartData = List.generate(
-      96, (index) => Data(500 + index * 100.0, (index % 10 + 1) * 10));
+  final List<int> yValues = [5000, 3000, 9000,7000,10000,1500,4000,];
+  late List<Data> chartData;
  /* final List<Data> chartData = <Data>[
     Data(x: 500, y: 5000),
     Data(x: 600, y: 3000),
@@ -186,31 +195,30 @@ class _SearchState extends State<Search> {
     }
   }
 
-  Future<void> toggledApi(token,property_id) async {
+  Future<void> toggledApi( token,  propertyId) async {
+    final url = Uri.parse('https://akarat.com/api/toggle-saved-property');
+
     try {
       final response = await http.post(
-        Uri.parse('https://akarat.com/api/toggle-saved-property'),
-        headers: <String, String>{'Authorization':'Bearer $token',
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode(<String, dynamic>{
-          "property_id": property_id,
-          // Add any other data you want to send in the body
+        body: jsonEncode({
+          "property_id": propertyId,
         }),
       );
-      if (response.statusCode == 200) {
-        Map<String, dynamic> jsonData = json.decode(response.body);
-        toggleModel = ToggleModel.fromJson(jsonData);
-        print(" Succesfully");
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
-      } else {
-        throw Exception(" failed");
 
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        toggleModel = ToggleModel.fromJson(jsonData);
+        debugPrint("✅ Property toggled successfully.");
+      } else {
+        debugPrint("❌ Toggle failed with status: ${response.statusCode}");
       }
     } catch (e) {
-      setState(() {
-        print('Error: $e');
-      });
+      debugPrint("❌ Error during toggle: $e");
     }
   }
 
@@ -379,7 +387,7 @@ class _SearchState extends State<Search> {
                                     decoration: _iconBoxDecoration(),
                                     child: GestureDetector(
                                       onTap: () {
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => LocationSearchScreen()));
+                                        Navigator.of(context).pop();
                                       },
                                       child: Image.asset(
                                         "assets/images/ar-left.png",
@@ -1597,81 +1605,62 @@ class _SearchState extends State<Search> {
                                           ),
                                           Row(
                                             children: [
-                                              Padding(padding: const EdgeInsets.only(left: 30,top: 20,bottom: 15),
-                                                child: ElevatedButton.icon(onPressed: () async {
-                                                  String phone = 'tel:${searchModel!.data![index].phone}';
-                                                  try {
-                                                    final bool launched = await launchUrlString(
-                                                      phone,
-                                                      mode: LaunchMode.externalApplication, // ✅ Force external
-                                                    );
-                                                    if (!launched) {
-                                                      print("❌ Could not launch dialer");
-                                                    }
-                                                  } catch (e) {
-                                                    print("❌ Exception: $e");
-                                                  }
-                                                },
-                                                    label: Text("Call",style: TextStyle(
-                                                        color: Colors.black
-                                                    ),),
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.grey[50],
-                                                      alignment: Alignment.center,
-                                                      elevation: 1,
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                      padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 40),
-                                                      textStyle: TextStyle(letterSpacing: 0.5,
-                                                          color: Colors.black,fontSize: 15,fontWeight: FontWeight.bold
-                                                      ),
-                                                    ),
-                                                    icon: Icon(Icons.call,color: Colors.red,)),
-                                              ),
-                                              // Text(product.description),
-                                              Padding(padding: const EdgeInsets.only(left: 15,top: 20,bottom: 15),
-                                                child: ElevatedButton.icon( onPressed: () async {
-                                                  final phone = searchModel!.data![index].whatsapp; // without plus
-                                                  final message = Uri.encodeComponent("Hello");
-                                                  // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
-                                                  // final url = Uri.parse("https://wa.me/?text=hello");
-                                                  final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-
-                                                  if (await canLaunchUrl(url)) {
+                                              const SizedBox(width: 10,),
+                                              Expanded(
+                                                child: ElevatedButton.icon(
+                                                  onPressed: () async {
+                                                    String phone = 'tel:${searchModel!.data![index].phone}';
                                                     try {
-                                                      final launched = await launchUrl(
-                                                        url,
-                                                        mode: LaunchMode.externalApplication, // 💥 critical on Android 15
+                                                      final bool launched = await launchUrlString(
+                                                        phone,
+                                                        mode: LaunchMode.externalApplication,
                                                       );
-
-                                                      if (!launched) {
-                                                        print("❌ Could not launch WhatsApp");
-                                                      }
+                                                      if (!launched) print("❌ Could not launch dialer");
                                                     } catch (e) {
                                                       print("❌ Exception: $e");
                                                     }
-                                                  } else {
-                                                    print("❌ WhatsApp not available or URL not supported");
-                                                  }
-                                                },
-                                                    label: Text("Watsapp",style: TextStyle(
-                                                        color: Colors.black
-                                                    ),),
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.grey[50],
-                                                      alignment: Alignment.center,
-                                                      elevation: 1,
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                      padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 30),
-                                                      textStyle: TextStyle(letterSpacing: 0.5,
-                                                          color: Colors.black,fontSize: 12,fontWeight: FontWeight.bold
-                                                      ),
-                                                    ),
-                                                    icon: Image.asset("assets/images/whats.png",height: 20,)
+                                                  },
+                                                  icon: const Icon(Icons.call, color: Colors.red),
+                                                  label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.grey[100],
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                    elevation: 2,
+                                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                                  ),
                                                 ),
                                               ),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: ElevatedButton.icon(
+                                                  onPressed: () async {
+                                                    final phone = searchModel!.data![index].whatsapp;
+                                                    final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+                                                    if (await canLaunchUrl(url)) {
+                                                      try {
+                                                        final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                        if (!launched) print("❌ Could not launch WhatsApp");
+                                                      } catch (e) {
+                                                        print("❌ Exception: $e");
+                                                      }
+                                                    } else {
+                                                      print("❌ WhatsApp not available");
+                                                    }
+                                                  },
+                                                  icon: Image.asset("assets/images/whats.png", height: 20),
+                                                  label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.grey[100],
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                    elevation: 2,
+                                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10,),
                                             ],
                                           ),
-
+                                        const SizedBox(height: 10,)
                                         ],
                                       ),
                                     ),

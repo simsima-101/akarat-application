@@ -59,42 +59,55 @@ class _AboutAgentState extends State<AboutAgent> {
 
   AgentProperties? agentProperties;
 
-  Future<void> fetchProducts(data) async {
-    // you can replace your api link with this link
-    final response = await http.get(
-        Uri.parse('https://akarat.com/api/agent/$data'));
-    Map<String, dynamic> jsonData = json.decode(response.body);
-    debugPrint("Status Code: ${response.statusCode}");
-    if (response.statusCode == 200) {
-      debugPrint("API Response: ${jsonData.toString()}");
-      debugPrint("API 200: ");
-      AgentDetail parsedModel = AgentDetail.fromJson(jsonData);
-      debugPrint("Parsed ProductModel: ${parsedModel.toString()}");
-      setState(() {
-        debugPrint("API setState: ");
-        String title = jsonData['title'] ?? 'No title';
-        debugPrint("API title: $title");
-        agentDetail = parsedModel;
-      });
+  Future<void> fetchProducts(String data) async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://akarat.com/api/agent/$data'),
+      );
 
-      debugPrint("productModels title_after: ${agentDetail!.serviceAreas}");
-    } else {
-      // Handle error if needed
+      debugPrint("Status Code: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        debugPrint("API Response: $jsonData");
+
+        final AgentDetail parsedModel = AgentDetail.fromJson(jsonData);
+
+        if (mounted) {
+          setState(() {
+            agentDetail = parsedModel;
+          });
+        }
+
+        debugPrint("Agent service areas: ${agentDetail?.serviceAreas}");
+      } else {
+        debugPrint("❌ API Error Status: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("❌ Exception while fetching agent: $e");
     }
   }
 
-  Future<void> getFilesApi(user) async {
-    final response = await http.get(
-        Uri.parse("https://akarat.com/api/agent/properties/$user"));
-    var data = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      AgentProperties feature = AgentProperties.fromJson(data);
+  Future<void> getFilesApi(String user) async {
+    try {
+      final response = await http.get(
+        Uri.parse("https://akarat.com/api/agent/properties/$user"),
+      );
 
-      setState(() {
-        agentProperties = feature;
-      });
-    } else {
-      //return FeaturedModel.fromJson(data);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final AgentProperties feature = AgentProperties.fromJson(data);
+
+        if (mounted) {
+          setState(() {
+            agentProperties = feature;
+          });
+        }
+      } else {
+        debugPrint("❌ API Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("❌ Exception in getFilesApi: $e");
     }
   }
 
@@ -198,7 +211,7 @@ class _AboutAgentState extends State<AboutAgent> {
                       children: [
                         GestureDetector(
                           onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> FindAgent()));
+                            Navigator.of(context).pop();
                           },
                           child:
                           Container(

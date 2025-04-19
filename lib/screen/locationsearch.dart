@@ -93,7 +93,8 @@ class _SearchScreenState extends State<SearchScreen> {
                 children: [
                   GestureDetector(
                       onTap: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: "Rent")));
+                        Navigator.of(context).pop();
+                        // Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: "Rent")));
                       },
                       child: Icon(Icons.arrow_back, color: Colors.red)),
                   SizedBox(width: 8),

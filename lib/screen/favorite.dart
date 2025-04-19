@@ -97,7 +97,7 @@ class _FavoriteState extends State<Favorite> {
                               child:   Row(
                                 children: [GestureDetector(
                                   onTap: (){
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                                    Navigator.of(context).pop();
                                   },
                                   child:   Container(
                                     margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),

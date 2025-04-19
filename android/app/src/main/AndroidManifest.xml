@@ -10,6 +10,10 @@
         android:label="Akarat"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBhtsmBxXi6PNzVu9iAGN-F6HtDieUy8-I" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -27,9 +31,6 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
-
-            <meta-data android:name="com.google.android.geo.API_KEY"
-                android:value="Enter your API key here"/>
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

@@ -94,6 +94,17 @@ class FliterList extends StatelessWidget {
     purpose = "Rent"; // Set initial purpose
     propertyApi(purpose);
     selectedtype=0;
+
+
+    chartData = List.generate(
+      96,
+          (index) => Data(
+        500 + index * 100.0,
+        yValues[index % yValues.length].toDouble(),
+      ),
+    );
+
+
   }
     late bool isSelected = true;
     double start = 3000;
@@ -106,8 +117,8 @@ class FliterList extends StatelessWidget {
       _rangeController.dispose();
       super.dispose();
     }
-    final List<Data> chartData = List.generate(
-        96, (index) => Data(500 + index * 100.0, (index % 10 + 1) * 10));
+    final List<int> yValues = [5000, 3000, 9000,7000,10000,1500,4000,];
+    late List<Data> chartData;
    /* final List<Data> chartData = <Data>[
       Data(x: 500, y: 5000),
       Data(x: 600, y: 3000),
@@ -255,25 +266,25 @@ class FliterList extends StatelessWidget {
       'Daily',
     ];
     Future<void> propertyApi(String purpose) async {
+      final url = Uri.parse("https://akarat.com/api/property-types/$purpose");
+
       try {
-        final response = await http
-            .get(Uri.parse("https://akarat.com/api/property-types/$purpose"))
-            .timeout(const Duration(seconds: 10)); // ⏱ Timeout prevents slow hang
+        final response = await http.get(url).timeout(const Duration(seconds: 10));
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
-          final feature = PropertyTypeModel.fromJson(data);
+          final fetchedTypes = PropertyTypeModel.fromJson(data);
 
           if (mounted) {
             setState(() {
-              propertyTypeModel = feature;
+              propertyTypeModel = fetchedTypes;
             });
           }
         } else {
-          print("Property API failed with status: ${response.statusCode}");
+          debugPrint("❌ Property API failed [${response.statusCode}]: ${response.reasonPhrase}");
         }
       } catch (e) {
-        print("Property API error: $e");
+        debugPrint("❌ Property API error: $e");
       }
     }
 
@@ -404,6 +415,7 @@ class FliterList extends StatelessWidget {
                             decoration: _iconBoxDecoration(),
                             child: GestureDetector(
                               onTap: () {
+                                // Navigator.of(context).pop();
                                 Navigator.push(context, MaterialPageRoute(builder: (context) => Filter(data: "Rent")));
                               },
                               child: Image.asset(
@@ -437,11 +449,10 @@ class FliterList extends StatelessWidget {
               ),
               //Searchbar
               Padding(
-                padding: const EdgeInsets.only(top: 40, left: 20, right: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 10),
                 child: GestureDetector(
                   onTap: (){
                     Navigator.push(context, MaterialPageRoute(builder: (context)=> LocationSearchScreen()));
-
                   },
                   child: Container(
                     width: 400,
@@ -484,7 +495,7 @@ class FliterList extends StatelessWidget {
               ),
               //filter
               Padding(
-                padding: const EdgeInsets.only(top: 20,left: 10,right: 0),
+                padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 15),
                 child: Container(
                   // margin: const EdgeInsets.symmetric(vertical: 1),
                   height: 50,
@@ -1405,7 +1416,7 @@ class FliterList extends StatelessWidget {
               ),
               //filter
               Padding(
-                  padding: const EdgeInsets.only(top: 5,left: 15,right: 0,bottom: 15),
+                  padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 5),
                   child: Container(
                     alignment: Alignment.topLeft,
                     height: 50,
@@ -1463,6 +1474,7 @@ class FliterList extends StatelessWidget {
                   )
               ),
              ListView.builder(
+               padding: const EdgeInsets.all(0),
                scrollDirection: Axis.vertical,
                    physics: const ScrollPhysics(),
                    itemCount: filterModel.data?.length ?? 0,
@@ -1476,12 +1488,12 @@ class FliterList extends StatelessWidget {
                      shadowColor: Colors.white,
                      color: Colors.white,
                        child: GestureDetector(
-                       onTap: () {
+                       onTap: () async{
                      String id = filterModel.data![index].id.toString();
                      Navigator.push(context, MaterialPageRoute(builder: (context) =>
                          Product_Detail(data: id)));
                      //Navigator.push(context, MaterialPageRoute(builder: (context) => Blog_Detail(data:blogModel!.data![index].id.toString())));
-                   },
+                      },
                      child: Padding(
                        padding: const EdgeInsets.only(left: 5.0,top: 1,right: 5),
                        child: Column(
@@ -1588,106 +1600,83 @@ class FliterList extends StatelessWidget {
                                ),
                              ],
                            ),
-                          /* Row(
-                             children: [
-                               Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 5),
-                                 child: Image.asset("assets/images/bed.png",height: 13,),
-                               ),
-                               Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                   child: Text(filterModel.data![index].bedrooms.toString())
-                               ),
-                               Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
-                                 child: Image.asset("assets/images/bath.png",height: 13,),
-                               ),
-                               Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                   child: Text(filterModel.data![index].bathrooms.toString())
-                               ),
-                               Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
-                                 child: Image.asset("assets/images/messure.png",height: 13,),
-                               ),
-                               Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                   child: Text(filterModel.data![index].squareFeet.toString())
-                               ),
-                             ],
-                           ),*/
+                           SizedBox(height: 8),
+                           Padding(
+                             padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                             child: Row(
+                               children: [
+                                 Image.asset("assets/images/bed.png", height: 13),
+                                 SizedBox(width: 5),
+                                 Text(filterModel.data![index].bedrooms.toString()),
+                                 SizedBox(width: 10),
+                                 Image.asset("assets/images/bath.png", height: 13),
+                                 SizedBox(width: 5),
+                                 Text(filterModel.data![index].bathrooms.toString()),
+                                 SizedBox(width: 10),
+                                 Image.asset("assets/images/messure.png", height: 13),
+                                 SizedBox(width: 5),
+                                 Text(filterModel.data![index].squareFeet.toString()),
+                               ],
+                             ),
+                           ),
                            Row(
                              children: [
-                               Padding(padding: const EdgeInsets.only(left: 30,top: 10,bottom: 15),
+                               const SizedBox(width: 10),
+                               Expanded(
                                  child: ElevatedButton.icon(
-                                     onPressed: () async {
-                                       String phone = 'tel:${filterModel.data![index].phoneNumber}';
+                                   onPressed: () async {
+                                     String phone = 'tel:${filterModel.data![index].phoneNumber}';
+                                     try {
+                                       final bool launched = await launchUrlString(
+                                         phone,
+                                         mode: LaunchMode.externalApplication,
+                                       );
+                                       if (!launched) print("❌ Could not launch dialer");
+                                     } catch (e) {
+                                       print("❌ Exception: $e");
+                                     }
+                                   },
+                                   icon: const Icon(Icons.call, color: Colors.red),
+                                   label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                   style: ElevatedButton.styleFrom(
+                                     backgroundColor: Colors.grey[100],
+                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                     elevation: 2,
+                                     padding: const EdgeInsets.symmetric(vertical: 10),
+                                   ),
+                                 ),
+                               ),
+                               const SizedBox(width: 10),
+                               Expanded(
+                                 child: ElevatedButton.icon(
+                                   onPressed: () async {
+                                     final phone = filterModel.data![index].whatsapp;
+                                     final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+                                     if (await canLaunchUrl(url)) {
                                        try {
-                                         final bool launched = await launchUrlString(
-                                           phone,
-                                           mode: LaunchMode.externalApplication, // ✅ Force external
-                                         );
-                                         if (!launched) {
-                                           print("❌ Could not launch dialer");
-                                         }
+                                         final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+                                         if (!launched) print("❌ Could not launch WhatsApp");
                                        } catch (e) {
                                          print("❌ Exception: $e");
                                        }
-                                     },
-                                     label: Text("call",style: TextStyle(
-                                         color: Colors.black
-                                     ),),
-                                     style: ElevatedButton.styleFrom(
-                                       backgroundColor: Colors.grey[50],
-                                       alignment: Alignment.center,
-                                       elevation: 1,
-                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                       padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 40),
-                                       textStyle: TextStyle(letterSpacing: 0.5,
-                                           color: Colors.black,fontSize: 15,fontWeight: FontWeight.bold
-                                       ),
-                                     ),
-                                     icon: Icon(Icons.call,color: Colors.red,)),
+                                     } else {
+                                       print("❌ WhatsApp not available");
+                                     }
+                                   },
+                                   icon: Image.asset("assets/images/whats.png", height: 20),
+                                   label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                   style: ElevatedButton.styleFrom(
+                                     backgroundColor: Colors.grey[100],
+                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                     elevation: 2,
+                                     padding: const EdgeInsets.symmetric(vertical: 10),
+                                   ),
+                                 ),
                                ),
-                               // Text(product.description),
-                               Padding(padding: const EdgeInsets.only(left: 15,top: 10,bottom: 15),
-                                 child: ElevatedButton.icon(
-                                     onPressed: () async {
-                                       final phone = filterModel.data![index].whatsapp; // without plus
-                                       final message = Uri.encodeComponent("Hello");
-                                       // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
-                                       // final url = Uri.parse("https://wa.me/?text=hello");
-                                       final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-
-                                       if (await canLaunchUrl(url)) {
-                                         try {
-                                           final launched = await launchUrl(
-                                             url,
-                                             mode: LaunchMode.externalApplication, // 💥 critical on Android 15
-                                           );
-
-                                           if (!launched) {
-                                             print("❌ Could not launch WhatsApp");
-                                           }
-                                         } catch (e) {
-                                           print("❌ Exception: $e");
-                                         }
-                                       } else {
-                                         print("❌ WhatsApp not available or URL not supported");
-                                       }
-                                     },
-                                     label: Text("Watsapp",style: TextStyle(
-                                         color: Colors.black
-                                     ),),
-                                     style: ElevatedButton.styleFrom(
-                                       backgroundColor: Colors.grey[50],
-                                       alignment: Alignment.center,
-                                       elevation: 1,
-                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                       padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 30),
-                                       textStyle: TextStyle(letterSpacing: 0.5,
-                                           color: Colors.black,fontSize: 12,fontWeight: FontWeight.bold
-                                       ),
-                                     ),
-                                     icon: Image.asset("assets/images/whats.png",height: 20,)),
-                               ),
+                               const SizedBox(width: 10),
                              ],
                            ),
-
+                           const SizedBox(height: 10),
                          ],
                        ),
                      ),

@@ -101,16 +101,16 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
         'search=$query&amenities=&property_type='
         '&furnished_status=&bedrooms=&min_price='
         '&max_price=&payment_period=&min_square_feet='
-        '&max_square_feet=&bathrooms=&purpose=newproject'));
+        '&max_square_feet=&bathrooms=&purpose=New%20Projects'));
     var data = jsonDecode(response.body);
     if (response.statusCode == 200) {
-     /* FilterModel feature= FilterModel.fromJson(data);
+      ProjectModel feature= ProjectModel.fromJson(data);
 
       setState(() {
-        filterModel = feature ;
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterList(filterModel: filterModel,)));
+        projectModel = feature ;
 
-      });*/
+      });
+
     } else {
     }
   }
@@ -201,11 +201,23 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
     return Scaffold(
         backgroundColor: Colors.white,
         bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
-
+        appBar: AppBar(
+          title: const Text(
+              "New Projects", style: TextStyle(color: Colors.black,
+              fontWeight: FontWeight.bold)),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.red),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Home())), // ✅ Add close functionality
+          ),
+          centerTitle: true,
+          backgroundColor: Color(0xFFFFFFFF),
+          iconTheme: const IconThemeData(color: Colors.red),
+          elevation: 1,
+        ),
         body: SingleChildScrollView(
         child: Column(
         children: <Widget>[
-          Row(
+          /*Row(
             children: [
               Container(
                 alignment: Alignment.topCenter,
@@ -236,7 +248,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
                 child: GestureDetector(
                   onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+                    Navigator.of(context).pop();
                   },
                   child:  Icon(Icons.arrow_back,color: Colors.red,
                 )
@@ -258,7 +270,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                 ),textAlign: TextAlign.center,),
               ),
             ],
-          ),
+          ),*/
           Container(
             margin: const EdgeInsets.only(top: 15,left: 15,right: 15),
             padding: const EdgeInsets.only(top: 5,left: 5,right: 10),

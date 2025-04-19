@@ -14,6 +14,7 @@ import 'package:Akarat/screen/filter.dart';
 import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/screen/new_projects.dart';
 import 'package:Akarat/screen/profile_login.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -140,12 +141,13 @@ class _MyHomePageState extends State<HomeDemo> {
 
   Future<void> getFilesApi() async {
     try {
-      final response = await http
-          .get(Uri.parse("https://akarat.com/api/featured-properties"))
-          .timeout(const Duration(seconds: 5)); // ⏱ Add timeout
+      final uri = Uri.parse("https://akarat.com/api/featured-properties");
+
+      final response = await http.get(uri).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        // Use compute() for faster parsing on a separate isolate
+        final data = await compute(jsonDecode, response.body);
         final feature = FeaturedModel.fromJson(data);
 
         if (mounted) {
@@ -154,10 +156,10 @@ class _MyHomePageState extends State<HomeDemo> {
           });
         }
       } else {
-        print("API Error: ${response.statusCode}");
+        debugPrint("API Error: ${response.statusCode}");
       }
     } catch (e) {
-      print("API failed: $e"); // 🔍 Catch timeout / no internet
+      debugPrint("API failed: $e");
     }
   }
 

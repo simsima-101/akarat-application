@@ -57,28 +57,31 @@ class _Property_DetailState extends State<Property_Detail> {
 
   ProjectDetailModel? projectDetailModel;
 
-  Future<void> fetchProducts(data) async {
-    // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/new-projects/$data'));
-    Map<String,dynamic> jsonData=json.decode(response.body);
-    debugPrint("Status Code: ${response.statusCode}");
-    if (response.statusCode == 200) {
-      debugPrint("API Response: ${jsonData.toString()}");
-      debugPrint("API 200: ");
-      ProjectDetailModel parsedModel = ProjectDetailModel.fromJson(jsonData);
-      debugPrint("Parsed ProductModel: ${parsedModel.toString()}");
-      setState(() {
-        debugPrint("API setState: ");
-        String title = jsonData['title'] ?? 'No title';
-        debugPrint("API title: $title");
-        projectDetailModel = parsedModel;
+  Future<void> fetchProducts(String data) async {
+    final url = Uri.parse('https://akarat.com/api/new-projects/$data');
 
-      });
+    try {
+      final response = await http.get(url);
+      debugPrint("Status Code: ${response.statusCode}");
 
-      debugPrint("productModels title_after: ${projectDetailModel!.data!.title.toString()}");
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        debugPrint("API Response: $jsonData");
 
-    } else {
-      // Handle error if needed
+        final ProjectDetailModel parsedModel = ProjectDetailModel.fromJson(jsonData);
+
+        if (mounted) {
+          setState(() {
+            projectDetailModel = parsedModel;
+          });
+        }
+
+        debugPrint("✅ Project title: ${projectDetailModel?.data?.title ?? 'No title'}");
+      } else {
+        debugPrint("❌ Failed to fetch project. Status Code: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("❌ Exception occurred: $e");
     }
   }
 
@@ -117,7 +120,7 @@ class _Property_DetailState extends State<Property_Detail> {
                                 decoration: _iconBoxDecoration(),
                                 child: GestureDetector(
                                   onTap: () {
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => New_Projects()));
+                                    Navigator.of(context).pop();
                                   },
                                   child: Image.asset(
                                     "assets/images/ar-left.png",
@@ -149,23 +152,71 @@ class _Property_DetailState extends State<Property_Detail> {
                     ],
                   ),
                   Container(
-                      height: screenSize.height*0.6,
-                      margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                      child:  ListView.builder(
-                        padding: const EdgeInsets.all(0),
-                        shrinkWrap: true,
-                        scrollDirection: Axis.vertical,
-                        physics: const ScrollPhysics(),
-                        itemCount: projectDetailModel?.data?.media?.length ?? 0,
-                        itemBuilder: (BuildContext context, int index) {
-                          return CachedNetworkImage( // this is to fetch the image
-                            imageUrl: (projectDetailModel!.data!.media![index].originalUrl.toString()),
-                            //fit: BoxFit.cover,
-                            // height: 100,
-                          );
-                        },
+                    height: screenSize.height * 0.55,
+                    margin: const EdgeInsets.all(0),
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                      physics: const ScrollPhysics(),
+                      itemCount: projectDetailModel?.data?.media?.length ?? 0,
+                      itemBuilder: (BuildContext context, int index) {
+                        final imageUrl = projectDetailModel!.data!.media![index].originalUrl.toString();
 
-                      )
+                        return GestureDetector(
+                          onTap: () {
+                            showGeneralDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              barrierLabel: "ImagePreview",
+                              transitionDuration: const Duration(milliseconds: 300),
+                              pageBuilder: (context, animation, secondaryAnimation) {
+                                PageController controller = PageController(initialPage: index);
+                                return Scaffold(
+                                  backgroundColor: Colors.black,
+                                  body: SafeArea(
+                                    child: Stack(
+                                      children: [
+                                        PageView.builder(
+                                          controller: controller,
+                                          itemCount: projectDetailModel?.data?.media?.length ?? 0,
+                                          itemBuilder: (context, pageIndex) {
+                                            final previewUrl = projectDetailModel!.data!.media![pageIndex].originalUrl.toString();
+                                            return InteractiveViewer(
+                                              child: CachedNetworkImage(
+                                                imageUrl: previewUrl,
+                                                fit: BoxFit.contain,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        Positioned(
+                                          top: 20,
+                                          right: 20,
+                                          child: IconButton(
+                                            icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                                            onPressed: () {
+                                              Navigator.of(context).pop(); // closes the full screen
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            child: CachedNetworkImage(
+                              imageUrl: imageUrl,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   const SizedBox(height: 25,),
                   Row(

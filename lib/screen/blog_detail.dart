@@ -53,28 +53,32 @@ readData();
   }
 
 
-  Future<void> fetchProducts(data) async {
-    // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/blog/$data'));
-    Map<String,dynamic> jsonData=json.decode(response.body);
-    debugPrint("Status Code: ${response.statusCode}");
-    if (response.statusCode == 200) {
-      debugPrint("API Response: ${jsonData.toString()}");
-      debugPrint("API 200: ");
-      BlogDetailModel parsedModel = BlogDetailModel.fromJson(jsonData);
-      debugPrint("Parsed ProductModel: ${parsedModel.toString()}");
-      setState(() {
-        debugPrint("API setState: ");
-        String title = jsonData['title'] ?? 'No title';
-        debugPrint("API title: $title");
-        blogDetailModel = parsedModel;
+  Future<void> fetchProducts(dynamic data) async {
+    try {
+      final response = await http
+          .get(Uri.parse('https://akarat.com/api/blog/$data'))
+          .timeout(const Duration(seconds: 10));
 
-      });
+      debugPrint("Status Code: ${response.statusCode}");
 
-      debugPrint("productModels title_after: ${blogDetailModel!.data!.readingTime.toString()}");
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        debugPrint("API Response: $jsonData");
 
-    } else {
-      // Handle error if needed
+        final BlogDetailModel parsedModel = BlogDetailModel.fromJson(jsonData);
+
+        if (mounted) {
+          setState(() {
+            blogDetailModel = parsedModel;
+          });
+        }
+
+        debugPrint("Reading Time: ${blogDetailModel?.data?.readingTime}");
+      } else {
+        debugPrint("❌ Blog Detail API failed: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Blog Detail API error: $e");
     }
   }
 
@@ -106,7 +110,7 @@ readData();
             children: [
               GestureDetector(
                   onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Blog()));
+                    Navigator.of(context).pop();
                   },child:
               Container(
                   margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),

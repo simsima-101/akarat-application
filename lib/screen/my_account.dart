@@ -58,46 +58,43 @@ class _My_AccountState extends State<My_Account> {
 
 
 
-  Future<void> logoutAPI(data) async {
+  Future<void> logoutAPI(String token) async {
     try {
       final response = await http.post(
         Uri.parse('https://akarat.com/api/logout'),
-        headers: <String, String>{'Authorization':'Bearer $data',
+        headers: {
+          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
+
       if (response.statusCode == 200) {
-        print("logout Succesfully");
-        prefManager.addStringToPref("");
-        prefManager.addStringToPrefemail("");
-        prefManager.addStringToPrefresult("");
-        setState(() {
-          isDataSaved = false;
-          isDataRead = false;
-        });
-       /* isDataSaved
-            ? const Text('Data Saved!')
-            : const Text('Data Not Saved!');
-        // Call the addStringToPref method and pass the string value
-        prefManager.addStringToPref("");
-        prefManager.addStringToPrefemail("");
-        prefManager.addStringToPrefresult("");
-        setState(() {
-          isDataSaved = false;
-        });*/
+        debugPrint("✅ Logout successful");
 
-        Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+        // Clear stored preferences
+        await prefManager.addStringToPref("");
+        await prefManager.addStringToPrefemail("");
+        await prefManager.addStringToPrefresult("");
+
+        if (mounted) {
+          setState(() {
+            isDataSaved = false;
+            isDataRead = false;
+          });
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => Profile_Login()),
+          );
+        }
       } else {
-        throw Exception("logout failed");
-
+        debugPrint("❌ Logout failed: ${response.statusCode}");
+        throw Exception("Logout failed");
       }
     } catch (e) {
-      setState(() {
-        print('Error: $e');
-      });
+      debugPrint("❌ Exception during logout: $e");
     }
   }
-
 
 
   @override

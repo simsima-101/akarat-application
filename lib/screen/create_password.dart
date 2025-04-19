@@ -36,53 +36,76 @@ class _CreatePasswordState extends State<CreatePassword> {
     passwordVisible=true;
   }
 
-  Future<void> registerUsers(data) async {
+  Future<void> registerUsers(String emailInput) async {
     try {
       final response = await http.post(
         Uri.parse('https://akarat.com/api/register'),
-        headers: <String, String>{
+        headers: {
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode(<String, dynamic>{
-          "name": myController.text,
-          "email": data,
+        body: jsonEncode({
+          "name": myController.text.trim(),
+          "email": emailInput.trim(),
           "password": passwordController.text,
-          "password_confirmation": confirmpasswordController.text
-          // Add any other data you want to send in the body
+          "password_confirmation": confirmpasswordController.text,
         }),
       );
 
-      if (response.statusCode == 200) {
-       Map<String, dynamic> jsonData = json.decode(response.body);
-          registermodel = RegisterModel.fromJson(jsonData);
-          result=registermodel!.name.toString();
-          token=registermodel!.token.toString();
-          email=registermodel!.email.toString();
-          print("Registered Succesfully");
-       /*Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context){
-         return My_Account(
-           arguments: registermodel[index],
-         );
-       }));*/
-       isDataSaved
-           ? const Text('Data Saved!')
-           : const Text('Data Not Saved!');
-       // Call the addStringToPref method and pass the string value
-       prefManager.addStringToPref(token);
-       setState(() {
-         isDataSaved = true;
-       });
-          Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-      } else {
-        throw Exception("Registration failed");
+      debugPrint("Status Code: ${response.statusCode}");
 
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        registermodel = RegisterModel.fromJson(jsonData);
+
+        // Store values locally
+        token = registermodel!.token ?? '';
+        email = registermodel!.email ?? '';
+        result = registermodel!.name ?? '';
+
+        await prefManager.addStringToPref(token);
+        await prefManager.addStringToPrefemail(email);
+        await prefManager.addStringToPrefresult(result);
+
+        setState(() {
+          isDataSaved = true;
+        });
+
+        debugPrint("✅ Registered Successfully");
+
+        // Navigate to My Account
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => My_Account()),
+        );
+      } else {
+        final errorResponse = json.decode(response.body);
+        debugPrint("❌ Registration failed: ${errorResponse["message"] ?? 'Unknown error'}");
+        _showErrorDialog("Registration failed: ${errorResponse["message"] ?? 'Please try again.'}");
       }
     } catch (e) {
-      setState(() {
-      print('Error: $e');
-      });
+      debugPrint("🚨 Error: $e");
+      _showErrorDialog("Something went wrong. Please try again later.");
     }
   }
+
+// Optional: Show error in a dialog
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Registration Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            child: const Text("OK"),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   bool _showClose = true;
   @override
   Widget build(BuildContext context) {

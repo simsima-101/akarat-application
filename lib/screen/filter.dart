@@ -46,7 +46,7 @@ class _FilterDemoState extends State<FilterDemo> {
    double startarea = 3000;
    double endarea = 5000;
    double end = 5000;
-   SfRangeValues _values = SfRangeValues(3000 ,5000);
+   SfRangeValues _values = SfRangeValues(80000 ,200000);
    SfRangeValues _valuesArea = SfRangeValues(3000 ,5000);
   late RangeController _rangeController;
   late RangeController _rangeControllerarea;
@@ -72,31 +72,52 @@ class _FilterDemoState extends State<FilterDemo> {
   }
 
   List<Amenities> selectedAmenities = [];
+
+
   @override
   void initState() {
     super.initState();
-    _rangeController = RangeController(
-        start: start.toString(),
-        end: end.toString());
-    _rangeControllerarea = RangeController(
-        start: startarea.toString(),
-        end: endarea.toString());
-    fetchAmenities();
-    if(widget.data == 'Rent'){
-      selectedproduct = 0;
-    }else if(widget.data == 'Buy'){
-      selectedproduct = 1;
-    }else if(widget.data == 'Commercial'){
-      selectedproduct = 3;
-    }
-    else{
-      selectedproduct = 0;
-    }
-   // selectedproduct = 0; // Select first item initially
-    purpose = widget.data; // Set initial purpose
 
-    propertyApi(widget.data);
+    // Initialize chart range controllers
+    _rangeController = RangeController(start: start.toString(), end: end.toString());
+    _rangeControllerarea = RangeController(start: startarea.toString(), end: endarea.toString());
+
+    // Set selected product and purpose
+    selectedproduct = _product.indexOf(widget.data);
+    purpose = widget.data;
+
+    // Load all APIs in parallel
+    loadInitialData();
+
+    // Setup chart data (dummy or mock data can be refined)
+    chartData = List.generate(
+      96,
+          (index) => Data(
+        500 + index * 100.0,
+        yValues[index % yValues.length].toDouble(),
+      ),
+    );
   }
+
+  Future<void> loadInitialData() async {
+    try {
+      setState(() => _isLoading = true);
+
+      // Run all API calls in parallel
+      await Future.wait([
+        fetchAmenities(),
+        propertyApi(purpose),
+      ]);
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      debugPrint('Error loading initial data: \$e');
+      setState(() => _isLoading = false);
+    }
+  }
+
   List<Amenities> amenities = [];
   @override
   void dispose() {
@@ -130,7 +151,12 @@ final List _product = [
     'Yearly', 'Bi-Yearly', 'Quarterly',
         'Monthly'
   ];
-  final List<Data> chartData = <Data>[
+
+  final List<int> yValues = [5000, 3000, 9000,7000,10000,1500,4000,];
+  late List<Data> chartData;
+
+
+  /* final List<Data> chartData = <Data>[
     Data(x: 500, y: 5000),
     Data(x: 600, y: 3000),
     Data(x: 700, y: 6000),
@@ -227,7 +253,7 @@ final List _product = [
     Data(x: 9800, y: 6666),
     Data(x: 9900, y: 7777),
     Data(x: 10000, y: 3000),
-  ];
+  ];*/
   final List<Dataarea> chartDataarea = <Dataarea>[
     Dataarea(x: 500, y: 5000),
     Dataarea(x: 600, y: 3000),
@@ -358,32 +384,65 @@ String max_sqrfeet = ' ';
   Set<int> selectedIndexes = {};
   PropertyTypeModel? propertyTypeModel;
 
+
   Future<void> showResult() async {
-    // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/filters?'
-        'search=&amenities=[$selectedIndexes]&property_type=$property_type'
-        '&furnished_status=$ftype&bedrooms=$bedroom&min_price=$min_price'
-        '&max_price=$max_price&payment_period=$rent&min_square_feet=$min_sqrfeet'
-        '&max_square_feet=$max_sqrfeet&bathrooms=$bathroom&purpose=$purpose'));
-    var data = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      FilterModel feature= FilterModel.fromJson(data);
+    try {
+      // Ensure selectedIndexes is a List of ints or strings
+      final amenitiesList = selectedIndexes.toList(); // make sure it's a List, not a Set
 
-      setState(() {
-        filterModel = feature ;
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterList(filterModel: filterModel,)));
+      final uri = Uri.parse(
+          'https://akarat.com/api/filters?'
+              'search=&amenities=${amenitiesList.join(",")}'
+              '&property_type=$property_type'
+              '&furnished_status=$ftype'
+              '&bedrooms=$bedroom'
+              '&min_price=$min_price'
+              '&max_price=$max_price'
+              '&payment_period=$rent'
+              '&min_square_feet=$min_sqrfeet'
+              '&max_square_feet=$max_sqrfeet'
+              '&bathrooms=$bathroom'
+              '&purpose=$purpose'
+      );
 
-      });
-    } else {
+      final response = await http.get(uri).timeout(const Duration(seconds: 7));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final feature = FilterModel.fromJson(data);
+
+        if (mounted) {
+          setState(() {
+            filterModel = feature;
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FliterList(filterModel: filterModel),
+              ),
+            );
+          });
+        }
+      } else {
+        debugPrint("API Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("Error fetching results: $e");
     }
   }
+
+
+
+
+
   bool _isLoading = false;
 
   Future<void> propertyApi(String purpose) async {
     try {
+      final uri = Uri.parse("https://akarat.com/api/property-types/$purpose");
+
       final response = await http
-          .get(Uri.parse("https://akarat.com/api/property-types/$purpose"))
-          .timeout(const Duration(seconds: 10)); // ⏱ Timeout prevents slow hang
+          .get(uri)
+          .timeout(const Duration(seconds: 10)); // ⏱ Timeout to prevent hanging
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -395,21 +454,32 @@ String max_sqrfeet = ' ';
           });
         }
       } else {
-        print("Property API failed with status: ${response.statusCode}");
+        debugPrint("❌ Property API failed: ${response.statusCode}");
       }
     } catch (e) {
-      print("Property API error: $e");
+      debugPrint("🚨 Property API error: $e");
     }
   }
 
   Future<void> fetchAmenities() async {
-    final response = await http.get(Uri.parse("https://akarat.com/api/amenities"));
-    if (response.statusCode == 200) {
-      List<dynamic> jsonData = json.decode(response.body);
-      setState(() {
-        amenities = jsonData.map((data) => Amenities.fromJson(data)).toList();
-      });
-    } else {
+    try {
+      final response = await http
+          .get(Uri.parse("https://akarat.com/api/amenities"))
+          .timeout(const Duration(seconds: 8)); // Optional timeout
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+
+        if (mounted) {
+          setState(() {
+            amenities = jsonData.map((data) => Amenities.fromJson(data)).toList();
+          });
+        }
+      } else {
+        debugPrint("❌ Failed to load amenities: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Error fetching amenities: $e");
     }
   }
 
@@ -741,8 +811,8 @@ String max_sqrfeet = ' ';
                   ),
                   child: SfRangeSelector(
                     min: 500,
-                    max: 10000,
-                    interval: 1000,
+                    max: 300000,
+                    interval: 10000,
                     activeColor: Colors.black,
                     inactiveColor: Color(0x80F1EEEE) ,
                     enableTooltip: true,
@@ -1562,10 +1632,10 @@ class Page4 extends StatelessWidget {
   }
 }
 class Data {
-  Data({required this.x, required this.y});
-  final double x;
-  final double y;
+  final double x, y;
+  Data(this.x, this.y);
 }
+
 class Dataarea {
   Dataarea({required this.x, required this.y});
   final double x;

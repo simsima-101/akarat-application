@@ -1,19 +1,22 @@
+import 'dart:async';
 import 'dart:convert';
-import 'package:Akarat/screen/shimmer.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:io';
+
 import 'package:Akarat/model/fdetailmodel.dart';
 import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/shimmer.dart';
 import 'package:Akarat/screen/profile_login.dart';
+import 'package:Akarat/screen/my_account.dart';
+import 'package:Akarat/screen/full_map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../utils/shared_preference_manager.dart';
-import 'my_account.dart';
 class Featured_Detail extends StatefulWidget {
   const Featured_Detail({super.key, required this.data});
   final String data;
@@ -55,33 +58,27 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
 
   Future<void> fetchProducts(String data) async {
-    try {
-      final response = await http
-          .get(Uri.parse('https://akarat.com/api/featured-properties/$data'))
-          .timeout(const Duration(seconds: 10));
+    final url = Uri.parse('https://akarat.com/api/featured-properties/$data');
 
-      debugPrint("Status Code: ${response.statusCode}");
+    try {
+      final response = await http.get(url).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = jsonDecode(response.body);
-        debugPrint("API Response: $jsonData");
+        final jsonData = jsonDecode(response.body);
+        final parsedModel = Featured_DetailModel.fromJson(jsonData);
 
-        final Featured_DetailModel parsedModel = Featured_DetailModel.fromJson(jsonData);
+        if (!mounted) return;
 
-        if (mounted) {
-          setState(() {
-            featured_detailModel = parsedModel;
-          });
-        }
-
-        debugPrint("Parsed Model Title: ${featured_detailModel?.data?.title ?? 'No title'}");
-
+        setState(() => featured_detailModel = parsedModel);
       } else {
-        debugPrint("API Error Status: ${response.statusCode}");
+        debugPrint("❌ API Error: ${response.statusCode}");
       }
-
+    } on TimeoutException {
+      debugPrint("⏱ Request timed out");
+    } on SocketException {
+      debugPrint("📡 No internet connection");
     } catch (e) {
-      debugPrint("API Exception: $e");
+      debugPrint("🚨 Unexpected error: $e");
     }
   }
 
@@ -95,6 +92,15 @@ class _Featured_DetailState extends State<Featured_Detail> {
           itemBuilder: (context, index) => const ShimmerCard(),) // Show loading state
       );
     }
+
+    final latStr = featured_detailModel!.data?.property?.latitude;
+    final lngStr = featured_detailModel!.data?.property?.longitude;
+
+// Default fallback if parsing fails or null
+    final double latitude = double.tryParse(latStr ?? '') ?? 25.0657;
+    final double longitude = double.tryParse(lngStr ?? '') ?? 55.2030;
+
+
     return Scaffold(
         backgroundColor: Colors.white,
         bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
@@ -120,7 +126,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                 decoration: _iconBoxDecoration(),
                                 child: GestureDetector(
                                   onTap: () {
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+                                    Navigator.of(context).pop();
                                   },
                                   child: Image.asset(
                                     "assets/images/ar-left.png",
@@ -152,23 +158,71 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     ],
                   ),
                   Container(
-                      height: screenSize.height*0.55,
-                      margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                      child:  ListView.builder(
-                        padding: const EdgeInsets.all(0),
-                          shrinkWrap: true,
-                          scrollDirection: Axis.vertical,
-                        physics: const ScrollPhysics(),
-                          itemCount: featured_detailModel?.data?.media?.length ?? 0,
-                          itemBuilder: (BuildContext context, int index) {
-                           return CachedNetworkImage( // this is to fetch the image
-                              imageUrl: (featured_detailModel!.data!.media![index].originalUrl.toString()),
-                              //fit: BoxFit.cover,
-                              // height: 100,
+                    height: screenSize.height * 0.55,
+                    margin: const EdgeInsets.all(0),
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                      physics: const ScrollPhysics(),
+                      itemCount: featured_detailModel?.data?.property?.media?.length ?? 0,
+                      itemBuilder: (BuildContext context, int index) {
+                        final imageUrl = featured_detailModel!.data!.property!.media![index].originalUrl.toString();
+
+                        return GestureDetector(
+                          onTap: () {
+                            showGeneralDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              barrierLabel: "ImagePreview",
+                              transitionDuration: const Duration(milliseconds: 300),
+                              pageBuilder: (context, animation, secondaryAnimation) {
+                                PageController controller = PageController(initialPage: index);
+                                return Scaffold(
+                                  backgroundColor: Colors.black,
+                                  body: SafeArea(
+                                    child: Stack(
+                                      children: [
+                                        PageView.builder(
+                                          controller: controller,
+                                          itemCount: featured_detailModel?.data?.property?.media?.length ?? 0,
+                                          itemBuilder: (context, pageIndex) {
+                                            final previewUrl = featured_detailModel!.data!.property!.media![pageIndex].originalUrl.toString();
+                                            return InteractiveViewer(
+                                              child: CachedNetworkImage(
+                                                imageUrl: previewUrl,
+                                                fit: BoxFit.contain,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        Positioned(
+                                          top: 20,
+                                          right: 20,
+                                          child: IconButton(
+                                            icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                                            onPressed: () {
+                                              Navigator.of(context).pop(); // closes the full screen
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
                             );
                           },
-
-                      )
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            child: CachedNetworkImage(
+                              imageUrl: imageUrl,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   SizedBox(height: 25,),
                   Padding(
@@ -177,7 +231,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     child: Row(
                       children: [
                         //  Text(productModels!.title),
-                        Text(featured_detailModel!.data!.location.toString(),style: TextStyle(
+                        Text(featured_detailModel!.data!.property!.location.toString(),style: TextStyle(
                           // Text("Townhouse",style: TextStyle(
                             letterSpacing: 0.5
                         ),),
@@ -230,13 +284,13 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
                       child:Row(
                         children: [
-                          Text(featured_detailModel!.data!.price.toString(),style: TextStyle(
+                          Text(featured_detailModel!.data!.property!.price.toString(),style: TextStyle(
                               fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
                           ),),
                           Text("  AED",style: TextStyle(
                               fontSize: 19,letterSpacing: 0.5
                           ),),
-                          Text("/${featured_detailModel!.data!.paymentPeriod}",style: TextStyle(
+                          Text("/${featured_detailModel!.data!.property!.paymentPeriod}",style: TextStyle(
                               fontSize: 16,letterSpacing: 0.5
                           ),),
                         ],
@@ -251,7 +305,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           Image.asset("assets/images/bed.png",height: 20,),
                           Padding(
                             padding: const EdgeInsets.only(left: 3.0),
-                            child: Text('${featured_detailModel!.data!.bedrooms}  beds',style: TextStyle(
+                            child: Text('${featured_detailModel!.data!.property!.bedrooms}  beds',style: TextStyle(
                                 fontSize: 14,letterSpacing: 0.5
                             ),),
                           ),
@@ -261,7 +315,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(left: 3.0),
-                            child: Text('${featured_detailModel!.data!.bathrooms}  baths',style: TextStyle(
+                            child: Text('${featured_detailModel!.data!.property!.bathrooms}  baths',style: TextStyle(
                               fontSize: 14,letterSpacing: 0.5,
                             ),),
                           ),
@@ -271,7 +325,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(left: 3.0),
-                            child: Text('${featured_detailModel!.data!.squareFeet}  sqft',style: TextStyle(
+                            child: Text('${featured_detailModel!.data!.property!.squareFeet}  sqft',style: TextStyle(
                               fontSize: 14,letterSpacing: 0.5,
                             ),),
                           ),
@@ -285,7 +339,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           child: Text(
-                            featured_detailModel!.data!.title.toString(),
+                            featured_detailModel!.data!.property!.title.toString(),
                             style: const TextStyle(
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
@@ -301,12 +355,17 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   ),
                   SizedBox(height: 10,),
                   Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
-                        child:  Text(featured_detailModel!.data!.description.toString(),
-                          textAlign: TextAlign.left,style: TextStyle(
-                              letterSpacing: 0.4,color: Colors.black87
-                          ),),
-
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                    child: Html(
+                      data: featured_detailModel!.data!.property!.description.toString().replaceAll('\r\n', '<br>'),
+                      style: {
+                        "body": Style(
+                          fontSize: FontSize.medium,
+                          lineHeight: LineHeight.number(1.5),
+                          color: Colors.black87,
+                        ),
+                      },
+                    ),
                   ),
                   SizedBox(height: 10,),
                   Row(
@@ -317,7 +376,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                           ),),
                       ),
-                      Text(featured_detailModel!.data!.postedOn.toString())
+                      Text(featured_detailModel!.data!.property!.postedOn.toString())
                     ],
                   ),
                   SizedBox(height: 15,),
@@ -343,7 +402,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                 Image.asset("assets/images/Residential__1.png", height: 17),
                                 const SizedBox(width: 6),
                                 Text(
-                                  featured_detailModel!.data!.propertyType.toString(),
+                                  featured_detailModel!.data!.property!.propertyType.toString(),
                                   style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
                                 ),
                                 Text("")
@@ -357,21 +416,21 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                 Image.asset("assets/images/bed.png", height: 17),
                                 const SizedBox(width: 6),
                                 Text(
-                                  '${featured_detailModel!.data!.bedrooms} beds',
+                                  '${featured_detailModel!.data!.property!.bedrooms} beds',
                                   style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
                                 ),
                                 const SizedBox(width: 12),
                                 Image.asset("assets/images/bath.png", height: 17),
                                 const SizedBox(width: 6),
                                 Text(
-                                  '${featured_detailModel!.data!.bathrooms} baths',
+                                  '${featured_detailModel!.data!.property!.bathrooms} baths',
                                   style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
                                 ),
                                 const SizedBox(width: 12),
                                 Image.asset("assets/images/messure.png", height: 17),
                                 const SizedBox(width: 6),
                                 Text(
-                                  '${featured_detailModel!.data!.squareFeet} sqft',
+                                  '${featured_detailModel!.data!.property!.squareFeet} sqft',
                                   style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
                                 ),
                               ],
@@ -379,99 +438,56 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           ],
                         ),
                   ),
+                  SizedBox(height: 15,),
+                    Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Text("Amenities",style: TextStyle(
+                              fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                          ),),
+                        ),
+                        Text("")
+                      ],
+                    ),
                   SizedBox(height: 5,),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    // color: Colors.grey,
-                    margin: const EdgeInsets.only(left: 20,right: 200,top: 10,bottom: 0),
-                    child:Text("Amnesties",style: TextStyle(
-                        fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                    ),),
-                  ),
-                  SizedBox(height: 5,),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 22.0),
-                    child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isSmallScreen = constraints.maxWidth < 360;
+                      return GridView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: featured_detailModel?.data?.property?.amenities?.length ?? 0,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: isSmallScreen ? 1 : 2, // 1 column for small screens
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: isSmallScreen ? 4.5 : 5,
+                        ),
+                        itemBuilder: (context, index) {
+                          final amenity = featured_detailModel!.data!.property!.amenities![index];
+                          return Row(
                             children: [
-                              Row(
-                                children: [
-                                  Image.asset("assets/images/Residential__1.png", height: 17),
-                                  const SizedBox(width: 3),
-                                  const Text(
-                                    " Swimming Pool ",
-                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                  ),
-                                  const SizedBox(width: 20),
-                                  Image.asset("assets/images/bed.png", height: 17),
-                                  const SizedBox(width: 3),
-                                  const Text(
-                                    " Balcony/Terrace ",
-                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                  ),
-                                ],
+                              Image.network(
+                                amenity.icon ?? '',
+                                width: 18,
+                                height: 18,
+                                errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 18),
                               ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Image.asset("assets/images/bath.png", height: 17),
-                                  const SizedBox(width: 3),
-                                  const Text(
-                                    " Barbeque Area ",
-                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                  ),
-                                  const SizedBox(width: 20),
-                                  Image.asset("assets/images/Residential__1.png", height: 17),
-                                  const SizedBox(width: 3),
-                                  const Text(
-                                    " Elevators ",
-                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                  ),
-
-                                ],
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  amenity.title ?? '',
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  const SizedBox(width: 3),
-                                  Image.asset("assets/images/messure.png", height: 17),
-                                  const SizedBox(width: 3),
-                                  const Text(
-                                    "Pet Allowed ",
-                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                  ),
-                                  const SizedBox(width: 45),
-                                  Image.asset("assets/images/messure.png", height: 17),
-                                  const SizedBox(width: 3),
-                                  const Text(
-                                    "Security ",
-                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                  ),
-                                  const SizedBox(width: 20), // Padding at the end
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  const SizedBox(width: 3),
-                                  Image.asset("assets/images/bed.png", height: 17),
-                                  const SizedBox(width: 3),
-                                  const Text(
-                                    " Gym ",
-                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                  ),
-                                  const SizedBox(width: 85),
-                                  Image.asset("assets/images/bath.png", height: 17),
-                                  const SizedBox(width: 3),
-                                  const Text(
-                                    "Parking Space ",
-                                    style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                                  ),
-                                ],
-                              )
                             ],
-                          ),
+                          );
+                        },
+                      );
+                    },
                   ),
                   SizedBox(height: 15,),
                   Row(
@@ -647,27 +663,22 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       borderRadius: BorderRadius.circular(15),
                       child: Stack(
                         children: [
-                          FlutterMap(
-                            options: MapOptions(
-                              initialCenter: LatLng(25.0657, 55.2030),
-                              initialZoom: 13.0,
+                          // Google Map instead of FlutterMap
+                          GoogleMap(
+                            initialCameraPosition: CameraPosition(
+                              target: LatLng(latitude, longitude), // Dubai
+                              zoom: 12,
                             ),
-                            children: [
-                              TileLayer(
-                                urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                                subdomains: ['a', 'b', 'c'],
+                            /* markers: {
+                              Marker(
+                                markerId: MarkerId('main'),
+                                position: LatLng(latitude, longitude),
+                                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
                               ),
-                              MarkerLayer(
-                                markers: [
-                                  Marker(
-                                    point: LatLng(25.0657, 55.2030),
-                                    width: 40,
-                                    height: 40,
-                                    child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
-                                  ),
-                                ],
-                              ),
-                            ],
+                            },*/
+                            zoomControlsEnabled: false,
+                            myLocationEnabled: false,
+                            myLocationButtonEnabled: false,
                           ),
 
                           // Bottom overlay card
@@ -683,8 +694,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Text(
-                                        "AAA Residence, JVC District 13,\nJumeirah Village Circle (JVC), Dubai",
+                                      Text(
+                                        featured_detailModel!.data!.property!.address.toString(),
                                         textAlign: TextAlign.center,
                                         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                       ),
@@ -697,7 +708,15 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                             textStyle: const TextStyle(fontSize: 12),
                                           ),
                                           onPressed: () {
-                                            // Handle navigation logic here
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => MyGoogleMapWidget(
+                                                  latitude: latitude,
+                                                  longitude: longitude,
+                                                ),
+                                              ),
+                                            );
                                           },
                                           child: const Text("View on map"),
                                         ),
@@ -756,13 +775,13 @@ class _Featured_DetailState extends State<Featured_Detail> {
                             ],
                           ),
                            child: CachedNetworkImage( // this is to fetch the image
-                            imageUrl: (featured_detailModel!.data!.agentImage.toString()),
+                            imageUrl: (featured_detailModel!.data!.property!.agentImage.toString()),
                             fit: BoxFit.cover,
                             height: 100,
                           ),
                         ),
                         Padding(padding: const EdgeInsets.only(top: 10),
-                          child: Text(featured_detailModel!.data!.agent.toString(),style: TextStyle(
+                          child: Text(featured_detailModel!.data!.property!.agent.toString(),style: TextStyle(
                               fontWeight: FontWeight.bold,letterSpacing: 0.5
                           ),),
                         ),
@@ -874,16 +893,16 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
                         // Info Rows
                         _buildInfoRow("DLD Permit Number:",
-                            featured_detailModel!.data!.regulatoryInfo!.dldPermitNumber.toString()
+                            featured_detailModel!.data!.property!.regulatoryInfo!.dldPermitNumber.toString()
                         ),
                         _buildInfoRow("DED",
-                            featured_detailModel!.data!.regulatoryInfo!.ded.toString()
+                            featured_detailModel!.data!.property!.regulatoryInfo!.ded.toString()
                           ),
                         _buildInfoRow("RERA",
-                            featured_detailModel!.data!.regulatoryInfo!.rera.toString()
+                            featured_detailModel!.data!.property!.regulatoryInfo!.rera.toString()
                         ),
                         _buildInfoRow("BRN",
-                            featured_detailModel!.data!.regulatoryInfo!.brn.toString()
+                            featured_detailModel!.data!.property!.regulatoryInfo!.brn.toString()
                         ),
 
                         const SizedBox(height: 5),
@@ -895,12 +914,35 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               ListView.builder(
                                 padding: const EdgeInsets.all(0),
                                 shrinkWrap: true,
-                                //scrollDirection: Axis.vertical,
                                 physics: const ScrollPhysics(),
-                                itemCount: featured_detailModel?.data?.qr?.length ?? 0,
+                                itemCount: featured_detailModel?.data?.property?.qr?.length ?? 0,
                                 itemBuilder: (BuildContext context, int index) {
-                                  return  CachedNetworkImage(imageUrl:featured_detailModel!.data!.qr![index].qrUrl.toString() ,
-                                    height: 120,);
+                                  final qrItem = featured_detailModel!.data!.property!.qr![index];
+                                  final imageUrl = qrItem.qrUrl;
+                                  final qrLink = featured_detailModel!.data!.property!.qrLink; // <-- this is the actual link to open
+
+                                  return GestureDetector(
+                                    onTap: () async {
+                                      if (qrLink != null && qrLink.isNotEmpty) {
+                                        final Uri url = Uri.parse(qrLink);
+                                        if (await canLaunchUrl(url)) {
+                                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                                        } else {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Could not launch the QR link')),
+                                          );
+                                        }
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                      child: CachedNetworkImage(
+                                        imageUrl: imageUrl ?? '',
+                                        height: 120,
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
+                                  );
                                 },
                               ),
                               const SizedBox(height: 6),
@@ -911,86 +953,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       ],
                     ),
                   ),
-                 /* Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(left: 18, right: 14, top: 20),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: Offset(0.5, 0.5),
-                          blurRadius: 0.5,
-                          spreadRadius: 0.3,
-                        ),
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Left Side: Title + Info
-                        Expanded(
-                          flex: 3,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Regulatory Information",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Wrap(
-                                spacing: 20,
-                                runSpacing: 8,
-                                children: const [
-                                  Text("Reference:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
-                                  Text("Listed:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
-                                  Text("Broker License:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
-                                  Text("Agent License:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
-                                  Text("OLD Permit Number:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
-                                  Text("Zone Name:", style: TextStyle(fontSize: 13, letterSpacing: 0.5)),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        // Right Side: DLD Image
-                        Column(
-                         // crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 0),
-                              child: Image.asset(
-                                "assets/images/dld.png",
-                                height: screenSize.height * 0.1,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                              Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 0),
-                              child: const Text(
-                                "OLD Permit Number",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),*/
                   SizedBox(height: 5,),
                   Container(
                     height: 30,
@@ -1000,6 +962,97 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     child:Text("Recommended Properties",style: TextStyle(
                         fontSize: 16,letterSpacing: 0.5,fontWeight: FontWeight.bold
                     ),),
+                  ),
+                  SizedBox(height: 5,),
+                  SizedBox(
+                    height: 220,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: featured_detailModel?.data?.recommended?.length ?? 0,
+                      itemBuilder: (context, index) {
+                        final property = featured_detailModel!.data!.recommended![index];
+                        final imageUrl = (property.media?.isNotEmpty ?? false)
+                            ? property.media!.first.originalUrl.toString()
+                            : "";
+
+                        return Container(
+                          width: 200,
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Card(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                            elevation: 4,
+                            child: GestureDetector(
+                              onTap: () async {
+                                String id = property.id.toString();
+                                Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                                    Featured_Detail(data: id)));
+                              },
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                                        child: imageUrl.isNotEmpty
+                                            ? Image.network(
+                                          imageUrl,
+                                          height: 120,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        )
+                                            : Container(
+                                          height: 120,
+                                          width: double.infinity,
+                                          color: Colors.grey.shade300,
+                                          child: const Center(child: Icon(Icons.image_not_supported)),
+                                        ),
+                                      ),
+                                      const Positioned(
+                                        top: 8,
+                                        right: 8,
+                                        child: Icon(Icons.favorite_border, color: Colors.red),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "${property.price} AED",
+                                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.bed, size: 16, color: Colors.red),
+                                            const SizedBox(width: 4),
+                                            Text("${property.bedrooms} beds"),
+                                            const SizedBox(width: 8),
+                                            const Icon(Icons.square_foot, size: 16, color: Colors.red),
+                                            const SizedBox(width: 4),
+                                            Text("${property.squareFeet} sqft"),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          property.location ?? "",
+                                          style: const TextStyle(fontSize: 12, color: Colors.black),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   SizedBox(
                     height: 10,)
@@ -1085,7 +1138,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
               ),
               child:GestureDetector(
                   onTap:  () async {
-                    String phone = 'tel:${featured_detailModel!.data!.phoneNumber}';
+                    String phone = 'tel:${featured_detailModel!.data!.property!.phoneNumber}';
                     try {
                       final bool launched = await launchUrlString(
                         phone,
@@ -1129,7 +1182,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
               ),
               child:  GestureDetector(
                   onTap: () async {
-                    final phone = featured_detailModel!.data!.whatsapp; // without plus
+                    final phone = featured_detailModel!.data!.property!.whatsapp; // without plus
                     final message = Uri.encodeComponent("Hello");
                     // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
                     // final url = Uri.parse("https://wa.me/?text=hello");
@@ -1184,7 +1237,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   onTap: () async {
                     final Uri emailUri = Uri(
                       scheme: 'mailto',
-                      path: '${featured_detailModel!.data!.email}', // Replace with actual email
+                      path: '${featured_detailModel!.data!.property!.email}', // Replace with actual email
                       query: 'subject=Property Inquiry&body=Hi, I saw your property on Akarat.',
                     );
 

@@ -64,18 +64,25 @@ class _BlogDemoState extends State<BlogDemo> {
   }
 
   Future<void> getFilesApi() async {
-    final response = await http.get(Uri.parse("https://akarat.com/api/blogs"));
-    var data = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      BlogModel feature= BlogModel.fromJson(data);
+    try {
+      final response = await http
+          .get(Uri.parse("https://akarat.com/api/blogs"))
+          .timeout(const Duration(seconds: 10));
 
-      setState(() {
-        blogModel = feature ;
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final BlogModel feature = BlogModel.fromJson(data);
 
-      });
-
-    } else {
-      //return FeaturedModel.fromJson(data);
+        if (mounted) {
+          setState(() {
+            blogModel = feature;
+          });
+        }
+      } else {
+        debugPrint("❌ Blog API Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Exception in getFilesApi: $e");
     }
   }
 
@@ -131,7 +138,8 @@ class _BlogDemoState extends State<BlogDemo> {
                          ),
                          child: GestureDetector(
                            onTap: (){
-                             setState(() {
+                             //Navigator.of(context).pop();
+                              setState(() {
                                if(token == ''){
                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
                                }

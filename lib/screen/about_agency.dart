@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:Akarat/model/agencyagentmodel.dart';
 import 'package:Akarat/model/agencypropertiesmodel.dart';
 import 'package:Akarat/screen/agency_detail.dart';
@@ -55,32 +57,43 @@ class _About_AgencyState extends State<About_Agency> {
     readData();
     _loadFavorites();
   }
+
+
   ToggleModel? toggleModel;
 
-  Future<void> fetchProducts(data) async {
-    // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/company/$data'));
-    Map<String,dynamic> jsonData=json.decode(response.body);
-    debugPrint("Status Code: ${response.statusCode}");
-    if (response.statusCode == 200) {
-      debugPrint("API Response: ${jsonData.toString()}");
-      debugPrint("API 200: ");
-      AgencyDetailmodel parsedModel = AgencyDetailmodel.fromJson(jsonData);
-      debugPrint("Parsed ProductModel: ${parsedModel.toString()}");
-      setState(() {
-        debugPrint("API setState: ");
-       /* String title = jsonData['title'] ?? 'No title';
-        debugPrint("API title: $title");*/
-        agencyDetailmodel = parsedModel;
+  Future<void> fetchProducts(String data) async {
+    final uri = Uri.parse('https://akarat.com/api/company/$data');
 
-      });
+    try {
+      final response = await http.get(uri).timeout(const Duration(seconds: 8));
 
-      debugPrint("productModels title_after: ${agencyDetailmodel!.name}");
+      debugPrint("Status Code: ${response.statusCode}");
 
-    } else {
-      // Handle error if needed
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = jsonDecode(response.body);
+
+        debugPrint("✅ API Success Response: ${jsonData.toString()}");
+
+        final parsedModel = AgencyDetailmodel.fromJson(jsonData);
+
+        if (!mounted) return;
+
+        setState(() {
+          agencyDetailmodel = parsedModel;
+          debugPrint("✅ Agency Name: ${agencyDetailmodel?.name}");
+        });
+      } else {
+        debugPrint("❌ API Error Status: ${response.statusCode}");
+      }
+    } on TimeoutException {
+      debugPrint("⏱ Request timed out");
+    } on SocketException {
+      debugPrint("📡 No internet connection");
+    } catch (e) {
+      debugPrint("🚨 Unexpected error: $e");
     }
   }
+
 AgencyPropertiesModel? agencyPropertiesModel;
 AgencyAgentsModel? agencyAgentsModel;
 
@@ -237,7 +250,7 @@ AgencyAgentsModel? agencyAgentsModel;
                                 ),
                                 child: GestureDetector(
                                   onTap: (){
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => FindAgent()));
+                                    Navigator.of(context).pop();
                                   },
                                           child: Image.asset("assets/images/ar-left.png",
                                             width: 15,
@@ -689,174 +702,100 @@ AgencyAgentsModel? agencyAgentsModel;
                                   child: Column(
                                   children: [
                                     //About details
+                                   // const SizedBox(height: 20,),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 5,left: 5),
-                                      child:  Row(
+                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                      child: Row(
                                         children: [
-                                          Padding(
-                                            padding: const EdgeInsets.only(top: 5,left: 5,right: 0),
+                                          // Search Box (Flexible instead of Expanded)
+                                          Flexible(
                                             child: Container(
-                                              width: screenSize.width*0.6,
                                               height: 45,
-                                              padding: const EdgeInsets.only(top: 2),
                                               decoration: BoxDecoration(
-                                                borderRadius: BorderRadiusDirectional.circular(10.0),
-                                                boxShadow: [
+                                                borderRadius: BorderRadius.circular(10.0),
+                                                boxShadow: const [
                                                   BoxShadow(
                                                     color: Colors.grey,
-                                                    offset: const Offset(
-                                                      0.3,
-                                                      0.3,
-                                                    ),
+                                                    offset: Offset(0.3, 0.3),
                                                     blurRadius: 0.3,
                                                     spreadRadius: 0.3,
-                                                  ), //BoxShadow
+                                                  ),
                                                   BoxShadow(
                                                     color: Colors.white,
-                                                    offset: const Offset(0.0, 0.0),
+                                                    offset: Offset(0.0, 0.0),
                                                     blurRadius: 0.0,
                                                     spreadRadius: 0.0,
-                                                  ), //BoxShadow
+                                                  ),
                                                 ],
                                               ),
-                                              // Use a Material design search bar
                                               child: TextField(
-                                                textAlign: TextAlign.left,
                                                 controller: _searchController,
                                                 decoration: InputDecoration(
                                                   border: InputBorder.none,
-                                                  hintText: 'Select Location ',
-                                                  hintStyle: TextStyle(color: Colors.grey,fontSize: 15,
-                                                      letterSpacing: 0.5),
-                                                  // Add a search icon or button to the search bar
-                                                  prefixIcon: IconButton(
-                                                    alignment: Alignment.topLeft,
-                                                    icon: Icon(Icons.location_on,color: Colors.red,),
-                                                    onPressed: () {
-                                                      // Perform the search here
-                                                    },
+                                                  hintText: 'Select Location',
+                                                  hintStyle: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: 15,
+                                                    letterSpacing: 0.5,
                                                   ),
+                                                  prefixIcon: Icon(Icons.location_on, color: Colors.red),
                                                 ),
                                               ),
                                             ),
                                           ),
-                                          Padding(padding: const EdgeInsets.only(top: 10,left: 20,right: 5),
-                                            child: Image.asset("assets/images/filter.png",width: 20,height: 30,),
+                                          const SizedBox(width: 16),
+                                          // Filter Icon and Label
+                                          Column(
+                                            children: [
+                                              Image.asset("assets/images/filter.png", width: 20, height: 30),
+                                              const Text(
+                                                "Filters",
+                                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                              ),
+                                            ],
                                           ),
-                                          Padding(padding: const EdgeInsets.only(top: 10,left: 5,right: 10),
-                                            child: Text("Filters",style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),),
-                                          )
                                         ],
                                       ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 10,left: 0),
+                                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                                       child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10.0, right: 2.0, top: 20, bottom: 0),
-                                              child: Container(
-                                                width: 100,
-                                                height: 35,
-                                                padding: const EdgeInsets.only(top: 10,left: 5,right: 0),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.grey.withOpacity(0.5),
-                                                      offset: Offset(4, 4),
-                                                      blurRadius: 8,
-                                                      spreadRadius: 2,
-                                                    ),
-                                                    BoxShadow(
-                                                      color: Colors.white.withOpacity(0.8),
-                                                      offset: Offset(-4, -4),
-                                                      blurRadius: 8,
-                                                      spreadRadius: 2,
-                                                    ),
-                                                  ],
-                                                  borderRadius: BorderRadius.circular(10),
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: ["All", "Buy", "Rent"].map((label) {
+                                          return Container(
+                                            width: screenSize.width * 0.25,
+                                            height: 35,
+                                            alignment: Alignment.center,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(10),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  offset: Offset(4, 4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
                                                 ),
-                                                child:Padding(padding: const EdgeInsets.only(left: 1,right: 3),
-                                                    child:   Text("All",style: TextStyle(
-                                                        letterSpacing: 0.5,color: Colors.black,fontSize: 12,
-                                                      fontWeight: FontWeight.bold
-                                                    ),textAlign: TextAlign.center,)
+                                                BoxShadow(
+                                                  color: Colors.white.withOpacity(0.8),
+                                                  offset: Offset(-4, -4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2,
                                                 ),
+                                              ],
+                                            ),
+                                            child: Text(
+                                              label,
+                                              style: const TextStyle(
+                                                letterSpacing: 0.5,
+                                                color: Colors.black,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
                                               ),
                                             ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 5.0, right: 2.0, top: 20, bottom: 0),
-                                              child: Container(
-                                                width: 100,
-                                                height: 35,
-                                                padding: const EdgeInsets.only(top: 10,left: 5,right: 0),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.grey.withOpacity(0.5),
-                                                      offset: Offset(4, 4),
-                                                      blurRadius: 8,
-                                                      spreadRadius: 2,
-                                                    ),
-                                                    BoxShadow(
-                                                      color: Colors.white.withOpacity(0.8),
-                                                      offset: Offset(-4, -4),
-                                                      blurRadius: 8,
-                                                      spreadRadius: 2,
-                                                    ),
-                                                  ],
-                                                  borderRadius: BorderRadius.circular(10),
-                                                ),
-                                                child: Padding(padding: const EdgeInsets.only(left: 1,right: 3),
-                                                    child:   Text("Buy",style: TextStyle(
-                                                        letterSpacing: 0.5,color: Colors.black,fontSize: 12,
-                                                        fontWeight: FontWeight.bold
-                                                    ),textAlign: TextAlign.center,)
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 5.0, right: 5.0, top: 20, bottom: 0),
-                                              child: Container(
-                                                  width: 100,
-                                                  height: 35,
-                                                  padding: const EdgeInsets.only(top: 10,left: 5,right: 0),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.grey.withOpacity(0.5),
-                                                        offset: Offset(4, 4),
-                                                        blurRadius: 8,
-                                                        spreadRadius: 2,
-                                                      ),
-                                                      BoxShadow(
-                                                        color: Colors.white.withOpacity(0.8),
-                                                        offset: Offset(-4, -4),
-                                                        blurRadius: 8,
-                                                        spreadRadius: 2,
-                                                      ),
-                                                    ],
-                                                    borderRadius: BorderRadius.circular(10),
-                                                  ),
-                                                  child:Padding(padding: const EdgeInsets.only(left: 1,right: 3),
-                                                      child:   Text("Rent",style: TextStyle(
-                                                          letterSpacing: 0.5,color: Colors.black,fontSize: 12,
-                                                          fontWeight: FontWeight.bold
-                                                      ),textAlign: TextAlign.center,)
-                                                  )
-                                              ),
-                                            )
-                                          ]),
-
+                                          );
+                                        }).toList(),
+                                      ),
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(left: 0,right: 0,top: 15),
@@ -909,9 +848,9 @@ AgencyAgentsModel? agencyAgentsModel;
                                                                             physics: const ScrollPhysics(),
                                                                             itemCount: agencyPropertiesModel?.data?[index].media?.length ?? 0,
                                                                             shrinkWrap: true,
-                                                                            itemBuilder: (BuildContext context, int index) {
-                                                                              return CachedNetworkImage( // this is to fetch the image
-                                                                                imageUrl: (agencyPropertiesModel!.data![index].media![index].originalUrl.toString()),
+                                                                            itemBuilder: (BuildContext context, int mediaIndex) {
+                                                                              return CachedNetworkImage(
+                                                                                imageUrl: agencyPropertiesModel!.data![index].media![mediaIndex].originalUrl.toString(),
                                                                                 fit: BoxFit.fill,
                                                                               );
                                                                             },
@@ -1217,7 +1156,8 @@ AgencyAgentsModel? agencyAgentsModel;
 
                                                                         ),
                                                                       ),
-                                                                      Padding(padding: const EdgeInsets.only(left: 10,right: 0,top: 10),
+                                                                      Padding(
+                                                                        padding: const EdgeInsets.only(left: 10,right: 0,top: 10),
                                                                         child: Container(
                                                                           width: screenSize.width*0.16,
                                                                           height: screenSize.height*0.029,
@@ -1257,7 +1197,6 @@ AgencyAgentsModel? agencyAgentsModel;
 
                                                                         ),
                                                                       ),
-
                                                                     ],
                                                                   ),
                                                                 ],

@@ -35,6 +35,10 @@ class Data {
   String? location;
   String? phoneNumber;
   String? whatsapp;
+  String? paymentPeriod;
+  int? bedrooms;
+  int? bathrooms;
+  String? squareFeet;
   List<Media>? media;
 
   Data(
@@ -42,9 +46,13 @@ class Data {
         this.title,
         this.price,
         this.address,
+        this.location,
         this.phoneNumber,
         this.whatsapp,
-        this.location,
+        this.paymentPeriod,
+        this.bedrooms,
+        this.bathrooms,
+        this.squareFeet,
         this.media});
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -55,6 +63,10 @@ class Data {
     location = json['location'];
     phoneNumber = json['phone_number'];
     whatsapp = json['whatsapp'];
+    paymentPeriod = json['payment_period'];
+    bedrooms = json['bedrooms'];
+    bathrooms = json['bathrooms'];
+    squareFeet = json['square_feet'];
     if (json['media'] != null) {
       media = <Media>[];
       json['media'].forEach((v) {
@@ -72,6 +84,10 @@ class Data {
     data['location'] = this.location;
     data['phone_number'] = this.phoneNumber;
     data['whatsapp'] = this.whatsapp;
+    data['payment_period'] = this.paymentPeriod;
+    data['bedrooms'] = this.bedrooms;
+    data['bathrooms'] = this.bathrooms;
+    data['square_feet'] = this.squareFeet;
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
     }

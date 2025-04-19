@@ -200,7 +200,6 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
             Container(
                 height: screenSize.height * 0.9,
                 margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Expanded(
                   child: ListView(
                     padding: EdgeInsets.zero,
                     children: [
@@ -297,7 +296,6 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                       ),
                     ],
                   ),
-                ),
             ),
                 ]
             )

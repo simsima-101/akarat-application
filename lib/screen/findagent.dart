@@ -99,19 +99,6 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     readData();
   }
 
-  /*Future<void> agentfetch() async {
-    // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/agents?search=${locationController.text}'
-        '&service_needed=$selectedService&nationality=$selectedNationality&language=$selectedLanguage'));
-    // final response = await http.get(Uri.parse('https://akarat.com/api/agents'));
-    if (response.statusCode == 200) {
-      List<dynamic> jsonData = json.decode(response.body);
-      setState(() {
-        agentsmodel = jsonData.map((data) => AgentsModel.fromJson(data)).toList();
-      });
-    } else {
-    }
-  }*/
 
   Future<void> agentfetch() async {
     final queryParams = {
@@ -198,6 +185,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                   children: [
                     GestureDetector(
                       onTap: () {
+                       // Navigator.of(context).pop();
                         setState(() {
                           if (token == '') {
                             Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));

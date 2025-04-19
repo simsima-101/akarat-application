@@ -25,6 +25,8 @@ class LoginDemo extends StatefulWidget {
   _LoginDemoState createState() => _LoginDemoState();
 }
 class _LoginDemoState extends State<LoginDemo> {
+  String? emailError;
+  bool isTyping = false;
   bool _showClose = true;
   final emailController = TextEditingController();
   final formkey =GlobalKey<FormState>();
@@ -102,6 +104,7 @@ class _LoginDemoState extends State<LoginDemo> {
             ),
             Form(
               key: formkey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
                 padding: const EdgeInsets.only(top: 15),
@@ -151,13 +154,20 @@ class _LoginDemoState extends State<LoginDemo> {
                       padding: EdgeInsets.symmetric(horizontal: 10,vertical: 2),
                       child: TextFormField(
                         controller: emailController,
+                        onChanged: (value) {
+                          if (formkey.currentState != null) {
+                            formkey.currentState!.validate(); // revalidate as user types
+                          }
+                        },
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: 'Email',
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) return 'Please enter Email ID';
-                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) return 'Invalid email address';
+                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                            return 'Invalid email address';
+                          }
                           return null;
                         },
                       ),

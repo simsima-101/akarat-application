@@ -32,8 +32,8 @@ class Data {
   String? squareFeet;
   String? purpose;
   String? propertyType;
-  Null? latitude;
-  Null? longitude;
+  String? latitude;
+  String? longitude;
   String? postedOn;
   String? deliveryDate;
   String? project;
@@ -49,9 +49,11 @@ class Data {
   int? closedDeals;
   String? zoneName;
   String? reference;
+  String? qrLink;
   String? agentImage;
   List<RecommendedProperties>? recommendedProperties;
   RegulatoryInfo? regulatoryInfo;
+  List<Amenities>? amenities;
 
   Data(
       {this.id,
@@ -86,9 +88,11 @@ class Data {
         this.closedDeals,
         this.zoneName,
         this.reference,
+        this.qrLink,
         this.agentImage,
         this.recommendedProperties,
-        this.regulatoryInfo});
+        this.regulatoryInfo,
+        this.amenities});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -138,6 +142,7 @@ class Data {
     closedDeals = json['closed_deals'];
     zoneName = json['zone_name'];
     reference = json['reference'];
+    qrLink = json['qr_link'];
     agentImage = json['agent_image'];
     if (json['recommended_properties'] != null) {
       recommendedProperties = <RecommendedProperties>[];
@@ -148,6 +153,12 @@ class Data {
     regulatoryInfo = json['regulatory_info'] != null
         ? new RegulatoryInfo.fromJson(json['regulatory_info'])
         : null;
+    if (json['amenities'] != null) {
+      amenities = <Amenities>[];
+      json['amenities'].forEach((v) {
+        amenities!.add(new Amenities.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -190,6 +201,7 @@ class Data {
     data['closed_deals'] = this.closedDeals;
     data['zone_name'] = this.zoneName;
     data['reference'] = this.reference;
+    data['qr_link'] = this.qrLink;
     data['agent_image'] = this.agentImage;
     if (this.recommendedProperties != null) {
       data['recommended_properties'] =
@@ -197,6 +209,9 @@ class Data {
     }
     if (this.regulatoryInfo != null) {
       data['regulatory_info'] = this.regulatoryInfo!.toJson();
+    }
+    if (this.amenities != null) {
+      data['amenities'] = this.amenities!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -233,7 +248,6 @@ class Qr {
     return data;
   }
 }
-
 class Floor {
   String? floorUrl;
 
@@ -249,7 +263,6 @@ class Floor {
     return data;
   }
 }
-
 class RecommendedProperties {
   int? id;
   String? title;
@@ -258,10 +271,11 @@ class RecommendedProperties {
   String? location;
   String? phoneNumber;
   String? whatsapp;
-  List<Media>? media;
+  String? paymentPeriod;
   int? bedrooms;
   int? bathrooms;
   String? squareFeet;
+  List<Media>? media;
 
   RecommendedProperties(
       {this.id,
@@ -271,10 +285,11 @@ class RecommendedProperties {
         this.location,
         this.phoneNumber,
         this.whatsapp,
-        this.media,
+        this.paymentPeriod,
         this.bedrooms,
         this.bathrooms,
-        this.squareFeet});
+        this.squareFeet,
+        this.media});
 
   RecommendedProperties.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -284,15 +299,16 @@ class RecommendedProperties {
     location = json['location'];
     phoneNumber = json['phone_number'];
     whatsapp = json['whatsapp'];
+    paymentPeriod = json['payment_period'];
+    bedrooms = json['bedrooms'];
+    bathrooms = json['bathrooms'];
+    squareFeet = json['square_feet'];
     if (json['media'] != null) {
       media = <Media>[];
       json['media'].forEach((v) {
         media!.add(new Media.fromJson(v));
       });
     }
-    bedrooms = json['bedrooms'];
-    bathrooms = json['bathrooms'];
-    squareFeet = json['square_feet'];
   }
 
   Map<String, dynamic> toJson() {
@@ -304,12 +320,13 @@ class RecommendedProperties {
     data['location'] = this.location;
     data['phone_number'] = this.phoneNumber;
     data['whatsapp'] = this.whatsapp;
-    if (this.media != null) {
-      data['media'] = this.media!.map((v) => v.toJson()).toList();
-    }
+    data['payment_period'] = this.paymentPeriod;
     data['bedrooms'] = this.bedrooms;
     data['bathrooms'] = this.bathrooms;
     data['square_feet'] = this.squareFeet;
+    if (this.media != null) {
+      data['media'] = this.media!.map((v) => v.toJson()).toList();
+    }
     return data;
   }
 }
@@ -335,6 +352,25 @@ class RegulatoryInfo {
     data['dld_permit_number'] = this.dldPermitNumber;
     data['rera'] = this.rera;
     data['brn'] = this.brn;
+    return data;
+  }
+}
+
+class Amenities {
+  String? title;
+  String? icon;
+
+  Amenities({this.title, this.icon});
+
+  Amenities.fromJson(Map<String, dynamic> json) {
+    title = json['title'];
+    icon = json['icon'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['title'] = this.title;
+    data['icon'] = this.icon;
     return data;
   }
 }

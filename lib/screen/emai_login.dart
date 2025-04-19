@@ -34,48 +34,72 @@ RegisterModel? registerModel;
   String token = '';
   String email = '';
   bool isDataSaved = false;
-  Future<void> loginUsers(data) async {
+
+  Future<void> loginUsers(String emailInput) async {
     try {
       final response = await http.post(
         Uri.parse('https://akarat.com/api/login'),
-        headers: <String, String>{
+        headers: {
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode(<String, dynamic>{
-          "email": data,
+        body: jsonEncode({
+          "email": emailInput.trim(),
           "password": passwordController.text,
-          // Add any other data you want to send in the body
         }),
       );
 
+      debugPrint("Login Status Code: ${response.statusCode}");
+
       if (response.statusCode == 200) {
-        Map<String, dynamic> jsonData = json.decode(response.body);
+        final jsonData = json.decode(response.body);
         loginModel = LoginModel.fromJson(jsonData);
-        result=loginModel!.name.toString();
-         token=loginModel!.token.toString();
-        email=loginModel!.email.toString();
-        print("Registered Succesfully");
-        isDataSaved
-            ? const Text('Data Saved!')
-            : const Text('Data Not Saved!');
-        // Call the addStringToPref method and pass the string value
-        prefManager.addStringToPref(token);
-        prefManager.addStringToPrefemail(email);
-        prefManager.addStringToPrefresult(result);
+
+        token = loginModel!.token ?? '';
+        email = loginModel!.email ?? '';
+        result = loginModel!.name ?? '';
+
+        // Save values to shared preferences
+        await prefManager.addStringToPref(token);
+        await prefManager.addStringToPrefemail(email);
+        await prefManager.addStringToPrefresult(result);
+
         setState(() {
           isDataSaved = true;
         });
-        Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-      } else {
-        throw Exception("Registration failed");
 
+        debugPrint("✅ Login Successful");
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => My_Account()),
+        );
+      } else {
+        final errorResponse = json.decode(response.body);
+        debugPrint("❌ Login failed: ${errorResponse["message"] ?? 'Unknown error'}");
+        _showErrorDialog("Login failed: ${errorResponse["message"] ?? 'Please try again.'}");
       }
     } catch (e) {
-      setState(() {
-        print('Error: $e');
-      });
+      debugPrint("🚨 Login Exception: $e");
+      _showErrorDialog("Something went wrong. Please try again.");
     }
   }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Login Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            child: const Text("OK"),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
   bool _showClose = true;
   @override
   Widget build(BuildContext context) {
