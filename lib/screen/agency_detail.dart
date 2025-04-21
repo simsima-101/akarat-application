@@ -14,6 +14,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../model/productmodel.dart';
 import '../utils/shared_preference_manager.dart';
 import 'full_map_screen.dart';
+import 'htmlEpandableText.dart';
 import 'my_account.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 
@@ -108,12 +109,83 @@ class _Agency_DetailState extends State<Agency_Detail> {
             child: Column(
                 children: <Widget>[
                   Stack(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 0),
+                    children: [
+                      // Image list behind
+                      Container(
+                        height: screenSize.height * 0.55,
+                        margin: const EdgeInsets.all(0),
+                        child:  ListView.builder(
+                          padding: EdgeInsets.zero,
+                          shrinkWrap: true,
+                          scrollDirection: Axis.vertical,
+                          physics: const ScrollPhysics(),
+                          itemCount: productModels?.data?.media?.length ?? 0,
+                          itemBuilder: (BuildContext context, int index) {
+                            final imageUrl = productModels!.data!.media![index].originalUrl.toString();
+
+                            return GestureDetector(
+                              onTap: () {
+                                showGeneralDialog(
+                                  context: context,
+                                  barrierDismissible: true,
+                                  barrierLabel: "ImagePreview",
+                                  transitionDuration: const Duration(milliseconds: 300),
+                                  pageBuilder: (context, animation, secondaryAnimation) {
+                                    PageController controller = PageController(initialPage: index);
+                                    return Scaffold(
+                                      backgroundColor: Colors.black,
+                                      body: SafeArea(
+                                        child: Stack(
+                                          children: [
+                                            PageView.builder(
+                                              controller: controller,
+                                              itemCount: productModels?.data?.media?.length ?? 0,
+                                              itemBuilder: (context, pageIndex) {
+                                                final previewUrl = productModels!.data!.media![pageIndex].originalUrl.toString();
+                                                return InteractiveViewer(
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: previewUrl,
+                                                    fit: BoxFit.contain,
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                            Positioned(
+                                              top: 20,
+                                              right: 20,
+                                              child: IconButton(
+                                                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop(); // closes the full screen
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 5),
+                                child: CachedNetworkImage(
+                                  imageUrl: imageUrl,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+
+                      // Top bar over images
+                      Positioned(
+                        top: 20,
+                        left: 0,
+                        right: 0,
                         child: SizedBox(
                           height: 50,
-                          width: double.infinity,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -125,9 +197,7 @@ class _Agency_DetailState extends State<Agency_Detail> {
                                 padding: const EdgeInsets.all(7),
                                 decoration: _iconBoxDecoration(),
                                 child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.of(context).pop();
-                                  },
+                                  onTap: () => Navigator.of(context).pop(),
                                   child: Image.asset(
                                     "assets/images/ar-left.png",
                                     width: 15,
@@ -156,73 +226,6 @@ class _Agency_DetailState extends State<Agency_Detail> {
                         ),
                       ),
                     ],
-                  ),
-                  Container(
-                    height: screenSize.height * 0.55,
-                    margin: const EdgeInsets.all(0),
-                    child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      shrinkWrap: true,
-                      scrollDirection: Axis.vertical,
-                      physics: const ScrollPhysics(),
-                      itemCount: productModels?.data?.media?.length ?? 0,
-                      itemBuilder: (BuildContext context, int index) {
-                        final imageUrl = productModels!.data!.media![index].originalUrl.toString();
-
-                        return GestureDetector(
-                          onTap: () {
-                            showGeneralDialog(
-                              context: context,
-                              barrierDismissible: true,
-                              barrierLabel: "ImagePreview",
-                              transitionDuration: const Duration(milliseconds: 300),
-                              pageBuilder: (context, animation, secondaryAnimation) {
-                                PageController controller = PageController(initialPage: index);
-                                return Scaffold(
-                                  backgroundColor: Colors.black,
-                                  body: SafeArea(
-                                    child: Stack(
-                                      children: [
-                                        PageView.builder(
-                                          controller: controller,
-                                          itemCount: productModels?.data?.media?.length ?? 0,
-                                          itemBuilder: (context, pageIndex) {
-                                            final previewUrl = productModels!.data!.media![pageIndex].originalUrl.toString();
-                                            return InteractiveViewer(
-                                              child: CachedNetworkImage(
-                                                imageUrl: previewUrl,
-                                                fit: BoxFit.contain,
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                        Positioned(
-                                          top: 20,
-                                          right: 20,
-                                          child: IconButton(
-                                            icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                                            onPressed: () {
-                                              Navigator.of(context).pop(); // closes the full screen
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 5),
-                            child: CachedNetworkImage(
-                              imageUrl: imageUrl,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
                   ),
                   SizedBox(height: 25,),
                   Padding(
@@ -356,15 +359,8 @@ class _Agency_DetailState extends State<Agency_Detail> {
                   SizedBox(height: 10,),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    child: Html(
-                      data: productModels!.data!.description.toString().replaceAll('\r\n', '<br>'),
-                      style: {
-                        "body": Style(
-                          fontSize: FontSize.medium,
-                          lineHeight: LineHeight.number(1.5),
-                          color: Colors.black87,
-                        ),
-                      },
+                    child: HtmlExpandableText(
+                      htmlContent: productModels!.data!.description.toString().replaceAll('\r\n', '<br>'),
                     ),
                   ),
                   SizedBox(height: 10,),

@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
 import '../utils/shared_preference_manager.dart';
+import 'htmlEpandableText.dart';
 import 'my_account.dart';
 
 class Property_Detail extends StatefulWidget {
@@ -102,12 +103,83 @@ class _Property_DetailState extends State<Property_Detail> {
             child: Column(
                 children: <Widget>[
                   Stack(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 0),
+                    children: [
+                      // Image list behind
+                      Container(
+                        height: screenSize.height * 0.55,
+                        margin: const EdgeInsets.all(0),
+                        child:  ListView.builder(
+                          padding: EdgeInsets.zero,
+                          shrinkWrap: true,
+                          scrollDirection: Axis.vertical,
+                          physics: const ScrollPhysics(),
+                          itemCount: projectDetailModel?.data?.media?.length ?? 0,
+                          itemBuilder: (BuildContext context, int index) {
+                            final imageUrl = projectDetailModel!.data!.media![index].originalUrl.toString();
+
+                            return GestureDetector(
+                              onTap: () {
+                                showGeneralDialog(
+                                  context: context,
+                                  barrierDismissible: true,
+                                  barrierLabel: "ImagePreview",
+                                  transitionDuration: const Duration(milliseconds: 300),
+                                  pageBuilder: (context, animation, secondaryAnimation) {
+                                    PageController controller = PageController(initialPage: index);
+                                    return Scaffold(
+                                      backgroundColor: Colors.black,
+                                      body: SafeArea(
+                                        child: Stack(
+                                          children: [
+                                            PageView.builder(
+                                              controller: controller,
+                                              itemCount: projectDetailModel?.data?.media?.length ?? 0,
+                                              itemBuilder: (context, pageIndex) {
+                                                final previewUrl = projectDetailModel!.data!.media![pageIndex].originalUrl.toString();
+                                                return InteractiveViewer(
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: previewUrl,
+                                                    fit: BoxFit.contain,
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                            Positioned(
+                                              top: 20,
+                                              right: 20,
+                                              child: IconButton(
+                                                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop(); // closes the full screen
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 5),
+                                child: CachedNetworkImage(
+                                  imageUrl: imageUrl,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+
+                      // Top bar over images
+                      Positioned(
+                        top: 20,
+                        left: 0,
+                        right: 0,
                         child: SizedBox(
                           height: 50,
-                          width: double.infinity,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -119,9 +191,7 @@ class _Property_DetailState extends State<Property_Detail> {
                                 padding: const EdgeInsets.all(7),
                                 decoration: _iconBoxDecoration(),
                                 child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.of(context).pop();
-                                  },
+                                  onTap: () => Navigator.of(context).pop(),
                                   child: Image.asset(
                                     "assets/images/ar-left.png",
                                     width: 15,
@@ -150,73 +220,6 @@ class _Property_DetailState extends State<Property_Detail> {
                         ),
                       ),
                     ],
-                  ),
-                  Container(
-                    height: screenSize.height * 0.55,
-                    margin: const EdgeInsets.all(0),
-                    child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      shrinkWrap: true,
-                      scrollDirection: Axis.vertical,
-                      physics: const ScrollPhysics(),
-                      itemCount: projectDetailModel?.data?.media?.length ?? 0,
-                      itemBuilder: (BuildContext context, int index) {
-                        final imageUrl = projectDetailModel!.data!.media![index].originalUrl.toString();
-
-                        return GestureDetector(
-                          onTap: () {
-                            showGeneralDialog(
-                              context: context,
-                              barrierDismissible: true,
-                              barrierLabel: "ImagePreview",
-                              transitionDuration: const Duration(milliseconds: 300),
-                              pageBuilder: (context, animation, secondaryAnimation) {
-                                PageController controller = PageController(initialPage: index);
-                                return Scaffold(
-                                  backgroundColor: Colors.black,
-                                  body: SafeArea(
-                                    child: Stack(
-                                      children: [
-                                        PageView.builder(
-                                          controller: controller,
-                                          itemCount: projectDetailModel?.data?.media?.length ?? 0,
-                                          itemBuilder: (context, pageIndex) {
-                                            final previewUrl = projectDetailModel!.data!.media![pageIndex].originalUrl.toString();
-                                            return InteractiveViewer(
-                                              child: CachedNetworkImage(
-                                                imageUrl: previewUrl,
-                                                fit: BoxFit.contain,
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                        Positioned(
-                                          top: 20,
-                                          right: 20,
-                                          child: IconButton(
-                                            icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                                            onPressed: () {
-                                              Navigator.of(context).pop(); // closes the full screen
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 5),
-                            child: CachedNetworkImage(
-                              imageUrl: imageUrl,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
                   ),
                   const SizedBox(height: 25,),
                   Row(
@@ -274,12 +277,10 @@ class _Property_DetailState extends State<Property_Detail> {
                   ),
                   const SizedBox(height: 10,),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 15),
-                    child:  Text(projectDetailModel!.data!.description.toString(),
-                      textAlign: TextAlign.left,style: TextStyle(
-                          letterSpacing: 0.4,color: Colors.black87
-                      ),),
-
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                    child: HtmlExpandableText(
+                      htmlContent: projectDetailModel!.data!.description.toString().replaceAll('\r\n', '<br>'),
+                    ),
                   ),
                   const SizedBox(height: 10,),
                   Padding(
@@ -705,12 +706,11 @@ class _Property_DetailState extends State<Property_Detail> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Text(
-                          projectDetailModel!.data!.description.toString(),
-                          style: const TextStyle(
-                            letterSpacing: 0.2,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                          child: HtmlExpandableText(
+                            htmlContent: projectDetailModel!.data!.description.toString().replaceAll('\r\n', '<br>'),
                           ),
-                          textAlign: TextAlign.left,
                         ),
                       ],
                     ),

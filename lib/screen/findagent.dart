@@ -176,10 +176,23 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
       child: Scaffold(
         bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         backgroundColor: Colors.white, // Light grey background
+        appBar: AppBar(
+          title: const Text(
+              "Find My Agent", style: TextStyle(color: Colors.black,
+              fontWeight: FontWeight.bold)),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.red),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Home())), // ✅ Add close functionality
+          ),
+          centerTitle: true,
+          backgroundColor: Color(0xFFFFFFFF),
+          iconTheme: const IconThemeData(color: Colors.red),
+          elevation: 1,
+        ),
         body: SafeArea(
           child: Column(
             children: [
-              Padding(
+              /*Padding(
                 padding: const EdgeInsets.only(top: 20, left: 16, right: 16),
                 child: Row(
                   children: [
@@ -218,7 +231,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                     Text("Find My Agent", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
                   ],
                 ),
-              ),
+              ),*/
               Container(
                 margin: const EdgeInsets.only(top: 20, left: 15, right: 15),
                 decoration: BoxDecoration(
@@ -280,7 +293,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
                                 // Services Dropdown
                                 SafeArea(
-                                  child: SingleChildScrollView(
+                                 // child: SingleChildScrollView(
                                     child: Column(
                                       children: [
                                         DropdownButtonFormField<String>(
@@ -296,7 +309,6 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                           value: selectedService,
                                           items: services.map((option){
                                             return DropdownMenuItem<String>(
-                                              alignment: Alignment.bottomLeft,
                                               value: option['value'],
                                               child: Text(
                                                 option['label']!,
@@ -308,7 +320,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                         ),
                                       ],
                                     ),
-                                  ),
+                                 // ),
                                 ),
 
                                 const SizedBox(height: 10),

@@ -49,6 +49,8 @@ dependencies:
   shimmer:
   html_unescape: ^2.0.0
   flutter_html:
+  google_sign_in:
+  dropdown_button2:
   url_launcher:
   flutter_phone_direct_caller:
   dio:
