@@ -23,12 +23,6 @@ class Blog_Detail extends StatefulWidget {
 class _Blog_DetailDemoState extends State<Blog_Detail> {
 
   int pageIndex = 0;
-  final pages = [
-    const Page1(),
-    const Page4(),
-  ];
-
-
   String token = '';
   String email = '';
   String result = '';
@@ -335,7 +329,7 @@ readData();
   Container buildMyNavBar(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
     return Container(
-      height: 40,
+      height: 50,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -346,25 +340,11 @@ readData();
       child: Row(
         spacing: screenSize.width*0.7,
         children: [
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-
-            },
-            icon: pageIndex == 0
-                ? const Icon(
-              Icons.home_filled,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.home_outlined,
-              color: Colors.red,
-              size: 35,
-            ),
-          ),
+          GestureDetector(
+              onTap: ()async{
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+              },
+              child: Image.asset("assets/images/home.png",height: 22,)),
           Padding(
             padding: const EdgeInsets.only(left: 0.0),
             child: IconButton(

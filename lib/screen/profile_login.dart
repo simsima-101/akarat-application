@@ -270,25 +270,14 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-
-            },
-            icon: pageIndex == 0
-                ? const Icon(
-              Icons.home_filled,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.home_outlined,
-              color: Colors.red,
-              size: 35,
-            ),
-          ),
+          GestureDetector(
+              onTap: ()async{
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(left: 10.0),
+                child: Image.asset("assets/images/home.png",height: 25,),
+              )),
           GestureDetector(
             onTap: ()async{
               Navigator.push(context, MaterialPageRoute(builder: (context)=> Favorite()));

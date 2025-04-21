@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:Akarat/model/agentdetaill.dart';
 import 'package:Akarat/model/agentpropertiesmodel.dart';
@@ -15,6 +16,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../model/togglemodel.dart';
 import '../utils/shared_preference_manager.dart';
 import 'agent_detail.dart';
+import 'htmlEpandableText.dart';
 import 'login.dart';
 
 
@@ -48,13 +50,33 @@ class _AboutAgentState extends State<AboutAgent> {
     });
   }
 
-
+  Timer? _debounce;
   @override
   void initState() {
     fetchProducts(widget.data);
     getFilesApi(widget.data);
     readData();
     _loadFavorites();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      final query = _searchController.text.trim();
+      if (query.isNotEmpty) {
+        _callSearchApi(query);
+      }
+    });
   }
 
   AgentProperties? agentProperties;
@@ -85,6 +107,26 @@ class _AboutAgentState extends State<AboutAgent> {
       }
     } catch (e) {
       debugPrint("❌ Exception while fetching agent: $e");
+    }
+  }
+
+  Future<void> _callSearchApi(query) async {
+    // you can replace your api link with this link
+    final response = await http.get(Uri.parse('https://akarat.com/api/filters?'
+        'search=$query&amenities=&property_type='
+        '&furnished_status=&bedrooms=&min_price='
+        '&max_price=&payment_period=&min_square_feet='
+        '&max_square_feet=&bathrooms=&purpose='));
+    var data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      AgentProperties feature= AgentProperties.fromJson(data);
+
+      setState(() {
+        agentProperties = feature ;
+
+      });
+
+    } else {
     }
   }
 
@@ -169,14 +211,6 @@ class _AboutAgentState extends State<AboutAgent> {
         'favorite_properties',
         favoriteProperties.map((id) => id.toString()).toList());
   }
-
-
-  final pages = [
-    const Page1(),
-    const Page2(),
-    const Page3(),
-    const Page4(),
-  ];
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -200,6 +234,7 @@ class _AboutAgentState extends State<AboutAgent> {
             // Top Stack (Back & Share icons + Image)
             Stack(
               children: <Widget>[
+                const SizedBox(height: 10,),
                 Padding(
                   padding: EdgeInsets.only(top: 0),
                   child: Container(
@@ -570,13 +605,10 @@ class _AboutAgentState extends State<AboutAgent> {
                             ),
                             const SizedBox(height: 10,),
                             Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                child: Text(
-                                          agentDetail!.about.toString(),
-                                          style: TextStyle(
-                                              fontSize: 13, color: Colors.black,
-                                              letterSpacing: 0.5,fontWeight: FontWeight.bold,height: 1.5
-                                          ),),
+                              padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                              child: HtmlExpandableText(
+                                htmlContent: agentDetail!.about.toString().replaceAll('\r\n', '<br>'),
+                              ),
                             ),
                             const SizedBox(height: 10,),
                             Padding(
@@ -648,7 +680,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                   Padding(
                                     padding: const EdgeInsets.only(top: 5,left: 5,right: 15),
                                     child: Container(
-                                      width: screenSize.width*0.6,
+                                      width: screenSize.width*0.85,
                                       height: 50,
                                       padding: const EdgeInsets.only(top: 5),
                                       decoration: BoxDecoration(
@@ -691,7 +723,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                       ),
                                     ),
                                   ),
-                                  Padding(
+                                 /* Padding(
                                     padding: const EdgeInsets.only(top: 15,left: 15,right: 0),
                                     child: Image.asset("assets/images/filter.png",width: 20,height: 30,),
                                   ),
@@ -700,7 +732,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                     child: Text("Filters",style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),),
-                                  )
+                                  )*/
                                 ],
                               ),
                             ),
@@ -1143,7 +1175,7 @@ class _AboutAgentState extends State<AboutAgent> {
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 40,
+      height: 50,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -1154,25 +1186,11 @@ class _AboutAgentState extends State<AboutAgent> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
+          GestureDetector(
+              onTap: ()async{
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-              });
-            },
-            icon: pageIndex == 0
-                ? const Icon(
-              Icons.home_filled,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.home_outlined,
-              color: Colors.red,
-              size: 35,
-            ),
-          ),
+              },
+              child: Image.asset("assets/images/home.png",height: 22,)),
           Container(
               margin: const EdgeInsets.only(left: 40),
               height: 35,
@@ -1384,87 +1402,6 @@ class _AboutAgentState extends State<AboutAgent> {
               fit: BoxFit.contain,
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class Page1 extends StatelessWidget {
-  const Page1({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 1",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page2 extends StatelessWidget {
-  const Page2({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 2",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page3 extends StatelessWidget {
-  const Page3({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 3",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page4 extends StatelessWidget {
-  const Page4({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 4",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
         ),
       ),
     );

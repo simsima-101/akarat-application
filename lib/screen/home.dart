@@ -703,7 +703,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                                   borderRadius: BorderRadius.circular(10)
                                               ),
                                               // color: Colors.grey,
-                                              child: Image.asset('assets/images/banner1.png',fit: BoxFit.contain,)
+                                              child: Image.asset('assets/images/banner1.jpg',fit: BoxFit.contain,)
                                           ),
                                         ),
 
@@ -878,20 +878,36 @@ class _MyHomePageState extends State<HomeDemo> {
                                               SizedBox(height: 8),
                                               Row(
                                                 children: [
-                                                  Image.asset("assets/images/bed.png", height: 13),
+                                                  Image.asset("assets/images/bed.png", height: 14),
                                                   SizedBox(width: 5),
                                                   Text(item.bedrooms.toString()),
                                                   SizedBox(width: 10),
-                                                  Image.asset("assets/images/bath.png", height: 13),
+                                                  Image.asset("assets/images/bath.png", height: 14),
                                                   SizedBox(width: 5),
                                                   Text(item.bathrooms.toString()),
                                                   SizedBox(width: 10),
-                                                  Image.asset("assets/images/messure.png", height: 13),
+                                                  Image.asset("assets/images/messure.png", height: 14),
                                                   SizedBox(width: 5),
                                                   Text(item.squareFeet.toString()),
                                                 ],
                                               ),
-                                              SizedBox(height: 15),
+                                             /* SizedBox(height: 15),
+                                              Row(
+                                                children: [
+                                                  Image.asset("assets/images/Flooring.png", height: 20),
+                                                  SizedBox(width: 5),
+                                                  Text(item.bedrooms.toString()),
+                                                  SizedBox(width: 10),
+                                                  Image.asset("assets/images/Central_Heating.png", height: 20),
+                                                  SizedBox(width: 5),
+                                                  Text(item.bathrooms.toString()),
+                                                  SizedBox(width: 10),
+                                                  Image.asset("assets/images/Barbeque_Area.png", height: 20),
+                                                  SizedBox(width: 5),
+                                                  Text(item.squareFeet.toString()),
+                                                ],
+                                              ),*/
+                                              SizedBox(height: 15,),
                                               Row(
                                                 children: [
                                                   Expanded(
@@ -978,24 +994,11 @@ class _MyHomePageState extends State<HomeDemo> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-              });
-            },
-            icon: pageIndex == 0
-                ? const Icon(
-              Icons.home_filled,
-              color: Colors.red,
-              size: 30,
-            )
-                : const Icon(
-              Icons.home_outlined,
-              color: Colors.red,
-              size: 30,
-            ),
-          ),
+          GestureDetector(
+              onTap: ()async{
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+              },
+              child: Image.asset("assets/images/home.png",height: 22,)),
           IconButton(
             enableFeedback: false,
             onPressed: () {
@@ -1034,12 +1037,12 @@ class _MyHomePageState extends State<HomeDemo> {
                 ? const Icon(
               Icons.favorite,
               color: Colors.red,
-              size: 30,
+              size: 28,
             )
                 : const Icon(
               Icons.favorite_border_outlined,
               color: Colors.red,
-              size: 30,
+              size: 28,
             ),
           ),
           IconButton(
@@ -1059,12 +1062,12 @@ class _MyHomePageState extends State<HomeDemo> {
                 ? const Icon(
               Icons.dehaze,
               color: Colors.red,
-              size: 30,
+              size: 28,
             )
                 : const Icon(
               Icons.dehaze_outlined,
               color: Colors.red,
-              size: 30,
+              size: 28,
             ),
           ),
         ],

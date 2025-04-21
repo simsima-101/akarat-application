@@ -14,6 +14,7 @@ import 'package:Akarat/utils/fav_logout.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../utils/shared_preference_manager.dart';
+import 'favorite.dart';
 
 
 class My_Account extends StatefulWidget {
@@ -27,12 +28,6 @@ class My_Account extends StatefulWidget {
 }
 class _My_AccountState extends State<My_Account> {
   int pageIndex = 0;
-  final pages = [
-    const Page1(),
-    const Page2(),
-    const Page3(),
-    const Page4(),
-  ];
   String token = '';
   String email = '';
   String result = '';
@@ -106,6 +101,7 @@ class _My_AccountState extends State<My_Account> {
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
+                  const SizedBox(height: 10,),
                   Container(
                     height: screenSize.height*0.22,
                   // color: Colors.grey,
@@ -246,110 +242,38 @@ class _My_AccountState extends State<My_Account> {
                     ),
 
                   ),
-                  Container(
-                    height: screenSize.height * 0.9,
-                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    child: ListView(
-                      padding: EdgeInsets.zero,
+                  const SizedBox(height: 20,),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
                       children: [
-                        GestureDetector(
-                          child: SettingsTile(
-                            title: "Find My Agent",
-                            iconPath: "assets/images/find-my-agent.png",
-                          ),
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> FindAgent()));
-                          },
-                        ),
-                        GestureDetector(
-                          child: const SettingsTile(
-                            title: "Favorites",
-                            iconPath: "assets/images/favourites.png",
-                          ),
-                          onTap: (){
-                            if(isDataRead == true){
-                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Login()));
-                            }
-                            else{
-                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Logout()));
-
-                            }
-                            //  Navigator.push(context, MaterialPageRoute(builder: (context)=> Favorite()));
-                          },
-                        ),
-                        const SettingsTile(
-                          title: "City",
-                          iconPath: "assets/images/cities.png",
-                          trailingText: "UAE",
-                        ),
-                        const SettingsTile(
-                          title: "Languages",
-                          iconPath: "assets/images/languages.png",
-                          trailingText: "English",
-                        ),
-                        GestureDetector(
-                          child: const SettingsTile(
-                            title: "About Us",
-                            iconPath: "assets/images/about.png",
-                          ),
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> About_Us()));
-                          },
-                        ),
-                        GestureDetector(
-                          child: const SettingsTile(
-                            title: "Blogs",
-                            iconPath: "assets/images/blog.png",
-                          ),
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Blog()));
-                          },
-                        ),
-                        GestureDetector(
-                          child: const SettingsTile(
-                            title: "Advertising",
-                            iconPath: "assets/images/advertise.png",
-                          ),
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Advertising()));
-                          },
-                        ),
-                        GestureDetector(
-                          child: const SettingsTile(
-                            title: "Support",
-                            iconPath: "assets/images/support.png",
-                          ),
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Support()));
-                          },
-                        ),
-                        GestureDetector(
-                          child: const SettingsTile(
-                            title: "Privacy Policy",
-                            iconPath: "assets/images/privacy-policy.png",
-                          ),
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Privacy()));
-                          },
-                        ),
-                        GestureDetector(
-                          child: const SettingsTile(
-                            title: "Terms And Conditions",
-                            iconPath: "assets/images/terms-and-conditions.png",
-                          ),
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> TermsCondition()));
-                          },
-                        ),
-                        GestureDetector(
-                          child: const SettingsTile(
-                            title: "Cookies",
-                            iconPath: "assets/images/cookies.png",
-                          ),
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Cookies()));
-                          },
-                        ),
+                        _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => FindAgent()));
+                        }),
+                        _settingsTile("Favorites", "assets/images/favourites.png", () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => Favorite()));
+                        }),
+                        _settingsTile("About Us", "assets/images/about.png", () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => About_Us()));
+                        }),
+                        _settingsTile("Blogs", "assets/images/blog.png", () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => Blog()));
+                        }),
+                        _settingsTile("Advertising", "assets/images/advertise.png", () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => Advertising()));
+                        }),
+                        _settingsTile("Support", "assets/images/support.png", () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => Support()));
+                        }),
+                        _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => Privacy()));
+                        }),
+                        _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => TermsCondition()));
+                        }),
+                        _settingsTile("Cookies", "assets/images/cookies.png", () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => Cookies()));
+                        }),
                       ],
                     ),
                   ),
@@ -757,7 +681,7 @@ class _My_AccountState extends State<My_Account> {
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 40,
+      height: 50,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -768,25 +692,11 @@ class _My_AccountState extends State<My_Account> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-
-            },
-            icon: pageIndex == 0
-                ? const Icon(
-              Icons.home_filled,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.home_outlined,
-              color: Colors.red,
-              size: 35,
-            ),
-          ),
+          GestureDetector(
+              onTap: ()async{
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+              },
+              child: Image.asset("assets/images/home.png",height: 22,)),
           Container(
               margin: const EdgeInsets.only(left: 40),
               height: 35,
@@ -902,83 +812,18 @@ class _My_AccountState extends State<My_Account> {
     );
   }
 }
-class Page1 extends StatelessWidget {
-  const Page1({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 1",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
+Widget _settingsTile(String title, String iconPath, VoidCallback onTap) {
+  return Column(
+    children: [
+      GestureDetector(
+        onTap: onTap,
+        child: ListTile(
+          leading: Image.asset(iconPath, width: 28),
+          title: Text(title, style: const TextStyle(fontSize: 16)),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         ),
       ),
-    );
-  }
-}
-class Page2 extends StatelessWidget {
-  const Page2({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 2",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page3 extends StatelessWidget {
-  const Page3({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 3",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page4 extends StatelessWidget {
-  const Page4({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 4",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
+      const Divider(height: 1),
+    ],
+  );
 }

@@ -50,13 +50,13 @@ dependencies:
   html_unescape: ^2.0.0
   flutter_html:
   google_sign_in:
-  dropdown_button2:
+  dropdown_button2: ^2.3.9
   url_launcher:
   flutter_phone_direct_caller:
   dio:
   flutter_dotenv:
-  connectivity_plus: ^4.0.2
-  intl: ^0.18.1
+  connectivity_plus: ^6.1.3
+  intl: ^0.20.2
   google_maps_flutter: ^2.1.8
 
 
@@ -78,7 +78,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -114,6 +114,12 @@ flutter:
   - assets/images/city.png
   - assets/images/blog.png
   - assets/images/avatar.png
+  - assets/images/home.png
+  - assets/images/Residential-test.png
+  - assets/images/banner1.jpg
+  - assets/images/Flooring.png
+  - assets/images/Central_Heating.png
+  - assets/images/Barbeque_Area.png
   - assets/images/banner1.png
   - assets/images/banner2.png
   - assets/images/banner3.png

@@ -55,12 +55,6 @@ class FliterList extends StatelessWidget {
   class _FliterListDemoState extends State<FliterListDemo> {
     late  FilterModel filterModel;
   int pageIndex = 0;
-  final pages = [
-    const Page1(),
-    const Page2(),
-    const Page3(),
-    const Page4(),
-  ];
     int? property_id ;
     String token = '';
     String email = '';
@@ -119,104 +113,6 @@ class FliterList extends StatelessWidget {
     }
     final List<int> yValues = [5000, 3000, 9000,7000,10000,1500,4000,];
     late List<Data> chartData;
-   /* final List<Data> chartData = <Data>[
-      Data(x: 500, y: 5000),
-      Data(x: 600, y: 3000),
-      Data(x: 700, y: 6000),
-      Data(x: 800, y: 2000),
-      Data(x: 900, y:8000),
-      Data(x: 1000, y:1000),
-      Data(x: 1100, y:3000),
-      Data(x: 1200, y:5000),
-      Data(x: 1300, y: 9000),
-      Data(x: 1400, y: 4000),
-      Data(x: 1500, y: 1500),
-      Data(x: 1600, y: 6000),
-      Data(x: 1700, y: 9000),
-      Data(x: 1800, y: 2000),
-      Data(x: 1900, y: 8000),
-      Data(x: 2000, y: 1000),
-      Data(x: 2100, y: 6000),
-      Data(x: 2200, y: 3000),
-      Data(x: 2300, y: 5000),
-      Data(x: 2400, y: 1000),
-      Data(x: 2500, y: 2500),
-      Data(x: 2600, y: 5500),
-      Data(x: 2700, y: 8000),
-      Data(x: 2800, y: 2500),
-      Data(x: 2900, y: 6000),
-      Data(x: 3000, y: 1000),
-      Data(x: 3100, y: 3000),
-      Data(x: 3200, y: 5000),
-      Data(x: 3300, y: 7000),
-      Data(x: 3400, y: 6000),
-      Data(x: 3500, y: 4000),
-      Data(x: 3600, y: 2000),
-      Data(x: 3700, y: 5000),
-      Data(x: 3800, y: 7000),
-      Data(x: 3900, y: 9000),
-      Data(x: 4000, y: 1000),
-      Data(x: 4100, y: 3000),
-      Data(x: 4200, y: 5000),
-      Data(x: 4300, y: 7000),
-      Data(x: 4400, y: 4000),
-      Data(x: 4500, y: 10000),
-      Data(x: 4600, y: 8000),
-      Data(x: 4700, y: 6000),
-      Data(x: 4800, y: 4000),
-      Data(x: 4900, y: 2000),
-      Data(x: 5000, y: 5500),
-      Data(x: 5100, y: 1000),
-      Data(x: 5200, y: 3000),
-      Data(x: 5300, y: 5000),
-      Data(x: 5400, y: 7000),
-      Data(x: 5500, y: 9000),
-      Data(x: 5600, y: 3000),
-      Data(x: 5700, y: 7500),
-      Data(x: 5800, y: 3500),
-      Data(x: 5900, y: 4560),
-      Data(x: 6000, y: 7500),
-      Data(x: 6100, y: 10000),
-      Data(x: 6200, y: 6000),
-      Data(x: 6300, y: 4000),
-      Data(x: 6400, y: 2000),
-      Data(x: 6500, y: 6000),
-      Data(x: 6600, y: 3000),
-      Data(x: 6700, y: 5000),
-      Data(x: 6800, y: 7000),
-      Data(x: 6900, y: 9000),
-      Data(x: 7000, y: 8000),
-      Data(x: 7100, y: 6000),
-      Data(x: 7200, y: 4000),
-      Data(x: 7300, y: 2000),
-      Data(x: 7400, y: 6500),
-      Data(x: 7500, y: 1000),
-      Data(x: 7600, y: 3000),
-      Data(x: 7700, y: 5000),
-      Data(x: 7800, y: 7000),
-      Data(x: 7900, y: 7500),
-      Data(x: 8000, y: 5000),
-      Data(x: 8100, y: 3000),
-      Data(x: 8200, y: 1000),
-      Data(x: 8300, y: 5000),
-      Data(x: 8400, y: 7000),
-      Data(x: 8500, y: 5000),
-      Data(x: 8600, y: 6000),
-      Data(x: 8700, y: 4000),
-      Data(x: 8800, y: 2000),
-      Data(x: 8900, y: 8000),
-      Data(x: 9000, y: 7000),
-      Data(x: 9100, y: 8800),
-      Data(x: 9200, y: 10000),
-      Data(x: 9300, y: 6600),
-      Data(x: 9400, y: 6600),
-      Data(x: 9500, y: 9999),
-      Data(x: 9600, y: 5555),
-      Data(x: 9700, y: 4444),
-      Data(x: 9800, y: 6666),
-      Data(x: 9900, y: 7777),
-      Data(x: 10000, y: 3000),
-    ];*/
     String min_price = '';
     String max_price = ' ';
     SearchModel? searchModel;
@@ -396,6 +292,7 @@ class FliterList extends StatelessWidget {
         child: Column(
          // mainAxisSize: MainAxisSize.min,
             children: <Widget>[
+              const SizedBox(height: 10,),
               Stack(
                 children: <Widget>[
                   Padding(
@@ -408,7 +305,7 @@ class FliterList extends StatelessWidget {
                         children: [
                           // Back Button
                           Container(
-                            margin: const EdgeInsets.only(left: 10),
+                            margin: const EdgeInsets.only(left: 20),
                             height: 35,
                             width: 35,
                             padding: const EdgeInsets.all(7),
@@ -1692,7 +1589,7 @@ class FliterList extends StatelessWidget {
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 40,
+      height: 50,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -1703,7 +1600,12 @@ class FliterList extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(
+          GestureDetector(
+            onTap: ()async{
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+            },
+              child: Image.asset("assets/images/home.png",height: 22,)),
+          /*IconButton(
             enableFeedback: false,
             onPressed: () {
              // setState(() {
@@ -1721,7 +1623,7 @@ class FliterList extends StatelessWidget {
               color: Colors.red,
               size: 35,
             ),
-          ),
+          ),*/
           IconButton(
             enableFeedback: false,
             onPressed: () {
@@ -1849,86 +1751,6 @@ class _SwitchExampleState extends State<SwitchExample> {
           light = value;
         });
       },
-    );
-  }
-}
-class Page1 extends StatelessWidget {
-  const Page1({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 1",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page2 extends StatelessWidget {
-  const Page2({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 2",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page3 extends StatelessWidget {
-  const Page3({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 3",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page4 extends StatelessWidget {
-  const Page4({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 4",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
     );
   }
 }

@@ -16,6 +16,7 @@ import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:http/http.dart' as http;
 import '../utils/shared_preference_manager.dart';
 import 'filter_list.dart';
+import 'full_amenities_screen.dart';
 import 'locationsearch.dart';
 import 'my_account.dart';
 
@@ -148,7 +149,7 @@ final List _product = [
     'All', 'Furnished', 'Unfurnished'
   ];
   final List _rent = [
-    'Yearly', 'Bi-Yearly', 'Quarterly',
+    'Yearly', 'Daily',
         'Monthly'
   ];
 
@@ -354,12 +355,6 @@ final List _product = [
   ];
 
   int pageIndex = 0;
-  final pages = [
-    const Page1(),
-    const Page2(),
-    const Page3(),
-    const Page4(),
-  ];
   int? selectedIndex; // Holds the index of the selected container
   int? selectedtype; // Holds the index of the selected container
   int? selectedproduct ; // Holds the index of the selected container
@@ -482,7 +477,8 @@ String max_sqrfeet = ' ';
       debugPrint("🚨 Error fetching amenities: $e");
     }
   }
-
+// Inside your State class:
+  bool _showAllAmenities = false;
   final TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -516,7 +512,40 @@ String max_sqrfeet = ' ';
         actions: [
           TextButton(
             onPressed: () {
-              // TODO: Add reset logic
+              setState(() {
+                // Reset all string/int filter variables
+                purpose = '';
+                category = '';
+                bedroom = '';
+                bathroom = '';
+                ftype = '';
+                property_type = '';
+                rent = '';
+                min_price = '';
+                max_price = '';
+                min_sqrfeet = '';
+                max_sqrfeet = '';
+
+                // Reset selected indexes
+                selectedIndex = null;
+                selectedtype = null;
+                selectedproduct = null;
+                selectedcategory = null;
+                selectedbedroom = null;
+                selectedbathroom = null;
+                selectedrent = null;
+
+                // Reset amenities
+                selectedIndexes.clear();
+
+                // Reset sliders
+                _values = SfRangeValues(80000, 200000);
+                _valuesArea = SfRangeValues(3000, 5000);
+
+                // Also clear text fields if any (you already use controllers for search etc.)
+                _searchController.clear();
+                agenciesController.clear();
+              });
             },
             child: const Text(
               "Reset",
@@ -1251,82 +1280,231 @@ String max_sqrfeet = ' ';
                 ],
               ),
               const SizedBox(height: 15),
-              Padding(
-                padding: const EdgeInsets.all(5),
-                child: SizedBox(
-                  height: 300, // Adjust height as needed
-                  child: GridView.builder(
-                    itemCount: amenities.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2, // 3 items per row
-                      crossAxisSpacing: 15,
-                      mainAxisSpacing: 15,
-                      childAspectRatio: 3.5,
-                    ),
-                    itemBuilder: (context, index) {
-                      final isSelected = selectedIndexes.contains(index);
-                      return GestureDetector(
-                        onTap: () async{
-                          setState(() {
-                            isSelected
-                                ? selectedIndexes.remove(index)
-                                : selectedIndexes.add(index);
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white, // keep white background always
-                            border: Border.all(
-                              color: isSelected ? Colors.black : Colors.white,
-                              width: isSelected ? 2 : 1,
-                            ),
-                            //  color: isSelected ? Colors.blueAccent : Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                offset: const Offset(0, 2),
-                                blurRadius: 4,
-                                spreadRadius: 0,
-                              ),
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.8),
-                                offset: const Offset(-4, -4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              /*Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: CachedNetworkImage(
-                                  imageUrl: amenities[index].icon.toString(),
-                                  height: 17,
-                                ),
-                              ),*/
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  amenities[index].title.toString(),
-                                  style: TextStyle(
-                                    color: isSelected ? Colors.black : Colors.black,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.5,
-                                  ),
-                                  // overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+              /*GridView.builder(
+                itemCount: amenities.length,
+                physics: const NeverScrollableScrollPhysics(), // 🚫 Disable scroll
+                shrinkWrap: true, // ✅ Take only the needed height
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 15,
+                  mainAxisSpacing: 15,
+                  childAspectRatio: 3.5,
                 ),
+                itemBuilder: (context, index) {
+                  final isSelected = selectedIndexes.contains(index);
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isSelected
+                            ? selectedIndexes.remove(index)
+                            : selectedIndexes.add(index);
+                      });
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(left: 10,right: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(
+                          color: isSelected ? Color(0xFF757575) : Colors.white,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            offset: const Offset(0, 2),
+                            blurRadius: 4,
+                            spreadRadius: 0,
+                          ),
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.8),
+                            offset: const Offset(-4, -4),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 4),
+                          Image.network(
+                            amenities[index].icon ?? '',
+                            width: 18,
+                            height: 18,
+                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 18),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              amenities[index].title.toString(),
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),*/
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    child: GridView.builder(
+                      itemCount: _showAllAmenities ? amenities.length : 4,
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 4,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                      ),
+                      itemBuilder: (context, index) {
+                        final isSelected = selectedIndexes.contains(index);
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              isSelected
+                                  ? selectedIndexes.remove(index)
+                                  : selectedIndexes.add(index);
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(
+                                color: isSelected ? Colors.black87 : Colors.grey.shade300,
+                                width: isSelected ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 3,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Row(
+                              children: [
+                                Image.network(
+                                  amenities[index].icon ?? '',
+                                  width: 18,
+                                  height: 18,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.broken_image, size: 18),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    amenities[index].title ?? '',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+
+
+
+
+
+
+                         /* Container(
+                            margin: const EdgeInsets.only(left: 15, right: 15),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(
+                                color: isSelected ? Color(0xFF757575) : Colors.white,
+                                width: isSelected ? 2 : 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: const Offset(0, 2),
+                                  blurRadius: 4,
+                                  spreadRadius: 0,
+                                ),
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: const Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                const SizedBox(width: 4),
+                                Image.network(
+                                  amenities[index].icon ?? '',
+                                  width: 18,
+                                  height: 18,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.broken_image, size: 18),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    amenities[index].title.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),*/
+                        );
+                      },
+                    ),
+                  ),
+
+                  if (amenities.length > 6)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FullAmenitiesScreen(
+                                allAmenities: amenities,
+                                selectedIndexes: selectedIndexes,
+                                onDone: (selected) {
+                                  setState(() {
+                                    selectedIndexes = selected;
+                                  });
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          _showAllAmenities ? "Show less amenities" : "Show more amenities",
+                          style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: 20),
               //real estate
@@ -1350,10 +1528,8 @@ String max_sqrfeet = ' ';
                     scrollDirection: Axis.horizontal,
                     physics: const ScrollPhysics(),
                     itemCount: _rent.length,
-                    shrinkWrap: true,
                     itemBuilder: (context, index) {
                       final isSelected = selectedrent == index;
-
                       return GestureDetector(
                         onTap: () {
                           setState(() {
@@ -1362,17 +1538,16 @@ String max_sqrfeet = ' ';
                           });
                         },
                         child: Container(
-                          alignment: Alignment.center,
-                          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                          margin: const EdgeInsets.all(5),
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           decoration: BoxDecoration(
                             color: isSelected ? Colors.blueAccent : Colors.white,
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.5),
-                                offset: Offset(0, 2),
-                                blurRadius: 4,
-                                spreadRadius: 0,
+                                offset: Offset(4, 4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
                               ),
                               BoxShadow(
                                 color: Colors.white.withOpacity(0.8),
@@ -1383,13 +1558,14 @@ String max_sqrfeet = ' ';
                             ],
                             borderRadius: BorderRadius.circular(8),
                           ),
+                          alignment: Alignment.center,
                           child: Text(
                             _rent[index],
                             style: TextStyle(
                               color: isSelected ? Colors.white : Colors.black,
+                              letterSpacing: 0.5,
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
-                              letterSpacing: 0.5,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -1452,7 +1628,7 @@ String max_sqrfeet = ' ';
   }
 Container buildMyNavBar(BuildContext context) {
   return Container(
-    height: 40,
+    height: 50,
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: const BorderRadius.only(
@@ -1463,26 +1639,11 @@ Container buildMyNavBar(BuildContext context) {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        IconButton(
-          enableFeedback: false,
-          onPressed: () {
-            setState(() {
-              // Navigator.push(context, MaterialPageRoute(builder: (context)=> FilterScreen()));
+        GestureDetector(
+            onTap: ()async{
               Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-            });
-          },
-          icon: pageIndex == 0
-              ? const Icon(
-            Icons.home_filled,
-            color: Colors.red,
-            size: 35,
-          )
-              : const Icon(
-            Icons.home_outlined,
-            color: Colors.red,
-            size: 35,
-          ),
-        ),
+            },
+            child: Image.asset("assets/images/home.png",height: 22,)),
         IconButton(
           enableFeedback: false,
           onPressed: () {
@@ -1550,86 +1711,6 @@ Container buildMyNavBar(BuildContext context) {
     ),
   );
 }
-}
-class Page1 extends StatelessWidget {
-  const Page1({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 1",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page2 extends StatelessWidget {
-  const Page2({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 2",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page3 extends StatelessWidget {
-  const Page3({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 3",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page4 extends StatelessWidget {
-  const Page4({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 4",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
 }
 class Data {
   final double x, y;

@@ -18,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../model/togglemodel.dart';
 import '../utils/shared_preference_manager.dart';
+import 'htmlEpandableText.dart';
 import 'login.dart';
 
 
@@ -185,13 +186,6 @@ AgencyAgentsModel? agencyAgentsModel;
     await prefs.setStringList(
         'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
   }
-
-  final pages = [
-    const Page1(),
-    const Page2(),
-    const Page3(),
-    const Page4(),
-  ];
   final TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -546,14 +540,13 @@ AgencyAgentsModel? agencyAgentsModel;
                                       ),
                                       const SizedBox(height: 10,),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                              child:Text(
-                                                    agencyDetailmodel!.description.toString(),
-                                                    style: TextStyle(
-                                                        fontSize: 13, color: Colors.black,
-                                                        letterSpacing: 0.5,fontWeight: FontWeight.bold,height: 1.5),
-                                              ),
+                                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                                        child: HtmlExpandableText(
+                                          htmlContent: agencyDetailmodel!.description.toString()
+                                              .replaceAll('\r\n', '<br>'),
+                                        ),
                                       ),
+
                                       const SizedBox(height: 10,),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -1355,7 +1348,7 @@ AgencyAgentsModel? agencyAgentsModel;
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 40,
+      height: 50,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -1366,25 +1359,11 @@ AgencyAgentsModel? agencyAgentsModel;
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
+          GestureDetector(
+              onTap: ()async{
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-              });
-            },
-            icon: pageIndex == 0
-                ? const Icon(
-              Icons.home_filled,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.home_outlined,
-              color: Colors.red,
-              size: 35,
-            ),
-          ),
+              },
+              child: Image.asset("assets/images/home.png",height: 22,)),
           Container(
               margin: const EdgeInsets.only(left: 40),
               height: 35,
@@ -1595,86 +1574,6 @@ AgencyAgentsModel? agencyAgentsModel;
               fit: BoxFit.contain,
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-class Page1 extends StatelessWidget {
-  const Page1({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 1",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page2 extends StatelessWidget {
-  const Page2({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 2",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page3 extends StatelessWidget {
-  const Page3({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 3",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page4 extends StatelessWidget {
-  const Page4({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 4",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
         ),
       ),
     );
