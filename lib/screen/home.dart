@@ -136,7 +136,7 @@ class _MyHomePageState extends State<HomeDemo> {
 
   Future<void> getFilesApi() async {
     try {
-      final uri = Uri.parse("https://akarat.com/api/featured-properties");
+      final uri = Uri.parse("https://akarat.com/api/featured-properties?page=1");
 
       final response = await http.get(uri).timeout(const Duration(seconds: 5));
 
