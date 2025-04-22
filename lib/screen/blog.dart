@@ -9,6 +9,7 @@ import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/utils/shared_preference_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main(){
   runApp(const Blog());
@@ -59,6 +60,29 @@ class _BlogDemoState extends State<BlogDemo> {
   }
 
   Future<void> getFilesApi() async {
+    final prefs = await SharedPreferences.getInstance();
+    const cacheKey = 'blog_data';
+    const cacheTimeKey = 'blog_cache_time';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+
+    // Use cached data if it's less than 6 hours old
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final jsonData = jsonDecode(cachedData);
+        final cachedModel = BlogModel.fromJson(jsonData);
+        if (mounted) {
+          setState(() {
+            blogModel = cachedModel;
+          });
+        }
+        debugPrint("📦 Blog data loaded from cache");
+        return;
+      }
+    }
+
+    // Fetch from API if no cache or expired
     try {
       final response = await http
           .get(Uri.parse("https://akarat.com/api/blogs"))
@@ -68,11 +92,16 @@ class _BlogDemoState extends State<BlogDemo> {
         final data = jsonDecode(response.body);
         final BlogModel feature = BlogModel.fromJson(data);
 
+        // Save to cache
+        await prefs.setString(cacheKey, jsonEncode(data));
+        await prefs.setInt(cacheTimeKey, now);
+
         if (mounted) {
           setState(() {
             blogModel = feature;
           });
         }
+        debugPrint("✅ Blog data fetched from API");
       } else {
         debugPrint("❌ Blog API Error: ${response.statusCode}");
       }
@@ -80,6 +109,7 @@ class _BlogDemoState extends State<BlogDemo> {
       debugPrint("🚨 Exception in getFilesApi: $e");
     }
   }
+
 
 
   @override

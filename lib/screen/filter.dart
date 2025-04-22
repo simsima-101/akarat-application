@@ -8,12 +8,16 @@ import 'package:Akarat/model/amenities.dart';
 import 'package:Akarat/model/filtermodel.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/profile_login.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_core/core.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:http/http.dart' as http;
+import '../utils/fav_login.dart';
+import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'filter_list.dart';
 import 'full_amenities_screen.dart';
@@ -78,25 +82,14 @@ class _FilterDemoState extends State<FilterDemo> {
   @override
   void initState() {
     super.initState();
-
-    // Initialize chart range controllers
     _rangeController = RangeController(start: start.toString(), end: end.toString());
     _rangeControllerarea = RangeController(start: startarea.toString(), end: endarea.toString());
-
-    // Set selected product and purpose
     selectedproduct = _product.indexOf(widget.data);
     purpose = widget.data;
-
-    // Load all APIs in parallel
-    loadInitialData();
-
-    // Setup chart data (dummy or mock data can be refined)
+    loadInitialData(); // this now uses cache
     chartData = List.generate(
       96,
-          (index) => Data(
-        500 + index * 100.0,
-        yValues[index % yValues.length].toDouble(),
-      ),
+          (index) => Data(500 + index * 100.0, yValues[index % yValues.length].toDouble()),
     );
   }
 
@@ -104,20 +97,61 @@ class _FilterDemoState extends State<FilterDemo> {
     try {
       setState(() => _isLoading = true);
 
-      // Run all API calls in parallel
-      await Future.wait([
-        fetchAmenities(),
-        propertyApi(purpose),
-      ]);
+      final prefs = await SharedPreferences.getInstance();
+
+      // -- Caching Amenities --
+      final amenitiesKey = 'cached_amenities';
+      final amenitiesTimeKey = 'cached_amenities_time';
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final lastFetchedAmenities = prefs.getInt(amenitiesTimeKey) ?? 0;
+
+      if (now - lastFetchedAmenities < Duration(hours: 6).inMilliseconds) {
+        final cachedAmenities = prefs.getString(amenitiesKey);
+        if (cachedAmenities != null) {
+          final jsonData = json.decode(cachedAmenities) as List;
+          amenities = jsonData.map((e) => Amenities.fromJson(e)).toList();
+        }
+      } else {
+        final response = await http.get(Uri.parse("https://akarat.com/api/amenities")).timeout(const Duration(seconds: 8));
+        if (response.statusCode == 200) {
+          final jsonData = json.decode(response.body) as List;
+          amenities = jsonData.map((e) => Amenities.fromJson(e)).toList();
+          prefs.setString(amenitiesKey, response.body);
+          prefs.setInt(amenitiesTimeKey, now);
+        }
+      }
+
+      // -- Caching Property Types --
+      final propTypeKey = 'cached_prop_type_$purpose';
+      final propTypeTimeKey = '${propTypeKey}_time';
+      final lastFetchedProp = prefs.getInt(propTypeTimeKey) ?? 0;
+
+      if (now - lastFetchedProp < Duration(hours: 6).inMilliseconds) {
+        final cachedProp = prefs.getString(propTypeKey);
+        if (cachedProp != null) {
+          final data = json.decode(cachedProp);
+          propertyTypeModel = PropertyTypeModel.fromJson(data);
+        }
+      } else {
+        final uri = Uri.parse("https://akarat.com/api/property-types/$purpose");
+        final response = await http.get(uri).timeout(const Duration(seconds: 10));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          propertyTypeModel = PropertyTypeModel.fromJson(data);
+          prefs.setString(propTypeKey, response.body);
+          prefs.setInt(propTypeTimeKey, now);
+        }
+      }
 
       if (mounted) {
         setState(() => _isLoading = false);
       }
     } catch (e) {
-      debugPrint('Error loading initial data: \$e');
+      debugPrint('Error loading initial data: $e');
       setState(() => _isLoading = false);
     }
   }
+
 
   List<Amenities> amenities = [];
   @override
@@ -157,104 +191,6 @@ final List _product = [
   late List<Data> chartData;
 
 
-  /* final List<Data> chartData = <Data>[
-    Data(x: 500, y: 5000),
-    Data(x: 600, y: 3000),
-    Data(x: 700, y: 6000),
-    Data(x: 800, y: 2000),
-    Data(x: 900, y:8000),
-    Data(x: 1000, y:1000),
-    Data(x: 1100, y:3000),
-    Data(x: 1200, y:5000),
-    Data(x: 1300, y: 9000),
-    Data(x: 1400, y: 4000),
-    Data(x: 1500, y: 1500),
-    Data(x: 1600, y: 6000),
-    Data(x: 1700, y: 9000),
-    Data(x: 1800, y: 2000),
-    Data(x: 1900, y: 8000),
-    Data(x: 2000, y: 1000),
-    Data(x: 2100, y: 6000),
-    Data(x: 2200, y: 3000),
-    Data(x: 2300, y: 5000),
-    Data(x: 2400, y: 1000),
-    Data(x: 2500, y: 2500),
-    Data(x: 2600, y: 5500),
-    Data(x: 2700, y: 8000),
-    Data(x: 2800, y: 2500),
-    Data(x: 2900, y: 6000),
-    Data(x: 3000, y: 1000),
-    Data(x: 3100, y: 3000),
-    Data(x: 3200, y: 5000),
-    Data(x: 3300, y: 7000),
-    Data(x: 3400, y: 6000),
-    Data(x: 3500, y: 4000),
-    Data(x: 3600, y: 2000),
-    Data(x: 3700, y: 5000),
-    Data(x: 3800, y: 7000),
-    Data(x: 3900, y: 9000),
-    Data(x: 4000, y: 1000),
-    Data(x: 4100, y: 3000),
-    Data(x: 4200, y: 5000),
-    Data(x: 4300, y: 7000),
-    Data(x: 4400, y: 4000),
-    Data(x: 4500, y: 10000),
-    Data(x: 4600, y: 8000),
-    Data(x: 4700, y: 6000),
-    Data(x: 4800, y: 4000),
-    Data(x: 4900, y: 2000),
-    Data(x: 5000, y: 5500),
-    Data(x: 5100, y: 1000),
-    Data(x: 5200, y: 3000),
-    Data(x: 5300, y: 5000),
-    Data(x: 5400, y: 7000),
-    Data(x: 5500, y: 9000),
-    Data(x: 5600, y: 3000),
-    Data(x: 5700, y: 7500),
-    Data(x: 5800, y: 3500),
-    Data(x: 5900, y: 4560),
-    Data(x: 6000, y: 7500),
-    Data(x: 6100, y: 10000),
-    Data(x: 6200, y: 6000),
-    Data(x: 6300, y: 4000),
-    Data(x: 6400, y: 2000),
-    Data(x: 6500, y: 6000),
-    Data(x: 6600, y: 3000),
-    Data(x: 6700, y: 5000),
-    Data(x: 6800, y: 7000),
-    Data(x: 6900, y: 9000),
-    Data(x: 7000, y: 8000),
-    Data(x: 7100, y: 6000),
-    Data(x: 7200, y: 4000),
-    Data(x: 7300, y: 2000),
-    Data(x: 7400, y: 6500),
-    Data(x: 7500, y: 1000),
-    Data(x: 7600, y: 3000),
-    Data(x: 7700, y: 5000),
-    Data(x: 7800, y: 7000),
-    Data(x: 7900, y: 7500),
-    Data(x: 8000, y: 5000),
-    Data(x: 8100, y: 3000),
-    Data(x: 8200, y: 1000),
-    Data(x: 8300, y: 5000),
-    Data(x: 8400, y: 7000),
-    Data(x: 8500, y: 5000),
-    Data(x: 8600, y: 6000),
-    Data(x: 8700, y: 4000),
-    Data(x: 8800, y: 2000),
-    Data(x: 8900, y: 8000),
-    Data(x: 9000, y: 7000),
-    Data(x: 9100, y: 8800),
-    Data(x: 9200, y: 10000),
-    Data(x: 9300, y: 6600),
-    Data(x: 9400, y: 6600),
-    Data(x: 9500, y: 9999),
-    Data(x: 9600, y: 5555),
-    Data(x: 9700, y: 4444),
-    Data(x: 9800, y: 6666),
-    Data(x: 9900, y: 7777),
-    Data(x: 10000, y: 3000),
-  ];*/
   final List<Dataarea> chartDataarea = <Dataarea>[
     Dataarea(x: 500, y: 5000),
     Dataarea(x: 600, y: 3000),
@@ -382,29 +318,63 @@ String max_sqrfeet = ' ';
 
   Future<void> showResult() async {
     try {
-      // Ensure selectedIndexes is a List of ints or strings
-      final amenitiesList = selectedIndexes.toList(); // make sure it's a List, not a Set
+      final amenitiesList = selectedIndexes.toList();
 
-      final uri = Uri.parse(
-          'https://akarat.com/api/filters?'
-              'search=&amenities=${amenitiesList.join(",")}'
-              '&property_type=$property_type'
-              '&furnished_status=$ftype'
-              '&bedrooms=$bedroom'
-              '&min_price=$min_price'
-              '&max_price=$max_price'
-              '&payment_period=$rent'
-              '&min_square_feet=$min_sqrfeet'
-              '&max_square_feet=$max_sqrfeet'
-              '&bathrooms=$bathroom'
-              '&purpose=$purpose'
-      );
+      final uriString =
+          'https://akarat.com/api/filters?search='
+          '&amenities=${amenitiesList.join(",")}'
+          '&property_type=$property_type'
+          '&furnished_status=$ftype'
+          '&bedrooms=$bedroom'
+          '&min_price=$min_price'
+          '&max_price=$max_price'
+          '&payment_period=$rent'
+          '&min_square_feet=$min_sqrfeet'
+          '&max_square_feet=$max_sqrfeet'
+          '&bathrooms=$bathroom'
+          '&purpose=$purpose';
 
+      final uri = Uri.parse(uriString);
+
+      // Generate a unique cache key using md5 hash of the query
+      final cacheKey = 'filter_cache_${md5.convert(utf8.encode(uriString)).toString()}';
+      final cacheTimeKey = '${cacheKey}_time';
+
+      final prefs = await SharedPreferences.getInstance();
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+
+      // ✅ Use cache if within 6 hours
+      if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+        final cachedData = prefs.getString(cacheKey);
+        if (cachedData != null) {
+          final data = jsonDecode(cachedData);
+          final feature = FilterModel.fromJson(data);
+          if (mounted) {
+            setState(() {
+              filterModel = feature;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FliterList(filterModel: filterModel),
+                ),
+              );
+            });
+          }
+          return;
+        }
+      }
+
+      // ⬇️ Fetch fresh data from API
       final response = await http.get(uri).timeout(const Duration(seconds: 7));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final feature = FilterModel.fromJson(data);
+
+        // ✅ Save to cache
+        prefs.setString(cacheKey, response.body);
+        prefs.setInt(cacheTimeKey, now);
 
         if (mounted) {
           setState(() {
@@ -426,18 +396,31 @@ String max_sqrfeet = ' ';
   }
 
 
-
-
-
   bool _isLoading = false;
 
   Future<void> propertyApi(String purpose) async {
+    final cachedKey = 'property_type_$purpose';
+    final cachedTimeKey = 'cached_time_property_type_$purpose';
+
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cachedTimeKey) ?? 0;
+
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cachedKey);
+      if (cachedData != null) {
+        final data = jsonDecode(cachedData);
+        final feature = PropertyTypeModel.fromJson(data);
+        setState(() {
+          propertyTypeModel = feature;
+        });
+        return;
+      }
+    }
+
     try {
       final uri = Uri.parse("https://akarat.com/api/property-types/$purpose");
-
-      final response = await http
-          .get(uri)
-          .timeout(const Duration(seconds: 10)); // ⏱ Timeout to prevent hanging
+      final response = await http.get(uri).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -447,6 +430,8 @@ String max_sqrfeet = ' ';
           setState(() {
             propertyTypeModel = feature;
           });
+          prefs.setString(cachedKey, response.body);
+          prefs.setInt(cachedTimeKey, now);
         }
       } else {
         debugPrint("❌ Property API failed: ${response.statusCode}");
@@ -456,14 +441,40 @@ String max_sqrfeet = ' ';
     }
   }
 
+
   Future<void> fetchAmenities() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cachedKey = 'cached_amenities';
+    final cachedTimeKey = 'cached_time_amenities';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cachedTimeKey) ?? 0;
+
+    // ✅ If cached data is fresh (<6 hours), use it
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cachedKey);
+      if (cachedData != null) {
+        final List<dynamic> jsonData = json.decode(cachedData);
+        if (mounted) {
+          setState(() {
+            amenities = jsonData.map((data) => Amenities.fromJson(data)).toList();
+          });
+        }
+        return;
+      }
+    }
+
+    // ⬇️ If not cached or expired, fetch from API
     try {
       final response = await http
           .get(Uri.parse("https://akarat.com/api/amenities"))
-          .timeout(const Duration(seconds: 8)); // Optional timeout
+          .timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
+
+        // ✅ Save to cache
+        prefs.setString(cachedKey, response.body);
+        prefs.setInt(cachedTimeKey, now);
 
         if (mounted) {
           setState(() {
@@ -477,6 +488,7 @@ String max_sqrfeet = ' ';
       debugPrint("🚨 Error fetching amenities: $e");
     }
   }
+
 // Inside your State class:
   bool _showAllAmenities = false;
   final TextEditingController _searchController = TextEditingController();
@@ -560,6 +572,7 @@ String max_sqrfeet = ' ';
       body: SingleChildScrollView(
         child: Column(
             children: <Widget>[
+              const SizedBox(height: 20),
               //properties
               Padding(
                 padding: const EdgeInsets.all(5),
@@ -588,7 +601,11 @@ String max_sqrfeet = ' ';
                           margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                           decoration: BoxDecoration(
-                            color: selectedproduct == index ? Colors.blueAccent : Colors.white,
+                            /*border: Border.all(
+                              color: selectedproduct == index ? Colors.blueAccent : Colors.white,
+                              width: selectedproduct == index ? 2 : 1,
+                            ),*/
+                            color: selectedproduct == index ? Color(0xFF42A5F5) : Colors.white,
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.5),
@@ -622,6 +639,8 @@ String max_sqrfeet = ' ';
                 ),
               ),
               const SizedBox(height: 20),
+              const Divider(height: 1,indent: 15,endIndent: 15,),
+              const SizedBox(height: 20),
               //Searchbar
               Padding(
                 padding: const EdgeInsets.only(left: 10.0,right: 10),
@@ -651,10 +670,12 @@ String max_sqrfeet = ' ';
                 ),
               ),
               const SizedBox(height: 20),
+              const Divider(height: 1,indent: 15,endIndent: 15,),
+              const SizedBox(height: 20),
               //property type
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(left: 10),
+                  Padding(padding: const EdgeInsets.only(left: 20),
                       // child:  Text(purpose,
                       child:  Text("Property Type",
                         style: TextStyle(
@@ -665,7 +686,7 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 5),
               AnimatedOpacity(
           opacity: _isLoading ? 0.0 : 1.0,
           duration: const Duration(milliseconds: 500),
@@ -735,10 +756,12 @@ String max_sqrfeet = ' ';
           ),
         ),
               const SizedBox(height: 20),
+              const Divider(height: 1,indent: 15,endIndent: 15,),
+              const SizedBox(height: 20),
               //text
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(left: 10),
+                  Padding(padding: const EdgeInsets.only(left: 20),
                     child:  Text("Price range",
                       style: TextStyle(
                           color: Colors.black,fontSize: 16.0,
@@ -749,7 +772,7 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 10),
               Padding(
                   padding: const EdgeInsets.only(top: 0,left: 20,right: 10),
                   child: Row(
@@ -821,7 +844,7 @@ String max_sqrfeet = ' ';
                       ]
                   )
               ),
-              const SizedBox(height: 25),
+              const SizedBox(height: 20),
               //rangeslider
               Padding(
                 padding: const EdgeInsets.all(0),
@@ -901,10 +924,12 @@ String max_sqrfeet = ' ';
                   ),
                 ),
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 10),
+              const Divider(height: 1,indent: 15,endIndent: 15,),
+              const SizedBox(height: 20),
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(left: 10),
+                  Padding(padding: const EdgeInsets.only(left: 20),
                     // child:  Text(_values.start.toStringAsFixed(2),
                     child:  Text("Bedrooms",
                       style: TextStyle(
@@ -937,7 +962,7 @@ String max_sqrfeet = ' ';
                           margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           decoration: BoxDecoration(
-                            color: selectedbedroom == index ? Colors.blueAccent : Colors.white,
+                            color: selectedbedroom == index ? Color(0xFFEF5350) : Colors.white,
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.5),
@@ -972,9 +997,11 @@ String max_sqrfeet = ' ';
                 ),
               ),
               const SizedBox(height: 20),
+              const Divider(height: 1,indent: 15,endIndent: 15,),
+              const SizedBox(height: 20),
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(left: 10),
+                  Padding(padding: const EdgeInsets.only(left: 20),
                     // child:  Text(bedroom,
                     child:  Text("Bathrooms",
                       style: TextStyle(
@@ -1006,7 +1033,7 @@ String max_sqrfeet = ' ';
                           margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           decoration: BoxDecoration(
-                            color: selectedbathroom == index ? Colors.blueAccent : Colors.white,
+                            color: selectedbathroom == index ? Color(0xFFEF5350) : Colors.white,
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.5),
@@ -1040,10 +1067,12 @@ String max_sqrfeet = ' ';
                 ),
               ),
               const SizedBox(height: 20),
+              const Divider(height: 1,indent: 15,endIndent: 15,),
+              const SizedBox(height: 20),
               //area
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(left: 10),
+                  Padding(padding: const EdgeInsets.only(left: 20),
                     child:  Text("Area/Size",
                       style: TextStyle(
                           color: Colors.black,fontSize: 16.0,
@@ -1054,7 +1083,7 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 10),
               Padding(
                   padding: const EdgeInsets.only(top: 0,left: 20,right: 10),
                   child: Row(
@@ -1126,7 +1155,7 @@ String max_sqrfeet = ' ';
                       ]
                   )
               ),
-              const SizedBox(height: 25),
+              const SizedBox(height: 20),
               //rangeslider
               Padding(
                 padding: const EdgeInsets.all(5),
@@ -1194,11 +1223,13 @@ String max_sqrfeet = ' ';
                   ),
                 ),
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 10),
+              const Divider(height: 1,indent: 15,endIndent: 15,),
+              const SizedBox(height: 20),
               //furnished
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(left: 10),
+                  Padding(padding: const EdgeInsets.only(left: 20),
                     child:  Text("Furnished Type",
                       style: TextStyle(
                           color: Colors.black,fontSize: 16.0,
@@ -1211,64 +1242,66 @@ String max_sqrfeet = ' ';
               ),
               const SizedBox(height: 5),
               Padding(
-          padding: const EdgeInsets.all(5),
-          child: SizedBox(
-            height: 60,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              physics: const ScrollPhysics(),
-              itemCount: _ftype.length,
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      selectedIndex = index;
-                      ftype = _ftype[index];
-                    });
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.all(5),
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    decoration: BoxDecoration(
-                      color: selectedIndex == index ? Colors.blueAccent : Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          offset: Offset(4, 4),
-                          blurRadius: 8,
-                          spreadRadius: 2,
+                padding: const EdgeInsets.all(5),
+                child: SizedBox(
+                  height: 60,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const ScrollPhysics(),
+                    itemCount: _ftype.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedIndex = index;
+                            ftype = _ftype[index];
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(5),
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          decoration: BoxDecoration(
+                            color: selectedIndex == index ? Color(0xFF42A5F5) : Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                offset: Offset(4, 4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.8),
+                                offset: Offset(-4, -4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            _ftype[index],
+                            style: TextStyle(
+                              color: selectedIndex == index ? Colors.white : Colors.black,
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
-                        BoxShadow(
-                          color: Colors.white.withOpacity(0.8),
-                          offset: Offset(-4, -4),
-                          blurRadius: 8,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      _ftype[index],
-                      style: TextStyle(
-                        color: selectedIndex == index ? Colors.white : Colors.black,
-                        letterSpacing: 0.5,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-          ),
-        ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Divider(height: 1,indent: 15,endIndent: 15,),
               const SizedBox(height: 20),
               //Amenities
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(left: 10),
+                  Padding(padding: const EdgeInsets.only(left: 20),
                     child:  Text("Amenities",
                       style: TextStyle(
                           color: Colors.black,fontSize: 16.0,
@@ -1279,79 +1312,7 @@ String max_sqrfeet = ' ';
                   ),
                 ],
               ),
-              const SizedBox(height: 15),
-              /*GridView.builder(
-                itemCount: amenities.length,
-                physics: const NeverScrollableScrollPhysics(), // 🚫 Disable scroll
-                shrinkWrap: true, // ✅ Take only the needed height
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 15,
-                  mainAxisSpacing: 15,
-                  childAspectRatio: 3.5,
-                ),
-                itemBuilder: (context, index) {
-                  final isSelected = selectedIndexes.contains(index);
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        isSelected
-                            ? selectedIndexes.remove(index)
-                            : selectedIndexes.add(index);
-                      });
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 10,right: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: isSelected ? Color(0xFF757575) : Colors.white,
-                          width: isSelected ? 2 : 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            offset: const Offset(0, 2),
-                            blurRadius: 4,
-                            spreadRadius: 0,
-                          ),
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.8),
-                            offset: const Offset(-4, -4),
-                            blurRadius: 8,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 4),
-                          Image.network(
-                            amenities[index].icon ?? '',
-                            width: 18,
-                            height: 18,
-                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 18),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              amenities[index].title.toString(),
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),*/
+              const SizedBox(height: 10),
               Column(
                 children: [
                   Padding(
@@ -1416,63 +1377,6 @@ String max_sqrfeet = ' ';
                               ],
                             ),
                           ),
-
-
-
-
-
-
-
-                         /* Container(
-                            margin: const EdgeInsets.only(left: 15, right: 15),
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(
-                                color: isSelected ? Color(0xFF757575) : Colors.white,
-                                width: isSelected ? 2 : 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: const Offset(0, 2),
-                                  blurRadius: 4,
-                                  spreadRadius: 0,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: const Offset(-4, -4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 4),
-                                Image.network(
-                                  amenities[index].icon ?? '',
-                                  width: 18,
-                                  height: 18,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.broken_image, size: 18),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    amenities[index].title.toString(),
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),*/
                         );
                       },
                     ),
@@ -1500,18 +1404,20 @@ String max_sqrfeet = ' ';
                         },
                         child: Text(
                           _showAllAmenities ? "Show less amenities" : "Show more amenities",
-                          style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w500),
+                          style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold,fontSize: 16),
                         ),
                       ),
                     ),
                 ],
               ),
+              const SizedBox(height: 10),
+              const Divider(height: 1,indent: 15,endIndent: 15,),
               const SizedBox(height: 20),
               //real estate
               Row(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(left: 10),
+                    padding: const EdgeInsets.only(left: 20),
                     child:  Text("Rent is paid",style: TextStyle(
                         color: Colors.black,fontSize: 16.0,
                         fontWeight: FontWeight.bold,letterSpacing: 0.5
@@ -1541,7 +1447,7 @@ String max_sqrfeet = ' ';
                           margin: const EdgeInsets.all(5),
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           decoration: BoxDecoration(
-                            color: isSelected ? Colors.blueAccent : Colors.white,
+                            color: isSelected ? Color(0xFF42A5F5) : Colors.white,
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.5),
@@ -1575,8 +1481,10 @@ String max_sqrfeet = ' ';
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
+              const Divider(height: 1,indent: 15,endIndent: 15,),
               Container(
-                height: 150,
+                height: 100,
               ),
               GestureDetector(
                 onTap: (){
@@ -1667,7 +1575,14 @@ Container buildMyNavBar(BuildContext context) {
           enableFeedback: false,
           onPressed: () {
             setState(() {
-              pageIndex = 2;
+              if(token == ''){
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Logout()));
+              }
+              else if(token.isNotEmpty){
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Login()));
+              }
+              // Navigator.push(context, MaterialPageRoute(builder: (context)=> FavoriteButton()));
+
             });
           },
           icon: pageIndex == 2

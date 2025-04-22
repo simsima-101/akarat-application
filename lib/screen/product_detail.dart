@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart' show FontSize, Html, LineHeight, Style;
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../model/productmodel.dart';
@@ -57,24 +58,41 @@ class _Product_DetailState extends State<Product_Detail> {
     });
   }
 
-  String cleanHtml(String htmlText) {
-    var document = parse(htmlText);
-    var parsedText = document.body?.text ?? '';
-    return HtmlUnescape().convert(parsedText);
-  }
 
   Future<void> fetchProducts(String data) async {
-    final url = Uri.parse('https://akarat.com/api/properties/$data');
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'product_$data';
+    final cacheTimeKey = 'product_time_$data';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
+    // Use cache if it's less than 6 hours old
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final Map<String, dynamic> jsonData = json.decode(cachedData);
+        final cachedModel = ProductModel.fromJson(jsonData);
+        setState(() {
+          productModels = cachedModel;
+        });
+        debugPrint("✅ Loaded from cache");
+        return;
+      }
+    }
+
+    // Otherwise, fetch from API
+    final url = Uri.parse('https://akarat.com/api/properties/$data');
     try {
       final response = await http.get(url);
       debugPrint("Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
-        debugPrint("API Response: $jsonData");
+        final parsedModel = ProductModel.fromJson(jsonData);
 
-        final ProductModel parsedModel = ProductModel.fromJson(jsonData);
+        // Save to cache
+        await prefs.setString(cacheKey, json.encode(jsonData));
+        await prefs.setInt(cacheTimeKey, now);
 
         if (mounted) {
           setState(() {

@@ -9,6 +9,7 @@ import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/shared_preference_manager.dart';
 import 'htmlEpandableText.dart';
@@ -59,17 +60,39 @@ class _Property_DetailState extends State<Property_Detail> {
   ProjectDetailModel? projectDetailModel;
 
   Future<void> fetchProducts(String data) async {
-    final url = Uri.parse('https://akarat.com/api/new-projects/$data');
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'project_detail_$data';
+    final cacheTimeKey = 'project_detail_time_$data';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
+    // Use cached data if less than 6 hours old
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final Map<String, dynamic> jsonData = json.decode(cachedData);
+        final cachedModel = ProjectDetailModel.fromJson(jsonData);
+        setState(() {
+          projectDetailModel = cachedModel;
+        });
+        debugPrint("✅ Loaded project from cache");
+        return;
+      }
+    }
+
+    // Fetch from API if no cache or cache is old
+    final url = Uri.parse('https://akarat.com/api/new-projects/$data');
     try {
       final response = await http.get(url);
       debugPrint("Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
-        debugPrint("API Response: $jsonData");
+        final parsedModel = ProjectDetailModel.fromJson(jsonData);
 
-        final ProjectDetailModel parsedModel = ProjectDetailModel.fromJson(jsonData);
+        // Save to cache
+        await prefs.setString(cacheKey, json.encode(jsonData));
+        await prefs.setInt(cacheTimeKey, now);
 
         if (mounted) {
           setState(() {

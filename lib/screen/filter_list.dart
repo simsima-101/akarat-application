@@ -75,31 +75,34 @@ class FliterList extends StatelessWidget {
       });
     }
 
-  @override
-  void initState() {
-    super.initState();
-    _rangeController = RangeController(
+    @override
+    void initState() {
+      super.initState();
+
+      _rangeController = RangeController(
         start: start.toString(),
-        end: end.toString());
-    _loadFavorites();
-    readData();
-    filterModel = widget.filterModel;
-    selectedproduct=0;
-    purpose = "Rent"; // Set initial purpose
-    propertyApi(purpose);
-    selectedtype=0;
+        end: end.toString(),
+      );
 
+      _loadFavorites();         // Load local favorites
+      readData();               // Fetch token/user info
+      filterModel = widget.filterModel;
 
-    chartData = List.generate(
-      96,
-          (index) => Data(
-        500 + index * 100.0,
-        yValues[index % yValues.length].toDouble(),
-      ),
-    );
+      selectedproduct = 0;
+      purpose = "Rent";         // Default filter
+      propertyApi(purpose);     // Fetch property list
 
+      selectedtype = 0;
 
-  }
+      chartData = List.generate(
+        96,
+            (index) => Data(
+          500 + index * 100.0,
+          yValues[index % yValues.length].toDouble(),
+        ),
+      );
+    }
+
     late bool isSelected = true;
     double start = 3000;
     double end = 5000;
@@ -119,21 +122,46 @@ class FliterList extends StatelessWidget {
 
 
 
-    Future<void> searchApi(location) async {
-      final response = await http.get(Uri.parse(
-          "https://akarat.com/api/search-properties?location=$location"));
-      var data = jsonDecode(response.body);
-      if (response.statusCode == 200) {
-        SearchModel feature= SearchModel.fromJson(data);
+  /*  Future<void> searchApi(String location) async {
+      try {
+        final cacheKey = 'search_cache_$location';
+        final prefs = await SharedPreferences.getInstance();
 
-        setState(() {
-          searchModel = feature ;
-        });
+        // Optional: Use cache if available
+        final cachedData = prefs.getString(cacheKey);
+        if (cachedData != null) {
+          final jsonData = jsonDecode(cachedData);
+          setState(() {
+            searchModel = SearchModel.fromJson(jsonData);
+          });
+          debugPrint("✅ Loaded from cache for $location");
+          return;
+        }
 
-      } else {
-        //return FeaturedModel.fromJson(data);
+        // Fetch from API if not cached
+        final response = await http.get(
+          Uri.parse("https://akarat.com/api/search-properties?location=$location"),
+        );
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final feature = SearchModel.fromJson(data);
+
+          setState(() {
+            searchModel = feature;
+          });
+
+          // Save response to cache
+          await prefs.setString(cacheKey, response.body);
+          debugPrint("✅ API response cached for $location");
+        } else {
+          debugPrint("❌ API Error: ${response.statusCode}");
+        }
+      } catch (e) {
+        debugPrint("🚨 Exception in searchApi: $e");
       }
-    }
+    }*/
+
 
     PropertyTypeModel? propertyTypeModel;
     int? selectedIndex;
@@ -161,11 +189,38 @@ class FliterList extends StatelessWidget {
       'Monthly',
       'Daily',
     ];
-    Future<void> propertyApi(String purpose) async {
-      final url = Uri.parse("https://akarat.com/api/property-types/$purpose");
 
+
+    Future<void> propertyApi(String purpose) async {
+      final prefs = await SharedPreferences.getInstance();
+      final cacheKey = 'property_types_$purpose';
+      final cacheTimeKey = 'property_types_time_$purpose';
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final cachedTime = prefs.getInt(cacheTimeKey) ?? 0;
+
+      // Use cache if it's less than 6 hours old
+      if (now - cachedTime < Duration(hours: 6).inMilliseconds) {
+        final cachedData = prefs.getString(cacheKey);
+        if (cachedData != null) {
+          final jsonData = jsonDecode(cachedData);
+          final cachedModel = PropertyTypeModel.fromJson(jsonData);
+
+          if (mounted) {
+            setState(() {
+              propertyTypeModel = cachedModel;
+            });
+          }
+
+          debugPrint("✅ Loaded property types from cache for '$purpose'");
+          return;
+        }
+      }
+
+      // Else: fetch from API
       try {
-        final response = await http.get(url).timeout(const Duration(seconds: 10));
+        final response = await http
+            .get(Uri.parse("https://akarat.com/api/property-types/$purpose"))
+            .timeout(const Duration(seconds: 10));
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
@@ -176,6 +231,12 @@ class FliterList extends StatelessWidget {
               propertyTypeModel = fetchedTypes;
             });
           }
+
+          // Cache the response
+          await prefs.setString(cacheKey, response.body);
+          await prefs.setInt(cacheTimeKey, now);
+
+          debugPrint("✅ Cached property types for '$purpose'");
         } else {
           debugPrint("❌ Property API failed [${response.statusCode}]: ${response.reasonPhrase}");
         }
@@ -184,25 +245,61 @@ class FliterList extends StatelessWidget {
       }
     }
 
+
     Future<void> showResult() async {
-      // you can replace your api link with this link
-      final response = await http.get(Uri.parse('https://akarat.com/api/filters?'
-          'search=&amenities=&property_type=$property_type'
-          '&furnished_status=$ftype&bedrooms=$bedroom&min_price=$min_price'
-          '&max_price=$max_price&payment_period=$rent&min_square_feet='
-          '&max_square_feet=&bathrooms=$bathroom&purpose=$purpose'));
-      var data = jsonDecode(response.body);
-      if (response.statusCode == 200) {
-        FilterModel feature= FilterModel.fromJson(data);
+      final prefs = await SharedPreferences.getInstance();
+      final cacheKey = 'filters_result_${property_type}_$ftype$bedroom$min_price$max_price$rent$bathroom$purpose';
+      final cacheTimeKey = '${cacheKey}_time';
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-        setState(() {
-          filterModel = feature ;
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterList(filterModel: filterModel,)));
+      // Cache valid for 2 hours
+      if (now - lastFetched < Duration(hours: 2).inMilliseconds) {
+        final cachedData = prefs.getString(cacheKey);
+        if (cachedData != null) {
+          final jsonData = jsonDecode(cachedData);
+          final cachedModel = FilterModel.fromJson(jsonData);
 
-        });
-      } else {
+          setState(() {
+            filterModel = cachedModel;
+            Navigator.push(context, MaterialPageRoute(builder: (context) => FliterList(filterModel: filterModel)));
+          });
+
+          debugPrint("✅ Loaded filter results from cache");
+          return;
+        }
+      }
+
+      // If no cache or cache expired
+      try {
+        final response = await http.get(Uri.parse('https://akarat.com/api/filters?'
+            'search=&amenities=&property_type=$property_type'
+            '&furnished_status=$ftype&bedrooms=$bedroom&min_price=$min_price'
+            '&max_price=$max_price&payment_period=$rent&min_square_feet='
+            '&max_square_feet=&bathrooms=$bathroom&purpose=$purpose'));
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final feature = FilterModel.fromJson(data);
+
+          setState(() {
+            filterModel = feature;
+            Navigator.push(context, MaterialPageRoute(builder: (context) => FliterList(filterModel: filterModel)));
+          });
+
+          // Save cache
+          await prefs.setString(cacheKey, response.body);
+          await prefs.setInt(cacheTimeKey, now);
+
+          debugPrint("✅ Fetched and cached filter result");
+        } else {
+          debugPrint("❌ Filter API failed: ${response.statusCode}");
+        }
+      } catch (e) {
+        debugPrint("🚨 Filter API exception: $e");
       }
     }
+
 
     int? selectedtype;
     String property_type= ' ';
@@ -217,33 +314,33 @@ class FliterList extends StatelessWidget {
 
   final TextEditingController _searchController = TextEditingController();
 
-  Future<void> toggledApi(token,property_id) async {
-    try {
-      final response = await http.post(
-        Uri.parse('https://akarat.com/api/toggle-saved-property'),
-        headers: <String, String>{'Authorization':'Bearer $token',
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, dynamic>{
-          "property_id": property_id,
-          // Add any other data you want to send in the body
-        }),
-      );
-      if (response.statusCode == 200) {
-        Map<String, dynamic> jsonData = json.decode(response.body);
-        toggleModel = ToggleModel.fromJson(jsonData);
-        print(" Succesfully");
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
-      } else {
-        throw Exception(" failed");
+    Future<void> toggledApi( token,  propertyId) async {
+      final url = Uri.parse('https://akarat.com/api/toggle-saved-property');
 
+      try {
+        final response = await http.post(
+          url,
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode({"property_id": propertyId}),
+        );
+
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> jsonData = json.decode(response.body);
+          setState(() {
+            toggleModel = ToggleModel.fromJson(jsonData);
+          });
+          debugPrint("✅ Property toggle success for ID: $propertyId");
+        } else {
+          debugPrint("❌ Toggle failed: Status ${response.statusCode}");
+        }
+      } catch (e) {
+        debugPrint("🚨 Toggle error: $e");
       }
-    } catch (e) {
-      setState(() {
-        print('Error: $e');
-      });
     }
-  }
+
 
   Set<int> favoriteProperties = {}; // Stores favorite property IDs
 

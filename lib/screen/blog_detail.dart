@@ -11,6 +11,7 @@ import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/utils/shared_preference_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Blog_Detail extends StatefulWidget {
   const Blog_Detail({super.key, required this.data});
@@ -48,6 +49,27 @@ readData();
 
 
   Future<void> fetchProducts(dynamic data) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'blog_detail_$data';
+    final cacheTimeKey = 'blog_detail_time_$data';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+
+    // Use cached version if it's less than 6 hours old
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final jsonData = json.decode(cachedData);
+        final cachedModel = BlogDetailModel.fromJson(jsonData);
+        setState(() {
+          blogDetailModel = cachedModel;
+        });
+        debugPrint("📦 Loaded blog detail from cache.");
+        return;
+      }
+    }
+
+    // Fetch from API if no cache or cache is expired
     try {
       final response = await http
           .get(Uri.parse('https://akarat.com/api/blog/$data'))
@@ -56,10 +78,12 @@ readData();
       debugPrint("Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = json.decode(response.body);
-        debugPrint("API Response: $jsonData");
+        final jsonData = json.decode(response.body);
+        final parsedModel = BlogDetailModel.fromJson(jsonData);
 
-        final BlogDetailModel parsedModel = BlogDetailModel.fromJson(jsonData);
+        // Save to cache
+        await prefs.setString(cacheKey, json.encode(jsonData));
+        await prefs.setInt(cacheTimeKey, now);
 
         if (mounted) {
           setState(() {
@@ -67,7 +91,7 @@ readData();
           });
         }
 
-        debugPrint("Reading Time: ${blogDetailModel?.data?.readingTime}");
+        debugPrint("📖 Reading Time: ${blogDetailModel?.data?.readingTime}");
       } else {
         debugPrint("❌ Blog Detail API failed: ${response.statusCode}");
       }
@@ -75,6 +99,7 @@ readData();
       debugPrint("🚨 Blog Detail API error: $e");
     }
   }
+
 
 
   @override

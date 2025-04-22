@@ -10,6 +10,7 @@ import 'package:Akarat/utils/agencyCardScreen.dart';
 import 'package:Akarat/utils/agentcardscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../model/language.dart';
 import '../model/nationality.dart';
 import '../utils/shared_preference_manager.dart';
@@ -82,14 +83,21 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
  // final List<String> languages = ["English", "Arabic", "Hindi"];
  // final List<String> nationalities = ["Indian", "Emirati", "Pakistani"];
   late Future<Language> languageFuture;
+
   @override
   void initState() {
     super.initState();
-    agentfetch();
-    agencyfetch();
+
+    // Run async tasks in parallel where needed
+    Future.microtask(() {
+      agentfetch();
+      agencyfetch();
+      readData();
+    });
+
+    // These return Futures to be used with FutureBuilder, so keep them separate
     languageFuture = fetchLanguageData();
     nationalityFuture = fetchNationalities();
-    readData();
   }
 
 
@@ -100,58 +108,159 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
       'language': selectedLanguage ?? '',
     };
 
-    if (selectedNationality != null && selectedNationality!.isNotEmpty) {
+    if (selectedNationality?.isNotEmpty == true) {
       queryParams['nationality'] = selectedNationality!;
     }
 
     final uri = Uri.https('akarat.com', '/api/agents', queryParams);
+    final cacheKey = 'agent_cache_${uri.query}';
+    final cacheTimeKey = 'agent_cache_time_${uri.query}';
 
-    final response = await http.get(uri);
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    if (response.statusCode == 200) {
-      List<dynamic> jsonData = json.decode(response.body);
-      setState(() {
-        agentsmodel = jsonData.map((data) => AgentsModel.fromJson(data)).toList();
-      });
-    } else {
-      // Handle error
+    // If cached data is still fresh (6 hours)
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final List<dynamic> jsonData = json.decode(cachedData);
+        setState(() {
+          agentsmodel = jsonData.map((e) => AgentsModel.fromJson(e)).toList();
+        });
+        debugPrint("✅ Loaded agents from cache");
+        return;
+      }
+    }
+
+    try {
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        setState(() {
+          agentsmodel = jsonData.map((e) => AgentsModel.fromJson(e)).toList();
+        });
+
+        // Save to cache
+        await prefs.setString(cacheKey, json.encode(jsonData));
+        await prefs.setInt(cacheTimeKey, now);
+        debugPrint("📦 Cached agent data");
+      } else {
+        debugPrint("❌ Agent API Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Exception in agentfetch: $e");
     }
   }
+
 
   Future<void> agencyfetch() async {
     final queryParams = {
       'search': locationController.text,
       'service_needed': selectedAgencyService ?? ''
     };
+
     final uri = Uri.https('akarat.com', '/api/companies', queryParams);
+    final cacheKey = 'agency_cache_${uri.query}';
+    final cacheTimeKey = 'agency_cache_time_${uri.query}';
 
-    final response = await http.get(uri);
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    if (response.statusCode == 200) {
-      List<dynamic> jsonData = json.decode(response.body);
-      setState(() {
-        agentcymodel = jsonData.map((data) => AgencyModel.fromJson(data)).toList();
-      });
-    } else {
-      // Handle error
+    // If cached data is valid for 6 hours
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final List<dynamic> jsonData = json.decode(cachedData);
+        setState(() {
+          agentcymodel = jsonData.map((e) => AgencyModel.fromJson(e)).toList();
+        });
+        debugPrint("✅ Loaded agency data from cache");
+        return;
+      }
+    }
+
+    try {
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        setState(() {
+          agentcymodel = jsonData.map((e) => AgencyModel.fromJson(e)).toList();
+        });
+
+        // Cache the data
+        await prefs.setString(cacheKey, json.encode(jsonData));
+        await prefs.setInt(cacheTimeKey, now);
+        debugPrint("📦 Cached agency data");
+      } else {
+        debugPrint("❌ Agency API Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Exception in agencyfetch: $e");
     }
   }
 
+
   Future<Nationality> fetchNationalities() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'cached_nationalities';
+    final cacheTimeKey = 'cached_nationalities_time';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+
+    // If cached within 6 hours, use it
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        return Nationality.fromJson(json.decode(cachedData));
+      }
+    }
+
+    // If no cache or cache is expired, fetch from API
     final response = await http.get(Uri.parse('https://akarat.com/api/agents/nationalities'));
 
     if (response.statusCode == 200) {
-      return Nationality.fromJson(json.decode(response.body));
+      final responseBody = response.body;
+
+      // Save to cache
+      await prefs.setString(cacheKey, responseBody);
+      await prefs.setInt(cacheTimeKey, now);
+
+      return Nationality.fromJson(json.decode(responseBody));
     } else {
       throw Exception('Failed to load nationalities');
     }
   }
 
   Future<Language> fetchLanguageData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'cached_languages';
+    final cacheTimeKey = 'cached_languages_time';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+
+    // Use cached data if it's less than 6 hours old
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        return Language.fromJson(json.decode(cachedData));
+      }
+    }
+
+    // Otherwise, fetch from API
     final response = await http.get(Uri.parse('https://akarat.com/api/agents/languages'));
 
     if (response.statusCode == 200) {
-      return Language.fromJson(json.decode(response.body));
+      final responseBody = response.body;
+
+      // Cache the new data
+      await prefs.setString(cacheKey, responseBody);
+      await prefs.setInt(cacheTimeKey, now);
+
+      return Language.fromJson(json.decode(responseBody));
     } else {
       throw Exception('Failed to load languages');
     }
@@ -175,7 +284,17 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
               fontWeight: FontWeight.bold)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.red),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Home())), // ✅ Add close functionality
+            onPressed: ()async {
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+
+                }
+              });
+            },
           ),
           centerTitle: true,
           backgroundColor: Color(0xFFFFFFFF),
@@ -692,7 +811,10 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
               onTap: ()async{
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               },
-              child: Image.asset("assets/images/home.png",height: 22,)),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Image.asset("assets/images/home.png",height: 25,),
+              )),
           Container(
               margin: const EdgeInsets.only(left: 40),
               height: 35,

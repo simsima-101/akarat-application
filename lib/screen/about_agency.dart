@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:Akarat/model/agencyagentmodel.dart';
-import 'package:Akarat/model/agencypropertiesmodel.dart';
+import 'package:Akarat/model/agencypropertiesmodel.dart' as propertyModel;
 import 'package:Akarat/screen/agency_detail.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -48,21 +48,83 @@ class _About_AgencyState extends State<About_Agency> {
       isDataRead = true;
     });
   }
-
+  int currentPage = 1;
+  bool isLoadingMore = false;
+  bool hasMoreData = true;
+  List<propertyModel.Property> allProperties = [];
+  propertyModel.AgencyPropertiesResponseModel? agencyPropertiesModel;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
-    fetchProducts(widget.data);
-    getFilesApi(widget.data);
+    super.initState();
+    _loadAgencyDetails();
     getAgentsApi(widget.data);
     readData();
     _loadFavorites();
+
+    getFilesApi(widget.data); // Load page 1
+    _scrollController.addListener(() {
+      print("📍 Scroll position: ${_scrollController.position.pixels}");
+      print("📍 Max scroll extent: ${_scrollController.position.maxScrollExtent}");
+
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 &&
+          !isLoadingMore &&
+          hasMoreData) {
+        print("🚀 Triggering next page fetch");
+        getFilesApi(widget.data);
+      }
+    });
   }
 
 
-  ToggleModel? toggleModel;
+  Future<void> _loadAgencyDetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cachedKey = 'agency_details_${widget.data}';
+    final cachedTimeKey = 'cached_time_agency_${widget.data}';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cachedTimeKey) ?? 0;
 
-  Future<void> fetchProducts(String data) async {
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cachedKey);
+      if (cachedData != null) {
+        final jsonData = json.decode(cachedData);
+        final model = AgencyDetailmodel.fromJson(jsonData);
+        setState(() {
+          agencyDetailmodel = model;
+        });
+        return;
+      }
+    }
+
+    try {
+      final uri = Uri.parse('https://akarat.com/api/company/${widget.data}');
+      final response = await http.get(uri).timeout(const Duration(seconds: 8));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = jsonDecode(response.body);
+        final parsedModel = AgencyDetailmodel.fromJson(jsonData);
+
+        await prefs.setString(cachedKey, json.encode(jsonData));
+        await prefs.setInt(cachedTimeKey, now);
+
+        if (mounted) {
+          setState(() {
+            agencyDetailmodel = parsedModel;
+          });
+        }
+      } else {
+        debugPrint("❌ API Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Error: $e");
+    }
+  }
+
+
+
+  ToggleModel? toggleModel;
+ /* Future<void> fetchProducts(String data) async {
     final uri = Uri.parse('https://akarat.com/api/company/$data');
 
     try {
@@ -93,70 +155,166 @@ class _About_AgencyState extends State<About_Agency> {
     } catch (e) {
       debugPrint("🚨 Unexpected error: $e");
     }
-  }
+  }*/
+  AgencyAgentsModel? agencyAgentsModel;
 
-AgencyPropertiesModel? agencyPropertiesModel;
-AgencyAgentsModel? agencyAgentsModel;
+  Future<void> getFilesApi(String user) async {
+    if (isLoadingMore || !hasMoreData) return;
 
-  Future<void> getFilesApi(user) async {
-    final response = await http.get(Uri.parse("https://akarat.com/api/company/properties/$user"));
-    var data = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      AgencyPropertiesModel feature= AgencyPropertiesModel.fromJson(data);
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'agency_props_${user}_page_$currentPage';
+    final cacheTimeKey = 'agency_props_time_${user}_page_$currentPage';
 
-      setState(() {
-        agencyPropertiesModel = feature ;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-      });
+    // ⏱ Use cache if within 6 hours
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final jsonData = jsonDecode(cachedData);
+        final feature = propertyModel.AgencyPropertiesResponseModel.fromJson(jsonData);
 
-    } else {
-      //return FeaturedModel.fromJson(data);
+        final newProperties = feature.data?.data ?? [];
+        final meta = feature.data?.meta;
+
+        setState(() {
+          allProperties.addAll(newProperties);
+          if (meta != null && meta.currentPage != null && meta.lastPage != null) {
+            if (meta.currentPage! >= meta.lastPage!) {
+              hasMoreData = false;
+            } else {
+              currentPage = meta.currentPage! + 1;
+            }
+          } else {
+            hasMoreData = false;
+          }
+          isLoadingMore = false;
+        });
+
+        print("✅ Loaded agency properties from cache (page $currentPage)");
+        return;
+      }
+    }
+
+    // 🛰️ Fallback: API fetch
+    setState(() => isLoadingMore = true);
+    try {
+      final response = await http.get(
+        Uri.parse("https://akarat.com/api/company/properties/$user?page=$currentPage"),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final feature = propertyModel.AgencyPropertiesResponseModel.fromJson(data);
+        final newProperties = feature.data?.data ?? [];
+        final meta = feature.data?.meta;
+
+        await prefs.setString(cacheKey, jsonEncode(data));
+        await prefs.setInt(cacheTimeKey, now);
+
+        setState(() {
+          allProperties.addAll(newProperties);
+          if (meta != null && meta.currentPage != null && meta.lastPage != null) {
+            if (meta.currentPage! >= meta.lastPage!) {
+              hasMoreData = false;
+            } else {
+              currentPage = meta.currentPage! + 1;
+            }
+          } else {
+            hasMoreData = false;
+          }
+          isLoadingMore = false;
+        });
+
+        print("✅ API properties loaded & cached (page $currentPage)");
+      } else {
+        print("❌ Failed: status code ${response.statusCode}");
+        setState(() => isLoadingMore = false);
+      }
+    } catch (e) {
+      print("❌ Error fetching properties: $e");
+      setState(() => isLoadingMore = false);
     }
   }
 
-  Future<void> getAgentsApi(user) async {
-    final response = await http.get(Uri.parse("https://akarat.com/api/company/agents/$user"));
-    var data = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      AgencyAgentsModel feature= AgencyAgentsModel.fromJson(data);
 
-      setState(() {
-        agencyAgentsModel = feature ;
+// Make sure to dispose the controller
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
-      });
+  Future<void> getAgentsApi(String user) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'agency_agents_$user';
+    final cacheTimeKey = 'agency_agents_time_$user';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    } else {
-      //return FeaturedModel.fromJson(data);
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final jsonData = json.decode(cachedData);
+        final cachedModel = AgencyAgentsModel.fromJson(jsonData);
+        setState(() {
+          agencyAgentsModel = cachedModel;
+        });
+        return;
+      }
+    }
+
+    // If no cache or cache is stale, fetch from API
+    try {
+      final response = await http
+          .get(Uri.parse("https://akarat.com/api/company/agents/$user"))
+          .timeout(const Duration(seconds: 8));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final freshModel = AgencyAgentsModel.fromJson(data);
+
+        await prefs.setString(cacheKey, json.encode(data));
+        await prefs.setInt(cacheTimeKey, now);
+
+        setState(() {
+          agencyAgentsModel = freshModel;
+        });
+      } else {
+        debugPrint("❌ Agents API failed: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Agents API error: $e");
     }
   }
 
-  Future<void> toggledApi(token,property_id) async {
+
+  Future<void> toggledApi( token,  propertyId) async {
     try {
       final response = await http.post(
         Uri.parse('https://akarat.com/api/toggle-saved-property'),
-        headers: <String, String>{'Authorization':'Bearer $token',
+        headers: {
+          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode(<String, dynamic>{
-          "property_id": property_id,
-          // Add any other data you want to send in the body
+        body: jsonEncode({
+          "property_id": propertyId,
         }),
       );
-      if (response.statusCode == 200) {
-        Map<String, dynamic> jsonData = json.decode(response.body);
-        toggleModel = ToggleModel.fromJson(jsonData);
-        print(" Succesfully");
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
-      } else {
-        throw Exception(" failed");
 
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        toggleModel = ToggleModel.fromJson(jsonData);
+        debugPrint("✅ Property toggled successfully");
+      } else {
+        debugPrint("❌ Toggle failed: ${response.statusCode}");
       }
     } catch (e) {
-      setState(() {
-        print('Error: $e');
-      });
+      debugPrint("🚨 Toggle error: $e");
     }
   }
+
 
   Set<int> favoriteProperties = {}; // Stores favorite property IDs
 
@@ -205,6 +363,7 @@ AgencyAgentsModel? agencyAgentsModel;
         length: 4,
             child: Column(
                 children: <Widget>[
+                  const SizedBox(height: 10,),
                   Container(
                     height: screenSize.height*0.22,
                     color: Color(0xFFF5F5F5),
@@ -689,8 +848,9 @@ AgencyAgentsModel? agencyAgentsModel;
                                 )
                             ),
                             //Properties
-                            SingleChildScrollView(
-                                child:  Padding(
+                            // SingleChildScrollView(
+                            //     child:
+                                Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Column(
                                   children: [
@@ -790,230 +950,236 @@ AgencyAgentsModel? agencyAgentsModel;
                                         }).toList(),
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 0,right: 0,top: 15),
-                                      child:   ListView.builder(
-                                        padding: const EdgeInsets.all(0),
-                                        scrollDirection: Axis.vertical,
-                                        physics: const ScrollPhysics(),
-                                        itemCount: agencyPropertiesModel?.data?.length ?? 0,
-                                        shrinkWrap: true,
-                                        itemBuilder: (context, index) {
-                                          if (agencyPropertiesModel == null) {
-                                            return Scaffold(
-                                                body: ListView.builder(
-                                                  itemCount: 5,
-                                                  itemBuilder: (context, index) => const ShimmerCard(),)
-                                              // body: Center(child: const ShimmerCard()), // Show loading state
-                                            );
-                                          }
-                                          bool isFavorited = favoriteProperties.contains(agencyPropertiesModel!.data![index].id);
-                                          return SingleChildScrollView(
-                                              child: GestureDetector(
-                                                onTap: (){
-                                                  String id = agencyPropertiesModel!.data![index].id.toString();
-                                                  Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                                                      Agency_Detail(data: id)));
-                                                },
-                                                child : Padding(
-                                                  padding: const EdgeInsets.only(top: 0.0,left: 0,right: 0),
-                                                  child: Card(
-                                                    color: Colors.white,
-                                                    borderOnForeground: true,
-                                                    shadowColor: Colors.white,
-                                                    elevation: 10,
-                                                    child: Padding(
-                                                      padding: const EdgeInsets.only(left: 5.0,top: 0,right: 5),
-                                                      child: Column(
-                                                        // spacing: 5,// this is the coloumn
-                                                        children: [
-                                                          Padding(
-                                                              padding: const EdgeInsets.only(top: 0.0),
-                                                              child:ClipRRect(
-                                                                  borderRadius: BorderRadius.circular(12),
-                                                                  child: Stack(
-                                                                      children: [
-                                                                        AspectRatio(
-                                                                          aspectRatio: 1.6,
-                                                                          // this is the ratio
-                                                                          child: ListView.builder(
-                                                                            scrollDirection: Axis.horizontal,
-                                                                            physics: const ScrollPhysics(),
-                                                                            itemCount: agencyPropertiesModel?.data?[index].media?.length ?? 0,
-                                                                            shrinkWrap: true,
-                                                                            itemBuilder: (BuildContext context, int mediaIndex) {
-                                                                              return CachedNetworkImage(
-                                                                                imageUrl: agencyPropertiesModel!.data![index].media![mediaIndex].originalUrl.toString(),
-                                                                                fit: BoxFit.fill,
-                                                                              );
-                                                                            },
-                                                                          ),
-                                                                        ),
-                                                                        Positioned(
-                                                                          top: 5,
-                                                                          right: 10,
-                                                                          child: Container(
-                                                                            margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
-                                                                            height: 35,
-                                                                            width: 35,
-                                                                             padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
-                                                                            decoration: BoxDecoration(
-                                                                              borderRadius: BorderRadiusDirectional.circular(20.0),
-                                                                              boxShadow: [
-                                                                                BoxShadow(
-                                                                                  color: Colors.grey,
-                                                                                  offset: const Offset(
-                                                                                    0.3,
-                                                                                    0.3,
-                                                                                  ),
-                                                                                  blurRadius: 0.3,
-                                                                                  spreadRadius: 0.3,
-                                                                                ), //BoxShadow
-                                                                                BoxShadow(
-                                                                                  color: Colors.white,
-                                                                                  offset: const Offset(0.0, 0.0),
-                                                                                  blurRadius: 0.0,
-                                                                                  spreadRadius: 0.0,
-                                                                                ), //BoxShadow
-                                                                              ],
-                                                                            ),
-                                                                            // child: Positioned(
-                                                                            // child: Icon(Icons.favorite_border,color: Colors.red,),)
-                                                                            child: IconButton(
-                                                                              padding: EdgeInsets.only(left: 5,top: 7),
-                                                                              alignment: Alignment.center,
-                                                                              icon: Icon(
-                                                                                isFavorited ? Icons.favorite : Icons.favorite_border,
-                                                                                color: isFavorited ? Colors.red : Colors.red,
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 0,right: 0,top: 15),
+                                          child: ListView.builder(
+                                            padding: const EdgeInsets.all(0),
+                                            controller: _scrollController,
+                                            itemCount: allProperties.length + (isLoadingMore ? 1 : 0),
+                                            physics: const AlwaysScrollableScrollPhysics(),
+                                            shrinkWrap: true,
+                                            itemBuilder: (context, index) {
+                                              if (index == allProperties.length) {
+                                                return Center(child: Padding(
+                                                  padding: const EdgeInsets.all(10.0),
+                                                  child: CircularProgressIndicator(),
+                                                ));
+                                              }
+
+                                              final property = allProperties[index];
+                                              bool isFavorited = favoriteProperties.contains(property.id);
+                                              return
+                                                //SingleChildScrollView(
+                                                //  child:
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      String id = property.id.toString();
+                                                      Navigator.push(context, MaterialPageRoute(
+                                                        builder: (context) => Agency_Detail(data: id),
+                                                      ));
+                                                    },
+                                                    child : Padding(
+                                                      padding: const EdgeInsets.only(top: 0.0,left: 0,right: 0),
+                                                      child: Card(
+                                                        color: Colors.white,
+                                                        borderOnForeground: true,
+                                                        shadowColor: Colors.white,
+                                                        elevation: 10,
+                                                        child: Padding(
+                                                          padding: const EdgeInsets.only(left: 5.0,top: 0,right: 5),
+                                                          child: Column(
+                                                            // spacing: 5,// this is the coloumn
+                                                            children: [
+                                                              Padding(
+                                                                  padding: const EdgeInsets.only(top: 0.0),
+                                                                  child:ClipRRect(
+                                                                      borderRadius: BorderRadius.circular(12),
+                                                                      child: Stack(
+                                                                          children: [
+                                                                            AspectRatio(
+                                                                              aspectRatio: 1.6,
+                                                                              // this is the ratio
+                                                                              child: ListView.builder(
+                                                                                scrollDirection: Axis.horizontal,
+                                                                                physics: const ScrollPhysics(),
+                                                                                  shrinkWrap: false,
+                                                                                  itemCount: property.media?.length ?? 0,
+                                                                                  itemBuilder: (context, mediaIndex) {
+                                                                                    return CachedNetworkImage(
+                                                                                      imageUrl: property.media![mediaIndex].originalUrl.toString(),
+                                                                                      fit: BoxFit.fill,
+                                                                                    );
+                                                                                  }
                                                                               ),
-                                                                              onPressed: () {
-                                                                                setState(() {
-                                                                                  property_id=agencyPropertiesModel!.data![index].id;
-                                                                                  if(token == ''){
-                                                                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                                                                                  }
-                                                                                  else{
-                                                                                    toggleFavorite(property_id!);
-                                                                                       toggledApi(token,property_id);
-                                                                                  }
-                                                                                  isFavorited = !isFavorited;
-                                                                                });
-                                                                              },
                                                                             ),
-                                                                            //)
-                                                                          ),
-                                                                        ),
-                                                                      ]
+                                                                            Positioned(
+                                                                              top: 5,
+                                                                              right: 10,
+                                                                              child: Container(
+                                                                                margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
+                                                                                height: 35,
+                                                                                width: 35,
+                                                                                 padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
+                                                                                decoration: BoxDecoration(
+                                                                                  borderRadius: BorderRadiusDirectional.circular(20.0),
+                                                                                  boxShadow: [
+                                                                                    BoxShadow(
+                                                                                      color: Colors.grey,
+                                                                                      offset: const Offset(
+                                                                                        0.3,
+                                                                                        0.3,
+                                                                                      ),
+                                                                                      blurRadius: 0.3,
+                                                                                      spreadRadius: 0.3,
+                                                                                    ), //BoxShadow
+                                                                                    BoxShadow(
+                                                                                      color: Colors.white,
+                                                                                      offset: const Offset(0.0, 0.0),
+                                                                                      blurRadius: 0.0,
+                                                                                      spreadRadius: 0.0,
+                                                                                    ), //BoxShadow
+                                                                                  ],
+                                                                                ),
+                                                                                // child: Positioned(
+                                                                                // child: Icon(Icons.favorite_border,color: Colors.red,),)
+                                                                                child: IconButton(
+                                                                                  padding: const EdgeInsets.only(left: 5, top: 7),
+                                                                                  alignment: Alignment.center,
+                                                                                  icon: Icon(
+                                                                                    isFavorited ? Icons.favorite : Icons.favorite_border,
+                                                                                    color: isFavorited ? Colors.red : Colors.red,
+                                                                                  ),
+                                                                                  onPressed: () {
+                                                                                    setState(() {
+                                                                                      property_id = property.id; // ✅ Use 'property', not agencyPropertiesModel
+                                                                                      if (token == '') {
+                                                                                        Navigator.push(
+                                                                                          context,
+                                                                                          MaterialPageRoute(builder: (context) => Login()),
+                                                                                        );
+                                                                                      } else {
+                                                                                        toggleFavorite(property_id!);
+                                                                                        toggledApi(token, property_id);
+                                                                                      }
+                                                                                      isFavorited = !isFavorited;
+                                                                                    });
+                                                                                  },
+                                                                                ),
+                                                                                //)
+                                                                              ),
+                                                                            ),
+                                                                          ]
+                                                                      )
                                                                   )
-                                                              )
-                                                          ),
-                                                          Padding(
-                                                            padding: const EdgeInsets.only(top: 5),
-                                                            child: ListTile(
-                                                              title: Padding(
-                                                                padding: const EdgeInsets.only(top: 5.0,bottom: 5),
-                                                                child: Text(agencyPropertiesModel!.data![index].title.toString(),
-                                                                  style: TextStyle(
-                                                                      fontSize: 16,height: 1.4
-                                                                  ),),
                                                               ),
-                                                              subtitle: Text('${agencyPropertiesModel!.data![index].price} AED',
-                                                                style: TextStyle(
-                                                                    fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
-                                                                ),),
-                                                            ),
-                                                          ),
-                                                          Row(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            mainAxisAlignment: MainAxisAlignment.start,
-                                                            children: [
-                                                              Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 0,bottom: 10),
-                                                                child:  Image.asset("assets/images/map.png",height: 14,),
-                                                              ),
-                                                              Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                                                child: Text(agencyPropertiesModel!.data![index].location.toString(),style: TextStyle(
-                                                                    fontSize: 13,height: 1.4,
-                                                                    overflow: TextOverflow.visible
-                                                                ),),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          Row(
-                                                            children: [
-                                                              const SizedBox(width: 10),
-                                                              Expanded(
-                                                                child: ElevatedButton.icon(
-                                                                  onPressed: () async {
-                                                                    String phone = 'tel:${agencyPropertiesModel!.data![index].phoneNumber}';
-                                                                    try {
-                                                                      final bool launched = await launchUrlString(
-                                                                        phone,
-                                                                        mode: LaunchMode.externalApplication,
-                                                                      );
-                                                                      if (!launched) print("❌ Could not launch dialer");
-                                                                    } catch (e) {
-                                                                      print("❌ Exception: $e");
-                                                                    }
-                                                                  },
-                                                                  icon: const Icon(Icons.call, color: Colors.red),
-                                                                  label: const Text("Call", style: TextStyle(color: Colors.black)),
-                                                                  style: ElevatedButton.styleFrom(
-                                                                    backgroundColor: Colors.grey[100],
-                                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                                    elevation: 3,
-                                                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                                              Padding(
+                                                                padding: const EdgeInsets.only(top: 5),
+                                                                child: ListTile(
+                                                                  title: Padding(
+                                                                    padding: const EdgeInsets.only(top: 5.0,bottom: 5),
+                                                                    child: Text(property.title.toString(),
+                                                                      style: TextStyle(
+                                                                          fontSize: 16,height: 1.4
+                                                                      ),),
                                                                   ),
+                                                                  subtitle: Text('${property.price} AED',
+                                                                    style: TextStyle(
+                                                                        fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
+                                                                    ),),
                                                                 ),
                                                               ),
-                                                              const SizedBox(width: 10),
-                                                              Expanded(
-                                                                child: ElevatedButton.icon(
-                                                                  onPressed: () async {
-                                                                    final phone = agencyPropertiesModel!.data![index].whatsapp;
-                                                                    final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-                                                                    if (await canLaunchUrl(url)) {
-                                                                      try {
-                                                                        final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
-                                                                        if (!launched) print("❌ Could not launch WhatsApp");
-                                                                      } catch (e) {
-                                                                        print("❌ Exception: $e");
-                                                                      }
-                                                                    } else {
-                                                                      print("❌ WhatsApp not available");
-                                                                    }
-                                                                  },
-                                                                  icon: Image.asset("assets/images/whats.png", height: 20),
-                                                                  label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                                                  style: ElevatedButton.styleFrom(
-                                                                    backgroundColor: Colors.grey[100],
-                                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                                    elevation: 1,
-                                                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                                              Row(
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                mainAxisAlignment: MainAxisAlignment.start,
+                                                                children: [
+                                                                  Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 0,bottom: 10),
+                                                                    child:  Image.asset("assets/images/map.png",height: 14,),
                                                                   ),
-                                                                ),
+                                                                  Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
+                                                                    child: Text(property.location.toString(),style: TextStyle(
+                                                                        fontSize: 13,height: 1.4,
+                                                                        overflow: TextOverflow.visible
+                                                                    ),),
+                                                                  ),
+                                                                ],
                                                               ),
-                                                              const SizedBox(width: 10),
+                                                              Row(
+                                                                children: [
+                                                                  const SizedBox(width: 10),
+                                                                  Expanded(
+                                                                    child: ElevatedButton.icon(
+                                                                      onPressed: () async {
+                                                                        String phone = 'tel:${property.phoneNumber}';
+                                                                        try {
+                                                                          final bool launched = await launchUrlString(
+                                                                            phone,
+                                                                            mode: LaunchMode.externalApplication,
+                                                                          );
+                                                                          if (!launched) print("❌ Could not launch dialer");
+                                                                        } catch (e) {
+                                                                          print("❌ Exception: $e");
+                                                                        }
+                                                                      },
+                                                                      icon: const Icon(Icons.call, color: Colors.red),
+                                                                      label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                                                      style: ElevatedButton.styleFrom(
+                                                                        backgroundColor: Colors.grey[100],
+                                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                                        elevation: 3,
+                                                                        padding: const EdgeInsets.symmetric(vertical: 10),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                  const SizedBox(width: 10),
+                                                                  Expanded(
+                                                                    child: ElevatedButton.icon(
+                                                                      onPressed: () async {
+                                                                        final phone = property.whatsapp;
+                                                                        final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+                                                                        if (await canLaunchUrl(url)) {
+                                                                          try {
+                                                                            final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                                            if (!launched) print("❌ Could not launch WhatsApp");
+                                                                          } catch (e) {
+                                                                            print("❌ Exception: $e");
+                                                                          }
+                                                                        } else {
+                                                                          print("❌ WhatsApp not available");
+                                                                        }
+                                                                      },
+                                                                      icon: Image.asset("assets/images/whats.png", height: 20),
+                                                                      label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                                                      style: ElevatedButton.styleFrom(
+                                                                        backgroundColor: Colors.grey[100],
+                                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                                        elevation: 1,
+                                                                        padding: const EdgeInsets.symmetric(vertical: 10),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                  const SizedBox(width: 10),
+                                                                ],
+                                                              ),
+                                                              const SizedBox(height: 10),
                                                             ],
                                                           ),
-                                                          const SizedBox(height: 10),
-                                                        ],
+                                                        ),
+
                                                       ),
                                                     ),
 
-                                                  ),
-                                                ),
+                                                  );
 
-                                              )
-
-                                          );
-                                        },
+                                             // );
+                                            },
+                                          ),
                                       ),
-
                                     ),
                                   ],
                                   ),
                                 ),
-                            ),
+                           // ),
                             //Agent
                             SingleChildScrollView(
                                 child:  Padding(

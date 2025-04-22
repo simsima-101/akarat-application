@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../model/productmodel.dart';
@@ -34,6 +35,27 @@ class _Agent_DetailState extends State<Agent_Detail> {
   }
 
   Future<void> fetchProducts(String data) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'product_$data';
+    final cacheTimeKey = 'product_time_$data';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+
+    // Check cache validity (6 hours)
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final jsonData = jsonDecode(cachedData) as Map<String, dynamic>;
+        final cachedModel = ProductModel.fromJson(jsonData);
+        setState(() {
+          productModels = cachedModel;
+        });
+        debugPrint("📦 Loaded product from cache");
+        return;
+      }
+    }
+
+    // If cache is invalid or not available, fetch from API
     try {
       final response = await http.get(Uri.parse('https://akarat.com/api/properties/$data'));
       debugPrint("Status Code: ${response.statusCode}");
@@ -42,7 +64,11 @@ class _Agent_DetailState extends State<Agent_Detail> {
         final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
         debugPrint("✅ API Response: $jsonData");
 
-        final ProductModel parsedModel = ProductModel.fromJson(jsonData);
+        final parsedModel = ProductModel.fromJson(jsonData);
+
+        // Cache the response
+        await prefs.setString(cacheKey, jsonEncode(jsonData));
+        await prefs.setInt(cacheTimeKey, now);
 
         if (mounted) {
           setState(() {
@@ -58,6 +84,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
       debugPrint("🚨 fetchProducts Exception: $e");
     }
   }
+
 
 
   String token = '';

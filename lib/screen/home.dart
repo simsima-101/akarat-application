@@ -76,7 +76,8 @@ class _MyHomePageState extends State<HomeDemo> {
   @override
   void initState() {
     super.initState();
-    getFilesApi();
+    loadCachedFeatured(); // ⬅️ Load fast from local storage
+    fetchFeaturedApi();   // ⬅️ Then fetch fresh data in background
     readData();
     _loadFavorites();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -134,20 +135,35 @@ class _MyHomePageState extends State<HomeDemo> {
     }
   }
 
-  Future<void> getFilesApi() async {
+  Future<void> loadCachedFeatured() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cachedData = prefs.getString('cached_featured');
+
+    if (cachedData != null) {
+      final cachedJson = jsonDecode(cachedData);
+      final cachedModel = FeaturedModel.fromJson(cachedJson);
+      setState(() {
+        featuredModel = cachedModel;
+      });
+    }
+  }
+
+  Future<void> fetchFeaturedApi() async {
+    final prefs = await SharedPreferences.getInstance();
     try {
       final uri = Uri.parse("https://akarat.com/api/featured-properties?page=1");
-
       final response = await http.get(uri).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
-        // Use compute() for faster parsing on a separate isolate
-        final data = await compute(jsonDecode, response.body);
-        final feature = FeaturedModel.fromJson(data);
+        final decoded = await compute(jsonDecode, response.body);
+        final updatedModel = FeaturedModel.fromJson(decoded);
+
+        // Save to cache
+        prefs.setString('cached_featured', response.body);
 
         if (mounted) {
           setState(() {
-            featuredModel = feature;
+            featuredModel = updatedModel;
           });
         }
       } else {
@@ -158,7 +174,7 @@ class _MyHomePageState extends State<HomeDemo> {
     }
   }
 
-  Future<void> searchApi(String location) async {
+/*  Future<void> searchApi(String location) async {
     try {
       final response = await http
           .get(Uri.parse("https://akarat.com/api/search-properties?location=$location"))
@@ -179,7 +195,7 @@ class _MyHomePageState extends State<HomeDemo> {
     } catch (e) {
       print("Search API error: $e");
     }
-  }
+  }*/
 
 
   Set<int> favoriteProperties = {}; // Stores favorite property IDs

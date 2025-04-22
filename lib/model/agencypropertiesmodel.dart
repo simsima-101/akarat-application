@@ -1,33 +1,49 @@
-class AgencyPropertiesModel {
+// Full model class for paginated agency properties response
+
+class AgencyPropertiesResponseModel {
   bool? success;
   String? message;
-  List<Data>? data;
+  AgencyPropertiesData? data;
 
-  AgencyPropertiesModel({this.success, this.message, this.data});
+  AgencyPropertiesResponseModel({this.success, this.message, this.data});
 
-  AgencyPropertiesModel.fromJson(Map<String, dynamic> json) {
+  AgencyPropertiesResponseModel.fromJson(Map<String, dynamic> json) {
     success = json['success'];
     message = json['message'];
-    if (json['data'] != null) {
-      data = <Data>[];
-      json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
-      });
-    }
+    data = json['data'] != null ? AgencyPropertiesData.fromJson(json['data']) : null;
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['success'] = this.success;
-    data['message'] = this.message;
-    if (this.data != null) {
-      data['data'] = this.data!.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    'success': success,
+    'message': message,
+    'data': data?.toJson(),
+  };
 }
 
-class Data {
+class AgencyPropertiesData {
+  List<Property>? data;
+  Links? links;
+  Meta? meta;
+
+  AgencyPropertiesData({this.data, this.links, this.meta});
+
+  AgencyPropertiesData.fromJson(Map<String, dynamic> json) {
+    if (json['data'] != null) {
+      data = <Property>[];
+      json['data'].forEach((v) => data!.add(Property.fromJson(v)));
+    }
+    links = json['links'] != null ? Links.fromJson(json['links']) : null;
+    meta = json['meta'] != null ? Meta.fromJson(json['meta']) : null;
+  }
+
+  Map<String, dynamic> toJson() => {
+    'data': data?.map((v) => v.toJson()).toList(),
+    'links': links?.toJson(),
+    'meta': meta?.toJson(),
+  };
+}
+
+class Property {
   int? id;
   String? title;
   String? price;
@@ -38,18 +54,19 @@ class Data {
   String? whatsapp;
   List<Media>? media;
 
-  Data(
-      {this.id,
-        this.title,
-        this.price,
-        this.paymentPeriod,
-        this.address,
-        this.location,
-        this.phoneNumber,
-        this.whatsapp,
-        this.media});
+  Property({
+    this.id,
+    this.title,
+    this.price,
+    this.paymentPeriod,
+    this.address,
+    this.location,
+    this.phoneNumber,
+    this.whatsapp,
+    this.media,
+  });
 
-  Data.fromJson(Map<String, dynamic> json) {
+  Property.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     title = json['title'];
     price = json['price'];
@@ -60,27 +77,21 @@ class Data {
     whatsapp = json['whatsapp'];
     if (json['media'] != null) {
       media = <Media>[];
-      json['media'].forEach((v) {
-        media!.add(new Media.fromJson(v));
-      });
+      json['media'].forEach((v) => media!.add(Media.fromJson(v)));
     }
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['title'] = this.title;
-    data['price'] = this.price;
-    data['payment_period'] = this.paymentPeriod;
-    data['address'] = this.address;
-    data['location'] = this.location;
-    data['phone_number'] = this.phoneNumber;
-    data['whatsapp'] = this.whatsapp;
-    if (this.media != null) {
-      data['media'] = this.media!.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'price': price,
+    'payment_period': paymentPeriod,
+    'address': address,
+    'location': location,
+    'phone_number': phoneNumber,
+    'whatsapp': whatsapp,
+    'media': media?.map((v) => v.toJson()).toList(),
+  };
 }
 
 class Media {
@@ -92,9 +103,53 @@ class Media {
     originalUrl = json['original_url'];
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['original_url'] = this.originalUrl;
-    return data;
+  Map<String, dynamic> toJson() => {
+    'original_url': originalUrl,
+  };
+}
+
+class Links {
+  String? first;
+  String? last;
+  String? prev;
+  String? next;
+
+  Links({this.first, this.last, this.prev, this.next});
+
+  Links.fromJson(Map<String, dynamic> json) {
+    first = json['first'];
+    last = json['last'];
+    prev = json['prev'];
+    next = json['next'];
   }
+
+  Map<String, dynamic> toJson() => {
+    'first': first,
+    'last': last,
+    'prev': prev,
+    'next': next,
+  };
+}
+
+class Meta {
+  int? currentPage;
+  int? lastPage;
+  int? perPage;
+  int? total;
+
+  Meta({this.currentPage, this.lastPage, this.perPage, this.total});
+
+  Meta.fromJson(Map<String, dynamic> json) {
+    currentPage = json['current_page'];
+    lastPage = json['last_page'];
+    perPage = json['per_page'];
+    total = json['total'];
+  }
+
+  Map<String, dynamic> toJson() => {
+    'current_page': currentPage,
+    'last_page': lastPage,
+    'per_page': perPage,
+    'total': total,
+  };
 }

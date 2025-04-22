@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:Akarat/screen/about_agency.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -9,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../model/productmodel.dart';
@@ -36,31 +39,56 @@ class _Agency_DetailState extends State<Agency_Detail> {
   }
 
   Future<void> fetchProducts(String data) async {
-    try {
-      final response = await http.get(Uri.parse('https://akarat.com/api/properties/$data'));
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'product_cache_$data';
+    final cacheTimeKey = 'product_cache_time_$data';
 
-      debugPrint("Status Code: ${response.statusCode}");
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+
+    // ✅ Use cache if it's less than 6 hours old
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final jsonData = jsonDecode(cachedData);
+        final cachedModel = ProductModel.fromJson(jsonData);
+        setState(() {
+          productModels = cachedModel;
+        });
+        debugPrint("📦 Loaded product from cache");
+        return;
+      }
+    }
+
+    try {
+      final response = await http
+          .get(Uri.parse('https://akarat.com/api/properties/$data'))
+          .timeout(const Duration(seconds: 6));
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = jsonDecode(response.body);
-        debugPrint("✅ API Response: $jsonData");
+        final jsonData = jsonDecode(response.body);
+        final parsedModel = ProductModel.fromJson(jsonData);
 
-        final ProductModel parsedModel = ProductModel.fromJson(jsonData);
+        // 🗂 Save to cache
+        await prefs.setString(cacheKey, jsonEncode(jsonData));
+        await prefs.setInt(cacheTimeKey, now);
 
-        if (mounted) {
-          setState(() {
-            productModels = parsedModel;
-          });
-        }
+        if (!mounted) return;
+        setState(() => productModels = parsedModel);
 
-        debugPrint("📦 Product title: ${productModels?.data?.title ?? 'No title'}");
+        debugPrint("✅ Fetched fresh product data");
       } else {
         debugPrint("❌ API Error: ${response.statusCode}");
       }
+    } on TimeoutException {
+      debugPrint("⏳ Request timed out.");
+    } on SocketException {
+      debugPrint("📡 No Internet.");
     } catch (e) {
-      debugPrint("🚨 Exception in fetchProducts: $e");
+      debugPrint("🚨 Error in fetchProducts: $e");
     }
   }
+
 
   String token = '';
   String email = '';

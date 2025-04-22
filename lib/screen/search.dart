@@ -43,17 +43,15 @@ class _SearchState extends State<Search> {
 
   @override
   void initState() {
-    searchApi(widget.data);
-    _rangeController = RangeController(
-        start: start.toString(),
-        end: end.toString());
-    readData();
-    _loadFavorites();
-    selectedproduct=0;
-    purpose = "Rent"; // Set initial purpose
-    propertyApi(purpose);
-    selectedtype=0;
+    super.initState();
+    _rangeController = RangeController(start: start.toString(), end: end.toString());
 
+    _initializeData(); // handles async calls
+    _loadFavorites();
+readData();
+    selectedproduct = 0;
+    selectedtype = 0;
+    purpose = "Rent";
 
     chartData = List.generate(
       96,
@@ -63,7 +61,11 @@ class _SearchState extends State<Search> {
       ),
     );
   }
-
+  void _initializeData() async {
+    // Fire both in parallel
+    propertyApi(purpose);
+    searchApi(widget.data);
+  }
   @override
   void dispose() {
     _rangeController.dispose();
@@ -179,21 +181,53 @@ class _SearchState extends State<Search> {
   String result = '';
   bool isDataRead = false;
 
-  Future<void> searchApi(location) async {
-    final response = await http.get(Uri.parse(
-        "https://akarat.com/api/search-properties?location=$location"));
-    var data = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      SearchModel feature= SearchModel.fromJson(data);
+  Future<void> searchApi(String location) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'search_result_$location';
+    final cacheTimeKey = 'search_result_time_$location';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-      setState(() {
-        searchModel = feature ;
-      });
+    // Use cache if it's less than 6 hours old
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final cachedModel = SearchModel.fromJson(json.decode(cachedData));
+        setState(() {
+          searchModel = cachedModel;
+        });
+        debugPrint("✅ Loaded search data from cache");
+        return;
+      }
+    }
 
-    } else {
-      //return FeaturedModel.fromJson(data);
+    // Else fetch from API
+    try {
+      final response = await http.get(
+        Uri.parse("https://akarat.com/api/search-properties?location=$location"),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final model = SearchModel.fromJson(jsonData);
+
+        // Save to cache
+        await prefs.setString(cacheKey, json.encode(jsonData));
+        await prefs.setInt(cacheTimeKey, now);
+
+        setState(() {
+          searchModel = model;
+        });
+
+        debugPrint("✅ Search data fetched and cached");
+      } else {
+        debugPrint("❌ API Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Exception in searchApi: $e");
     }
   }
+
 
   Future<void> toggledApi( token,  propertyId) async {
     final url = Uri.parse('https://akarat.com/api/toggle-saved-property');

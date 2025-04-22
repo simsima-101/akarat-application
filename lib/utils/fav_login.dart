@@ -59,26 +59,56 @@ class _Fav_LoginState extends State<Fav_Login> {
      _loadFavorites();
    }
 
-   Future<void> getFilesApi(token) async {
-     final response = await http.get(Uri.parse("https://akarat.com/api/saved-property-list"),
-       headers: <String, String>{'Authorization': 'Bearer $token',
-         'Content-Type': 'application/json; charset=UTF-8',
-       },
-     );
-     if (response.statusCode == 200) {
-       Map<String, dynamic> jsonData = json.decode(response.body);
-       FavoriteModel feature= FavoriteModel.fromJson(jsonData);
+  Future<void> getFilesApi(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'saved_properties_$token';
+    final cacheTimeKey = 'saved_properties_time_$token';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-       setState(() {
-         favoriteModel = feature ;
+    // Use cached data if it's less than 3 hours old
+    if (now - lastFetched < Duration(hours: 3).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final cachedModel = FavoriteModel.fromJson(json.decode(cachedData));
+        setState(() {
+          favoriteModel = cachedModel;
+        });
+        debugPrint("✅ Loaded saved properties from cache");
+        return;
+      }
+    }
 
-       });
+    try {
+      final response = await http.get(
+        Uri.parse("https://akarat.com/api/saved-property-list"),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
 
-     }
-     else {
-       //return FeaturedModel.fromJson(data);
-     }
-   }
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        final feature = FavoriteModel.fromJson(jsonData);
+
+        // Cache the data
+        await prefs.setString(cacheKey, json.encode(jsonData));
+        await prefs.setInt(cacheTimeKey, now);
+
+        setState(() {
+          favoriteModel = feature;
+        });
+
+        debugPrint("✅ Fetched and cached saved properties");
+      } else {
+        debugPrint("❌ Failed to fetch saved properties: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Exception in getFilesApi: $e");
+    }
+  }
+
 
   Set<int> favoriteProperties = {}; // Stores favorite property IDs
 

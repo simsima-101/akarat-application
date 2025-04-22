@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -53,8 +54,28 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
 
   Future<void> fetchProducts(String data) async {
-    final url = Uri.parse('https://akarat.com/api/featured-properties/$data');
+    final prefs = await SharedPreferences.getInstance();
+    final cachedKey = 'cached_property_$data';
+    final cachedTimeKey = 'cached_time_$data';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cachedTimeKey) ?? 0;
 
+    // Step 1: Use cache immediately if available
+    final cached = prefs.getString(cachedKey);
+    if (cached != null) {
+      final cachedJson = jsonDecode(cached);
+      final model = Featured_DetailModel.fromJson(cachedJson);
+      setState(() => featured_detailModel = model);
+    }
+
+    // Step 2: Check if cache is still valid (6 hours)
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds && cached != null) {
+      debugPrint("✅ Loaded from cache (fresh)");
+      return;
+    }
+
+    // Step 3: Fetch from API if cache is stale or missing
+    final url = Uri.parse('https://akarat.com/api/featured-properties/$data');
     try {
       final response = await http.get(url).timeout(const Duration(seconds: 8));
 
@@ -62,16 +83,15 @@ class _Featured_DetailState extends State<Featured_Detail> {
         final jsonData = jsonDecode(response.body);
         final parsedModel = Featured_DetailModel.fromJson(jsonData);
 
-        if (!mounted) return;
+        // Update cache and timestamp
+        prefs.setString(cachedKey, response.body);
+        prefs.setInt(cachedTimeKey, now);
 
+        if (!mounted) return;
         setState(() => featured_detailModel = parsedModel);
       } else {
         debugPrint("❌ API Error: ${response.statusCode}");
       }
-    } on TimeoutException {
-      debugPrint("⏱ Request timed out");
-    } on SocketException {
-      debugPrint("📡 No internet connection");
     } catch (e) {
       debugPrint("🚨 Unexpected error: $e");
     }

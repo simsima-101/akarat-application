@@ -82,6 +82,27 @@ class _AboutAgentState extends State<AboutAgent> {
   AgentProperties? agentProperties;
 
   Future<void> fetchProducts(String data) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'agent_detail_$data';
+    final cacheTimeKey = 'agent_detail_time_$data';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+
+    // ⏱ If cache is valid (within 6 hours)
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final jsonData = jsonDecode(cachedData);
+        final cachedModel = AgentDetail.fromJson(jsonData);
+        setState(() {
+          agentDetail = cachedModel;
+        });
+        debugPrint("✅ Loaded agent from cache");
+        return;
+      }
+    }
+
+    // 🛰 API fallback
     try {
       final response = await http.get(
         Uri.parse('https://akarat.com/api/agent/$data'),
@@ -93,7 +114,10 @@ class _AboutAgentState extends State<AboutAgent> {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         debugPrint("API Response: $jsonData");
 
-        final AgentDetail parsedModel = AgentDetail.fromJson(jsonData);
+        final parsedModel = AgentDetail.fromJson(jsonData);
+
+        await prefs.setString(cacheKey, jsonEncode(jsonData));
+        await prefs.setInt(cacheTimeKey, now);
 
         if (mounted) {
           setState(() {
@@ -101,7 +125,7 @@ class _AboutAgentState extends State<AboutAgent> {
           });
         }
 
-        debugPrint("Agent service areas: ${agentDetail?.serviceAreas}");
+        debugPrint("📦 Agent service areas: ${agentDetail?.serviceAreas}");
       } else {
         debugPrint("❌ API Error Status: ${response.statusCode}");
       }
@@ -110,27 +134,80 @@ class _AboutAgentState extends State<AboutAgent> {
     }
   }
 
-  Future<void> _callSearchApi(query) async {
-    // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/filters?'
-        'search=$query&amenities=&property_type='
-        '&furnished_status=&bedrooms=&min_price='
-        '&max_price=&payment_period=&min_square_feet='
-        '&max_square_feet=&bathrooms=&purpose='));
-    var data = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      AgentProperties feature= AgentProperties.fromJson(data);
 
-      setState(() {
-        agentProperties = feature ;
+  Future<void> _callSearchApi(String query) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'search_result_$query';
+    final cacheTimeKey = 'search_result_time_$query';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-      });
+    // ⏱ 1 hour cache validity
+    if (now - lastFetched < Duration(hours: 1).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final jsonData = jsonDecode(cachedData);
+        final cachedModel = AgentProperties.fromJson(jsonData);
+        setState(() {
+          agentProperties = cachedModel;
+        });
+        debugPrint("✅ Loaded search result from cache");
+        return;
+      }
+    }
 
-    } else {
+    // 🔍 Fetch from API
+    final uri = Uri.parse(
+        'https://akarat.com/api/filters?search=$query&amenities=&property_type='
+            '&furnished_status=&bedrooms=&min_price=&max_price='
+            '&payment_period=&min_square_feet=&max_square_feet='
+            '&bathrooms=&purpose=');
+
+    try {
+      final response = await http.get(uri);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final feature = AgentProperties.fromJson(data);
+
+        await prefs.setString(cacheKey, jsonEncode(data));
+        await prefs.setInt(cacheTimeKey, now);
+
+        setState(() {
+          agentProperties = feature;
+        });
+
+        debugPrint("✅ API search loaded & cached");
+      } else {
+        debugPrint("❌ API failed with status: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("❌ Exception in search: $e");
     }
   }
 
+
   Future<void> getFilesApi(String user) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'agent_properties_$user';
+    final cacheTimeKey = 'agent_properties_time_$user';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+
+    // Check if cache is valid (6 hours)
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final jsonData = jsonDecode(cachedData);
+        final cachedModel = AgentProperties.fromJson(jsonData);
+        setState(() {
+          agentProperties = cachedModel;
+        });
+        debugPrint("📦 Loaded agent properties from cache");
+        return;
+      }
+    }
+
+    // Otherwise, fetch from API
     try {
       final response = await http.get(
         Uri.parse("https://akarat.com/api/agent/properties/$user"),
@@ -138,13 +215,18 @@ class _AboutAgentState extends State<AboutAgent> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final AgentProperties feature = AgentProperties.fromJson(data);
+        final feature = AgentProperties.fromJson(data);
+
+        await prefs.setString(cacheKey, jsonEncode(data));
+        await prefs.setInt(cacheTimeKey, now);
 
         if (mounted) {
           setState(() {
             agentProperties = feature;
           });
         }
+
+        debugPrint("✅ Fetched and cached agent properties from API");
       } else {
         debugPrint("❌ API Error: ${response.statusCode}");
       }
@@ -152,6 +234,7 @@ class _AboutAgentState extends State<AboutAgent> {
       debugPrint("❌ Exception in getFilesApi: $e");
     }
   }
+
 
   ToggleModel? toggleModel;
 
@@ -340,7 +423,7 @@ class _AboutAgentState extends State<AboutAgent> {
                     ],
                   ),
                   child: CircleAvatar(
-                    backgroundImage: NetworkImage(agentDetail!.image.toString()),
+                    backgroundImage: NetworkImage(agentDetail!.image.toString(),),
                   ),
                 )
               ],
@@ -851,11 +934,12 @@ class _AboutAgentState extends State<AboutAgent> {
                                     body: Center(child: CircularProgressIndicator()), // Show loading state
                                   );
                                 }
-                                bool isFavorited = favoriteProperties.contains(agentProperties!.data![index].id);
+                                final property = agentProperties!.data![index];
+                                bool isFavorited = favoriteProperties.contains(property.id);
                                 return SingleChildScrollView(
                                     child: GestureDetector(
                                       onTap: (){
-                                        String id = agentProperties!.data![index].id.toString();
+                                        String id = property.id.toString();
                                         Navigator.push(context, MaterialPageRoute(builder: (context) =>
                                             Agent_Detail(data: id)));
                                       },
@@ -883,11 +967,11 @@ class _AboutAgentState extends State<AboutAgent> {
                                                                 child: ListView.builder(
                                                                   scrollDirection: Axis.horizontal,
                                                                   physics: const ScrollPhysics(),
-                                                                  itemCount: agentProperties?.data?[index].media?.length ?? 0,
+                                                                  itemCount: property.media?.length ?? 0,
                                                                   shrinkWrap: true,
                                                                   itemBuilder: (BuildContext context, int index) {
                                                                     return CachedNetworkImage( // this is to fetch the image
-                                                                      imageUrl: (agentProperties!.data![index].media![index].originalUrl.toString()),
+                                                                      imageUrl: (property.media![index].originalUrl.toString()),
                                                                       fit: BoxFit.fill,
                                                                     );
                                                                   },
@@ -932,7 +1016,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                                                     ),
                                                                     onPressed: () {
                                                                       setState(() {
-                                                                        property_id=agentProperties!.data![index].id;
+                                                                        property_id=property.id;
                                                                         if(token == ''){
                                                                           Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
                                                                         }
@@ -956,12 +1040,12 @@ class _AboutAgentState extends State<AboutAgent> {
                                                   child: ListTile(
                                                     title: Padding(
                                                       padding: const EdgeInsets.only(top: 5.0,bottom: 5),
-                                                      child: Text(agentProperties!.data![index].title.toString(),
+                                                      child: Text(property.title.toString(),
                                                         style: TextStyle(
                                                             fontSize: 16,height: 1.4
                                                         ),),
                                                     ),
-                                                    subtitle: Text('${agentProperties!.data![index].price} AED',
+                                                    subtitle: Text('${property.price} AED',
                                                       style: TextStyle(
                                                           fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
                                                       ),),
@@ -975,7 +1059,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                                       child:  Image.asset("assets/images/map.png",height: 14,),
                                                     ),
                                                     Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                                      child: Text(agentProperties!.data![index].location.toString(),style: TextStyle(
+                                                      child: Text(property.location.toString(),style: TextStyle(
                                                           fontSize: 13,height: 1.4,
                                                           overflow: TextOverflow.visible
                                                       ),),
@@ -988,7 +1072,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                                     Expanded(
                                                       child: ElevatedButton.icon(
                                                         onPressed: () async {
-                                                          String phone = 'tel:${agentProperties!.data![index].phoneNumber}';
+                                                          String phone = 'tel:${property.phoneNumber}';
                                                           try {
                                                             final bool launched = await launchUrlString(
                                                               phone,
@@ -1013,7 +1097,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                                     Expanded(
                                                       child: ElevatedButton.icon(
                                                         onPressed: () async {
-                                                          final phone = agentProperties!.data![index].whatsapp;
+                                                          final phone = property.whatsapp;
                                                           final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
                                                           if (await canLaunchUrl(url)) {
                                                             try {
@@ -1190,7 +1274,10 @@ class _AboutAgentState extends State<AboutAgent> {
               onTap: ()async{
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               },
-              child: Image.asset("assets/images/home.png",height: 22,)),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Image.asset("assets/images/home.png",height: 25,),
+              )),
           Container(
               margin: const EdgeInsets.only(left: 40),
               height: 35,
@@ -1239,7 +1326,7 @@ class _AboutAgentState extends State<AboutAgent> {
               margin: const EdgeInsets.only(left: 1),
               height: 35,
               width: 35,
-              padding: const EdgeInsets.only(top: 2),
+              padding: const EdgeInsets.only(top: 0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadiusDirectional.circular(20.0),
                 boxShadow: [

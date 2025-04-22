@@ -69,6 +69,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
     readData();
     _loadFavorites();
     _searchController.addListener(_onSearchChanged);
+
   }
 
   @override
@@ -81,47 +82,100 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      final query = _searchController.text.trim();
-      if (query.isNotEmpty) {
-        _callSearchApi(query);
-      }
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      final query = _searchController.text;
+      _callSearchApi(query);
     });
   }
 
-  Future<void> _callSearchApi(query) async {
-    // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/filters?'
-        'search=$query&amenities=&property_type='
-        '&furnished_status=&bedrooms=&min_price='
-        '&max_price=&payment_period=&min_square_feet='
-        '&max_square_feet=&bathrooms=&purpose=New%20Projects'));
-    var data = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      ProjectModel feature= ProjectModel.fromJson(data);
 
+  Map<String, ProjectModel> _searchCache = {};
+  String lastSearchQuery = '';
+
+  Future<void> _callSearchApi(String query) async {
+    query = query.trim();
+
+    // Avoid unnecessary calls
+    if (query == lastSearchQuery || query.isEmpty) return;
+
+    lastSearchQuery = query;
+
+    // Use cached data if available
+    if (_searchCache.containsKey(query)) {
       setState(() {
-        projectModel = feature ;
-
+        projectModel = _searchCache[query]!;
       });
+      return;
+    }
 
-    } else {
+    try {
+      final response = await http.get(Uri.parse(
+          'https://akarat.com/api/filters?'
+              'search=$query&amenities=&property_type='
+              '&furnished_status=&bedrooms=&min_price='
+              '&max_price=&payment_period=&min_square_feet='
+              '&max_square_feet=&bathrooms=&purpose=New%20Projects'));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final result = ProjectModel.fromJson(data);
+
+        _searchCache[query] = result;
+
+        if (mounted) {
+          setState(() {
+            projectModel = result;
+          });
+        }
+      } else {
+        debugPrint('❌ API failed: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('🚨 Search API Error: $e');
     }
   }
 
+
   Future<void> getFilesApi() async {
-    final response = await http.get(Uri.parse("https://akarat.com/api/new-projects"));
-    var data = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      ProjectModel feature= ProjectModel.fromJson(data);
+    final prefs = await SharedPreferences.getInstance();
+    const cacheKey = 'new_projects_cache';
+    const cacheTimeKey = 'new_projects_time';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-      setState(() {
-        projectModel = feature ;
+    // Use cached data if less than 6 hours old
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final jsonData = jsonDecode(cachedData);
+        final ProjectModel cachedModel = ProjectModel.fromJson(jsonData);
+        setState(() {
+          projectModel = cachedModel;
+        });
+        return;
+      }
+    }
 
-      });
+    // Fetch from API if no valid cache
+    try {
+      final response = await http.get(Uri.parse("https://akarat.com/api/new-projects"));
 
-    } else {
-      //return FeaturedModel.fromJson(data);
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final ProjectModel feature = ProjectModel.fromJson(jsonData);
+
+        // Save to cache
+        await prefs.setString(cacheKey, jsonEncode(jsonData));
+        await prefs.setInt(cacheTimeKey, now);
+
+        setState(() {
+          projectModel = feature;
+        });
+      } else {
+        debugPrint("❌ API Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 getFilesApi Exception: $e");
     }
   }
 
