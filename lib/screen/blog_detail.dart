@@ -116,67 +116,26 @@ readData();
     return Scaffold(
         backgroundColor: Colors.white,
       bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+      appBar: AppBar(
+        title: const Text(
+            "Blog", style: TextStyle(color: Colors.black,
+            fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.red),
+          onPressed: ()async {
+            setState(() {
+              Navigator.of(context).pop();
+            });
+          },
+        ),
+        centerTitle: true,
+        backgroundColor: Color(0xFFFFFFFF),
+        iconTheme: const IconThemeData(color: Colors.red),
+        elevation: 1,
+      ),
       body: SingleChildScrollView(
     child: Column(
     children: <Widget>[
-      Padding(
-        padding: EdgeInsets.only(top: 10),
-        child: Container(
-          height: 50,
-          width: double.infinity,
-          // color: Color(0xFFEEEEEE),
-          child:   Row(
-            children: [
-              GestureDetector(
-                  onTap: (){
-                    Navigator.of(context).pop();
-                  },child:
-              Container(
-                  margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
-                  height: 35,
-                  width: 35,
-                  padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(20.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.0,
-                          0.0,
-                        ),
-                        blurRadius: 0.1,
-                        spreadRadius: 0.1,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ],
-                  ),
-                    child: Image.asset("assets/images/ar-left.png",
-                      width: 15,
-                      height: 15,
-                      fit: BoxFit.contain,),
-                  )
-              ),
-              Container(
-                  margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0,),
-                  height: 35,
-                  width: 80,
-                  padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                  child: Text("Blog",style: TextStyle(
-                      fontSize: 17,fontWeight: FontWeight.bold,letterSpacing: 0.5
-                  ),)
-                //child: Image(image: Image.asset("assets/images/share.png")),
-              ),
-
-            ],
-          ),
-        ),
-      ),
       Padding(
         padding: const EdgeInsets.only(top: 10.0),
         child: Container(
@@ -369,7 +328,10 @@ readData();
               onTap: ()async{
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               },
-              child: Image.asset("assets/images/home.png",height: 22,)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: Image.asset("assets/images/home.png",height: 25,),
+              )),
           Padding(
             padding: const EdgeInsets.only(left: 0.0),
             child: IconButton(
@@ -401,46 +363,6 @@ readData();
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-class Page1 extends StatelessWidget {
-  const Page1({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 1",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page4 extends StatelessWidget {
-  const Page4({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 4",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
       ),
     );
   }

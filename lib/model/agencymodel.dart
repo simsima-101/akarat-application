@@ -1,4 +1,37 @@
-class AgencyModel {
+class PaginatedAgencyModel {
+  bool? success;
+  String? message;
+  AgencyDataWrapper? data;
+
+  PaginatedAgencyModel({this.success, this.message, this.data});
+
+  PaginatedAgencyModel.fromJson(Map<String, dynamic> json) {
+    success = json['success'];
+    message = json['message'];
+    data = json['data'] != null ? AgencyDataWrapper.fromJson(json['data']) : null;
+  }
+}
+
+class AgencyDataWrapper {
+  List<Agency>? data;
+  PaginationLinks? links;
+  PaginationMeta? meta;
+
+  AgencyDataWrapper({this.data, this.links, this.meta});
+
+  AgencyDataWrapper.fromJson(Map<String, dynamic> json) {
+    if (json['data'] != null) {
+      data = <Agency>[];
+      json['data'].forEach((v) {
+        data!.add(Agency.fromJson(v));
+      });
+    }
+    links = json['links'] != null ? PaginationLinks.fromJson(json['links']) : null;
+    meta = json['meta'] != null ? PaginationMeta.fromJson(json['meta']) : null;
+  }
+}
+
+class Agency {
   int? id;
   String? userName;
   String? name;
@@ -6,6 +39,7 @@ class AgencyModel {
   String? website;
   String? email;
   String? phone;
+  String? whatsapp;
   String? address;
   String? location;
   String? statusId;
@@ -14,22 +48,25 @@ class AgencyModel {
   String? image;
   int? propertiesCount;
 
-  AgencyModel({this.id,
+  Agency({
+    this.id,
     this.userName,
     this.name,
     this.description,
     this.website,
     this.email,
     this.phone,
+    this.whatsapp,
     this.address,
     this.location,
     this.statusId,
     this.ded,
     this.rera,
     this.image,
-    this.propertiesCount});
+    this.propertiesCount,
+  });
 
-  AgencyModel.fromJson(Map<String, dynamic> json) {
+  Agency.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     userName = json['user_name'];
     name = json['name'];
@@ -37,6 +74,7 @@ class AgencyModel {
     website = json['website'];
     email = json['email'];
     phone = json['phone'];
+    whatsapp = json['whatsapp'];
     address = json['address'];
     location = json['location'];
     statusId = json['status_id'];
@@ -45,23 +83,72 @@ class AgencyModel {
     image = json['image'];
     propertiesCount = json['properties_count'];
   }
+}
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['user_name'] = this.userName;
-    data['name'] = this.name;
-    data['description'] = this.description;
-    data['website'] = this.website;
-    data['email'] = this.email;
-    data['phone'] = this.phone;
-    data['address'] = this.address;
-    data['location'] = this.location;
-    data['status_id'] = this.statusId;
-    data['ded'] = this.ded;
-    data['rera'] = this.rera;
-    data['image'] = this.image;
-    data['properties_count'] = this.propertiesCount;
-    return data;
+class PaginationLinks {
+  String? first;
+  String? last;
+  String? prev;
+  String? next;
+
+  PaginationLinks({this.first, this.last, this.prev, this.next});
+
+  PaginationLinks.fromJson(Map<String, dynamic> json) {
+    first = json['first'];
+    last = json['last'];
+    prev = json['prev'];
+    next = json['next'];
+  }
+}
+
+class PaginationMeta {
+  int? currentPage;
+  int? from;
+  int? lastPage;
+  List<MetaLink>? links;
+  String? path;
+  int? perPage;
+  int? to;
+  int? total;
+
+  PaginationMeta({
+    this.currentPage,
+    this.from,
+    this.lastPage,
+    this.links,
+    this.path,
+    this.perPage,
+    this.to,
+    this.total,
+  });
+
+  PaginationMeta.fromJson(Map<String, dynamic> json) {
+    currentPage = json['current_page'];
+    from = json['from'];
+    lastPage = json['last_page'];
+    if (json['links'] != null) {
+      links = <MetaLink>[];
+      json['links'].forEach((v) {
+        links!.add(MetaLink.fromJson(v));
+      });
+    }
+    path = json['path'];
+    perPage = json['per_page'];
+    to = json['to'];
+    total = json['total'];
+  }
+}
+
+class MetaLink {
+  String? url;
+  String? label;
+  bool? active;
+
+  MetaLink({this.url, this.label, this.active});
+
+  MetaLink.fromJson(Map<String, dynamic> json) {
+    url = json['url'];
+    label = json['label'];
+    active = json['active'];
   }
 }

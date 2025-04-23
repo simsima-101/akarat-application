@@ -5,7 +5,7 @@ import 'package:Akarat/screen/about_agency.dart';
 import 'package:flutter/material.dart';
 
 class Agencycardscreen extends StatelessWidget {
-  final AgencyModel agencyModel;
+  final Agency agencyModel;
 
   const Agencycardscreen({super.key, required this.agencyModel});
 

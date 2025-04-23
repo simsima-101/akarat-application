@@ -43,7 +43,15 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
   bool isDataRead = false;
   bool isFavorited = false;
-  ProjectModel? projectModel;
+
+
+  ScrollController _scrollController = ScrollController();
+  int currentPage = 1;
+  bool isLoading = false;
+  bool hasMore = true;
+  List<Data> projectModel = [];
+
+
   ToggleModel? toggleModel;
   int? property_id ;
   String token = '';
@@ -70,6 +78,14 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
     _loadFavorites();
     _searchController.addListener(_onSearchChanged);
 
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 100 &&
+          !isLoading && hasMore) {
+        getFilesApi(); // call your API method here
+      }
+    });
+
+  //  getFilesApi(); // load first page initially
   }
 
   @override
@@ -89,7 +105,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
   }
 
 
-  Map<String, ProjectModel> _searchCache = {};
+  Map<String, List<Data>> _searchCache = {};
   String lastSearchQuery = '';
 
   Future<void> _callSearchApi(String query) async {
@@ -120,11 +136,12 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
         final data = jsonDecode(response.body);
         final result = ProjectModel.fromJson(data);
 
-        _searchCache[query] = result;
+        _searchCache[query] = result.data ?? [];
+        projectModel = _searchCache[query]!;
 
         if (mounted) {
           setState(() {
-            projectModel = result;
+            projectModel = result.data ?? [];
           });
         }
       } else {
@@ -136,48 +153,41 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
   }
 
 
+
   Future<void> getFilesApi() async {
-    final prefs = await SharedPreferences.getInstance();
-    const cacheKey = 'new_projects_cache';
-    const cacheTimeKey = 'new_projects_time';
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+    if (isLoading || !hasMore) return;
 
-    // Use cached data if less than 6 hours old
-    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
-      final cachedData = prefs.getString(cacheKey);
-      if (cachedData != null) {
-        final jsonData = jsonDecode(cachedData);
-        final ProjectModel cachedModel = ProjectModel.fromJson(jsonData);
-        setState(() {
-          projectModel = cachedModel;
-        });
-        return;
-      }
-    }
+    setState(() => isLoading = true);
 
-    // Fetch from API if no valid cache
     try {
-      final response = await http.get(Uri.parse("https://akarat.com/api/new-projects"));
+      final response = await http.get(Uri.parse(
+        "https://akarat.com/api/new-projects?page=$currentPage",
+      ));
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        final ProjectModel feature = ProjectModel.fromJson(jsonData);
-
-        // Save to cache
-        await prefs.setString(cacheKey, jsonEncode(jsonData));
-        await prefs.setInt(cacheTimeKey, now);
+        final ProjectResponseModel responseModel = ProjectResponseModel.fromJson(jsonData);
+        final ProjectModel fetchedModel = responseModel.data!;
+        final newItems = fetchedModel.data ?? [];
 
         setState(() {
-          projectModel = feature;
+          currentPage++;
+          isLoading = false;
+          projectModel.addAll(newItems);
+          hasMore = fetchedModel.meta?.currentPage != fetchedModel.meta?.lastPage;
         });
       } else {
         debugPrint("❌ API Error: ${response.statusCode}");
+        setState(() => isLoading = false);
       }
     } catch (e) {
-      debugPrint("🚨 getFilesApi Exception: $e");
+      debugPrint("🚨 fetchProjects Exception: $e");
+      setState(() => isLoading = false);
     }
   }
+
+
+
 
   Future<void> toggledApi(token,property_id) async {
     try {
@@ -262,353 +272,301 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
           iconTheme: const IconThemeData(color: Colors.red),
           elevation: 1,
         ),
-        body: SingleChildScrollView(
-        child: Column(
-        children: <Widget>[
-          /*Row(
-            children: [
-              Container(
-                alignment: Alignment.topCenter,
-                margin: const EdgeInsets.only(top: 50,left:15),
-                height: 30,
-                width: 30,
-                padding: const EdgeInsets.only(top: 2),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadiusDirectional.circular(15.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.5,
-                        0.5,
-                      ),
-                      blurRadius: 1.0,
-                      spreadRadius: 0.5,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
-                ),
-
-                child: GestureDetector(
-                  onTap: (){
-                    Navigator.of(context).pop();
-                  },
-                  child:  Icon(Icons.arrow_back,color: Colors.red,
-                )
-
-                ),
-              ),
-              //logo2
-              Container(
-                alignment: Alignment.topCenter,
-                margin: const EdgeInsets.only(top: 52,left: 80),
-                height: 30,
-                width: 125,
-                decoration: BoxDecoration(
-
-                ),
-                child: Text("New Projects",style: TextStyle(
-                    color: Colors.black,letterSpacing: 0.5,fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                ),textAlign: TextAlign.center,),
-              ),
-            ],
-          ),*/
-          Container(
-            margin: const EdgeInsets.only(top: 15,left: 15,right: 15),
-            padding: const EdgeInsets.only(top: 5,left: 5,right: 10),
-            height: 50,
-            width: double.infinity,
-            //color: Colors.grey,
-            child: Text("Find off-plan development and everything you need to "
-                "know to invest in UAE's real estate market",style: TextStyle(letterSpacing: 0.5,),),
-          ),
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 20,left: 20,right: 15),
-                child: Container(
-                  width: screenSize.width*0.9,
-                  height: 50,
-                 // color: Colors.grey,
-                  padding: const EdgeInsets.only(top: 5),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(10.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.5,
-                          0.5,
-                        ),
-                        blurRadius: 1.0,
-                        spreadRadius: 0.5,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ],),
-                  // Use a Material design search bar
-                  child: TextField(
-                    textAlign: TextAlign.left,
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Search new projects by location ',
-                      hintStyle: TextStyle(color: Colors.grey,fontSize: 15,
-                          letterSpacing: 0.5),
-                      // Add a search icon or button to the search bar
-                      prefixIcon: IconButton(
-                        alignment: Alignment.topLeft,
-                        icon: Icon(Icons.location_on,color: Colors.red,),
-                        onPressed: () {
-                          // Perform the search here
-                        },
-                      ),
-                    ),
+        body:
+    //SingleChildScrollView(
+          //  child:
+        Column(
+                children: <Widget>[
+                  Container(
+                    margin: const EdgeInsets.only(top: 15,left: 15,right: 15),
+                    padding: const EdgeInsets.only(top: 5,left: 5,right: 10),
+                    height: 50,
+                    width: double.infinity,
+                    //color: Colors.grey,
+                    child: Text("Find off-plan development and everything you need to "
+                        "know to invest in UAE's real estate market",style: TextStyle(letterSpacing: 0.5,),),
                   ),
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Padding(padding: const EdgeInsets.only(top: 20,left: 20,right: 0),
-               child: Text("Latest Projects in Dubai",textAlign: TextAlign.left,
-               style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15),),
-                       ),
-              Text("")
-            ],
-          ),
-          Container(
-            margin: const EdgeInsets.only(top: 15,left: 20,right: 15),
-            padding: const EdgeInsets.only(top: 5,left: 5,right: 10),
-            height: 50,
-            width: double.infinity,
-            //color: Colors.grey,
-            child: Text("Find off-plan development and everything you need to "
-                "know to invest in UAE's real estate market",style: TextStyle(letterSpacing: 0.5,),),
-          ),
-          projectModel == null
-              ? Center(child: const ShimmerCard())
-              : ListView.builder(
-            padding: EdgeInsets.zero,
-            scrollDirection: Axis.vertical,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: projectModel?.data?.length ?? 0,
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              final item = projectModel!.data![index];
-              bool isFavorited = favoriteProperties.contains(item.id);
-
-              return GestureDetector(
-                onTap: () {
-                  String id = item.id.toString();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Property_Detail(data: id),
-                    ),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  child: Card(
-                    color: Colors.white,
-                    shadowColor: Colors.white,
-                    elevation: 10,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Stack(
-                              children: [
-                                AspectRatio(
-                                  aspectRatio: 1.4,
-                                  child: PageView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: item.media?.length ?? 0,
-                                    itemBuilder: (context, imgIndex) {
-                                      return CachedNetworkImage(
-                                        imageUrl: item.media![imgIndex].originalUrl.toString(),
-                                        fit: BoxFit.cover,
-                                      );
-                                    },
-                                  ),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20,left: 20,right: 15),
+                        child: Container(
+                          width: screenSize.width*0.9,
+                          height: 50,
+                          // color: Colors.grey,
+                          padding: const EdgeInsets.only(top: 5),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadiusDirectional.circular(10.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: const Offset(
+                                  0.5,
+                                  0.5,
                                 ),
-                                Positioned(
-                                  top: 10,
-                                  right: 10,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey.withOpacity(0.5),
-                                          blurRadius: 4,
-                                          offset: Offset(2, 2),
+                                blurRadius: 1.0,
+                                spreadRadius: 0.5,
+                              ), //BoxShadow
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: const Offset(0.0, 0.0),
+                                blurRadius: 0.0,
+                                spreadRadius: 0.0,
+                              ), //BoxShadow
+                            ],),
+                          // Use a Material design search bar
+                          child: TextField(
+                            textAlign: TextAlign.left,
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: 'Search new projects by location ',
+                              hintStyle: TextStyle(color: Colors.grey,fontSize: 15,
+                                  letterSpacing: 0.5),
+                              // Add a search icon or button to the search bar
+                              prefixIcon: IconButton(
+                                alignment: Alignment.topLeft,
+                                icon: Icon(Icons.location_on,color: Colors.red,),
+                                onPressed: () {
+                                  // Perform the search here
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Padding(padding: const EdgeInsets.only(top: 20,left: 20,right: 0),
+                        child: Text("Latest Projects in Dubai",textAlign: TextAlign.left,
+                          style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15),),
+                      ),
+                      Text("")
+                    ],
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(top: 15,left: 20,right: 15),
+                    padding: const EdgeInsets.only(top: 5,left: 5,right: 10),
+                    height: 50,
+                    width: double.infinity,
+                    //color: Colors.grey,
+                    child: Text("Find off-plan development and everything you need to "
+                        "know to invest in UAE's real estate market",style: TextStyle(letterSpacing: 0.5,),),
+                  ),
+                  projectModel.isEmpty
+                      ? Center(child: ShimmerCard())
+                      : Expanded(
+                        child: ListView.builder(
+                                            itemCount: projectModel.length,
+                                            itemBuilder: (context, index) {
+                        final item = projectModel[index];
+                        bool isFavorited = favoriteProperties.contains(item.id);
+
+                        return GestureDetector(
+                          onTap: () {
+                            String id = item.id.toString();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Property_Detail(data: id),
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            child: Card(
+                              color: Colors.white,
+                              shadowColor: Colors.white,
+                              elevation: 10,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Stack(
+                                        children: [
+                                          AspectRatio(
+                                            aspectRatio: 1.4,
+                                            child: PageView.builder(
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount: item.media?.length ?? 0,
+                                              itemBuilder: (context, imgIndex) {
+                                                return CachedNetworkImage(
+                                                  imageUrl: item.media![imgIndex].originalUrl.toString(),
+                                                  fit: BoxFit.cover,
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          Positioned(
+                                            top: 10,
+                                            right: 10,
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                shape: BoxShape.circle,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey.withOpacity(0.5),
+                                                    blurRadius: 4,
+                                                    offset: Offset(2, 2),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: IconButton(
+                                                icon: Icon(
+                                                  isFavorited ? Icons.favorite : Icons.favorite_border,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    property_id = item.id;
+                                                    if (token == '') {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(builder: (context) => Login()),
+                                                      );
+                                                    } else {
+                                                      toggleFavorite(property_id!);
+                                                      toggledApi(token, property_id);
+                                                    }
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      item.title.toString(),
+                                      style: TextStyle(fontSize: 16, height: 1.4),overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                    SizedBox(height: 5),
+                                    Text(
+                                      '${item.price} AED',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 22,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                    SizedBox(height: 5),
+                                    Row(
+                                      children: [
+                                        Image.asset("assets/images/map.png", height: 14),
+                                        SizedBox(width: 5),
+                                        Expanded(
+                                          child: Text(
+                                            item.location.toString(),
+                                            style: TextStyle(fontSize: 13),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
                                         ),
                                       ],
                                     ),
-                                    child: IconButton(
-                                      icon: Icon(
-                                        isFavorited ? Icons.favorite : Icons.favorite_border,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          property_id = item.id;
-                                          if (token == '') {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(builder: (context) => Login()),
-                                            );
-                                          } else {
-                                            toggleFavorite(property_id!);
-                                            toggledApi(token, property_id);
-                                          }
-                                        });
-                                      },
+                                    SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Image.asset("assets/images/bed.png", height: 13),
+                                        SizedBox(width: 5),
+                                        Text(item.bedrooms.toString()),
+                                        SizedBox(width: 10),
+                                        Image.asset("assets/images/bath.png", height: 13),
+                                        SizedBox(width: 5),
+                                        Text(item.bathrooms.toString()),
+                                        SizedBox(width: 10),
+                                        Image.asset("assets/images/messure.png", height: 13),
+                                        SizedBox(width: 5),
+                                        Text(item.squareFeet.toString()),
+                                      ],
                                     ),
-                                  ),
+                                    SizedBox(height: 15),
+                                    Row(
+                                      children: [
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: ElevatedButton.icon(
+                                            onPressed: () async {
+                                              String phone = 'tel:${item.phoneNumber}';
+                                              try {
+                                                final bool launched = await launchUrlString(
+                                                  phone,
+                                                  mode: LaunchMode.externalApplication,
+                                                );
+                                                if (!launched) print("❌ Could not launch dialer");
+                                              } catch (e) {
+                                                print("❌ Exception: $e");
+                                              }
+                                            },
+                                            icon: const Icon(Icons.call, color: Colors.red),
+                                            label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.grey[100],
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                              elevation: 2,
+                                              padding: const EdgeInsets.symmetric(vertical: 10),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: ElevatedButton.icon(
+                                            onPressed: () async {
+                                              final phone = item.whatsapp;
+                                              final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+                                              if (await canLaunchUrl(url)) {
+                                                try {
+                                                  final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                  if (!launched) print("❌ Could not launch WhatsApp");
+                                                } catch (e) {
+                                                  print("❌ Exception: $e");
+                                                }
+                                              } else {
+                                                print("❌ WhatsApp not available");
+                                              }
+                                            },
+                                            icon: Image.asset("assets/images/whats.png", height: 20),
+                                            label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.grey[100],
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                              elevation: 2,
+                                              padding: const EdgeInsets.symmetric(vertical: 10),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
-                          SizedBox(height: 10),
-                          Text(
-                            item.title.toString(),
-                            style: TextStyle(fontSize: 16, height: 1.4),overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            '${item.price} AED',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22,
-                              height: 1.4,
-                            ),
-                          ),
-                          SizedBox(height: 5),
-                          Row(
-                            children: [
-                              Image.asset("assets/images/map.png", height: 14),
-                              SizedBox(width: 5),
-                              Expanded(
-                                child: Text(
-                                  item.location.toString(),
-                                  style: TextStyle(fontSize: 13),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Image.asset("assets/images/bed.png", height: 13),
-                              SizedBox(width: 5),
-                              Text(item.bedrooms.toString()),
-                              SizedBox(width: 10),
-                              Image.asset("assets/images/bath.png", height: 13),
-                              SizedBox(width: 5),
-                              Text(item.bathrooms.toString()),
-                              SizedBox(width: 10),
-                              Image.asset("assets/images/messure.png", height: 13),
-                              SizedBox(width: 5),
-                              Text(item.squareFeet.toString()),
-                            ],
-                          ),
-                          SizedBox(height: 15),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: () async {
-                                    String phone = 'tel:${item.phoneNumber}';
-                                    try {
-                                      final bool launched = await launchUrlString(
-                                        phone,
-                                        mode: LaunchMode.externalApplication,
-                                      );
-                                      if (!launched) print("❌ Could not launch dialer");
-                                    } catch (e) {
-                                      print("❌ Exception: $e");
-                                    }
-                                  },
-                                  icon: const Icon(Icons.call, color: Colors.red),
-                                  label: const Text("Call", style: TextStyle(color: Colors.black)),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.grey[100],
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                    elevation: 2,
-                                    padding: const EdgeInsets.symmetric(vertical: 10),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: () async {
-                                    final phone = item.whatsapp;
-                                    final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-                                    if (await canLaunchUrl(url)) {
-                                      try {
-                                        final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
-                                        if (!launched) print("❌ Could not launch WhatsApp");
-                                      } catch (e) {
-                                        print("❌ Exception: $e");
-                                      }
-                                    } else {
-                                      print("❌ WhatsApp not available");
-                                    }
-                                  },
-                                  icon: Image.asset("assets/images/whats.png", height: 20),
-                                  label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.grey[100],
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                    elevation: 2,
-                                    padding: const EdgeInsets.symmetric(vertical: 10),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                        );
+                                            },
+                                          ),
                       ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-          ]
-    )
-    )
+                ]
+            )
+        //)
     );
   }
 
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 40,
+      height: 50,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -623,7 +581,10 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
               onTap: ()async{
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               },
-              child: Image.asset("assets/images/home.png",height: 22,)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: Image.asset("assets/images/home.png",height: 25,),
+              )),
           Container(
               margin: const EdgeInsets.only(left: 40),
               height: 35,

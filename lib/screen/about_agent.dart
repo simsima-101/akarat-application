@@ -50,14 +50,28 @@ class _AboutAgentState extends State<AboutAgent> {
     });
   }
 
+  int currentPage = 1;
+  bool isLoading = false;
+  bool hasMore = true;
+  final ScrollController _scrollController = ScrollController();
   Timer? _debounce;
   @override
   void initState() {
-    fetchProducts(widget.data);
-    getFilesApi(widget.data);
-    readData();
+    super.initState();
+    fetchProducts(widget.data);        // Initial data fetch
+    getFilesApi(widget.data, loadMore: false);  // Load first page of agent properties
+    readData();                        // Other setups
     _loadFavorites();
     _searchController.addListener(_onSearchChanged);
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent &&
+          hasMore &&
+          !isLoading) {
+        getFilesApi(widget.data, loadMore: true); // Load next page
+      }
+    });
   }
 
 
@@ -186,54 +200,75 @@ class _AboutAgentState extends State<AboutAgent> {
   }
 
 
-  Future<void> getFilesApi(String user) async {
+  Future<void> getFilesApi(String user, {bool loadMore = false}) async {
+    if (isLoading) return;
+
+    isLoading = true;
+
     final prefs = await SharedPreferences.getInstance();
     final cacheKey = 'agent_properties_$user';
     final cacheTimeKey = 'agent_properties_time_$user';
     final now = DateTime.now().millisecondsSinceEpoch;
     final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    // Check if cache is valid (6 hours)
-    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+    final uri = Uri.parse("https://akarat.com/api/agent/properties/$user?page=$currentPage");
+
+    // Use cache if not loading more and cache is valid
+    if (!loadMore && now - lastFetched < Duration(hours: 6).inMilliseconds) {
       final cachedData = prefs.getString(cacheKey);
       if (cachedData != null) {
         final jsonData = jsonDecode(cachedData);
-        final cachedModel = AgentProperties.fromJson(jsonData);
+        final model = AgentProperties.fromJson(jsonData); // already only `data` saved
         setState(() {
-          agentProperties = cachedModel;
+          agentProperties = model;
+          currentPage = model.meta?.currentPage ?? 1;
+          hasMore = (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
         });
         debugPrint("📦 Loaded agent properties from cache");
+        isLoading = false;
         return;
       }
     }
 
-    // Otherwise, fetch from API
     try {
-      final response = await http.get(
-        Uri.parse("https://akarat.com/api/agent/properties/$user"),
-      );
+      final response = await http.get(uri);
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final feature = AgentProperties.fromJson(data);
+        final jsonData = jsonDecode(response.body);
+        final model = AgentProperties.fromJson(jsonData['data']);
 
-        await prefs.setString(cacheKey, jsonEncode(data));
-        await prefs.setInt(cacheTimeKey, now);
+        setState(() {
+          if (loadMore) {
+            final oldData = agentProperties?.data ?? [];
+            final newData = model.data ?? [];
+            agentProperties = AgentProperties(
+              data: [...oldData, ...newData],
+              links: model.links,
+              meta: model.meta,
+            );
+          } else {
+            agentProperties = model;
+          }
 
-        if (mounted) {
-          setState(() {
-            agentProperties = feature;
-          });
+          currentPage = model.meta?.currentPage ?? 1;
+          hasMore = (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
+        });
+
+        if (!loadMore) {
+          await prefs.setString(cacheKey, jsonEncode(jsonData['data']));
+          await prefs.setInt(cacheTimeKey, now);
+          debugPrint("✅ Cached agent properties");
         }
-
-        debugPrint("✅ Fetched and cached agent properties from API");
       } else {
         debugPrint("❌ API Error: ${response.statusCode}");
       }
     } catch (e) {
       debugPrint("❌ Exception in getFilesApi: $e");
     }
+
+    isLoading = false;
   }
+
 
 
   ToggleModel? toggleModel;
@@ -751,8 +786,9 @@ class _AboutAgentState extends State<AboutAgent> {
                         ),
 
                       ),),
-                  SingleChildScrollView(
-                      child: Padding(
+                  /*SingleChildScrollView(
+                      child: */
+                      Padding(
                         padding: const EdgeInsets.all(10),
                         child: Column(
                           children: [
@@ -923,223 +959,231 @@ class _AboutAgentState extends State<AboutAgent> {
                                   ]
                               ),
                             ),
-                            ListView.builder(
-                              scrollDirection: Axis.vertical,
-                              physics: const ScrollPhysics(),
-                              itemCount: agentProperties?.data?.length ?? 0,
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                if(agentProperties== null){
-                                  return Scaffold(
-                                    body: Center(child: CircularProgressIndicator()), // Show loading state
-                                  );
-                                }
-                                final property = agentProperties!.data![index];
-                                bool isFavorited = favoriteProperties.contains(property.id);
-                                return SingleChildScrollView(
-                                    child: GestureDetector(
-                                      onTap: (){
-                                        String id = property.id.toString();
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                                            Agent_Detail(data: id)));
-                                      },
-                                      child : Padding(
-                                        padding: const EdgeInsets.only(top: 5.0,left: 2,right: 2,bottom: 5),
-                                        child: Card(
-                                          color: Colors.white,
-                                          borderOnForeground: true,
-                                          shadowColor: Colors.white,
-                                          elevation: 10,
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(left: 5.0,top: 0,right: 5),
-                                            child: Column(
-                                              // spacing: 5,// this is the coloumn
-                                              children: [
-                                                Padding(
-                                                    padding: const EdgeInsets.only(top: 0.0),
-                                                    child:ClipRRect(
-                                                        borderRadius: BorderRadius.circular(12),
-                                                        child: Stack(
-                                                            children: [
-                                                              AspectRatio(
-                                                                aspectRatio: 1.5,
-                                                                // this is the ratio
-                                                                child: ListView.builder(
-                                                                  scrollDirection: Axis.horizontal,
-                                                                  physics: const ScrollPhysics(),
-                                                                  itemCount: property.media?.length ?? 0,
-                                                                  shrinkWrap: true,
-                                                                  itemBuilder: (BuildContext context, int index) {
-                                                                    return CachedNetworkImage( // this is to fetch the image
-                                                                      imageUrl: (property.media![index].originalUrl.toString()),
-                                                                      fit: BoxFit.fill,
-                                                                    );
-                                                                  },
-                                                                ),
-                                                              ),
-                                                              Positioned(
-                                                                top: 5,
-                                                                right: 10,
-                                                                child: Container(
-                                                                  margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
-                                                                  height: 35,
-                                                                  width: 35,
-                                                                  padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
-                                                                  decoration: BoxDecoration(
-                                                                    borderRadius: BorderRadiusDirectional.circular(20.0),
-                                                                    boxShadow: [
-                                                                      BoxShadow(
-                                                                        color: Colors.grey,
-                                                                        offset: const Offset(
-                                                                          0.3,
-                                                                          0.3,
-                                                                        ),
-                                                                        blurRadius: 0.3,
-                                                                        spreadRadius: 0.3,
-                                                                      ), //BoxShadow
-                                                                      BoxShadow(
-                                                                        color: Colors.white,
-                                                                        offset: const Offset(0.0, 0.0),
-                                                                        blurRadius: 0.0,
-                                                                        spreadRadius: 0.0,
-                                                                      ), //BoxShadow
-                                                                    ],
-                                                                  ),
-                                                                  // child: Positioned(
-                                                                  // child: Icon(Icons.favorite_border,color: Colors.red,),)
-                                                                  child: IconButton(
-                                                                    padding: EdgeInsets.only(left: 5,top: 7),
-                                                                    alignment: Alignment.center,
-                                                                    icon: Icon(
-                                                                      isFavorited ? Icons.favorite : Icons.favorite_border,
-                                                                      color: isFavorited ? Colors.red : Colors.red,
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.all(0),
+                                  controller: _scrollController,
+                                  scrollDirection: Axis.vertical,
+                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  itemCount: agentProperties?.data?.length ?? 0,
+                                  shrinkWrap: true,
+                                  itemBuilder: (context, index) {
+                                    if(agentProperties== null){
+                                      return Scaffold(
+                                        body: Center(child: CircularProgressIndicator()), // Show loading state
+                                      );
+                                    }
+                                    final property = agentProperties!.data![index];
+                                    bool isFavorited = favoriteProperties.contains(property.id);
+                                    return SingleChildScrollView(
+                                        child: GestureDetector(
+                                          onTap: (){
+                                            String id = property.id.toString();
+                                            Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                                                Agent_Detail(data: id)));
+                                          },
+                                          child : Padding(
+                                            padding: const EdgeInsets.only(top: 5.0,left: 2,right: 2,bottom: 5),
+                                            child: Card(
+                                              color: Colors.white,
+                                              borderOnForeground: true,
+                                              shadowColor: Colors.white,
+                                              elevation: 10,
+                                              child: Padding(
+                                                padding: const EdgeInsets.only(left: 5.0,top: 0,right: 5),
+                                                child: Column(
+                                                  // spacing: 5,// this is the coloumn
+                                                  children: [
+                                                    Padding(
+                                                        padding: const EdgeInsets.only(top: 0.0),
+                                                        child:ClipRRect(
+                                                            borderRadius: BorderRadius.circular(12),
+                                                            child: Stack(
+                                                                children: [
+                                                                  AspectRatio(
+                                                                    aspectRatio: 1.5,
+                                                                    // this is the ratio
+                                                                    child: ListView.builder(
+                                                                      scrollDirection: Axis.horizontal,
+                                                                      physics: const ScrollPhysics(),
+                                                                      itemCount: property.media?.length ?? 0,
+                                                                      shrinkWrap: true,
+                                                                      itemBuilder: (BuildContext context, int index) {
+                                                                        return CachedNetworkImage( // this is to fetch the image
+                                                                          imageUrl: (property.media![index].originalUrl.toString()),
+                                                                          fit: BoxFit.fill,
+                                                                        );
+                                                                      },
                                                                     ),
-                                                                    onPressed: () {
-                                                                      setState(() {
-                                                                        property_id=property.id;
-                                                                        if(token == ''){
-                                                                          Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                                                                        }
-                                                                        else{
-                                                                          toggleFavorite(property_id!);
-                                                                          toggledApi(token,property_id);
-                                                                        }
-                                                                        isFavorited = !isFavorited;
-                                                                      });
-                                                                    },
                                                                   ),
-                                                                  //)
-                                                                ),
-                                                              ),
-                                                            ]
+                                                                  Positioned(
+                                                                    top: 5,
+                                                                    right: 10,
+                                                                    child: Container(
+                                                                      margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
+                                                                      height: 35,
+                                                                      width: 35,
+                                                                      padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
+                                                                      decoration: BoxDecoration(
+                                                                        borderRadius: BorderRadiusDirectional.circular(20.0),
+                                                                        boxShadow: [
+                                                                          BoxShadow(
+                                                                            color: Colors.grey,
+                                                                            offset: const Offset(
+                                                                              0.3,
+                                                                              0.3,
+                                                                            ),
+                                                                            blurRadius: 0.3,
+                                                                            spreadRadius: 0.3,
+                                                                          ), //BoxShadow
+                                                                          BoxShadow(
+                                                                            color: Colors.white,
+                                                                            offset: const Offset(0.0, 0.0),
+                                                                            blurRadius: 0.0,
+                                                                            spreadRadius: 0.0,
+                                                                          ), //BoxShadow
+                                                                        ],
+                                                                      ),
+                                                                      // child: Positioned(
+                                                                      // child: Icon(Icons.favorite_border,color: Colors.red,),)
+                                                                      child: IconButton(
+                                                                        padding: EdgeInsets.only(left: 5,top: 7),
+                                                                        alignment: Alignment.center,
+                                                                        icon: Icon(
+                                                                          isFavorited ? Icons.favorite : Icons.favorite_border,
+                                                                          color: isFavorited ? Colors.red : Colors.red,
+                                                                        ),
+                                                                        onPressed: () {
+                                                                          setState(() {
+                                                                            property_id=property.id;
+                                                                            if(token == ''){
+                                                                              Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
+                                                                            }
+                                                                            else{
+                                                                              toggleFavorite(property_id!);
+                                                                              toggledApi(token,property_id);
+                                                                            }
+                                                                            isFavorited = !isFavorited;
+                                                                          });
+                                                                        },
+                                                                      ),
+                                                                      //)
+                                                                    ),
+                                                                  ),
+                                                                ]
+                                                            )
                                                         )
-                                                    )
-                                                ),
+                                                    ),
 
-                                                Padding(padding: const EdgeInsets.only(top: 5),
-                                                  child: ListTile(
-                                                    title: Padding(
-                                                      padding: const EdgeInsets.only(top: 5.0,bottom: 5),
-                                                      child: Text(property.title.toString(),
-                                                        style: TextStyle(
-                                                            fontSize: 16,height: 1.4
-                                                        ),),
-                                                    ),
-                                                    subtitle: Text('${property.price} AED',
-                                                      style: TextStyle(
-                                                          fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
-                                                      ),),
-                                                  ),
-                                                ),
-                                                Row(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisAlignment: MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 0,bottom: 10),
-                                                      child:  Image.asset("assets/images/map.png",height: 14,),
-                                                    ),
-                                                    Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                                      child: Text(property.location.toString(),style: TextStyle(
-                                                          fontSize: 13,height: 1.4,
-                                                          overflow: TextOverflow.visible
-                                                      ),),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    const SizedBox(width: 10),
-                                                    Expanded(
-                                                      child: ElevatedButton.icon(
-                                                        onPressed: () async {
-                                                          String phone = 'tel:${property.phoneNumber}';
-                                                          try {
-                                                            final bool launched = await launchUrlString(
-                                                              phone,
-                                                              mode: LaunchMode.externalApplication,
-                                                            );
-                                                            if (!launched) print("❌ Could not launch dialer");
-                                                          } catch (e) {
-                                                            print("❌ Exception: $e");
-                                                          }
-                                                        },
-                                                        icon: const Icon(Icons.call, color: Colors.red),
-                                                        label: const Text("Call", style: TextStyle(color: Colors.black)),
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor: Colors.grey[100],
-                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                          elevation: 3,
-                                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                                    Padding(padding: const EdgeInsets.only(top: 5),
+                                                      child: ListTile(
+                                                        title: Padding(
+                                                          padding: const EdgeInsets.only(top: 5.0,bottom: 5),
+                                                          child: Text(property.title.toString(),
+                                                            style: TextStyle(
+                                                                fontSize: 16,height: 1.4
+                                                            ),),
                                                         ),
+                                                        subtitle: Text('${property.price} AED',
+                                                          style: TextStyle(
+                                                              fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
+                                                          ),),
                                                       ),
                                                     ),
-                                                    const SizedBox(width: 10),
-                                                    Expanded(
-                                                      child: ElevatedButton.icon(
-                                                        onPressed: () async {
-                                                          final phone = property.whatsapp;
-                                                          final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-                                                          if (await canLaunchUrl(url)) {
-                                                            try {
-                                                              final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
-                                                              if (!launched) print("❌ Could not launch WhatsApp");
-                                                            } catch (e) {
-                                                              print("❌ Exception: $e");
-                                                            }
-                                                          } else {
-                                                            print("❌ WhatsApp not available");
-                                                          }
-                                                        },
-                                                        icon: Image.asset("assets/images/whats.png", height: 20),
-                                                        label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor: Colors.grey[100],
-                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                          elevation: 1,
-                                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                                    Row(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      mainAxisAlignment: MainAxisAlignment.start,
+                                                      children: [
+                                                        Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 0,bottom: 10),
+                                                          child:  Image.asset("assets/images/map.png",height: 14,),
                                                         ),
-                                                      ),
+                                                        Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
+                                                          child: Text(property.location.toString(),style: TextStyle(
+                                                              fontSize: 13,height: 1.4,
+                                                              overflow: TextOverflow.visible
+                                                          ),),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    const SizedBox(width: 10),
+                                                    Row(
+                                                      children: [
+                                                        const SizedBox(width: 10),
+                                                        Expanded(
+                                                          child: ElevatedButton.icon(
+                                                            onPressed: () async {
+                                                              String phone = 'tel:${property.phoneNumber}';
+                                                              try {
+                                                                final bool launched = await launchUrlString(
+                                                                  phone,
+                                                                  mode: LaunchMode.externalApplication,
+                                                                );
+                                                                if (!launched) print("❌ Could not launch dialer");
+                                                              } catch (e) {
+                                                                print("❌ Exception: $e");
+                                                              }
+                                                            },
+                                                            icon: const Icon(Icons.call, color: Colors.red),
+                                                            label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                                            style: ElevatedButton.styleFrom(
+                                                              backgroundColor: Colors.grey[100],
+                                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                              elevation: 3,
+                                                              padding: const EdgeInsets.symmetric(vertical: 10),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 10),
+                                                        Expanded(
+                                                          child: ElevatedButton.icon(
+                                                            onPressed: () async {
+                                                              final phone = property.whatsapp;
+                                                              final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+                                                              if (await canLaunchUrl(url)) {
+                                                                try {
+                                                                  final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                                  if (!launched) print("❌ Could not launch WhatsApp");
+                                                                } catch (e) {
+                                                                  print("❌ Exception: $e");
+                                                                }
+                                                              } else {
+                                                                print("❌ WhatsApp not available");
+                                                              }
+                                                            },
+                                                            icon: Image.asset("assets/images/whats.png", height: 20),
+                                                            label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                                            style: ElevatedButton.styleFrom(
+                                                              backgroundColor: Colors.grey[100],
+                                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                              elevation: 1,
+                                                              padding: const EdgeInsets.symmetric(vertical: 10),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 10),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 10),
+
                                                   ],
                                                 ),
-                                                const SizedBox(height: 10),
+                                              ),
 
-                                              ],
                                             ),
                                           ),
 
-                                        ),
-                                      ),
+                                        )
 
-                                    )
-
-                                );
-                              },
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                      )),
+                      ),
+                  //),
                   SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.all(15.0),

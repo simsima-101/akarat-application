@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:Akarat/model/propertytypemodel.dart';
 import 'package:Akarat/screen/settingstile.dart';
 import 'package:Akarat/screen/search.dart';
@@ -57,6 +59,10 @@ class _FilterDemoState extends State<FilterDemo> {
   late RangeController _rangeControllerarea;
   final agenciesController = TextEditingController();
 
+  ScrollController _scrollController = ScrollController();
+  int currentPage = 1;
+  bool isLoading = false;
+  bool hasMore = true;
   late FilterModel filterModel;
 
 
@@ -91,6 +97,7 @@ class _FilterDemoState extends State<FilterDemo> {
       96,
           (index) => Data(500 + index * 100.0, yValues[index % yValues.length].toDouble()),
     );
+
   }
 
   Future<void> loadInitialData() async {
@@ -317,6 +324,10 @@ String max_sqrfeet = ' ';
 
 
   Future<void> showResult() async {
+    setState(() {
+      isLoading = true;
+    });
+
     try {
       final amenitiesList = selectedIndexes.toList();
 
@@ -335,63 +346,82 @@ String max_sqrfeet = ' ';
           '&purpose=$purpose';
 
       final uri = Uri.parse(uriString);
-
-      // Generate a unique cache key using md5 hash of the query
-      final cacheKey = 'filter_cache_${md5.convert(utf8.encode(uriString)).toString()}';
+      final cacheKey = 'filter_cache_${md5.convert(utf8.encode(uriString))}';
       final cacheTimeKey = '${cacheKey}_time';
 
       final prefs = await SharedPreferences.getInstance();
       final now = DateTime.now().millisecondsSinceEpoch;
       final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-      // ✅ Use cache if within 6 hours
+      // ✅ Use cached data if valid
       if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
         final cachedData = prefs.getString(cacheKey);
         if (cachedData != null) {
           final data = jsonDecode(cachedData);
-          final feature = FilterModel.fromJson(data);
+          final feature = FilterResponseModel.fromJson(data);
           if (mounted) {
             setState(() {
-              filterModel = feature;
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => FliterList(filterModel: filterModel),
-                ),
-              );
+              filterModel = feature.data!;
             });
-          }
-          return;
-        }
-      }
-
-      // ⬇️ Fetch fresh data from API
-      final response = await http.get(uri).timeout(const Duration(seconds: 7));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final feature = FilterModel.fromJson(data);
-
-        // ✅ Save to cache
-        prefs.setString(cacheKey, response.body);
-        prefs.setInt(cacheTimeKey, now);
-
-        if (mounted) {
-          setState(() {
-            filterModel = feature;
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => FliterList(filterModel: filterModel),
               ),
             );
+          }
+          return;
+        }
+      }
+
+      // 🔄 Fetch fresh data
+      final response = await http.get(uri).timeout(const Duration(seconds: 7));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final feature = FilterResponseModel.fromJson(data);
+
+        prefs.setString(cacheKey, response.body);
+        prefs.setInt(cacheTimeKey, now);
+
+        if (mounted) {
+          setState(() {
+            filterModel = feature.data!;
           });
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FliterList(filterModel: filterModel),
+            ),
+          );
         }
       } else {
-        debugPrint("API Error: ${response.statusCode}");
+        debugPrint("❌ API Error: ${response.statusCode}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Something went wrong. Please try again.")),
+        );
       }
+    } on SocketException {
+      debugPrint("❌ No internet connection.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("No internet connection.")),
+      );
+    } on TimeoutException {
+      debugPrint("❌ Request timed out.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Request timed out. Please try again.")),
+      );
     } catch (e) {
-      debugPrint("Error fetching results: $e");
+      debugPrint("❌ Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Unexpected error occurred.")),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 

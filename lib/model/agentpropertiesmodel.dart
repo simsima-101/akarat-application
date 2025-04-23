@@ -1,19 +1,14 @@
-class AgentProperties {
+class AgencyPropertiesResponseModel {
   bool? success;
   String? message;
-  List<Data>? data;
+  AgentProperties? data;
 
-  AgentProperties({this.success, this.message, this.data});
+  AgencyPropertiesResponseModel({this.success, this.message, this.data});
 
-  AgentProperties.fromJson(Map<String, dynamic> json) {
+  AgencyPropertiesResponseModel.fromJson(Map<String, dynamic> json) {
     success = json['success'];
     message = json['message'];
-    if (json['data'] != null) {
-      data = <Data>[];
-      json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
-      });
-    }
+    data = json['data'] != null ? new AgentProperties.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -21,7 +16,40 @@ class AgentProperties {
     data['success'] = this.success;
     data['message'] = this.message;
     if (this.data != null) {
+      data['data'] = this.data!.toJson();
+    }
+    return data;
+  }
+}
+
+class AgentProperties {
+  List<Data>? data;
+  Links? links;
+  Meta? meta;
+
+  AgentProperties({this.data, this.links, this.meta});
+
+  AgentProperties.fromJson(Map<String, dynamic> json) {
+    if (json['data'] != null) {
+      data = <Data>[];
+      json['data'].forEach((v) {
+        data!.add(new Data.fromJson(v));
+      });
+    }
+    links = json['links'] != null ? new Links.fromJson(json['links']) : null;
+    meta = json['meta'] != null ? new Meta.fromJson(json['meta']) : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
+    }
+    if (this.links != null) {
+      data['links'] = this.links!.toJson();
+    }
+    if (this.meta != null) {
+      data['meta'] = this.meta!.toJson();
     }
     return data;
   }
@@ -96,5 +124,99 @@ class Media {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['original_url'] = this.originalUrl;
     return data;
+  }
+}
+
+class Links {
+  String? first;
+  String? last;
+  String? prev;
+  String? next;
+
+  Links({this.first, this.last, this.prev, this.next});
+
+  Links.fromJson(Map<String, dynamic> json) {
+    first = json['first'];
+    last = json['last'];
+    prev = json['prev'];
+    next = json['next'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['first'] = this.first;
+    data['last'] = this.last;
+    data['prev'] = this.prev;
+    data['next'] = this.next;
+    return data;
+  }
+}
+
+class Meta {
+  int? currentPage;
+  int? from;
+  int? lastPage;
+  List<MetaPaginationLink>? links;
+  String? path;
+  int? perPage;
+  int? to;
+  int? total;
+
+  Meta(
+      {this.currentPage,
+        this.from,
+        this.lastPage,
+        this.links,
+        this.path,
+        this.perPage,
+        this.to,
+        this.total});
+
+  Meta.fromJson(Map<String, dynamic> json) {
+    currentPage = json['current_page'];
+    from = json['from'];
+    lastPage = json['last_page'];
+    links = (json['links'] as List?)
+        ?.map((e) => MetaPaginationLink.fromJson(e))
+        .toList();
+    path = json['path'];
+    perPage = json['per_page'];
+    to = json['to'];
+    total = json['total'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['current_page'] = this.currentPage;
+    data['from'] = this.from;
+    data['last_page'] = this.lastPage;
+    data['links'] = this.links!.map((v) => v.toJson()).toList();
+    data['path'] = this.path;
+    data['per_page'] = this.perPage;
+    data['to'] = this.to;
+    data['total'] = this.total;
+    return data;
+  }
+}
+
+class MetaPaginationLink {
+  String? url;
+  String? label;
+  bool? active;
+
+  MetaPaginationLink({this.url, this.label, this.active});
+
+  MetaPaginationLink.fromJson(Map<String, dynamic> json) {
+    url = json['url'];
+    label = json['label'];
+    active = json['active'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'url': url,
+      'label': label,
+      'active': active,
+    };
   }
 }

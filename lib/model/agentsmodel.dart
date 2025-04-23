@@ -1,54 +1,167 @@
+class PaginatedAgentsModel {
+  final bool? success;
+  final String? message;
+  final AgentPaginationData? data;
+
+  PaginatedAgentsModel({this.success, this.message, this.data});
+
+  factory PaginatedAgentsModel.fromJson(Map<String, dynamic> json) {
+    return PaginatedAgentsModel(
+      success: json['success'],
+      message: json['message'],
+      data: json['data'] != null ? AgentPaginationData.fromJson(json['data']) : null,
+    );
+  }
+}
+
+class AgentPaginationData {
+  final List<AgentsModel>? data;
+  final PaginationLinks? links;
+  final PaginationMeta? meta;
+
+  AgentPaginationData({this.data, this.links, this.meta});
+
+  factory AgentPaginationData.fromJson(Map<String, dynamic> json) {
+    final dataList = json['data'] is List
+        ? json['data'] as List<dynamic>
+        : json['data']?['data'] as List<dynamic>?;
+
+    return AgentPaginationData(
+      data: dataList?.map((e) => AgentsModel.fromJson(e)).toList(),
+      links: json['links'] != null
+          ? PaginationLinks.fromJson(json['links'])
+          : json['data']?['links'] != null
+          ? PaginationLinks.fromJson(json['data']['links'])
+          : null,
+      meta: json['meta'] != null
+          ? PaginationMeta.fromJson(json['meta'])
+          : json['data']?['meta'] != null
+          ? PaginationMeta.fromJson(json['data']['meta'])
+          : null,
+    );
+  }
+}
+
 class AgentsModel {
- final int id;
- final String name;
- final String email;
- final String languages;
- final String expertise;
- final String agency;
- final int sale;
- final int rent;
- final String image;
+  final int id;
+  final String name;
+  final String email;
+  final String languages;
+  final String expertise;
+  final String agency;
+  final int sale;
+  final int rent;
+  final String image;
 
-  AgentsModel(
-      {required this.id,
-        required this.name,
-        required this.email,
-        required this.languages,
-        required this.expertise,
-        required this.agency,
-        required this.sale,
-        required this.rent,
-        required  this.image});
+  AgentsModel({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.languages,
+    required this.expertise,
+    required this.agency,
+    required this.sale,
+    required this.rent,
+    required this.image,
+  });
 
-  /*AgentsModel.fromJson(Map<String, dynamic> json, this.id, this.userId, this.name, this.email, this.languages, this.expertise,
-      this.about, this.address, this.experience, this.image) */
+  factory AgentsModel.fromJson(Map<String, dynamic> json) {
+    return AgentsModel(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? 'N/A',
+      email: json['email'] ?? 'N/A',
+      languages: json['languages'] ?? 'N/A',
+      expertise: json['expertise'] ?? 'N/A',
+      agency: json['agency'] ?? 'N/A',
+      sale: json['sale'] ?? 0,
+      rent: json['rent'] ?? 0,
+      image: json['image'] ?? 'https://example.com/default-image.jpg',
+    );
+  }
 
- factory AgentsModel.fromJson(Map<String, dynamic> json) {
-   if (json == null || json.isEmpty) {
-     return AgentsModel(
-       id: 0,
-       name: 'na',
-       email: 'na',
-       languages: 'na',
-       expertise: 'na',
-       sale: 0,
-       rent: 0,
-       image: 'https://example.com/default_image.jpg',
-       agency: 'na',
-     );
-   }
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'languages': languages,
+      'expertise': expertise,
+      'agency': agency,
+      'sale': sale,
+      'rent': rent,
+      'image': image,
+    };
+  }
+}
 
-   return AgentsModel(
-     id: json['id'] ?? 0,
-     name: json['name'] ?? 'na',
-     image: json['image'] ?? 'https://example.com/default_image.jpg',
-     email: json['email'] ?? 'na',
-     languages: json['languages'] ?? 'na',
-     expertise: json['expertise'] ?? 'na',
-     agency: json['agency'] ?? 'na',
-     sale: json['sale'] ?? 0,
-     rent: json['rent'] ?? 0,
-   );
- }
 
+class PaginationLinks {
+  final String? first;
+  final String? last;
+  final String? prev;
+  final String? next;
+
+  PaginationLinks({this.first, this.last, this.prev, this.next});
+
+  factory PaginationLinks.fromJson(Map<String, dynamic> json) {
+    return PaginationLinks(
+      first: json['first'],
+      last: json['last'],
+      prev: json['prev'],
+      next: json['next'],
+    );
+  }
+}
+
+class PaginationMeta {
+  final int? currentPage;
+  final int? from;
+  final int? lastPage;
+  final List<MetaLink>? links;
+  final String? path;
+  final int? perPage;
+  final int? to;
+  final int? total;
+
+  PaginationMeta({
+    this.currentPage,
+    this.from,
+    this.lastPage,
+    this.links,
+    this.path,
+    this.perPage,
+    this.to,
+    this.total,
+  });
+
+  factory PaginationMeta.fromJson(Map<String, dynamic> json) {
+    return PaginationMeta(
+      currentPage: json['current_page'],
+      from: json['from'],
+      lastPage: json['last_page'],
+      links: (json['links'] as List<dynamic>?)
+          ?.map((e) => MetaLink.fromJson(e))
+          .toList(),
+      path: json['path'],
+      perPage: json['per_page'],
+      to: json['to'],
+      total: json['total'],
+    );
+  }
+}
+
+class MetaLink {
+  final String? url;
+  final String? label;
+  final bool? active;
+
+  MetaLink({this.url, this.label, this.active});
+
+  factory MetaLink.fromJson(Map<String, dynamic> json) {
+    return MetaLink(
+      url: json['url'],
+      label: json['label'],
+      active: json['active'],
+    );
+  }
 }

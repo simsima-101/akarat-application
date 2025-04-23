@@ -23,14 +23,6 @@ class Fav_Login extends StatefulWidget {
 }
 class _Fav_LoginState extends State<Fav_Login> {
   int pageIndex = 0;
-  final pages = [
-    const Page1(),
-    const Page2(),
-    const Page3(),
-    const Page4(),
-  ];
-
-
   String token = '';
   String email = '';
   String result = '';
@@ -50,7 +42,11 @@ class _Fav_LoginState extends State<Fav_Login> {
     });
   }
   bool isFavorited = false;
-  FavoriteModel? favoriteModel;
+  ScrollController _scrollController = ScrollController();
+  int currentPage = 1;
+  bool isLoading = false;
+  bool hasMore = true;
+  List<Data> favoriteModel = [];
 
    @override
    void initState() {
@@ -66,13 +62,13 @@ class _Fav_LoginState extends State<Fav_Login> {
     final now = DateTime.now().millisecondsSinceEpoch;
     final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    // Use cached data if it's less than 3 hours old
+    // Use cached data if less than 3 hours old
     if (now - lastFetched < Duration(hours: 3).inMilliseconds) {
       final cachedData = prefs.getString(cacheKey);
       if (cachedData != null) {
-        final cachedModel = FavoriteModel.fromJson(json.decode(cachedData));
+        final cachedModel = FavoriteResponseModel.fromJson(json.decode(cachedData));
         setState(() {
-          favoriteModel = cachedModel;
+          favoriteModel = cachedModel.data?.data ?? [];
         });
         debugPrint("✅ Loaded saved properties from cache");
         return;
@@ -90,14 +86,13 @@ class _Fav_LoginState extends State<Fav_Login> {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        final feature = FavoriteModel.fromJson(jsonData);
+        final feature = FavoriteResponseModel.fromJson(jsonData);
 
-        // Cache the data
         await prefs.setString(cacheKey, json.encode(jsonData));
         await prefs.setInt(cacheTimeKey, now);
 
         setState(() {
-          favoriteModel = feature;
+          favoriteModel = feature.data?.data ?? [];
         });
 
         debugPrint("✅ Fetched and cached saved properties");
@@ -108,7 +103,6 @@ class _Fav_LoginState extends State<Fav_Login> {
       debugPrint("🚨 Exception in getFilesApi: $e");
     }
   }
-
 
   Set<int> favoriteProperties = {}; // Stores favorite property IDs
 
@@ -141,33 +135,34 @@ class _Fav_LoginState extends State<Fav_Login> {
         'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
   }
 
-  Future<void> toggledApi(token,property_id) async {
+  Future<bool> toggledApi( token,  propertyId) async {
     try {
       final response = await http.post(
         Uri.parse('https://akarat.com/api/toggle-saved-property'),
-        headers: <String, String>{'Authorization':'Bearer $token',
+        headers: {
+          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode(<String, dynamic>{
-          "property_id": property_id,
-          // Add any other data you want to send in the body
+        body: jsonEncode({
+          "property_id": propertyId,
         }),
       );
-      if (response.statusCode == 200) {
-        Map<String, dynamic> jsonData = json.decode(response.body);
-        toggleModel = ToggleModel.fromJson(jsonData);
-        print(" Succesfully");
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
-      } else {
-        throw Exception(" failed");
 
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        toggleModel = ToggleModel.fromJson(jsonData);
+        print("✅ Toggle saved/unsaved successful.");
+        return true;
+      } else {
+        print("❌ Toggle failed with status code: ${response.statusCode}");
+        return false;
       }
     } catch (e) {
-      setState(() {
-        print('Error: $e');
-      });
+      print("🚨 Exception in toggledApi: $e");
+      return false;
     }
   }
+
 
 
   @override
@@ -178,7 +173,7 @@ class _Fav_LoginState extends State<Fav_Login> {
         bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         body: DefaultTabController(
           length: 2,
-          child:  SingleChildScrollView(
+         // child:  SingleChildScrollView(
               child: Column(
                   children: <Widget>[
                     Container(
@@ -338,256 +333,233 @@ class _Fav_LoginState extends State<Fav_Login> {
                         ],
                       ),
                     ),
-                    ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      physics: const ScrollPhysics(),
-                      // this give th length of item
-                      itemCount: favoriteModel?.data?.length ?? 0,
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        bool isFavorited = favoriteProperties.contains(favoriteModel!.data![index].id);
-                        return SingleChildScrollView(
-                            child: GestureDetector(
-                              onTap: () {
-                                String id = favoriteModel!.data![index].id.toString();
-                                Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                                    Product_Detail(data: id)));
-                                //Navigator.push(context, MaterialPageRoute(builder: (context) => Blog_Detail(data:blogModel!.data![index].id.toString())));
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 5.0,right: 5,top: 0,bottom: 15),
-                                child: Card(
-                                  color: Colors.white,
-                                  elevation: 20,
-                                  shadowColor: Colors.white,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 5.0,
-                                        top: 0,
-                                        right: 5,
-                                        bottom: 10),
-                                    child: Column(
-                                      // spacing: 5,// this is the coloumn
-                                      children: [
-                                    ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Stack(
-                                      children: [
-                                        AspectRatio(
-                                          aspectRatio: 1.5,
-                                          // this is the ratio
-                                          child: CachedNetworkImage( // this is to fetch the image
-                                            imageUrl: (favoriteModel!
-                                                .data![index].image
-                                                .toString()),
-                                            fit: BoxFit.cover,
-                                            height: 100,
-                                          ),
-                                        ),
-                                        Positioned(
-                                          top: 5,
-                                          right: 10,
-                                          child: Container(
-                                            margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
-                                            height: 35,
-                                            width: 35,
-                                            padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadiusDirectional.circular(20.0),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey,
-                                                  offset: const Offset(
-                                                    0.3,
-                                                    0.3,
-                                                  ),
-                                                  blurRadius: 0.3,
-                                                  spreadRadius: 0.3,
-                                                ), //BoxShadow
-                                                BoxShadow(
-                                                  color: Colors.white,
-                                                  offset: const Offset(0.0, 0.0),
-                                                  blurRadius: 0.0,
-                                                  spreadRadius: 0.0,
-                                                ), //BoxShadow
-                                              ],
-                                            ),
-                                            // child: Positioned(
-                                            // child: Icon(Icons.favorite_border,color: Colors.red,),)
-                                            child: IconButton(
-                                              padding: EdgeInsets.only(left: 5,top: 7),
-                                              alignment: Alignment.center,
-                                              icon: Icon(
-                                                isFavorited ? Icons.favorite : Icons.favorite_border,
-                                                color: isFavorited ? Colors.red : Colors.red,
-                                              ),
-                                              onPressed: () {
-                                                setState(() {
-                                                  property_id=favoriteModel!.data![index].id;
-                                                  if(token == ''){
-                                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                                                  }
-                                                  else{
-                                                    toggleFavorite(property_id!);
-                                                    toggledApi(token,property_id);
-                                                  }
-                                                  isFavorited = !isFavorited;
-                                                });
-                                              },
-                                            ),
-                                            //)
-                                          ),
-                                        ),
-                                      ]
-                                    )
-                                    ),
-                                        Padding(
-                                          padding: const EdgeInsets
-                                              .only(top: 3),
-                                          child: ListTile(
-                                            title: Text(favoriteModel!
-                                                .data![index].title
-                                                .toString(),
-                                              style: TextStyle(
-                                                  fontSize: 16,height: 1.4
-                                              ),),
-                                            subtitle: Padding(
-                                              padding: const EdgeInsets.only(top: 3.0),
-                                              child: Text('${favoriteModel!.data![index].price} AED',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
-                                                ),),
-                                            ),
-                                          ),
-                                        ),
+                    Expanded(
+                      child: ListView.builder(
+                          itemCount: favoriteModel.length,
 
-                                        Row(
-                                          children: [
-                                            Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 0,bottom: 0),
-                                              child:  Image.asset("assets/images/map.png",height: 14,),
+                        itemBuilder: (context, index) {
+                          final item = favoriteModel[index];
+                          String id = item.id.toString();
+                          bool isFavorited = favoriteProperties.contains(item.id);
+                          return SingleChildScrollView(
+                              child: GestureDetector(
+                                onTap: () {
+                                  String id = item.id.toString();
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                                      Product_Detail(data: id)));
+                                  //Navigator.push(context, MaterialPageRoute(builder: (context) => Blog_Detail(data:blogModel!.data![index].id.toString())));
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 5.0,right: 5,top: 0,bottom: 15),
+                                  child: Card(
+                                    color: Colors.white,
+                                    elevation: 20,
+                                    shadowColor: Colors.white,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 5.0,
+                                          top: 0,
+                                          right: 5,
+                                          bottom: 10),
+                                      child: Column(
+                                        // spacing: 5,// this is the coloumn
+                                        children: [
+                                      ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Stack(
+                                        children: [
+                                          AspectRatio(
+                                            aspectRatio: 1.5,
+                                            // this is the ratio
+                                            child: CachedNetworkImage( // this is to fetch the image
+                                              imageUrl: (item.image
+                                                  .toString()),
+                                              fit: BoxFit.cover,
+                                              height: 100,
                                             ),
-                                            Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                              child: Text(favoriteModel!.data![index].address.toString(),style: TextStyle(
-                                                  fontSize: 13,height: 1.4,
-                                                  overflow: TextOverflow.visible
-                                              ),),
+                                          ),
+                                          Positioned(
+                                            top: 5,
+                                            right: 10,
+                                            child: Container(
+                                              margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
+                                              height: 35,
+                                              width: 35,
+                                              padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadiusDirectional.circular(20.0),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey,
+                                                    offset: const Offset(
+                                                      0.3,
+                                                      0.3,
+                                                    ),
+                                                    blurRadius: 0.3,
+                                                    spreadRadius: 0.3,
+                                                  ), //BoxShadow
+                                                  BoxShadow(
+                                                    color: Colors.white,
+                                                    offset: const Offset(0.0, 0.0),
+                                                    blurRadius: 0.0,
+                                                    spreadRadius: 0.0,
+                                                  ), //BoxShadow
+                                                ],
+                                              ),
+                                              // child: Positioned(
+                                              // child: Icon(Icons.favorite_border,color: Colors.red,),)
+                                              child: IconButton(
+                                                padding: EdgeInsets.only(left: 5,top: 7),
+                                                alignment: Alignment.center,
+                                                icon: Icon(
+                                                  isFavorited ? Icons.favorite : Icons.favorite_border,
+                                                  color: isFavorited ? Colors.red : Colors.red,
+                                                ),
+                                                onPressed: () async {
+                                                  if (token.isEmpty) {
+                                                    Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+                                                    return;
+                                                  }
+
+                                                  final success = await toggledApi(token, item.id);
+                                                  if (success) {
+                                                    await getFilesApi(token); // refresh after toggle
+                                                  }
+                                                },
+                                              ),
+                                              //)
                                             ),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 5),
-                                              child: Image.asset("assets/images/bed.png",height: 13,),
+                                          ),
+                                        ]
+                                      )
+                                      ),
+                                          Padding(
+                                            padding: const EdgeInsets
+                                                .only(top: 3),
+                                            child: ListTile(
+                                              title: Text(item.title
+                                                  .toString(),
+                                                style: TextStyle(
+                                                    fontSize: 16,height: 1.4
+                                                ),),
+                                              subtitle: Padding(
+                                                padding: const EdgeInsets.only(top: 3.0),
+                                                child: Text('${item.price} AED',
+                                                  style: TextStyle(
+                                                      fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
+                                                  ),),
+                                              ),
                                             ),
-                                            Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                                child: Text(favoriteModel!.data![index].bedrooms.toString())
-                                            ),
-                                            Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
-                                              child: Image.asset("assets/images/bath.png",height: 13,),
-                                            ),
-                                            Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                                child: Text(favoriteModel!.data![index].bathrooms.toString())
-                                            ),
-                                            Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
-                                              child: Image.asset("assets/images/messure.png",height: 13,),
-                                            ),
-                                            Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
-                                                child: Text(favoriteModel!.data![index].squareFeet.toString())
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Padding(padding: const EdgeInsets.only(left: 30,top: 10,bottom: 5),
-                                              child: ElevatedButton.icon(
+                                          ),
+                                          Row(
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(left: 15,right: 5,top: 0,bottom: 0),
+                                                child:  Image.asset("assets/images/map.png",height: 14,),
+                                              ),
+                                              Expanded(
+                                                child: Text(item.address.toString(),style: TextStyle(
+                                                    fontSize: 13,height: 1.4,
+                                                    overflow: TextOverflow.visible
+                                                ),),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 5),
+                                                child: Image.asset("assets/images/bed.png",height: 13,),
+                                              ),
+                                              Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
+                                                  child: Text(item.bedrooms.toString())
+                                              ),
+                                              Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
+                                                child: Image.asset("assets/images/bath.png",height: 13,),
+                                              ),
+                                              Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
+                                                  child: Text(item.bathrooms.toString())
+                                              ),
+                                              Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 5),
+                                                child: Image.asset("assets/images/messure.png",height: 13,),
+                                              ),
+                                              Padding(padding: const EdgeInsets.only(left: 5,right: 5,top: 5),
+                                                  child: Text(item.squareFeet.toString())
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 15),
+                                          Row(
+                                            children: [
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: ElevatedButton.icon(
                                                   onPressed: () async {
-                                                    String phone = 'tel:${favoriteModel!.data![index].title}';
+                                                    String phone = 'tel:${item.title}';
                                                     try {
                                                       final bool launched = await launchUrlString(
                                                         phone,
-                                                        mode: LaunchMode.externalApplication, // ✅ Force external
+                                                        mode: LaunchMode.externalApplication,
                                                       );
-                                                      if (!launched) {
-                                                        print("❌ Could not launch dialer");
-                                                      }
+                                                      if (!launched) print("❌ Could not launch dialer");
                                                     } catch (e) {
                                                       print("❌ Exception: $e");
                                                     }
                                                   },
-                                                  label: Text("call",style: TextStyle(
-                                                      color: Colors.black
-                                                  ),),
+                                                  icon: const Icon(Icons.call, color: Colors.red),
+                                                  label: const Text("Call", style: TextStyle(color: Colors.black)),
                                                   style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Colors.grey[50],
-                                                    alignment: Alignment.center,
-                                                    elevation: 1,
+                                                    backgroundColor: Colors.grey[100],
                                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                    padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 40),
-                                                    textStyle: TextStyle(letterSpacing: 0.5,
-                                                        color: Colors.black,fontSize: 15,fontWeight: FontWeight.bold
-                                                    ),
+                                                    elevation: 2,
+                                                    padding: const EdgeInsets.symmetric(vertical: 10),
                                                   ),
-                                                  icon: Icon(Icons.call,color: Colors.red,)),
-                                            ),
-                                            // Text(product.description),
-                                            Padding(padding: const EdgeInsets.only(left: 15,top: 10,bottom: 5),
-                                              child: ElevatedButton.icon(
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: ElevatedButton.icon(
                                                   onPressed: () async {
-                                                    final phone = favoriteModel!.data![index].title; // without plus
-                                                    final message = Uri.encodeComponent("Hello");
-                                                    // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
-                                                    // final url = Uri.parse("https://wa.me/?text=hello");
+                                                    final phone = item.title;
                                                     final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-
                                                     if (await canLaunchUrl(url)) {
                                                       try {
-                                                        final launched = await launchUrl(
-                                                          url,
-                                                          mode: LaunchMode.externalApplication, // 💥 critical on Android 15
-                                                        );
-
-                                                        if (!launched) {
-                                                          print("❌ Could not launch WhatsApp");
-                                                        }
+                                                        final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                        if (!launched) print("❌ Could not launch WhatsApp");
                                                       } catch (e) {
                                                         print("❌ Exception: $e");
                                                       }
                                                     } else {
-                                                      print("❌ WhatsApp not available or URL not supported");
+                                                      print("❌ WhatsApp not available");
                                                     }
                                                   },
-                                                  label: Text("Watsapp",style: TextStyle(
-                                                      color: Colors.black
-                                                  ),),
+                                                  icon: Image.asset("assets/images/whats.png", height: 20),
+                                                  label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
                                                   style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Colors.grey[50],
-                                                    alignment: Alignment.center,
-                                                    elevation: 1,
+                                                    backgroundColor: Colors.grey[100],
                                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                    padding: EdgeInsets.symmetric(vertical: 1.0,horizontal: 30),
-                                                    textStyle: TextStyle(letterSpacing: 0.5,
-                                                        color: Colors.black,fontSize: 12,fontWeight: FontWeight.bold
-                                                    ),
+                                                    elevation: 2,
+                                                    padding: const EdgeInsets.symmetric(vertical: 10),
                                                   ),
-                                                  icon: Image.asset("assets/images/whats.png",height: 20,)
+                                                ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                                              const SizedBox(width: 10),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
 
-                            )
+                              )
 
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   ]
               )
-          ),
+         // ),
 
         )
 
@@ -610,7 +582,10 @@ class _Fav_LoginState extends State<Fav_Login> {
                onTap: ()async{
                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
                },
-               child: Image.asset("assets/images/home.png",height: 22,)),
+               child: Padding(
+                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                 child: Image.asset("assets/images/home.png",height: 25,),
+               )),
            Container(
                margin: const EdgeInsets.only(left: 40),
                height: 35,
@@ -718,84 +693,4 @@ class _Fav_LoginState extends State<Fav_Login> {
        ),
      );
    }
-}
-class Page1 extends StatelessWidget {
-  const Page1({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 1",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page2 extends StatelessWidget {
-  const Page2({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 2",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page3 extends StatelessWidget {
-  const Page3({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 3",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page4 extends StatelessWidget {
-  const Page4({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 4",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
 }

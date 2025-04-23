@@ -49,65 +49,106 @@ class _BlogDemoState extends State<BlogDemo> {
       isDataRead = true;
     });
   }
-
-  BlogModel? blogModel;
+  ScrollController _scrollController = ScrollController();
+  int currentPage = 1;
+  bool isLoading = false;
+  bool hasMore = true;
+  List<BlogModel> blogList = [];
 
   @override
   void initState() {
     super.initState();
-    getFilesApi();
+    currentPage = 1;
+    hasMore = true;
+    isLoading = false;
+
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
+
+    getFilesApi(); // fetch first page
     readData();
   }
 
-  Future<void> getFilesApi() async {
+  void _scrollListener() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 &&
+        !isLoading &&
+        hasMore) {
+      getFilesApi(loadMore: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> getFilesApi({bool loadMore = false}) async {
+    if (isLoading || (!hasMore && loadMore)) return;
+
+    setState(() => isLoading = true);
+
     final prefs = await SharedPreferences.getInstance();
-    const cacheKey = 'blog_data';
-    const cacheTimeKey = 'blog_cache_time';
+    final cacheKey = 'blog_cache_page_$currentPage';
+    final cacheTimeKey = 'blog_cache_time_page_$currentPage';
     final now = DateTime.now().millisecondsSinceEpoch;
     final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    // Use cached data if it's less than 6 hours old
-    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+    // Load from cache if within 6 hours
+    if (!loadMore && now - lastFetched < Duration(hours: 6).inMilliseconds) {
       final cachedData = prefs.getString(cacheKey);
       if (cachedData != null) {
         final jsonData = jsonDecode(cachedData);
-        final cachedModel = BlogModel.fromJson(jsonData);
-        if (mounted) {
-          setState(() {
-            blogModel = cachedModel;
-          });
-        }
-        debugPrint("📦 Blog data loaded from cache");
+        final model = BlogResponseModel.fromJson(jsonData);
+        setState(() {
+          blogList = model.data?.data ?? [];
+          final meta = model.data?.meta;
+          currentPage = (meta?.currentPage ?? 1) + 1;
+          hasMore = (meta?.currentPage ?? 1) < (meta?.lastPage ?? 1);
+          isLoading = false;
+        });
+        debugPrint("📦 Loaded blog data from cache");
         return;
       }
     }
 
-    // Fetch from API if no cache or expired
+    // Fetch from API
+    final url = Uri.parse('https://akarat.com/api/blogs?page=$currentPage');
+
     try {
-      final response = await http
-          .get(Uri.parse("https://akarat.com/api/blogs"))
-          .timeout(const Duration(seconds: 10));
-
+      final response = await http.get(url);
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final BlogModel feature = BlogModel.fromJson(data);
+        final jsonData = jsonDecode(response.body);
+        final model = BlogResponseModel.fromJson(jsonData);
+        final newData = model.data?.data ?? [];
 
-        // Save to cache
-        await prefs.setString(cacheKey, jsonEncode(data));
-        await prefs.setInt(cacheTimeKey, now);
+        setState(() {
+          if (loadMore) {
+            blogList.addAll(newData);
+          } else {
+            blogList = newData;
+          }
 
-        if (mounted) {
-          setState(() {
-            blogModel = feature;
-          });
+          final meta = model.data?.meta;
+          currentPage = (meta?.currentPage ?? 1) + 1;
+          hasMore = (meta?.currentPage ?? 1) < (meta?.lastPage ?? 1);
+        });
+
+        // Cache current page if not loading more
+        if (!loadMore) {
+          await prefs.setString(cacheKey, jsonEncode(jsonData));
+          await prefs.setInt(cacheTimeKey, now);
+          debugPrint("✅ Cached blog page $currentPage");
         }
-        debugPrint("✅ Blog data fetched from API");
       } else {
-        debugPrint("❌ Blog API Error: ${response.statusCode}");
+        debugPrint("❌ Blog API error: ${response.statusCode}");
       }
     } catch (e) {
-      debugPrint("🚨 Exception in getFilesApi: $e");
+      debugPrint("❌ Exception in fetchBlogs: $e");
     }
+
+    setState(() => isLoading = false);
   }
 
 
@@ -115,7 +156,7 @@ class _BlogDemoState extends State<BlogDemo> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
-    if (blogModel == null) {
+    if (blogList.isEmpty && isLoading) {
       return Scaffold(
           body: ListView.builder(
             itemCount: 5,
@@ -125,208 +166,121 @@ class _BlogDemoState extends State<BlogDemo> {
    return Scaffold(
        backgroundColor: Colors.white,
      bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
-     body: SingleChildScrollView(
-       child: Column(
-       children: <Widget>[
-                 Padding(
-                 padding: EdgeInsets.only(top: 10),
-                   child: Container(
-                     height: 50,
-                     width: double.infinity,
-                     // color: Color(0xFFEEEEEE),
-                     child:   Row(
-                       children: [
-                         Container(
-                         margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
-                         height: 35,
-                         width: 35,
-                         padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                         decoration: BoxDecoration(
-                           borderRadius: BorderRadiusDirectional.circular(20.0),
-                           boxShadow: [
-                             BoxShadow(
-                               color: Colors.grey,
-                               offset: const Offset(
-                                 0.0,
-                                 0.0,
-                               ),
-                               blurRadius: 0.1,
-                               spreadRadius: 0.1,
-                             ), //BoxShadow
-                             BoxShadow(
-                               color: Colors.white,
-                               offset: const Offset(0.0, 0.0),
-                               blurRadius: 0.0,
-                               spreadRadius: 0.0,
-                             ), //BoxShadow
-                           ],
-                         ),
-                         child: GestureDetector(
-                           onTap: (){
-                             //Navigator.of(context).pop();
-                              setState(() {
-                               if(token == ''){
-                                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                               }
-                               else{
-                                 Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+     appBar: AppBar(
+       title: const Text(
+           "Blog", style: TextStyle(color: Colors.black,
+           fontWeight: FontWeight.bold)),
+       leading: IconButton(
+         icon: const Icon(Icons.arrow_back, color: Colors.red),
+         onPressed: ()async {
+           setState(() {
+             if(token == ''){
+               Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+             }
+             else{
+               Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
-                               }
-                             });
-                           },
-                           child: Image.asset("assets/images/ar-left.png",
-                             width: 15,
-                             height: 15,
-                         fit: BoxFit.contain,),
-                     )
-                 ),
-                 Container(
-                   margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0,),
-                   height: 35,
-                   width: 80,
-                   padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                   child: Text("Blog",style: TextStyle(
-                     fontSize: 17,fontWeight: FontWeight.bold,letterSpacing: 0.5
-                   ),)
-                   //child: Image(image: Image.asset("assets/images/share.png")),
-                 ),
-                
-               ],
-             ),
-           ),),
-                 Padding(
-         padding: const EdgeInsets.only(top: 10.0),
-         child: Container(
-           height: 50,
-           width: double.infinity,
-           decoration: BoxDecoration(
-               shape: BoxShape.rectangle,
-               borderRadius: BorderRadiusDirectional.circular(6.0),
-               boxShadow: [
-                 BoxShadow(
-                   color: Colors.grey,
-                   offset: const Offset(
-                     0.5,
-                     0.5,
-                   ),
-                   blurRadius: 1.0,
-                   spreadRadius: 0.5,
-                 ), //BoxShadow
-                 BoxShadow(
-                   color: Colors.white,
-                   offset: const Offset(0.0, 0.0),
-                   blurRadius: 0.0,
-                   spreadRadius: 0.0,
-                 ), //BoxShadow
-               ]),
-          child: Row(
-            children: [
-             /* Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
+             }
+           });
+         },
+       ),
+       centerTitle: true,
+       backgroundColor: Color(0xFFFFFFFF),
+       iconTheme: const IconThemeData(color: Colors.red),
+       elevation: 1,
+     ),
+     body: Column(
+       children: <Widget>[
+         Padding(
+           padding: const EdgeInsets.symmetric(vertical: 10,),
+           child: Container(
+             height: 50,
+             width: double.infinity,
+             decoration: BoxDecoration(
+                 shape: BoxShape.rectangle,
+                 borderRadius: BorderRadiusDirectional.circular(6.0),
+                 boxShadow: [
+                   BoxShadow(
+                     color: Colors.grey,
+                     offset: const Offset(
+                       0.5,
+                       0.5,
+                     ),
+                     blurRadius: 1.0,
+                     spreadRadius: 0.5,
+                   ), //BoxShadow
+                   BoxShadow(
+                     color: Colors.white,
+                     offset: const Offset(0.0, 0.0),
+                     blurRadius: 0.0,
+                     spreadRadius: 0.0,
+                   ), //BoxShadow
+                 ]),
+             child: Row(
+               children: [
+                 /* Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
               child: Icon(Icons.search_rounded,color: Colors.red,size: 40,),
               ),*/ Padding(padding: const EdgeInsets.only(left: 20,top: 0,right: 0),
-              child: Image.asset("assets/images/app_icon.png",height: 35,)
-              ), Padding(padding: const EdgeInsets.only(left: 5,top: 0,right: 0),
-              child: Image.asset("assets/images/logo-text.png",height: 30,)
-              ), /*Padding(padding: const EdgeInsets.only(left: 75,top: 0,right: 10),
+                     child: Image.asset("assets/images/app_icon.png",height: 35,)
+                 ), Padding(padding: const EdgeInsets.only(left: 5,top: 0,right: 0),
+                     child: Image.asset("assets/images/logo-text.png",height: 30,)
+                 ), /*Padding(padding: const EdgeInsets.only(left: 75,top: 0,right: 10),
               child: Icon(Icons.dehaze,color: Colors.red,size: 40,),
               ),*/
-            ],
-          ),
-            ),
-       ),
-                 ListView.builder(
-           scrollDirection: Axis.vertical,
-           physics: const ScrollPhysics(),
-           // this give th length of item
-           itemCount: blogModel?.data?.length ?? 0,
-           shrinkWrap: true,
-           itemBuilder: (context, index) {
-             return SingleChildScrollView(
-                 child: GestureDetector(
-                   onTap: (){
-                     Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                         Blog_Detail(data:blogModel!.data![index].id.toString())));
-                   },
-                   child : Padding(
-                     padding: const EdgeInsets.only(left: 5.0,right: 4,top: 20,bottom: 5),
+               ],
+             ),
+           ),
+         ),
+         Expanded(
+           child: Padding(
+             padding: const EdgeInsets.symmetric(horizontal: 8.0),
+             child: ListView.builder(
+               controller: _scrollController,
+               itemCount: blogList.length + (hasMore ? 1 : 0),
+               itemBuilder: (context, index) {
+                 if (index < blogList.length) {
+                   final blog = blogList[index];
+                   return GestureDetector(
+                     onTap: () async {
+                       Navigator.push(context, MaterialPageRoute(builder: (context)=> Blog_Detail(data: blog.id.toString())));
+                     },
                      child: Card(
-                       elevation: 20,
-                       shadowColor: Colors.white,
                        color: Colors.white,
-                       child: Padding(
-                         padding: const EdgeInsets.only(left: 5.0,top: 1,right: 5,bottom: 15),
-                         child: Column(
-                           // spacing: 5,// this is the coloumn
-                           children: [
-                         ClipRRect(
-                         borderRadius: BorderRadius.circular(12),
-                         child: Stack(
-                           children: [
-                             AspectRatio(
-                               aspectRatio: 1.6,
-                               // this is the ratio
-                               child: CachedNetworkImage( // this is to fetch the image
-                                 imageUrl: (blogModel!.data![index].image.toString()),
-                                 fit: BoxFit.cover,
-                                 height: 100,
-                               ),
-                             ),
-                           ]
-                         )
-                         ),
-                             Padding(
-                               padding: const EdgeInsets.only(top: 5),
-                               child: ListTile(
-                                 title: Padding(
-                                   padding: const EdgeInsets.only(right: 20.0),
-                                   child: Text(blogModel!.data![index].translations!.en!.title.toString(),
-                                     style: TextStyle(
-                                       fontWeight: FontWeight.bold,fontSize: 18,height: 1.4
-                                   ),),
-                                 ),
-                                 subtitle:  Padding(
-                                   padding: const EdgeInsets.only(top: 8.0),
-                                   child: Row(
-                                     children: [
-                                       Padding(padding: const EdgeInsets.only(left: 1,right: 0,top: 0,bottom: 0),
-                                           child:  Icon(Icons.circle,color: Colors.red,size: 12,)
-                                       ),
-                                       Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 0,bottom: 0),
-                                         child:  Text(blogModel!.data![index].readingTime.toString(),
-                                           style: TextStyle(
-                                               color: Colors.grey
-                                           ),),
-                                       ),
-                                       Padding(padding: const EdgeInsets.only(left: 20,right: 0,top: 0,bottom: 0),
-                                           child:  Icon(Icons.circle,color: Colors.red,size: 12,)
-                                       ),
-
-                                       Padding(padding: const EdgeInsets.only(left: 10,right: 0,top: 0,bottom: 0),
-                                         child: Text('Published: ${blogModel!.data![index].publishedDate.toString()}',
-                                           style: TextStyle(color: Colors.grey
-                                           ),overflow: TextOverflow.visible,maxLines: 2,),
-                                       ),
-                                     ],
-                                   ),
-                                 ),
-                               ),
-                             ),
-
-
-                           ],
-                         ),
+                       margin: const EdgeInsets.all(10),
+                       child: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+                           CachedNetworkImage(
+                             imageUrl: blog.image.toString(),
+                             height: 200,
+                             width: double.infinity,
+                             fit: BoxFit.cover,
+                           ),
+                           Padding(
+                             padding: const EdgeInsets.all(8.0),
+                             child: Text(blog.translations!.en!.title.toString(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                           ),
+                           Padding(
+                             padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                             child: Text('Published: ${blog.publishedDate} • ${blog.readingTime} read'),
+                           ),
+                         ],
                        ),
                      ),
-                   ),
-
-                 )
-
-             );
-           },
+                   );
+                 } else {
+                   return const Padding(
+                     padding: EdgeInsets.all(16.0),
+                     child: Center(child: CircularProgressIndicator()),
+                   );
+                 }
+               },
+             ),
+           ),
          ),
                 ]
-              )
-            ),
+              ),
+
              bottomSheet:  Container(
            height: 50,
            width: double.infinity,
@@ -405,7 +359,10 @@ class _BlogDemoState extends State<BlogDemo> {
               onTap: ()async{
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               },
-              child: Image.asset("assets/images/home.png",height: 22,)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: Image.asset("assets/images/home.png",height: 25,),
+              )),
 
           Padding(
             padding: const EdgeInsets.only(left: 0.0),
@@ -438,46 +395,6 @@ class _BlogDemoState extends State<BlogDemo> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-class Page1 extends StatelessWidget {
-  const Page1({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 1",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-class Page4 extends StatelessWidget {
-  const Page4({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 4",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
       ),
     );
   }
