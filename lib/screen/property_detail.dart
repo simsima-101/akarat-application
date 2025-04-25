@@ -122,127 +122,88 @@ class _Property_DetailState extends State<Property_Detail> {
     return Scaffold(
         backgroundColor: Colors.white,
         bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(30.0),
+          child: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.red),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            centerTitle: true,
+            backgroundColor: Color(0xFFFFFFFF),
+            iconTheme: const IconThemeData(color: Colors.red),
+            // elevation: 1,
+          ),
+        ),
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
-                  Stack(
-                    children: [
-                      // Image list behind
-                      Container(
-                        height: screenSize.height * 0.55,
-                        margin: const EdgeInsets.all(0),
-                        child:  ListView.builder(
-                          padding: EdgeInsets.zero,
-                          shrinkWrap: true,
-                          scrollDirection: Axis.vertical,
-                          physics: const ScrollPhysics(),
-                          itemCount: projectDetailModel?.data?.media?.length ?? 0,
-                          itemBuilder: (BuildContext context, int index) {
-                            final imageUrl = projectDetailModel!.data!.media![index].originalUrl.toString();
+                  Container(
+                    height: screenSize.height * 0.55,
+                    margin: const EdgeInsets.all(0),
+                    child:  ListView.builder(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                      physics: const ScrollPhysics(),
+                      itemCount: projectDetailModel?.data?.media?.length ?? 0,
+                      itemBuilder: (BuildContext context, int index) {
+                        final imageUrl = projectDetailModel!.data!.media![index].originalUrl.toString();
 
-                            return GestureDetector(
-                              onTap: () {
-                                showGeneralDialog(
-                                  context: context,
-                                  barrierDismissible: true,
-                                  barrierLabel: "ImagePreview",
-                                  transitionDuration: const Duration(milliseconds: 300),
-                                  pageBuilder: (context, animation, secondaryAnimation) {
-                                    PageController controller = PageController(initialPage: index);
-                                    return Scaffold(
-                                      backgroundColor: Colors.black,
-                                      body: SafeArea(
-                                        child: Stack(
-                                          children: [
-                                            PageView.builder(
-                                              controller: controller,
-                                              itemCount: projectDetailModel?.data?.media?.length ?? 0,
-                                              itemBuilder: (context, pageIndex) {
-                                                final previewUrl = projectDetailModel!.data!.media![pageIndex].originalUrl.toString();
-                                                return InteractiveViewer(
-                                                  child: CachedNetworkImage(
-                                                    imageUrl: previewUrl,
-                                                    fit: BoxFit.contain,
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                            Positioned(
-                                              top: 20,
-                                              right: 20,
-                                              child: IconButton(
-                                                icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                                                onPressed: () {
-                                                  Navigator.of(context).pop(); // closes the full screen
-                                                },
+                        return GestureDetector(
+                          onTap: () {
+                            showGeneralDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              barrierLabel: "ImagePreview",
+                              transitionDuration: const Duration(milliseconds: 300),
+                              pageBuilder: (context, animation, secondaryAnimation) {
+                                PageController controller = PageController(initialPage: index);
+                                return Scaffold(
+                                  backgroundColor: Colors.black,
+                                  body: SafeArea(
+                                    child: Stack(
+                                      children: [
+                                        PageView.builder(
+                                          controller: controller,
+                                          itemCount: projectDetailModel?.data?.media?.length ?? 0,
+                                          itemBuilder: (context, pageIndex) {
+                                            final previewUrl = projectDetailModel!.data!.media![pageIndex].originalUrl.toString();
+                                            return InteractiveViewer(
+                                              child: CachedNetworkImage(
+                                                imageUrl: previewUrl,
+                                                fit: BoxFit.contain,
                                               ),
-                                            ),
-                                          ],
+                                            );
+                                          },
                                         ),
-                                      ),
-                                    );
-                                  },
+                                        Positioned(
+                                          top: 20,
+                                          right: 20,
+                                          child: IconButton(
+                                            icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                                            onPressed: () {
+                                              Navigator.of(context).pop(); // closes the full screen
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 );
                               },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 5),
-                                child: CachedNetworkImage(
-                                  imageUrl: imageUrl,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
                             );
                           },
-                        ),
-                      ),
-
-                      // Top bar over images
-                      Positioned(
-                        top: 20,
-                        left: 0,
-                        right: 0,
-                        child: SizedBox(
-                          height: 50,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // Back Button
-                              Container(
-                                margin: const EdgeInsets.only(left: 10),
-                                height: 35,
-                                width: 35,
-                                padding: const EdgeInsets.all(7),
-                                decoration: _iconBoxDecoration(),
-                                child: GestureDetector(
-                                  onTap: () => Navigator.of(context).pop(),
-                                  child: Image.asset(
-                                    "assets/images/ar-left.png",
-                                    width: 15,
-                                    height: 15,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              ),
-
-                              // Like Button
-                              Container(
-                                margin: const EdgeInsets.only(right: 10),
-                                height: 35,
-                                width: 35,
-                                padding: const EdgeInsets.all(7),
-                                decoration: _iconBoxDecoration(),
-                                child: Image.asset(
-                                  "assets/images/lov.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ],
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            child: CachedNetworkImage(
+                              imageUrl: imageUrl,
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                        ),
-                      ),
-                    ],
+                        );
+                      },
+                    ),
                   ),
                   const SizedBox(height: 25,),
                   Row(
