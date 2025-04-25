@@ -494,7 +494,7 @@ class _Fav_LoginState extends State<Fav_Login> {
                                               Expanded(
                                                 child: ElevatedButton.icon(
                                                   onPressed: () async {
-                                                    String phone = 'tel:${item.title}';
+                                                    String phone = 'tel:${item.phone}';
                                                     try {
                                                       final bool launched = await launchUrlString(
                                                         phone,
@@ -519,7 +519,7 @@ class _Fav_LoginState extends State<Fav_Login> {
                                               Expanded(
                                                 child: ElevatedButton.icon(
                                                   onPressed: () async {
-                                                    final phone = item.title;
+                                                    final phone = item.whatsapp;
                                                     final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
                                                     if (await canLaunchUrl(url)) {
                                                       try {

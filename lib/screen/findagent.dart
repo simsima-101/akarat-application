@@ -8,6 +8,7 @@ import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:Akarat/utils/agencyCardScreen.dart';
 import 'package:Akarat/utils/agentcardscreen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -92,36 +93,32 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   @override
   void initState() {
     super.initState();
+
+    // Initial fetch
     agentfetch();
     agencyfetch();
-    // Run async tasks in parallel where needed
-    Future.microtask(() {
 
+    // Async call for other setup
+    Future.microtask(() {
       readData();
     });
+
+    // Scroll pagination
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent &&
           !isLoading &&
           hasMore) {
         agentfetch(loadMore: true);
+        agencyfetch(loadMore: true); // <-- Combine here
       }
     });
-    // These return Futures to be used with FutureBuilder, so keep them separate
+
+    // Load for dropdowns or similar
     languageFuture = fetchLanguageData();
     nationalityFuture = fetchNationalities();
-
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent &&
-          !isLoading &&
-          hasMore) {
-        agencyfetch(loadMore: true);
-      }
-    });
-
-
   }
+
 
 
   Future<void> agentfetch({bool loadMore = false}) async {
@@ -197,10 +194,12 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   }
 
 
-  Future<void> agencyfetch({bool loadMore = false}) async {
-    if (isLoading) return;
+  bool isAgencyLoading = false;
 
-    setState(() => isLoading = true);
+  Future<void> agencyfetch({bool loadMore = false}) async {
+    if (isAgencyLoading) return;
+
+    setState(() => isAgencyLoading = true);
 
     final queryParams = {
       'search': locationController.text,
@@ -216,34 +215,88 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     final now = DateTime.now().millisecondsSinceEpoch;
     final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    // Use cache if recent and not loading more
+    debugPrint("📢 agencyfetch called with loadMore: $loadMore");
+    debugPrint("🔍 API URI: $uri");
+
     if (!loadMore && now - lastFetched < Duration(hours: 6).inMilliseconds) {
       final cachedData = prefs.getString(cacheKey);
       if (cachedData != null) {
         final jsonData = json.decode(cachedData);
         final model = PaginatedAgencyModel.fromJson(jsonData);
+        final fetchedAgencies = model.data;
 
+        setState(() {
+          agencyList = fetchedAgencies?.data ?? [];
+          hasMore = (fetchedAgencies?.meta?.currentPage ?? 1) <
+              (fetchedAgencies?.meta?.lastPage ?? 1);
+        });
+
+        debugPrint("✅ Loaded agencies from cache");
+        isAgencyLoading = false;
+        return;
+      }
+    }
+
+    try {
+      final response = await http.get(uri);
+      debugPrint("📨 Response: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        final model = PaginatedAgencyModel.fromJson(jsonData);
+        final fetchedAgencies = model.data;
+
+        setState(() {
+          if (loadMore) {
+            agencyList.addAll(fetchedAgencies?.data ?? []);
+          } else {
+            agencyList = fetchedAgencies?.data ?? [];
+          }
+
+          currentPage++;
+          hasMore = (fetchedAgencies?.meta?.currentPage ?? 1) <
+              (fetchedAgencies?.meta?.lastPage ?? 1);
+        });
+
+        if (!loadMore) {
+          await prefs.setString(cacheKey, json.encode(jsonData));
+          await prefs.setInt(cacheTimeKey, now);
+          debugPrint("📦 Cached new agency data");
+        }
+      } else {
+        debugPrint("❌ Agency API Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Exception in agencyfetch: $e");
+    }
+
+    setState(() => isAgencyLoading = false);
+  }
+
+
+/*    if (!loadMore && now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+
+      
+      if (cachedData != null) {
+        final model = await compute(decodeAgencyData, cachedData);
         final fetchedAgencies = model.data?.data ?? [];
 
         setState(() {
           agencyList = fetchedAgencies;
           currentPage = model.data?.meta?.currentPage ?? 1;
           hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
+          isLoading = false;
         });
         debugPrint("✅ Loaded agency data from cache");
-        isLoading = false;
         return;
       }
     }
 
-    // Otherwise fetch from network
     try {
       final response = await http.get(uri);
-
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        final model = PaginatedAgencyModel.fromJson(jsonData);
-
+        final model = await compute(decodeAgencyData, response.body);
         final fetchedAgencies = model.data?.data ?? [];
 
         setState(() {
@@ -254,10 +307,11 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
           }
           currentPage++;
           hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
+          isLoading = false;
         });
 
         if (!loadMore) {
-          await prefs.setString(cacheKey, json.encode(jsonData));
+          await prefs.setString(cacheKey, response.body);
           await prefs.setInt(cacheTimeKey, now);
           debugPrint("📦 Cached agency data");
         }
@@ -266,10 +320,9 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
       }
     } catch (e) {
       debugPrint("🚨 Exception in agencyfetch: $e");
+      setState(() => isLoading = false);
     }
-
-    setState(() => isLoading = false);
-  }
+  }*/
 
 
 

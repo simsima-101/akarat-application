@@ -19,7 +19,6 @@ import 'agent_detail.dart';
 import 'htmlEpandableText.dart';
 import 'login.dart';
 
-
 class AboutAgent extends StatefulWidget {
   const AboutAgent({super.key, required this.data});
   final String data;
@@ -73,7 +72,6 @@ class _AboutAgentState extends State<AboutAgent> {
       }
     });
   }
-
 
   @override
   void dispose() {
@@ -148,7 +146,6 @@ class _AboutAgentState extends State<AboutAgent> {
     }
   }
 
-
   Future<void> _callSearchApi(String query) async {
     final prefs = await SharedPreferences.getInstance();
     final cacheKey = 'search_result_$query';
@@ -198,7 +195,6 @@ class _AboutAgentState extends State<AboutAgent> {
       debugPrint("❌ Exception in search: $e");
     }
   }
-
 
   Future<void> getFilesApi(String user, {bool loadMore = false}) async {
     if (isLoading) return;
@@ -268,8 +264,6 @@ class _AboutAgentState extends State<AboutAgent> {
 
     isLoading = false;
   }
-
-
 
   ToggleModel? toggleModel;
 

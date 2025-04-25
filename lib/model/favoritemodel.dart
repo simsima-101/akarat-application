@@ -63,6 +63,8 @@ class Data {
   int? bedrooms;
   int? bathrooms;
   String? squareFeet;
+  String? whatsapp;
+  String? phone;
   String? createdAt;
   String? price;
   String? paymentPeriod;
@@ -75,6 +77,8 @@ class Data {
         this.address,
         this.bedrooms,
         this.bathrooms,
+        this.whatsapp,
+        this.phone,
         this.squareFeet,
         this.createdAt,
         this.price,
@@ -89,6 +93,8 @@ class Data {
     bedrooms = json['bedrooms'];
     bathrooms = json['bathrooms'];
     squareFeet = json['square_feet'];
+    whatsapp = json['whatsapp'];
+    phone = json['phone'];
     createdAt = json['created_at'];
     price = json['price'];
     paymentPeriod = json['payment_period'];
@@ -105,6 +111,8 @@ class Data {
     data['bathrooms'] = this.bathrooms;
     data['square_feet'] = this.squareFeet;
     data['created_at'] = this.createdAt;
+    data['whatsapp'] = this.whatsapp;
+    data['phone'] = this.phone;
     data['price'] = this.price;
     data['payment_period'] = this.paymentPeriod;
     data['image'] = this.image;

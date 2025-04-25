@@ -77,7 +77,6 @@ class _About_AgencyState extends State<About_Agency> {
     });
   }
 
-
   Future<void> _loadAgencyDetails() async {
     final prefs = await SharedPreferences.getInstance();
     final cachedKey = 'agency_details_${widget.data}';
@@ -121,41 +120,8 @@ class _About_AgencyState extends State<About_Agency> {
     }
   }
 
-
-
   ToggleModel? toggleModel;
- /* Future<void> fetchProducts(String data) async {
-    final uri = Uri.parse('https://akarat.com/api/company/$data');
 
-    try {
-      final response = await http.get(uri).timeout(const Duration(seconds: 8));
-
-      debugPrint("Status Code: ${response.statusCode}");
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = jsonDecode(response.body);
-
-        debugPrint("✅ API Success Response: ${jsonData.toString()}");
-
-        final parsedModel = AgencyDetailmodel.fromJson(jsonData);
-
-        if (!mounted) return;
-
-        setState(() {
-          agencyDetailmodel = parsedModel;
-          debugPrint("✅ Agency Name: ${agencyDetailmodel?.name}");
-        });
-      } else {
-        debugPrint("❌ API Error Status: ${response.statusCode}");
-      }
-    } on TimeoutException {
-      debugPrint("⏱ Request timed out");
-    } on SocketException {
-      debugPrint("📡 No internet connection");
-    } catch (e) {
-      debugPrint("🚨 Unexpected error: $e");
-    }
-  }*/
   AgencyAgentsModel? agencyAgentsModel;
 
   Future<void> getFilesApi(String user) async {
@@ -238,7 +204,6 @@ class _About_AgencyState extends State<About_Agency> {
     }
   }
 
-
 // Make sure to dispose the controller
   @override
   void dispose() {
@@ -289,7 +254,6 @@ class _About_AgencyState extends State<About_Agency> {
     }
   }
 
-
   Future<void> toggledApi( token,  propertyId) async {
     try {
       final response = await http.post(
@@ -314,7 +278,6 @@ class _About_AgencyState extends State<About_Agency> {
       debugPrint("🚨 Toggle error: $e");
     }
   }
-
 
   Set<int> favoriteProperties = {}; // Stores favorite property IDs
 
@@ -344,7 +307,9 @@ class _About_AgencyState extends State<About_Agency> {
     await prefs.setStringList(
         'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
   }
+
   final TextEditingController _searchController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
@@ -1512,6 +1477,7 @@ class _About_AgencyState extends State<About_Agency> {
         )
     );
   }
+
   Container buildMyNavBar(BuildContext context) {
     return Container(
       height: 50,
@@ -1697,6 +1663,7 @@ class _About_AgencyState extends State<About_Agency> {
       ),
     );
   }
+
   Widget _buildTagContainer({required String text, required String iconPath}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 3.0, vertical: 8),
