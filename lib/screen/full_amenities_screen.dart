@@ -142,7 +142,7 @@ class _FullAmenitiesScreenState extends State<FullAmenitiesScreen> {
                   widget.onDone(_selected);
                   Navigator.pop(context);
                 },
-                child: const Text("Done", style: TextStyle(fontSize: 16)),
+                child: const Text("Done", style: TextStyle(fontSize: 16,color: Colors.white)),
               ),
             ),
           ),

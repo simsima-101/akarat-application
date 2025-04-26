@@ -392,7 +392,7 @@ class _AboutAgentState extends State<AboutAgent> {
                               fit: BoxFit.contain,),
                           ),
                         ),
-                        Container(
+                       /* Container(
                           margin: const EdgeInsets.only(left: 0,top: 20,bottom: 100,),
                           height: 35,
                           width: 35,
@@ -422,7 +422,7 @@ class _AboutAgentState extends State<AboutAgent> {
                             height: 15,
                             fit: BoxFit.contain,),
                           //child: Image(image: Image.asset("assets/images/share.png")),
-                        ),
+                        ),*/
                       ],
                     ),
                   ),

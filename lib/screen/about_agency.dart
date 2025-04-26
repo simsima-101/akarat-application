@@ -328,7 +328,7 @@ class _About_AgencyState extends State<About_Agency> {
         length: 4,
             child: Column(
                 children: <Widget>[
-                  const SizedBox(height: 10,),
+                  const SizedBox(height: 20,),
                   Container(
                     height: screenSize.height*0.22,
                     color: Color(0xFFF5F5F5),
@@ -338,7 +338,6 @@ class _About_AgencyState extends State<About_Agency> {
                         Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Row(
-
                             spacing:screenSize.width*0.7,
                             children: [
                               Container(
@@ -376,7 +375,7 @@ class _About_AgencyState extends State<About_Agency> {
                                             fit: BoxFit.contain,),
                                 ),
                               ),
-                              Container(
+                             /* Container(
                                 margin: const EdgeInsets.only(left: 0,top: 10,bottom: 15),
                                 height: 35,
                                 width: 35,
@@ -405,12 +404,12 @@ class _About_AgencyState extends State<About_Agency> {
                                   width: 15,
                                   height: 15,
                                   fit: BoxFit.contain,),
-                              ),
+                              ),*/
                             ],
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(left: 0,top: 0,right: 0,bottom: 0),
+                          padding: const EdgeInsets.only(left: 0,top: 10,right: 0,bottom: 0),
                           child: Container(
                             height: screenSize.height*0.12,
                             width: screenSize.width*0.91,

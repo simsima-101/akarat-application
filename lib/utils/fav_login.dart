@@ -297,7 +297,7 @@ class _Fav_LoginState extends State<Fav_Login> {
                               ],
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text('Searches',textAlign: TextAlign.center,style: TextStyle(
+                            child: Text('Favorites',textAlign: TextAlign.center,style: TextStyle(
                                 fontWeight: FontWeight.bold,fontSize: 15
                             ),
                             ),
@@ -325,7 +325,7 @@ class _Fav_LoginState extends State<Fav_Login> {
                               ],
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text('Favorites',textAlign: TextAlign.center,style: TextStyle(
+                            child: Text('Searches',textAlign: TextAlign.center,style: TextStyle(
                                 fontWeight: FontWeight.bold,fontSize: 15
                             ),
                             ),

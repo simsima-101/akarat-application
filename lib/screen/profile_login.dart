@@ -79,9 +79,9 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                         _circularIconButton("assets/images/ar-left.png", () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
                         }),
-                        _circularIconButton("assets/images/share.png", () {
+                       /* _circularIconButton("assets/images/share.png", () {
                           // Share action
-                        }),
+                        }),*/
                       ],
                     ),
                   ),
@@ -277,7 +277,8 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 10.0),
                 child: Image.asset("assets/images/home.png",height: 25,),
-              )),
+              )
+          ),
           GestureDetector(
             onTap: ()async{
               Navigator.push(context, MaterialPageRoute(builder: (context)=> Favorite()));
@@ -310,7 +311,6 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
                 child: Icon(Icons.favorite_border,color: Colors.red,)
             ),
           ),
-
           Container(
               margin: const EdgeInsets.only(left: 1),
               height: 35,
