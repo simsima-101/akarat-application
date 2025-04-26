@@ -44,14 +44,17 @@ class _SearchState extends State<Search> {
   @override
   void initState() {
     super.initState();
+
     _rangeController = RangeController(start: start.toString(), end: end.toString());
 
-    _initializeData(); // handles async calls
+    purpose = "Rent"; // ✅ Move this up
+
+    _initializeData(); // Now it uses a valid purpose
     _loadFavorites();
-readData();
+    readData();
+
     selectedproduct = 0;
     selectedtype = 0;
-    purpose = "Rent";
 
     chartData = List.generate(
       96,
@@ -61,6 +64,7 @@ readData();
       ),
     );
   }
+
   void _initializeData() async {
     // Fire both in parallel
     propertyApi(purpose);
@@ -399,10 +403,23 @@ readData();
     return Scaffold(
         bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         backgroundColor: Colors.white,
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(30.0),
+          child: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.red),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            centerTitle: true,
+            backgroundColor: Color(0xFFFFFFFF),
+            iconTheme: const IconThemeData(color: Colors.red),
+            // elevation: 1,
+          ),
+        ),
             body: SingleChildScrollView(
                 child: Column(
                     children: <Widget>[
-                      Stack(
+                    /*  Stack(
                         children: <Widget>[
                           Padding(
                             padding: const EdgeInsets.only(top: 20),
@@ -451,7 +468,7 @@ readData();
                             ),
                           ),
                         ],
-                      ),
+                      ),*/
                       //Searchbar
                       Padding(
                         padding: const EdgeInsets.only(top: 10, left: 20, right: 15),
@@ -1324,7 +1341,7 @@ readData();
                                 child: Padding(
                                   padding: const EdgeInsets.only(top: 3,bottom: 3,right: 10),
                                   child:  Container(
-                                    width: 90,
+                                    width: 100,
                                     height: 10,
                                     padding: const EdgeInsets.only(left: 8),
                                     decoration: BoxDecoration(
@@ -1374,9 +1391,9 @@ readData();
                                   );
                                 },
                                 child: Padding(
-                                  padding: const EdgeInsets.only(top: 3,bottom: 3,right: 10,left: 0),
+                                  padding: const EdgeInsets.only(top: 3,bottom: 3,right: 5,left: 0),
                                   child:  Container(
-                                    width: 70,
+                                    width: 80,
                                     height: 10,
                                     padding: const EdgeInsets.only(left: 8),
                                     decoration: BoxDecoration(
@@ -1407,9 +1424,7 @@ readData();
                                         Text(" Reset",style: TextStyle(
                                             fontWeight: FontWeight.bold
                                         ),textAlign: TextAlign.center,),
-                                        Container(
-                                          width: 15,
-                                        ),
+
                                       ],
                                     ),
                                   ),
@@ -1726,29 +1741,16 @@ readData();
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-              });
-            },
-            icon: pageIndex == 0
-                ? const Icon(
-              Icons.home_filled,
-              color: Colors.red,
-              size: 30,
-            )
-                : const Icon(
-              Icons.home_outlined,
-              color: Colors.red,
-              size: 30,
-            ),
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
+          GestureDetector(
+              onTap: ()async{
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+              },
+              child: Image.asset("assets/images/home.png",height: 25,)),
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
+              setState(() {
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: "Rent")));
 
               });
             },
