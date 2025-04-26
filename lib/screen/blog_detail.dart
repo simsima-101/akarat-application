@@ -328,10 +328,7 @@ readData();
               onTap: ()async{
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                child: Image.asset("assets/images/home.png",height: 25,),
-              )),
+              child: Image.asset("assets/images/home.png",height: 25,)),
           Padding(
             padding: const EdgeInsets.only(left: 0.0),
             child: IconButton(

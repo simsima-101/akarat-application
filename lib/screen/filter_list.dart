@@ -1698,10 +1698,10 @@ class FliterList extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           GestureDetector(
-            onTap: ()async{
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-            },
-              child: Image.asset("assets/images/home.png",height: 22,)),
+              onTap: ()async{
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+              },
+              child: Image.asset("assets/images/home.png",height: 25,)),
           /*IconButton(
             enableFeedback: false,
             onPressed: () {

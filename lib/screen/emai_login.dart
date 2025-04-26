@@ -116,7 +116,7 @@ RegisterModel? registerModel;
               Align(
                 alignment: Alignment.topRight,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 0, right: 16),
+                  padding: const EdgeInsets.only(top: 40, right: 16),
                   child: GestureDetector(
                     onTap: () {
                       setState(() => _showClose = false);
@@ -155,7 +155,7 @@ RegisterModel? registerModel;
           ),
         //logo
           Padding(
-            padding: const EdgeInsets.only(top: 100.0),
+            padding: const EdgeInsets.only(top: 60.0),
             child: Center(
               child: SizedBox(
                   width: screenSize.width*0.3,

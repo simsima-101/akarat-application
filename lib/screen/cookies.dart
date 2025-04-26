@@ -221,7 +221,7 @@ class _CookiesState extends State<Cookies> {
               onTap: ()async{
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               },
-              child: Image.asset("assets/images/home.png",height: 22,)),
+              child: Image.asset("assets/images/home.png",height: 25,)),
           Container(
               margin: const EdgeInsets.only(left: 40),
               height: 35,

@@ -19,12 +19,6 @@ class TermsCondition extends StatefulWidget {
 class _TermsConditionState extends State<TermsCondition> {
 
   int pageIndex = 0;
-  final pages = [
-    const Page1(),
-    const Page2(),
-    const Page3(),
-    const Page4(),
-  ];
 
   String token = '';
   String email = '';
@@ -264,7 +258,7 @@ class _TermsConditionState extends State<TermsCondition> {
 
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 40,
+      height: 50,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -275,25 +269,11 @@ class _TermsConditionState extends State<TermsCondition> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-
-            },
-            icon: pageIndex == 0
-                ? const Icon(
-              Icons.home_filled,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.home_outlined,
-              color: Colors.red,
-              size: 35,
-            ),
-          ),
+          GestureDetector(
+              onTap: ()async{
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+              },
+              child: Image.asset("assets/images/home.png",height: 25,)),
           Container(
               margin: const EdgeInsets.only(left: 40),
               height: 35,

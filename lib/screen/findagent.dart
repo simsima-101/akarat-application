@@ -947,13 +947,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
               onTap: ()async{
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               },
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                  child: Image.asset("assets/images/home.png",height: 25,),
-                ),
-              )),
+              child: Image.asset("assets/images/home.png",height: 25,)),
           Container(
               margin: const EdgeInsets.only(left: 40),
               height: 35,

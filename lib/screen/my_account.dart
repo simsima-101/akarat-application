@@ -297,10 +297,7 @@ class _My_AccountState extends State<My_Account> {
               onTap: ()async{
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                child: Image.asset("assets/images/home.png",height: 25,),
-              )),
+              child: Image.asset("assets/images/home.png",height: 25,)),
           Container(
               margin: const EdgeInsets.only(left: 40),
               height: 35,

@@ -25,7 +25,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   final List<String> recentSearches = ['Dubai'];
   final List<String> popularLocations = [
-    'Dubai', 'Abu Dhabi', 'Sharjah',
+    'Dubai', 'Al Jadaf', 'Dubailand',
     'Business bay', 'Downtown', 'Jumeirah'
   ];
 

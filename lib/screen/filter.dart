@@ -1581,7 +1581,7 @@ Container buildMyNavBar(BuildContext context) {
             onTap: ()async{
               Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
             },
-            child: Image.asset("assets/images/home.png",height: 22,)),
+            child: Image.asset("assets/images/home.png",height: 25,)),
         IconButton(
           enableFeedback: false,
           onPressed: () {
