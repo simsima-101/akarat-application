@@ -1549,7 +1549,7 @@ String max_sqrfeet = ' ';
                           spreadRadius: 0.0,
                         ), //BoxShadow
                       ],),
-                    child: Text("Showing 112,765 Results",style: TextStyle(
+                    child: Text("Showing ${propertyTypeModel?.totalFeaturedProperties ??0} Results",style: TextStyle(
 
                         color: Colors.white,letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 15
                     ),textAlign: TextAlign.center,),
