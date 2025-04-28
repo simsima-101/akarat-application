@@ -126,11 +126,8 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
     try {
       final response = await http.get(Uri.parse(
-          'https://akarat.com/api/filters?'
-              'search=$query&amenities=&property_type='
-              '&furnished_status=&bedrooms=&min_price='
-              '&max_price=&payment_period=&min_square_feet='
-              '&max_square_feet=&bathrooms=&purpose=New%20Projects'));
+          'https://akarat.com/api/filters?search=$query&amenities=&property_type=&furnished_status=&bedrooms=&min_price='
+              '&max_price=&payment_period=&min_square_feet=&max_square_feet=&bathrooms=&purpose=New%20Projects'));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
