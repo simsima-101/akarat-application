@@ -1,0 +1,2 @@
+/Users/apple/StudioProjects/akarat-app/android/app/.cxx/RelWithDebInfo/5s581ng6/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/apple/StudioProjects/akarat-app/android/app/.cxx/RelWithDebInfo/5s581ng6/arm64-v8a/CMakeFiles/rebuild_cache.dir
