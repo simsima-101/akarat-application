@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:Akarat/model/searchmodel.dart';
 import 'package:Akarat/model/togglemodel.dart';
 import 'package:Akarat/screen/login.dart';
@@ -154,37 +156,99 @@ class _MyHomePageState extends State<HomeDemo> {
   }
 
 
+
+
   Future<void> getFeaturedProperties({bool loadMore = false}) async {
     if (isLoading || !hasMore) return;
 
     setState(() => isLoading = true);
+
     final uri = Uri.parse("https://akarat.com/api/featured-properties?page=$currentPage");
+    final cacheKey = 'featured_cache_page_$currentPage';
+    final cacheTimeKey = 'featured_cache_time_page_$currentPage';
 
-    try {
-      final response = await http.get(uri);
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        final model = FeaturedResponseModel.fromJson(jsonData);
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final cacheValidityDuration = const Duration(hours: 6).inMilliseconds; // 6 hours cache
 
-        setState(() {
-          if (loadMore && featuredModel != null) {
-            featuredModel!.data!.addAll(model.data?.data ?? []);
-          } else {
-            featuredModel = model.data;
-          }
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+    final cachedData = prefs.getString(cacheKey);
 
-          currentPage = model.data?.meta?.currentPage ?? 1;
-          hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
-        });
-      } else {
-        debugPrint("❌ API Error: ${response.statusCode}");
+    // 👉 If cached data is available and still fresh, use it
+    if (cachedData != null && (now - lastFetched) < cacheValidityDuration) {
+      final jsonData = jsonDecode(cachedData);
+      final model = FeaturedResponseModel.fromJson(jsonData);
+
+      setState(() {
+        if (loadMore && featuredModel != null) {
+          featuredModel!.data!.addAll(model.data?.data ?? []);
+        } else {
+          featuredModel = model.data;
+        }
+        currentPage = model.data?.meta?.currentPage ?? 1;
+        hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
+      });
+
+      setState(() => isLoading = false);
+      return; // ✅ Done using cache
+    }
+
+    int retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries) {
+      try {
+        final response = await http
+            .get(uri)
+            .timeout(const Duration(seconds: 10)); // Timeout for faster failure
+
+        if (response.statusCode == 200) {
+          final jsonData = jsonDecode(response.body);
+          final model = FeaturedResponseModel.fromJson(jsonData);
+
+          setState(() {
+            if (loadMore && featuredModel != null) {
+              featuredModel!.data!.addAll(model.data?.data ?? []);
+            } else {
+              featuredModel = model.data;
+            }
+            currentPage = model.data?.meta?.currentPage ?? 1;
+            hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
+          });
+
+          // 👉 Save to cache
+          prefs.setString(cacheKey, response.body);
+          prefs.setInt(cacheTimeKey, now);
+
+          break; // ✅ Success, break retry loop
+        } else {
+          debugPrint("❌ API Error: ${response.statusCode}");
+          break; // ❌ Server error
+        }
+      } on SocketException catch (_) {
+        retryCount++;
+        debugPrint('⚠️ SocketException, retrying... ($retryCount/$maxRetries)');
+        if (retryCount >= maxRetries) {
+          debugPrint('❌ Failed after retries.');
+        }
+        await Future.delayed(const Duration(seconds: 1));
+      } on TimeoutException catch (_) {
+        retryCount++;
+        debugPrint('⚠️ Timeout, retrying... ($retryCount/$maxRetries)');
+        if (retryCount >= maxRetries) {
+          debugPrint('❌ Failed after retries.');
+        }
+        await Future.delayed(const Duration(seconds: 1));
+      } catch (e) {
+        debugPrint("❌ Unexpected Exception: $e");
+        break;
       }
-    } catch (e) {
-      debugPrint("❌ Exception: $e");
     }
 
     setState(() => isLoading = false);
   }
+
+
 
   Set<int> favoriteProperties = {}; // Stores favorite property IDs
 
@@ -727,15 +791,20 @@ class _MyHomePageState extends State<HomeDemo> {
                                         child:   Row(
                                           spacing: screenSize.width*0.3,
                                           children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10.0, right: 15.0, top: 0, bottom: 0),
-                                              child:  Text("1,738 Projects",style: TextStyle(
-                                                color: Colors.black,fontWeight: FontWeight.bold,
-                                                fontSize: 17,
-                                              ),textAlign: TextAlign.left,),
-                                            ),
-                                            Row(
+                                        Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                                        child: Text(
+                                          "${featuredModel?.totalFeaturedProperties ?? 0} Projects",
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 17,
+                                          ),
+                                          textAlign: TextAlign.left,
+                                        ),
+                                      ),
+
+                            Row(
                                               children: [
                                                 Padding(
                                                     padding: const EdgeInsets.only(

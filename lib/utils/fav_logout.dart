@@ -2,6 +2,8 @@ import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 
 import '../screen/home.dart';
+import '../screen/login.dart';
+import '../screen/login_page.dart';
 
 class Fav_Logout extends StatefulWidget {
    Fav_Logout({super.key,});
@@ -215,7 +217,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                         child: Padding(padding: const EdgeInsets.only(top: 20,left: 10,right: 20),
                                           child: ElevatedButton(
                                               onPressed: (){
-                                                // Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
+                                                 Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginPage()));
                                               },style:
                                           ElevatedButton.styleFrom(
                                             backgroundColor: Colors.blue,
@@ -277,7 +279,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                         ),
                                       ),
                                       //facebook button
-                                      Padding(
+                                    /*  Padding(
                                         padding: const EdgeInsets.only(
                                             left: 15.0, right: 20.0, top: 15, bottom: 0),
                                         child: Container(
@@ -316,7 +318,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                             ],
                                           ),
                                         ),
-                                      ),
+                                      ),*/
                                       SizedBox(
                                         height: screenSize.height*0.33,
                                       ),
@@ -332,9 +334,14 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                             Text("Have an Account?",style: TextStyle(
                                                 fontSize: 15,letterSpacing: 0.5
                                             ),),
-                                            Text("Log in",style: TextStyle(
-                                                fontSize: 15,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                                            ),),
+                                            GestureDetector(
+                                              onTap: ()async{
+                                                Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
+                                              },
+                                              child: Text("Log in",style: TextStyle(
+                                                  fontSize: 15,letterSpacing: 0.5,fontWeight: FontWeight.bold
+                                              ),),
+                                            ),
                                           ],
                                         ),
                                       )
@@ -431,7 +438,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
               onTap: ()async{
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               },
-              child: Image.asset("assets/images/home.png",height: 22,)),
+              child: Image.asset("assets/images/home.png",height: 25,)),
           Container(
               margin: const EdgeInsets.only(left: 40),
               height: 35,

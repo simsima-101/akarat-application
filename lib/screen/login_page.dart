@@ -35,6 +35,7 @@ class _LoginPageDemoState extends State<LoginPageDemo> {
       body: SingleChildScrollView(
           child: Column(
               children: <Widget>[
+                const SizedBox(height: 20,),
                 Stack(
                   children: [
                     Align(

@@ -118,6 +118,7 @@ class _CreatePasswordState extends State<CreatePassword> {
           body: SingleChildScrollView(
               child: Column(
                   children: <Widget>[
+                    const SizedBox(height: 20,),
                     Stack(
                       children: [
                         Align(

@@ -26,8 +26,9 @@ class FeaturedModel {
   List<Data>? data;
   Links? links;
   Meta? meta;
+  int? totalFeaturedProperties;
 
-  FeaturedModel({this.data, this.links, this.meta});
+  FeaturedModel({this.data, this.links, this.meta , this.totalFeaturedProperties});
 
   FeaturedModel.fromJson(Map<String, dynamic> json) {
     if (json['data'] != null) {
@@ -38,6 +39,7 @@ class FeaturedModel {
     }
     links = json['links'] != null ? new Links.fromJson(json['links']) : null;
     meta = json['meta'] != null ? new Meta.fromJson(json['meta']) : null;
+    totalFeaturedProperties = json['total_featured_properties'];
   }
 
   Map<String, dynamic> toJson() {
@@ -51,6 +53,7 @@ class FeaturedModel {
     if (this.meta != null) {
       data['meta'] = this.meta!.toJson();
     }
+    data['total_featured_properties'] = this.totalFeaturedProperties;
     return data;
   }
 }
