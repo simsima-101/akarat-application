@@ -155,7 +155,6 @@ class _BlogDemoState extends State<BlogDemo> {
 
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.sizeOf(context);
     if (blogList.isEmpty && isLoading) {
       return Scaffold(
           body: ListView.builder(
