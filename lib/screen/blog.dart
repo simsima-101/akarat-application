@@ -260,10 +260,25 @@ class _BlogDemoState extends State<BlogDemo> {
                              padding: const EdgeInsets.all(8.0),
                              child: Text(blog.translations!.en!.title.toString(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                            ),
-                           Padding(
-                             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                             child: Text('Published: ${blog.publishedDate} • ${blog.readingTime} read'),
+                           Row(
+                             children: [
+                               Padding(padding: const EdgeInsets.symmetric(horizontal: 8),
+                                   child: Image.asset("assets/images/dot.png",height: 8,)
+                               ),
+                               Padding(
+                                 padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                                 child: Text('Published: ${blog.publishedDate} '),
+                               ),
+                               Padding(padding: const EdgeInsets.symmetric(horizontal: 8),
+                                   child: Image.asset("assets/images/dot.png",height: 8,)
+                               ),
+                               Padding(
+                                 padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                                 child: Text('${blog.readingTime} '),
+                               ),
+                             ],
                            ),
+                           const SizedBox(height: 10,)
                          ],
                        ),
                      ),
@@ -360,7 +375,7 @@ class _BlogDemoState extends State<BlogDemo> {
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               },
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal:15.0),
+                padding: const EdgeInsets.symmetric(horizontal:20.0),
                 child: Image.asset("assets/images/home.png",height: 25,),
               )),
 
