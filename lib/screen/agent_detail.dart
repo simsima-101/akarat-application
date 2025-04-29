@@ -373,6 +373,7 @@ class _Agent_DetailState extends State<Agent_Detail> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 22.0),
                     child: Column(
+                      spacing: 5,
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,

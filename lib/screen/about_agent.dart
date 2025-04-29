@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:Akarat/model/agentdetaill.dart';
 import 'package:Akarat/model/agentpropertiesmodel.dart';
-import 'package:Akarat/screen/findagent.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/screen/profile_login.dart';
@@ -214,11 +213,13 @@ class _AboutAgentState extends State<AboutAgent> {
       final cachedData = prefs.getString(cacheKey);
       if (cachedData != null) {
         final jsonData = jsonDecode(cachedData);
-        final model = AgentProperties.fromJson(jsonData); // already only `data` saved
+        final model = AgentProperties.fromJson(jsonData); // only 'data' saved in cache
         setState(() {
           agentProperties = model;
-          currentPage = model.meta?.currentPage ?? 1;
           hasMore = (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
+          if (hasMore) {
+            currentPage = (model.meta?.currentPage ?? 1) + 1;
+          }
         });
         debugPrint("📦 Loaded agent properties from cache");
         isLoading = false;
@@ -246,8 +247,10 @@ class _AboutAgentState extends State<AboutAgent> {
             agentProperties = model;
           }
 
-          currentPage = model.meta?.currentPage ?? 1;
           hasMore = (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
+          if (hasMore) {
+            currentPage = (model.meta?.currentPage ?? 1) + 1;
+          }
         });
 
         if (!loadMore) {
@@ -264,6 +267,7 @@ class _AboutAgentState extends State<AboutAgent> {
 
     isLoading = false;
   }
+
 
   ToggleModel? toggleModel;
 
@@ -780,9 +784,7 @@ class _AboutAgentState extends State<AboutAgent> {
                         ),
 
                       ),),
-                  /*SingleChildScrollView(
-                      child: */
-                      Padding(
+                  Padding(
                         padding: const EdgeInsets.all(10),
                         child: Column(
                           children: [
@@ -1177,7 +1179,6 @@ class _AboutAgentState extends State<AboutAgent> {
                           ],
                         ),
                       ),
-                  //),
                   SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.all(15.0),

@@ -137,7 +137,8 @@ class _About_UsState extends State<About_Us> {
                                     fontSize: 16,letterSpacing: 0.5
                                 ),),
                       const SizedBox(height: 6),
-                      Text("Start your real estate journey with Akarat.com today!",style: TextStyle(
+                      Text(
+                        "Start your real estate journey with Akarat.com today!",style: TextStyle(
                                   fontSize: 16
                               ),),
                           ],

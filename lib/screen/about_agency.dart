@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:Akarat/model/agencyagentmodel.dart';
 import 'package:Akarat/model/agencypropertiesmodel.dart' as propertyModel;
 import 'package:Akarat/screen/agency_detail.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/agency_detailModel.dart';
-import 'package:Akarat/screen/findagent.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/screen/profile_login.dart';
@@ -20,7 +18,6 @@ import '../model/togglemodel.dart';
 import '../utils/shared_preference_manager.dart';
 import 'htmlEpandableText.dart';
 import 'login.dart';
-
 
 class About_Agency extends StatefulWidget {
   const About_Agency({super.key, required this.data});

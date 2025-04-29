@@ -1518,7 +1518,16 @@ String max_sqrfeet = ' ';
               ),
               GestureDetector(
                 onTap: (){
-                  showResult();
+                  setState(() {
+                    String count = propertyTypeModel!.totalFeaturedProperties.toString();
+                    if(count.isNotEmpty){
+                      showResult();
+                    }
+                    else{
+                      return ;
+                    }
+                  });
+
                   // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
                 },
                 child:  Padding(

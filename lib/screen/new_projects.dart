@@ -50,7 +50,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
   bool isLoading = false;
   bool hasMore = true;
   List<Data> projectModel = [];
-
+  bool showNoPropertiesMessage = false;
 
   ToggleModel? toggleModel;
   int? property_id ;
@@ -82,6 +82,15 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
       if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 100 &&
           !isLoading && hasMore) {
         getFilesApi(); // call your API method here
+      }
+    });
+
+    // Start a timer for 5 minutes
+    Future.delayed(const Duration(minutes: 2), () {
+      if (mounted && projectModel == null) {
+        setState(() {
+          showNoPropertiesMessage = true;
+        });
       }
     });
 
@@ -246,11 +255,29 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
   @override
   Widget build(BuildContext context) {
     if (projectModel == null) {
-      return Scaffold(
-          body: ListView.builder(
-            itemCount: 5,
-            itemBuilder: (context, index) => const ShimmerCard(),) // Show loading state
-      );
+      if (showNoPropertiesMessage) {
+        return Scaffold(
+          body: Center(
+            child: Text(
+              "No properties found.",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+        );
+      } else {
+        return Scaffold(
+          body: SafeArea(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: 5,
+              itemBuilder: (context, index) => const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: ShimmerCard(),
+              ),
+            ),
+          ),
+        );
+      }
     }
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(

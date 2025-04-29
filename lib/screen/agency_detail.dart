@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:Akarat/screen/about_agency.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -89,7 +87,6 @@ class _Agency_DetailState extends State<Agency_Detail> {
     }
   }
 
-
   String token = '';
   String email = '';
   String result = '';
@@ -105,7 +102,6 @@ class _Agency_DetailState extends State<Agency_Detail> {
       isDataRead = true;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
