@@ -14,6 +14,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/shared_preference_manager.dart';
 import 'htmlEpandableText.dart';
 import 'my_account.dart';
+import 'package:Akarat/utils/property_type_image_mapper.dart';
+
 
 class Property_Detail extends StatefulWidget {
   Property_Detail({super.key, required this.data});
@@ -59,6 +61,7 @@ class _Property_DetailState extends State<Property_Detail> {
     final now = DateTime.now().millisecondsSinceEpoch;
     final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
+
     // Use cached data if less than 6 hours old
     if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
       final cachedData = prefs.getString(cacheKey);
@@ -101,6 +104,7 @@ class _Property_DetailState extends State<Property_Detail> {
       debugPrint("❌ Exception occurred: $e");
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -815,7 +819,6 @@ class _Property_DetailState extends State<Property_Detail> {
 
                 }
               });
-
             },
             icon: pageIndex == 3
                 ? const Icon(

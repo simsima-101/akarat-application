@@ -11,142 +11,123 @@ class Agentcardscreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
-    if (agentsModel == null) {
-      return Scaffold(
-        body: Center(
-            child: ShimmerCard()), // Show loading state
-      );
+
+
+    String imageUrl = agentsModel.image?.toString().trim() ?? '';
+    if (imageUrl.isNotEmpty && !imageUrl.startsWith('http')) {
+      imageUrl = 'https://akarat.com$imageUrl';
     }
-    return SingleChildScrollView(
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AboutAgent(data: '${agentsModel.id}'),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-          child: Card(
-            color: Colors.white,
-            elevation: 20,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Agent image
-                  Container(
-                    width: screenSize.width * 0.25,
-                    height: screenSize.width * 0.25,
-                    margin: const EdgeInsets.only(right: 10),
-                    child: CircleAvatar(
-                      backgroundImage: NetworkImage(agentsModel.image),
-                      radius: 40,
-                    ),
-                  ),
 
-                  // Agent details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Name
+// Check if it is invalid:
+    bool isValidImage = imageUrl.isNotEmpty &&
+        imageUrl.toLowerCase() != 'n/a' &&
+        imageUrl.toLowerCase() != 'null' &&
+        imageUrl.toLowerCase().contains('.jpg') &&  // Optional: adjust to your API
+        !imageUrl.toLowerCase().contains('default-image.jpg');  // IMPORTANT!
+
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AboutAgent(data: '${agentsModel.id}'),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+        child: Card(
+          color: Colors.white,
+          elevation: 6,
+          shadowColor: Colors.grey.shade100,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Prepare imageUrl here ✅
+                Builder(builder: (context) {
+                  String imageUrl = agentsModel.image?.toString().trim() ?? '';
+                  if (imageUrl.isNotEmpty && !imageUrl.startsWith('http')) {
+                    imageUrl = 'https://akarat.com$imageUrl';
+                  }
+
+                  return CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.grey.shade200,
+                    backgroundImage: isValidImage
+                        ? NetworkImage(imageUrl)
+                        : const AssetImage('assets/images/profile.png') as ImageProvider,
+                  );
+
+                }),
+
+                const SizedBox(width: 12), // spacing
+
+                // Right content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Name
+                      Text(
+                        agentsModel.name,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+
+                      // Agency
+                      Text(
+                        agentsModel.agency,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+
+                      // Languages
+                      Text(
+                        "Speaks: ${agentsModel.languages}",
+                        style: const TextStyle(fontSize: 12, color: Colors.black54),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+
+                      // Bio (if exists)
+                      if (agentsModel.bio?.trim().isNotEmpty == true)
                         Text(
-                          agentsModel.name,
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
+                          agentsModel.bio!,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.black45,
+                            fontStyle: FontStyle.italic,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-
-                        // Agency
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Text(
-                            agentsModel.agency,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-
-                        // Languages
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Text(
-                            "Speaks: ${agentsModel.languages}",
-                            style: TextStyle(fontSize: 12, letterSpacing: 0.5),
-                          ),
-                        ),
-
-                        // Sale & Rent buttons
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10.0),
-                          child: Wrap(
-                            spacing: 10,
-                            children: [
-                              buildTagButton(
-                                count: agentsModel.sale,
-                                label: "Sale",
-                                screenSize: screenSize,
-                              ),
-                              buildTagButton(
-                                count: agentsModel.rent,
-                                label: "Rent",
-                                screenSize: screenSize,
-                              ),
-                            ],
-                          ),
-                        ),const SizedBox(height: 5,)
-                      ],
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
-  }
 
-    Widget buildTagButton({required int count, required String label, required Size screenSize}) {
-      return Container(
-        width: screenSize.width * 0.22,
-        height: screenSize.height * 0.035,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(width: 1,color: Color(0xFFE0E0E0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              offset: Offset(4, 4),
-              blurRadius: 8,
-              spreadRadius: 2,
-            ),
-            BoxShadow(
-              color: Colors.white.withOpacity(0.8),
-              offset: Offset(-4, -4),
-              blurRadius: 8,
-              spreadRadius: 2,
-            ),
-          ],
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Center(
-          child: Text(
-            '$count $label',
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-      );
-    }
   }
+}

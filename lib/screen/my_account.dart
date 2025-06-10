@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:Akarat/screen/about_us.dart';
 import 'package:Akarat/screen/advertising.dart';
 import 'package:Akarat/screen/blog.dart';
@@ -13,18 +15,26 @@ import 'package:Akarat/utils/fav_login.dart';
 import 'package:Akarat/utils/fav_logout.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../model/agencypropertiesmodel.dart';
+import '../secure_storage.dart';
+import '../services/api_service.dart';
 import '../utils/shared_preference_manager.dart';
 import 'favorite.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'login_page.dart';
+
+
 
 
 class My_Account extends StatefulWidget {
-   My_Account({super.key,}) ;
+  My_Account({super.key,}) ;
   // LoginModel arguments;
 
 
-   // RegisterModel arguments;
-   @override
-   State<My_Account> createState() => _My_AccountState();
+  // RegisterModel arguments;
+  @override
+  State<My_Account> createState() => _My_AccountState();
 }
 class _My_AccountState extends State<My_Account> {
   int pageIndex = 0;
@@ -34,12 +44,30 @@ class _My_AccountState extends State<My_Account> {
   bool isDataRead = false;
   bool isDataSaved = true;
   // Create an object of SharedPreferencesManager class
-  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  final SharedPreferencesManager prefManager = SharedPreferencesManager();
+
+  Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+  }
+
+  // ✅ Get token
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
+  // Optional: Clear token
+  Future<void> clearToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+  }
+
   // Method to read data from shared preferences
   void readData() async {
-    token = await prefManager.readStringFromPref();
-    email = await prefManager.readStringFromPrefemail();
-    result = await prefManager.readStringFromPrefresult();
+    token = await prefManager.readStringFromPref() ?? '';
+    email = await prefManager.readStringFromPrefemail() ?? '';
+    result = await prefManager.readStringFromPrefresult() ?? '';
     setState(() {
       isDataRead = true;
     });
@@ -50,11 +78,10 @@ class _My_AccountState extends State<My_Account> {
     readData();
     super.initState();
   }
-
-  Future<void> logoutAPI(String token) async {
+  Future<List<Property>> fetchSavedProperties() async {
     try {
-      final response = await http.post(
-        Uri.parse('https://akarat.com/api/logout'),
+      final response = await http.get(
+        Uri.parse('https://akarat.com/api/saved-property-list?page=1'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
@@ -62,32 +89,31 @@ class _My_AccountState extends State<My_Account> {
       );
 
       if (response.statusCode == 200) {
-        debugPrint("✅ Logout successful");
+        final Map<String, dynamic> responseJson = json.decode(response.body);
 
-        // Clear stored preferences
-        await prefManager.addStringToPref("");
-        await prefManager.addStringToPrefemail("");
-        await prefManager.addStringToPrefresult("");
+        // ✅ Safely navigate to responseJson['data']['data']
+        final List<dynamic> propertiesJsonList = responseJson['data']?['data'] ?? [];
 
-        if (mounted) {
-          setState(() {
-            isDataSaved = false;
-            isDataRead = false;
-          });
+        print('Fetched ${propertiesJsonList.length} properties');
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => Profile_Login()),
-          );
-        }
+        // ✅ Map the list to your Property model
+        List<Property> properties = propertiesJsonList
+            .map((item) => Property.fromJson(item))
+            .toList();
+
+        return properties;
       } else {
-        debugPrint("❌ Logout failed: ${response.statusCode}");
-        throw Exception("Logout failed");
+        throw Exception('Failed to fetch properties: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint("❌ Exception during logout: $e");
+      print('Error fetching saved properties: $e');
+      return []; // ✅ Return empty list instead of rethrowing to avoid crash
     }
   }
+
+
+
+
 
 
   @override
@@ -99,94 +125,64 @@ class _My_AccountState extends State<My_Account> {
         body: SingleChildScrollView(
             child: Column(
                 children: <Widget>[
-                  const SizedBox(height: 10,),
+                  const SizedBox(height: 35,),
                   Container(
                     height: screenSize.height*0.22,
-                  // color: Colors.grey,
+                    // color: Colors.grey,
                     color: Color(0xFFF5F5F5),
                     child: Column(
                       children: [
                         Row(
                           children: [
                             Container(
-                              margin: const EdgeInsets.only(left: 20,top: 30,bottom: 0),
-                              height: 35,
-                              width: 35,
-                              padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
+                              margin: const EdgeInsets.only(left: 30, top: 8, bottom: 0),
+                              height: screenSize.height * 0.11,
+                              width: screenSize.width * 0.25,
+                              padding: const EdgeInsets.all(0),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadiusDirectional.circular(20.0),
+                                color: Colors.grey.shade300, // grey background for Play Store safe
+                                borderRadius: BorderRadius.circular(60.0),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey,
-                                    offset: const Offset(
-                                      0.0,
-                                      0.0,
-                                    ),
+                                    offset: const Offset(0.0, 0.0),
                                     blurRadius: 0.1,
                                     spreadRadius: 0.1,
-                                  ), //BoxShadow
+                                  ),
                                   BoxShadow(
                                     color: Colors.white,
                                     offset: const Offset(0.0, 0.0),
                                     blurRadius: 0.0,
                                     spreadRadius: 0.0,
-                                  ), //BoxShadow
+                                  ),
                                 ],
                               ),
-                    child: GestureDetector(
-                      onTap: (){
-                        setState(() {
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-                        });
-                      },
-                              child: Image.asset("assets/images/ar-left.png",
-                                width: 15,
-                                height: 15,
-                                fit: BoxFit.contain,),
-                    ),
-                            ),
-                            Padding(padding: const EdgeInsets.only(left: 20,top: 30),
-                            // child: Text(result,style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),
-                            child: Text("My Account",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),
-                            ) ,
-                            )
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(left: 30,top: 8,bottom: 0),
-                              height: screenSize.height*0.11,
-                              width: screenSize.width*0.25,
-                              padding: const EdgeInsets.only(top: 0,left: 0,right: 0,bottom: 0),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadiusDirectional.circular(60.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey,
-                                    offset: const Offset(
-                                      0.0,
-                                      0.0,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    "assets/images/avatar.png",
+                                    fit: BoxFit.cover,
+                                    height: screenSize.height * 0.06,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    "Coming Soon",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.black54,
+                                      fontStyle: FontStyle.italic,
                                     ),
-                                    blurRadius: 0.1,
-                                    spreadRadius: 0.1,
-                                  ), //BoxShadow
-                                  BoxShadow(
-                                    color: Colors.white,
-                                    offset: const Offset(0.0, 0.0),
-                                    blurRadius: 0.0,
-                                    spreadRadius: 0.0,
-                                  ), //BoxShadow
+                                  ),
                                 ],
                               ),
-                              child: Image.asset("assets/images/avatar.png",
-                                fit: BoxFit.fill,height: 10,),
                             ),
+
                             Container(
                                 margin: const EdgeInsets.only(left: 15,top: 5),
                                 height: screenSize.height*0.13,
                                 width: screenSize.width*0.4,
-                                 //color: Colors.grey,
+                                //color: Colors.grey,
                                 padding: const EdgeInsets.only(left: 15,top: 10),
                                 child:   Column(
                                   children: [
@@ -217,19 +213,51 @@ class _My_AccountState extends State<My_Account> {
                                     ),
                                     Row(
                                       children: [
-                                        Padding(padding: const EdgeInsets.only(top: 2,left: 0,right: 0),
-                                          child: ElevatedButton(onPressed: (){
-                                            logoutAPI(token);
-                                           // Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                                          },style:
-                                          ElevatedButton.styleFrom(backgroundColor: Colors.blue,
-                                            shape: RoundedRectangleBorder(borderRadius:  BorderRadius.all(Radius.circular(8)),),),
-                                              child: Text("Logout",style: TextStyle(color: Colors.white,fontSize: 12),)),
-                                        ),
-                                        Text("")
+                                        Expanded(
+                                          child: SizedBox(
+                                            height: 28, // ⬅️ Reduced height for the Logout button
+                                            child: ElevatedButton(
+                                              onPressed: () async {
+                                                try {
+                                                  String? token = await SecureStorage.getToken();
+                                                  if (token != null) {
+                                                    await ApiService.logoutUser(token);
+                                                    await SecureStorage.deleteToken();
+                                                    Navigator.pushAndRemoveUntil(
+                                                      context,
+                                                      MaterialPageRoute(builder: (_) => const LoginPage()),
+                                                          (route) => false,
+                                                    );
+                                                  } else {
+                                                    throw Exception("No token found.");
+                                                  }
+                                                } catch (e) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(content: Text("Logout failed: $e")),
+                                                  );
+                                                }
+                                              },
 
+
+
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.blue,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                ),
+                                                padding: EdgeInsets.zero, // Removes extra padding
+                                              ),
+                                              child: Text(
+                                                "Logout",
+                                                style: TextStyle(color: Colors.white, fontSize: 12),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
+
+
                                   ],
                                 )
                             ),
@@ -291,127 +319,43 @@ class _My_AccountState extends State<My_Account> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-              onTap: ()async{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-              },
-              child: Image.asset("assets/images/home.png",height: 25,)),
-          Container(
-              margin: const EdgeInsets.only(left: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.favorite_border,color: Colors.red,)
-          ),
-
-          Container(
-              margin: const EdgeInsets.only(left: 1),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.add_location_rounded,color: Colors.red,)
-
-          ),
-          Container(
-              margin: const EdgeInsets.only(left: 1,right: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.chat,color: Colors.red,)
-
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                }
-                else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                }
-              });
-
+            onTap: () async {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
             },
-            icon: pageIndex == 3
-                ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                setState(() {
+                  if (token == '') {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  }
+                });
+              },
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
             ),
           ),
         ],
       ),
+
     );
   }
+
+  logoutAPI(String token) {}
 }
 Widget _settingsTile(String title, String iconPath, VoidCallback onTap) {
   return Column(

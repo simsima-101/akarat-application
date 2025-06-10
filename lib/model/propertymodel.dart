@@ -1,3 +1,36 @@
+  class Property {
+    final String id;
+    final String title;
+    final String description;
+    final String image;
+    final String price;
+
+    Property({
+      required this.id,
+      required this.title,
+      required this.description,
+      required this.image,
+      required this.price,
+    });
+
+    factory Property.fromData(Data data) {
+      return Property(
+        id: data.id?.toString() ?? '',
+        title: data.title ?? '',
+        description: data.description ?? '',
+        image: data.media != null && data.media!.isNotEmpty
+            ? data.media!.first.originalUrl ?? ''
+            : '',
+        price: data.price ?? '',
+      );
+    }
+  }
+
+
+
+
+
+
 class ProjectDetailModel {
   Data? data;
 

@@ -3,34 +3,40 @@ import 'dart:convert';
 import 'package:Akarat/model/contactmodel.dart';
 import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/utils/shared_preference_manager.dart';
-import 'package:http/http.dart' as http;
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+
 
 class Support extends StatefulWidget {
-  Support({super.key,});
-
+  const Support({super.key});
 
   @override
-  State<StatefulWidget> createState() => new _SupportState();
+  State<Support> createState() => _SupportState();
 }
 
 class _SupportState extends State<Support> {
+  final _formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
   final subjectController = TextEditingController();
   final messageController = TextEditingController();
-  int pageIndex = 0;
+
+  bool _isLoading = false;
 
   String token = '';
   String email = '';
   String result = '';
   bool isDataRead = false;
-  // Create an object of SharedPreferencesManager class
+  int pageIndex = 0;
+
+
   SharedPreferencesManager prefManager = SharedPreferencesManager();
-  // Method to read data from shared preferences
+
   void readData() async {
     token = await prefManager.readStringFromPref();
     email = await prefManager.readStringFromPrefemail();
@@ -42,47 +48,74 @@ class _SupportState extends State<Support> {
 
   @override
   void initState() {
-    readData();
     super.initState();
+    readData();
   }
 
-
-
-
-  ContactModel? contactModel;
-  //String result = '';
   Future<void> sendMessage() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final Map<String, String> body = {
+      "name": nameController.text.trim(),
+      "email": emailController.text.trim(),
+      "phone": phoneController.text.trim(),
+      "message": messageController.text.trim(),
+    };
+
     try {
-      final response = await http.post(Uri.parse('https://akarat.com/api/contact'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
+      final response = await http.post(
+        Uri.parse('https://akarat.com/api/contact'),
+        headers: {
+          "Content-Type": "application/json",
         },
-        body: jsonEncode(<String, String>{
-          "name": nameController.text,
-          "email": emailController.text,
-          "phone":phoneController.text,
-          "subject":subjectController.text,
-          "message": messageController.text
-          // Add any other data you want to send in the body
-        }),
+        body: json.encode(body),
       );
 
-      if (response.statusCode == 201) {
-        Map<String, dynamic> jsonData = json.decode(response.body);
-        contactModel = ContactModel.fromJson(jsonData);
-      // result= contactModel!.message.toString();
-      // Text(result);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
-      } else {
-        throw Exception("Registration failed");
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Message sent successfully!')),
+          );
 
+          // Clear form
+          nameController.clear();
+          emailController.clear();
+          phoneController.clear();
+          subjectController.clear();
+          messageController.clear();
+
+          // Optionally navigate
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const Profile_Login()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed: ${data['message'] ?? 'Unknown error'}')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Server error: ${response.statusCode}')),
+        );
       }
     } catch (e) {
+      print("Exception: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
       setState(() {
-        print('Error: $e');
+        _isLoading = false;
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -185,16 +218,16 @@ class _SupportState extends State<Support> {
                     margin: const EdgeInsets.only(left: 10,right: 10,top: 25),
                     height: screenSize.height*0.05,
                     width: screenSize.width*0.9,
-                   // color: Colors.grey,
+                    // color: Colors.grey,
                     child: Text("Ask us anything?",textAlign: TextAlign.left
                       ,style: TextStyle(
-                      fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
+                          fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
 
-                    ),),
+                      ),),
                   ),
                   Container(
                     margin: const EdgeInsets.only(left: 10,right: 10,top: 10),
-                   // color: Colors.grey,
+                    // color: Colors.grey,
                     height: screenSize.height*0.75,
                     width: screenSize.width*0.9,
                     child: Column(
@@ -204,7 +237,7 @@ class _SupportState extends State<Support> {
                             Padding(
                               padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
                               child: Text("Name",textAlign: TextAlign.left,style: TextStyle(
-                                fontSize: 15,letterSpacing: 0.5
+                                  fontSize: 15,letterSpacing: 0.5
                               ),),
                             ),
                             Text("")
@@ -248,7 +281,7 @@ class _SupportState extends State<Support> {
                               keyboardType: TextInputType.name,
                               decoration: InputDecoration(
                                 border: InputBorder.none,
-                               // hintText: 'Email',
+                                // hintText: 'Email',
                               ),
                               textAlign: TextAlign.left,
                             ),
@@ -305,7 +338,7 @@ class _SupportState extends State<Support> {
                               keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
                                 border: InputBorder.none,
-                               // hintText: 'Email',
+                                // hintText: 'Email',
                               ),
                               textAlign: TextAlign.left,
                             ),
@@ -360,7 +393,7 @@ class _SupportState extends State<Support> {
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
                                 border: InputBorder.none,
-                               // hintText: 'Email',
+                                // hintText: 'Email',
                               ),
                               textAlign: TextAlign.left,
                             ),
@@ -456,7 +489,7 @@ class _SupportState extends State<Support> {
                                 ), //BoxShadow
                               ],
                             ),
-                           /* child: TextField(
+                            /* child: TextField(
                               maxLines: 3,
                               decoration: InputDecoration(
                                 border: InputBorder.none,
@@ -485,24 +518,31 @@ class _SupportState extends State<Support> {
                           ),
                         ),
                         Container(
-                          width: screenSize.width*0.9,
-                          height: screenSize.height*0.1,
-                          child: Padding(padding: const EdgeInsets.only(top: 40,left: 10,right: 20),
-                            child: ElevatedButton(
-                                onPressed: (){
-                                  sendMessage();
-                             // Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                            },style:
-                            ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:  BorderRadius.all(
-                                    Radius.circular(8)),),),
-                                child: Text("Send Email",
-                                  style: TextStyle(color: Colors.white,
-                                      fontSize: 15),)),
+                          width: screenSize.width * 0.9,
+                          height: screenSize.height * 0.1,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 40, left: 10, right: 20),
+                           child: ElevatedButton(
+                              onPressed: () async {
+                                await sendMessage();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? CircularProgressIndicator(color: Colors.white)
+                                  : Text(
+                                "Send Email",
+                                style: TextStyle(color: Colors.white, fontSize: 15),
+                              ),
+                            ),
+
                           ),
                         ),
+
                       ],
                     ),
                   ),
@@ -522,125 +562,39 @@ class _SupportState extends State<Support> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-              onTap: ()async{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-              },
-              child: Image.asset("assets/images/home.png",height: 25,)),
-          Container(
-              margin: const EdgeInsets.only(left: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.favorite_border,color: Colors.red,)
-          ),
-
-          Container(
-              margin: const EdgeInsets.only(left: 1),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.add_location_rounded,color: Colors.red,)
-
-          ),
-          Container(
-              margin: const EdgeInsets.only(left: 1,right: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.chat,color: Colors.red,)
-
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-
-setState(() {
-  if(token == ''){
-    Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-  }
-  else{
-    Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-  }
-});
+            onTap: () async {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
             },
-            icon: pageIndex == 3
-                ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                setState(() {
+                  if (token == '') {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  }
+                });
+              },
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
             ),
           ),
         ],
       ),
+
     );
   }
 }

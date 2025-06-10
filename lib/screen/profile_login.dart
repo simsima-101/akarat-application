@@ -64,76 +64,7 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
         child: Column(
           children: <Widget>[
             const SizedBox(height: 30),
-            Container(
-              height: screenSize.height * 0.23,
-              color: const Color(0xFFF5F5F5),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Top bar with back and share buttons
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _circularIconButton("assets/images/ar-left.png", () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-                        }),
-                       /* _circularIconButton("assets/images/share.png", () {
-                          // Share action
-                        }),*/
-                      ],
-                    ),
-                  ),
 
-                  // Welcome Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 60),
-                    child: Row(
-                      children: [
-                        Container(
-                          height: screenSize.height * 0.08,
-                          width: screenSize.width * 0.18,
-                          decoration: _avatarBoxDecoration(),
-                          child: Padding(
-                            padding: const EdgeInsets.all(6),
-                            child: Image.asset("assets/images/app_icon.png", fit: BoxFit.contain),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text("Hi there,", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 4),
-                              const Text(
-                                "Sign in for a more personalized experience.",
-                                style: TextStyle(fontSize: 12),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 6),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => Login()));
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                ),
-                                child: const Text("Login or Signup", style: TextStyle(fontSize: 11, color: Colors.white)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
             const SizedBox(height: 10),
             // Subscription Offer Box
             Container(
@@ -268,132 +199,39 @@ class _Profile_LoginDemoState extends State<Profile_LoginDemo> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-              onTap: ()async{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(left: 10.0),
-                child: Image.asset("assets/images/home.png",height: 25,),
-              )
-          ),
-          GestureDetector(
-            onTap: ()async{
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Favorite()));
+            onTap: () async {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
             },
-            child: Container(
-                margin: const EdgeInsets.only(left: 40),
-                height: 35,
-                width: 35,
-                padding: const EdgeInsets.only(top: 2),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: const Offset(
-                        0.5,
-                        0.5,
-                      ),
-                      blurRadius: 1.0,
-                      spreadRadius: 0.5,
-                    ), //BoxShadow
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: const Offset(0.0, 0.0),
-                      blurRadius: 0.0,
-                      spreadRadius: 0.0,
-                    ), //BoxShadow
-                  ],
-                ),
-                child: Icon(Icons.favorite_border,color: Colors.red,)
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
             ),
           ),
-          Container(
-              margin: const EdgeInsets.only(left: 1),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.add_location_rounded,color: Colors.red,)
-
-          ),
-          Container(
-              margin: const EdgeInsets.only(left: 1,right: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.chat,color: Colors.red,)
-
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                }
-                else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                }
-              });
-            },
-            icon: pageIndex == 3
-                ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                setState(() {
+                  if (token == '') {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  }
+                });
+              },
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
             ),
           ),
         ],
       ),
+
     );
   }
 }

@@ -25,7 +25,9 @@ class _HtmlExpandableTextState extends State<HtmlExpandableText> {
 
     final visibleHtml = _isExpanded
         ? widget.htmlContent
-        : plainText.substring(0, widget.cutoff) + (showToggle ? '...' : '');
+        : plainText.substring(0, plainText.length.clamp(0, widget.cutoff)) +
+        (showToggle ? '...' : '');
+
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

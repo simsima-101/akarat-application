@@ -25,20 +25,19 @@ import 'filter_list.dart';
 import 'full_amenities_screen.dart';
 import 'locationsearch.dart';
 import 'my_account.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 
 class Filter extends StatelessWidget {
   final dynamic data;
-  const Filter({super.key,required this.data});
+  const Filter({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: FilterDemo(data: data,),
-    );
+    return FilterDemo(data: data);  // ✅ No MaterialApp — just return the screen
   }
 }
+
 class FilterDemo extends StatefulWidget {
   final dynamic data;
 
@@ -48,13 +47,15 @@ class FilterDemo extends StatefulWidget {
   _FilterDemoState createState() => _FilterDemoState();
 }
 class _FilterDemoState extends State<FilterDemo> {
+
+  int displayedFilterResultCount = 0;
   late bool isSelected = true;
-   double start = 3000;
-   double startarea = 3000;
-   double endarea = 5000;
-   double end = 5000;
-   SfRangeValues _values = SfRangeValues(80000 ,200000);
-   SfRangeValues _valuesArea = SfRangeValues(3000 ,5000);
+  double start = 3000;
+  double startarea = 3000;
+  double endarea = 5000;
+  double end = 5000;
+  SfRangeValues _values = SfRangeValues(80000 ,200000);
+  SfRangeValues _valuesArea = SfRangeValues(3000 ,5000);
   late RangeController _rangeController;
   late RangeController _rangeControllerarea;
   final agenciesController = TextEditingController();
@@ -64,6 +65,12 @@ class _FilterDemoState extends State<FilterDemo> {
   bool isLoading = false;
   bool hasMore = true;
   late FilterModel filterModel;
+
+  int filterResultCount = 0;
+
+  Map<String, PropertyTypeModel> _propertyTypeCache = {};
+
+
 
 
   String token = '';
@@ -88,17 +95,41 @@ class _FilterDemoState extends State<FilterDemo> {
   @override
   void initState() {
     super.initState();
-    _rangeController = RangeController(start: start.toString(), end: end.toString());
-    _rangeControllerarea = RangeController(start: startarea.toString(), end: endarea.toString());
+
+    // Set selected product index and purpose
     selectedproduct = _product.indexOf(widget.data);
     purpose = widget.data;
-    loadInitialData(); // this now uses cache
+
+    // Initially property_type empty
+    property_type = '';
+
+    // Initialize range controllers
+    _rangeController = RangeController(start: start.toString(), end: end.toString());
+    _rangeControllerarea = RangeController(start: startarea.toString(), end: endarea.toString());
+
+    // Build chart data
     chartData = List.generate(
       96,
           (index) => Data(500 + index * 100.0, yValues[index % yValues.length].toDouble()),
     );
 
+    // Now load initial data (property types + amenities)
+    loadInitialData().then((_) {
+      // After loading property types → set first type
+      if (propertyTypeModel != null && propertyTypeModel!.data != null && propertyTypeModel!.data!.isNotEmpty) {
+        setState(() {
+          // Set first property type name
+          property_type = propertyTypeModel!.data!.first.name ?? '';
+          selectedtype = 0;
+        });
+      }
+
+      // Now that we have purpose + property_type → update count
+      updateFilterCount();
+    });
   }
+
+
 
   Future<void> loadInitialData() async {
     try {
@@ -167,34 +198,57 @@ class _FilterDemoState extends State<FilterDemo> {
     _rangeControllerarea.dispose();
     super.dispose();
   }
-final List _product = [
-  'Rent',
-  'Buy',
-  'New Projects',
-'Commercial'
 
-];
-  final List _category = [
+// Product list (UI display)
+  final List<String> _product = [
+    'Rent',
+    'Buy',
+    'New Projects',
+    'Commercial'
+  ];
+
+// Product API map (to send correct "purpose" to API)
+  final Map<String, String> _productApiMap = {
+    'Rent': 'to-rent',
+    'Buy': 'for-sale',
+    'New Projects': 'new-project',
+    'Commercial': 'commercial',
+  };
+
+// Category list
+  final List<String> _category = [
     'All Residential',
     'Apartment',
     'Villa',
     'Townhouse',
   ];
-  final List _bedroom = [
-    'Studio', '1', '2', '3','4','5','6','7','8','9+'
-  ];
-  final List _bathroom = [
-    '1', '2', '3','4','5','6+'
-  ];
-  final List _ftype = [
-    'All', 'Furnished', 'Unfurnished'
-  ];
-  final List _rent = [
-    'Yearly', 'Daily',
-        'Monthly'
+
+// Bedroom options
+  final List<String> _bedroom = [
+    'Studio', '1', '2', '3', '4', '5', '6', '7', '8', '9+'
   ];
 
-  final List<int> yValues = [5000, 3000, 9000,7000,10000,1500,4000,];
+// Bathroom options
+  final List<String> _bathroom = [
+    '1', '2', '3', '4', '5', '6+'
+  ];
+
+// Furnished type
+  final List<String> _ftype = [
+    'All', 'Furnished', 'Unfurnished'
+  ];
+
+// Rent payment period
+  final List<String> _rent = [
+    'Yearly', 'Monthly', 'Weekly', 'Daily'
+  ];
+
+// Chart Y values
+  final List<int> yValues = [
+    5000, 3000, 9000, 7000, 10000, 1500, 4000
+  ];
+
+// Chart data
   late List<Data> chartData;
 
 
@@ -307,123 +361,192 @@ final List _product = [
   int? selectedamenities; // Holds the index of the selected container
   // int? selectedamenities; // Holds the index of the selected container
   int? selectedrent; // Holds the index of the selected container
-String purpose = ' ';
-String category = ' ';
-String bedroom = ' ';
-String bathroom = ' ';
-String ftype = ' ';
-String amnities = ' ';
-String property_type= ' ';
-String rent = ' ';
-String min_price = '';
-String max_price = ' ';
-String min_sqrfeet = ' ';
-String max_sqrfeet = ' ';
+  String purpose = ' ';
+  String category = ' ';
+  String bedroom = ' ';
+  String bathroom = ' ';
+  String ftype = ' ';
+  String amnities = ' ';
+  String property_type= ' ';
+  String rent = ' ';
+  String min_price = '';
+  String max_price = ' ';
+  String min_sqrfeet = ' ';
+  String max_sqrfeet = ' ';
   Set<int> selectedIndexes = {};
   PropertyTypeModel? propertyTypeModel;
 
+  Uri buildFilterUri({
+    String? search,
+    String? propertyType,
+    String? furnishedStatus,
+    String? bedrooms,
+    String? bathrooms,
+    String? minPrice,
+    String? maxPrice,
+    String? paymentPeriod,
+    String? minSquareFeet,
+    String? maxSquareFeet,
+    String? purpose,
+    List<int>? amenities,
+  }) {
+    final queryParams = <String, dynamic>{};
 
-  Future<void> showResult() async {
-    setState(() {
-      isLoading = true;
-    });
+    if (search != null && search.isNotEmpty) queryParams['search'] = search;
+    if (propertyType != null && propertyType.isNotEmpty) queryParams['property_type'] = propertyType;
+    if (furnishedStatus != null && furnishedStatus.isNotEmpty) queryParams['furnished_status'] = furnishedStatus;
+    if (bedrooms != null && bedrooms.isNotEmpty) queryParams['bedrooms'] = bedrooms;
+    if (bathrooms != null && bathrooms.isNotEmpty) queryParams['bathrooms'] = bathrooms;
+    if (minPrice != null && minPrice.isNotEmpty) queryParams['min_price'] = minPrice;
+    if (maxPrice != null && maxPrice.isNotEmpty) queryParams['max_price'] = maxPrice;
+    if (paymentPeriod != null && paymentPeriod.isNotEmpty) queryParams['payment_period'] = paymentPeriod;
+    if (minSquareFeet != null && minSquareFeet.isNotEmpty) queryParams['min_square_feet'] = minSquareFeet;
+    if (maxSquareFeet != null && maxSquareFeet.isNotEmpty) queryParams['max_square_feet'] = maxSquareFeet;
+    if (purpose != null && purpose.isNotEmpty) queryParams['purpose'] = purpose;
+    if (amenities != null && amenities.isNotEmpty) {
+      queryParams['amenities'] = amenities.join(',');
+    }
 
+    return Uri.https(
+      'akarat.com',
+      '/api/filters',
+      queryParams,
+    );
+  }
+
+
+  Future<void> showResult({bool autoUpdate = false}) async {
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+    }
+
+    await updateFilterCount(); // ✅ Call update first
+
+    // After updating count — if NOT autoUpdate → navigate
+    if (!autoUpdate && mounted) {
+      if (filterResultCount == 0) {
+        // No property found → show empty screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Scaffold(
+              appBar: AppBar(
+                title: Text('Results'),
+                backgroundColor: Colors.red,
+              ),
+              body: Container(
+                color: Colors.white,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        "assets/images/not_found.png",
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.contain,
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        'No Property Found',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Please select other filters to get results.',
+                        style: TextStyle(fontSize: 16, color: Colors.black54),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 30),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          'Back to Filters',
+                          style: TextStyle(fontSize: 14, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      } else {
+        // Properties found → navigate to result list
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FliterList(filterModel: filterModel),
+          ),
+        );
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> updateFilterCount() async {
     try {
       final amenitiesList = selectedIndexes.toList();
 
-      final uriString =
-          'https://akarat.com/api/filters?search='
-          '&amenities=${amenitiesList.join(",")}'
-          '&property_type=$property_type'
-          '&furnished_status=$ftype'
-          '&bedrooms=$bedroom'
-          '&min_price=$min_price'
-          '&max_price=$max_price'
-          '&payment_period=$rent'
-          '&min_square_feet=$min_sqrfeet'
-          '&max_square_feet=$max_sqrfeet'
-          '&bathrooms=$bathroom'
-          '&purpose=$purpose';
+      final uri = buildFilterUri(
+        search: '',
+        propertyType: property_type.trim(),
+        furnishedStatus: ftype.trim(),
+        bedrooms: bedroom.trim(),
+        bathrooms: bathroom.trim(),
+        minPrice: min_price.trim(),
+        maxPrice: max_price.trim(),
+        paymentPeriod: rent.trim(),
+        minSquareFeet: min_sqrfeet.trim(),
+        maxSquareFeet: max_sqrfeet.trim(),
+        purpose: _productApiMap[purpose]?.trim() ?? '',
+        amenities: amenitiesList,
+      );
 
-      final uri = Uri.parse(uriString);
-      final cacheKey = 'filter_cache_${md5.convert(utf8.encode(uriString))}';
-      final cacheTimeKey = '${cacheKey}_time';
+      debugPrint('📢 Filter API URL: $uri'); // log the URL
 
-      final prefs = await SharedPreferences.getInstance();
-      final now = DateTime.now().millisecondsSinceEpoch;
-      final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
-
-      // ✅ Use cached data if valid
-      if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
-        final cachedData = prefs.getString(cacheKey);
-        if (cachedData != null) {
-          final data = jsonDecode(cachedData);
-          final feature = FilterResponseModel.fromJson(data);
-          if (mounted) {
-            setState(() {
-              filterModel = feature.data!;
-            });
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => FliterList(filterModel: filterModel),
-              ),
-            );
-          }
-          return;
-        }
-      }
-
-      // 🔄 Fetch fresh data
       final response = await http.get(uri).timeout(const Duration(seconds: 7));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final feature = FilterResponseModel.fromJson(data);
 
-        prefs.setString(cacheKey, response.body);
-        prefs.setInt(cacheTimeKey, now);
-
         if (mounted) {
           setState(() {
             filterModel = feature.data!;
+            filterResultCount = feature.data?.meta?.total ?? 0;
+            displayedFilterResultCount = filterResultCount;
+            debugPrint('✅ Updated filter count: $filterResultCount');
           });
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FliterList(filterModel: filterModel),
-            ),
-          );
         }
       } else {
         debugPrint("❌ API Error: ${response.statusCode}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Something went wrong. Please try again.")),
-        );
       }
-    } on SocketException {
-      debugPrint("❌ No internet connection.");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("No internet connection.")),
-      );
-    } on TimeoutException {
-      debugPrint("❌ Request timed out.");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Request timed out. Please try again.")),
-      );
     } catch (e) {
-      debugPrint("❌ Error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Unexpected error occurred.")),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
+      debugPrint("❌ Error in updateFilterCount: $e");
     }
   }
+
+
+
+
+
+
+
+
 
 
   bool _isLoading = false;
@@ -436,6 +559,7 @@ String max_sqrfeet = ' ';
     final now = DateTime.now().millisecondsSinceEpoch;
     final lastFetched = prefs.getInt(cachedTimeKey) ?? 0;
 
+    // If cached data is fresh (<6 hours), use it
     if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
       final cachedData = prefs.getString(cachedKey);
       if (cachedData != null) {
@@ -448,6 +572,7 @@ String max_sqrfeet = ' ';
       }
     }
 
+    // Fetch data from API if not cached or cache has expired
     try {
       final uri = Uri.parse("https://akarat.com/api/property-types/$purpose");
       final response = await http.get(uri).timeout(const Duration(seconds: 10));
@@ -460,8 +585,8 @@ String max_sqrfeet = ' ';
           setState(() {
             propertyTypeModel = feature;
           });
-          prefs.setString(cachedKey, response.body);
-          prefs.setInt(cachedTimeKey, now);
+          prefs.setString(cachedKey, response.body); // Save data to cache
+          prefs.setInt(cachedTimeKey, now); // Save timestamp to cache
         }
       } else {
         debugPrint("❌ Property API failed: ${response.statusCode}");
@@ -471,7 +596,6 @@ String max_sqrfeet = ' ';
     }
   }
 
-
   Future<void> fetchAmenities() async {
     final prefs = await SharedPreferences.getInstance();
     final cachedKey = 'cached_amenities';
@@ -479,7 +603,7 @@ String max_sqrfeet = ' ';
     final now = DateTime.now().millisecondsSinceEpoch;
     final lastFetched = prefs.getInt(cachedTimeKey) ?? 0;
 
-    // ✅ If cached data is fresh (<6 hours), use it
+    // If cached data is fresh (<6 hours), use it
     if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
       final cachedData = prefs.getString(cachedKey);
       if (cachedData != null) {
@@ -493,7 +617,7 @@ String max_sqrfeet = ' ';
       }
     }
 
-    // ⬇️ If not cached or expired, fetch from API
+    // Fetch data from API if not cached or cache has expired
     try {
       final response = await http
           .get(Uri.parse("https://akarat.com/api/amenities"))
@@ -502,7 +626,7 @@ String max_sqrfeet = ' ';
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
 
-        // ✅ Save to cache
+        // Save data to cache
         prefs.setString(cachedKey, response.body);
         prefs.setInt(cachedTimeKey, now);
 
@@ -526,9 +650,9 @@ String max_sqrfeet = ' ';
   Widget build(BuildContext context) {
     if (propertyTypeModel == null) {
       return Scaffold(
-        body: ListView.builder(
-          itemCount: 5,
-          itemBuilder: (context, index) => const ShimmerCard(),) // Show loading state
+          body: ListView.builder(
+            itemCount: 5,
+            itemBuilder: (context, index) => const ShimmerCard(),) // Show loading state
       );
     }
     Size screenSize = MediaQuery.sizeOf(context);
@@ -549,8 +673,11 @@ String max_sqrfeet = ' ';
         ),
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.red),
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Home())), // ✅ Add close functionality
+          onPressed: () {
+            Navigator.pop(context); // ✅ Correct back behavior
+          },
         ),
+
         actions: [
           TextButton(
             onPressed: () {
@@ -579,6 +706,8 @@ String max_sqrfeet = ' ';
 
                 // Reset amenities
                 selectedIndexes.clear();
+
+                updateFilterCount();
 
                 // Reset sliders
                 _values = SfRangeValues(80000, 200000);
@@ -612,6 +741,8 @@ String max_sqrfeet = ' ';
                     scrollDirection: Axis.horizontal,
                     itemCount: _product.length,
                     itemBuilder: (context, index) {
+                      final isSelected = selectedproduct == index;
+
                       return GestureDetector(
                         onTap: () async {
                           setState(() {
@@ -631,31 +762,31 @@ String max_sqrfeet = ' ';
                           margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                           decoration: BoxDecoration(
-                            /*border: Border.all(
-                              color: selectedproduct == index ? Colors.blueAccent : Colors.white,
-                              width: selectedproduct == index ? 2 : 1,
-                            ),*/
-                            color: selectedproduct == index ? Color(0xFF42A5F5) : Colors.white,
+                            color: Colors.white, // No background color change
+                            border: Border.all(
+                              color: isSelected ? Colors.black : Colors.transparent,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.5),
-                                offset: Offset(0, 2),
+                                offset: const Offset(0, 2),
                                 blurRadius: 4,
                                 spreadRadius: 0,
                               ),
                               BoxShadow(
                                 color: Colors.white.withOpacity(0.8),
-                                offset: Offset(-4, -4),
+                                offset: const Offset(-4, -4),
                                 blurRadius: 8,
                                 spreadRadius: 2,
                               ),
                             ],
-                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             _product[index],
                             style: TextStyle(
-                              color: selectedproduct == index ? Colors.white : Colors.black,
+                              color: Colors.black,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
                               fontSize: 14,
@@ -668,30 +799,33 @@ String max_sqrfeet = ' ';
                   ),
                 ),
               ),
+
+
               const SizedBox(height: 20),
               const Divider(height: 1,indent: 15,endIndent: 15,),
               const SizedBox(height: 20),
               //Searchbar
               Padding(
-                padding: const EdgeInsets.only(left: 10.0,right: 10),
+                padding: const EdgeInsets.only(left: 10.0, right: 10),
                 child: Container(
                   height: 65,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.grey.shade300, // grey background
                     borderRadius: BorderRadius.circular(25),
-                    border: Border.all(color: Colors.redAccent.shade100, width: 1),
+                    border: Border.all(color: Colors.grey, width: 1), // grey border for disabled look
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.search, color: Colors.redAccent),
+                      Image.asset("assets/images/map.png", height: 22, color: Colors.grey), // greyscale icon
                       const SizedBox(width: 10),
                       Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: "Search for a locality, area or city",
-                            hintStyle: TextStyle(color: Colors.grey.shade500),
-                            border: InputBorder.none,
+                        child: Text(
+                          "Search (Coming Soon)", // updated text
+                          style: TextStyle(
+                            color: Colors.black45,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -699,6 +833,7 @@ String max_sqrfeet = ' ';
                   ),
                 ),
               ),
+
               const SizedBox(height: 20),
               const Divider(height: 1,indent: 15,endIndent: 15,),
               const SizedBox(height: 20),
@@ -718,73 +853,73 @@ String max_sqrfeet = ' ';
               ),
               const SizedBox(height: 5),
               AnimatedOpacity(
-          opacity: _isLoading ? 0.0 : 1.0,
-          duration: const Duration(milliseconds: 500),
-          child: Container(
-            margin: const EdgeInsets.all(5),
-            height: screenSize.height * 0.125,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: propertyTypeModel?.data?.length ?? 0,
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () async {
-                    setState(() {
-                      selectedtype = index;
-                      property_type = propertyTypeModel!.data![index].name.toString();
-                    });
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: selectedtype == index ? Color(0xFFEEEEEE) : Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          offset: Offset(0, 2),
-                          blurRadius: 4,
-                        ),
-                        BoxShadow(
-                          color: Colors.white.withOpacity(0.8),
-                          offset: Offset(-4, -4),
-                          blurRadius: 8,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: CachedNetworkImage(
-                            imageUrl: propertyTypeModel!.data![index].icon.toString(),
-                            height: 35,
+                opacity: _isLoading ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 500),
+                child: Container(
+                  margin: const EdgeInsets.all(5),
+                  height: screenSize.height * 0.125,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: propertyTypeModel?.data?.length ?? 0,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () async {
+                          setState(() {
+                            selectedtype = index;
+                            property_type = propertyTypeModel!.data![index].name.toString();
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: selectedtype == index ? Color(0xFFEEEEEE) : Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                offset: Offset(0, 2),
+                                blurRadius: 4,
+                              ),
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.8),
+                                offset: Offset(-4, -4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: CachedNetworkImage(
+                                  imageUrl: propertyTypeModel!.data![index].icon.toString(),
+                                  height: 35,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: Text(
+                                  propertyTypeModel!.data![index].name.toString(),
+                                  style: TextStyle(
+                                    color: selectedtype == index ? Colors.black : Colors.black,
+                                    letterSpacing: 0.5,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Text(
-                            propertyTypeModel!.data![index].name.toString(),
-                            style: TextStyle(
-                              color: selectedtype == index ? Colors.black : Colors.black,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-          ),
-        ),
+                ),
+              ),
               const SizedBox(height: 20),
               const Divider(height: 1,indent: 15,endIndent: 15,),
               const SizedBox(height: 20),
@@ -794,9 +929,9 @@ String max_sqrfeet = ' ';
                   Padding(padding: const EdgeInsets.only(left: 20),
                     child:  Text("Price range",
                       style: TextStyle(
-                          color: Colors.black,fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
+                        color: Colors.black,fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
                       ),
                       textAlign: TextAlign.left,),
                   ),
@@ -806,7 +941,7 @@ String max_sqrfeet = ' ';
               Padding(
                   padding: const EdgeInsets.only(top: 0,left: 20,right: 10),
                   child: Row(
-                    spacing: 15,
+                      spacing: 15,
                       children: [
                         Container(
                             width: screenSize.width*0.38,
@@ -895,7 +1030,8 @@ String max_sqrfeet = ' ';
                     min: 500,
                     max: 300000,
                     interval: 10000,
-                    activeColor: Colors.black,
+                    activeColor: Color(0xFF2575D4), // ✅ blue line
+
                     inactiveColor: Color(0x80F1EEEE) ,
                     enableTooltip: true,
                     shouldAlwaysShowTooltip: true,
@@ -904,12 +1040,13 @@ String max_sqrfeet = ' ';
                     'AED ${actualValue.toInt()}',
                     onChanged: (value) {
                       setState(() {
-                        _values=SfRangeValues(value.start, value.end);
-                        min_price=value.start.toStringAsFixed(0);
-                        max_price=value.end.toStringAsFixed(0);
+                        _values = SfRangeValues(value.start, value.end);
+                        min_price = value.start.toStringAsFixed(0);
+                        max_price = value.end.toStringAsFixed(0);
                       });
-
+                      showResult(autoUpdate: true); // ✅ call API to update count
                     },
+
                     child: SizedBox(
                       height: 60,
                       width: double.infinity,
@@ -963,9 +1100,9 @@ String max_sqrfeet = ' ';
                     // child:  Text(_values.start.toStringAsFixed(2),
                     child:  Text("Bedrooms",
                       style: TextStyle(
-                          color: Colors.black,fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,),
+                        color: Colors.black,fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,),
                       textAlign: TextAlign.left,),
                   ),
                 ],
@@ -981,18 +1118,26 @@ String max_sqrfeet = ' ';
                     scrollDirection: Axis.horizontal,
                     itemCount: _bedroom.length,
                     itemBuilder: (context, index) {
+                      final isSelected = selectedbedroom == index;
                       return GestureDetector(
-                        onTap: () {
+                        onTap: () async {
                           setState(() {
                             selectedbedroom = index;
                             bedroom = _bedroom[index];
                           });
+                          await updateFilterCount(); // ✅ NOW this will work
                         },
+
+
                         child: Container(
                           margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           decoration: BoxDecoration(
-                            color: selectedbedroom == index ? Color(0xFFEF5350) : Colors.white,
+                            color: Colors.white,
+                            border: Border.all(
+                              color: isSelected ? Colors.black87 : Colors.grey.shade300,
+                              width: isSelected ? 2 : 1,
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.5),
@@ -1010,15 +1155,24 @@ String max_sqrfeet = ' ';
                             borderRadius: BorderRadius.circular(8),
                           ),
                           alignment: Alignment.center,
-                          child: Text(
-                            _bedroom[index],
-                            style: TextStyle(
-                              color: selectedbedroom == index ? Colors.white : Colors.black,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                            textAlign: TextAlign.center,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (isSelected) ...[
+                                Icon(Icons.check, size: 18, color: Colors.green),
+                                SizedBox(width: 4),
+                              ],
+                              Text(
+                                _bedroom[index],
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  letterSpacing: 0.5,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -1026,6 +1180,7 @@ String max_sqrfeet = ' ';
                   ),
                 ),
               ),
+
               const SizedBox(height: 20),
               const Divider(height: 1,indent: 15,endIndent: 15,),
               const SizedBox(height: 20),
@@ -1051,19 +1206,26 @@ String max_sqrfeet = ' ';
                     scrollDirection: Axis.horizontal,
                     itemCount: _bathroom.length,
                     itemBuilder: (context, index) {
+                      final isSelected = selectedbathroom == index;
                       return GestureDetector(
-                        onTap: () {
+                        onTap: () async{
                           setState(() {
                             selectedbathroom = index;
                             bathroom = _bathroom[index];
                           });
+                          await updateFilterCount(); // ✅ call API to update count
                         },
+
                         child: Container(
                           alignment: Alignment.center,
                           margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           decoration: BoxDecoration(
-                            color: selectedbathroom == index ? Color(0xFFEF5350) : Colors.white,
+                            color: Colors.white,
+                            border: Border.all(
+                              color: isSelected ? Colors.black87 : Colors.grey.shade300,
+                              width: isSelected ? 2 : 1,
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.5),
@@ -1080,15 +1242,25 @@ String max_sqrfeet = ' ';
                             ],
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Text(
-                            _bathroom[index],
-                            style: TextStyle(
-                              color: selectedbathroom == index ? Colors.white : Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                            textAlign: TextAlign.center,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (isSelected) ...[
+                                Icon(Icons.check, size: 18, color: Colors.green),
+                                SizedBox(width: 4),
+                              ],
+                              Text(
+                                _bathroom[index],
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -1096,6 +1268,7 @@ String max_sqrfeet = ' ';
                   ),
                 ),
               ),
+
               const SizedBox(height: 20),
               const Divider(height: 1,indent: 15,endIndent: 15,),
               const SizedBox(height: 20),
@@ -1105,10 +1278,10 @@ String max_sqrfeet = ' ';
                   Padding(padding: const EdgeInsets.only(left: 20),
                     child:  Text("Area/Size",
                       style: TextStyle(
-                          color: Colors.black,fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                         ),
+                        color: Colors.black,fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
                       textAlign: TextAlign.left,),
                   ),
                 ],
@@ -1117,7 +1290,7 @@ String max_sqrfeet = ' ';
               Padding(
                   padding: const EdgeInsets.only(top: 0,left: 20,right: 10),
                   child: Row(
-                    spacing: 15,
+                      spacing: 15,
                       children: [
                         Container(
                             width: screenSize.width*0.38,
@@ -1144,7 +1317,7 @@ String max_sqrfeet = ' ';
                               ],
                             ),
                             child: Text(_valuesArea.start.toStringAsFixed(0),style: TextStyle(
-                              fontWeight: FontWeight.bold,fontSize: 15
+                                fontWeight: FontWeight.bold,fontSize: 15
                             ),)
                         ),
 
@@ -1203,17 +1376,19 @@ String max_sqrfeet = ' ';
                     interval: 1000,
                     enableTooltip: true,
                     shouldAlwaysShowTooltip: true,
-                    activeColor: Colors.black,
-                    inactiveColor: Color(0x80E0E0E0),
-                    initialValues: _valuesArea,
-                    onChanged: (value) {
-                      setState(() {
-                        _valuesArea=SfRangeValues(value.start, value.end);
-                        min_sqrfeet=value.start.toStringAsFixed(0);
-                        max_sqrfeet=value.end.toStringAsFixed(0);
-                      });
+                    activeColor: Color(0xFF2575D4), // ✅ blue line
 
+                    inactiveColor: Color(0x80F1EEEE) ,
+                    initialValues: _valuesArea,
+                    onChanged: (value) async {
+                      setState(() {
+                        _valuesArea = SfRangeValues(value.start, value.end);
+                        min_sqrfeet = value.start.toStringAsFixed(0);
+                        max_sqrfeet = value.end.toStringAsFixed(0);
+                      });
+                      await updateFilterCount(); // ✅ call API to update count
                     },
+
                     child: SizedBox(
                       height: 70,
                       width: 400,
@@ -1262,10 +1437,10 @@ String max_sqrfeet = ' ';
                   Padding(padding: const EdgeInsets.only(left: 20),
                     child:  Text("Furnished Type",
                       style: TextStyle(
-                          color: Colors.black,fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                          ),
+                        color: Colors.black,fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
                       textAlign: TextAlign.left,),
                   ),
                 ],
@@ -1280,18 +1455,25 @@ String max_sqrfeet = ' ';
                     physics: const ScrollPhysics(),
                     itemCount: _ftype.length,
                     itemBuilder: (context, index) {
+                      final isSelected = selectedIndex == index;
                       return GestureDetector(
-                        onTap: () {
+                        onTap: () async {
                           setState(() {
                             selectedIndex = index;
                             ftype = _ftype[index];
                           });
+                          await updateFilterCount(); // ✅ call API to update count
                         },
+
                         child: Container(
-                          margin: const EdgeInsets.all(5),
+                          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           decoration: BoxDecoration(
-                            color: selectedIndex == index ? Color(0xFF42A5F5) : Colors.white,
+                            color: Colors.white,
+                            border: Border.all(
+                              color: isSelected ? Colors.black87 : Colors.grey.shade300,
+                              width: isSelected ? 2 : 1,
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.5),
@@ -1309,15 +1491,23 @@ String max_sqrfeet = ' ';
                             borderRadius: BorderRadius.circular(8),
                           ),
                           alignment: Alignment.center,
-                          child: Text(
-                            _ftype[index],
-                            style: TextStyle(
-                              color: selectedIndex == index ? Colors.white : Colors.black,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                            textAlign: TextAlign.center,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (isSelected) ...[
+                                Icon(Icons.check, size: 18, color: Colors.green),
+                                SizedBox(width: 4),
+                              ],
+                              Text(
+                                _ftype[index],
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  letterSpacing: 0.5,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -1325,6 +1515,8 @@ String max_sqrfeet = ' ';
                   ),
                 ),
               ),
+
+
               const SizedBox(height: 20),
               const Divider(height: 1,indent: 15,endIndent: 15,),
               const SizedBox(height: 20),
@@ -1334,10 +1526,10 @@ String max_sqrfeet = ' ';
                   Padding(padding: const EdgeInsets.only(left: 20),
                     child:  Text("Amenities",
                       style: TextStyle(
-                          color: Colors.black,fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                          ),
+                        color: Colors.black,fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
                       textAlign: TextAlign.left,),
                   ),
                 ],
@@ -1348,7 +1540,7 @@ String max_sqrfeet = ' ';
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 15),
                     child: GridView.builder(
-                      itemCount: _showAllAmenities ? amenities.length : 4,
+                      itemCount: _showAllAmenities ? amenities.length : 5,
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -1360,13 +1552,15 @@ String max_sqrfeet = ' ';
                       itemBuilder: (context, index) {
                         final isSelected = selectedIndexes.contains(index);
                         return GestureDetector(
-                          onTap: () {
+                          onTap: () async {
                             setState(() {
                               isSelected
                                   ? selectedIndexes.remove(index)
                                   : selectedIndexes.add(index);
                             });
+                            await updateFilterCount(); // ✅ call API to update count
                           },
+
                           child: Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -1386,12 +1580,16 @@ String max_sqrfeet = ' ';
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Row(
                               children: [
-                                Image.network(
-                                  amenities[index].icon ?? '',
+                                CachedNetworkImage(
+                                  imageUrl: amenities[index].icon ?? '',
                                   width: 18,
                                   height: 18,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.broken_image, size: 18),
+                                  placeholder: (context, url) => const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                  errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 18),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
@@ -1406,6 +1604,7 @@ String max_sqrfeet = ' ';
                                 ),
                               ],
                             ),
+
                           ),
                         );
                       },
@@ -1416,22 +1615,43 @@ String max_sqrfeet = ' ';
                     Padding(
                       padding: const EdgeInsets.only(top: 10.0),
                       child: TextButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          // Wait for all amenities icons to be cached completely
+                          await Future.wait(
+                            amenities.map((amenity) async {
+                              final url = amenity.icon;
+                              if (url != null && url.isNotEmpty) {
+                                try {
+                                  final imageProvider = CachedNetworkImageProvider(url);
+                                  await precacheImage(imageProvider, context); // Await each cache
+                                } catch (e) {
+                                  // Handle any failed image silently
+                                }
+                              }
+                            }),
+                          );
+
+                          // Navigate only AFTER all images are cached
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => FullAmenitiesScreen(
                                 allAmenities: amenities,
                                 selectedIndexes: selectedIndexes,
-                                onDone: (selected) {
+                                onDone: (selected) async{
                                   setState(() {
                                     selectedIndexes = selected;
                                   });
+                                  await updateFilterCount();
                                 },
                               ),
                             ),
                           );
                         },
+
+
+
+
                         child: Text(
                           _showAllAmenities ? "Show less amenities" : "Show more amenities",
                           style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold,fontSize: 16),
@@ -1467,17 +1687,23 @@ String max_sqrfeet = ' ';
                     itemBuilder: (context, index) {
                       final isSelected = selectedrent == index;
                       return GestureDetector(
-                        onTap: () {
+                        onTap: () async {
                           setState(() {
                             selectedrent = index;
                             rent = _rent[index];
                           });
+                          await updateFilterCount();// ✅ call API to update count
                         },
+
                         child: Container(
                           margin: const EdgeInsets.all(5),
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           decoration: BoxDecoration(
-                            color: isSelected ? Color(0xFF42A5F5) : Colors.white,
+                            color: Colors.white,
+                            border: Border.all(
+                              color: isSelected ? Colors.black87 : Colors.grey.shade300,
+                              width: isSelected ? 2 : 1,
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.5),
@@ -1495,15 +1721,23 @@ String max_sqrfeet = ' ';
                             borderRadius: BorderRadius.circular(8),
                           ),
                           alignment: Alignment.center,
-                          child: Text(
-                            _rent[index],
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                            textAlign: TextAlign.center,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (isSelected) ...[
+                                Icon(Icons.check, size: 18, color: Colors.green),
+                                SizedBox(width: 4),
+                              ],
+                              Text(
+                                _rent[index],
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  letterSpacing: 0.5,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -1511,60 +1745,133 @@ String max_sqrfeet = ' ';
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+
+
+              // const SizedBox(height: 20),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 16),
+              //   child: Container(
+              //     width: double.infinity,
+              //     height: 100,
+              //     padding: const EdgeInsets.all(16),
+              //     decoration: BoxDecoration(
+              //       color: Color(0xFFFFFBF0)
+              //       ,
+              //       borderRadius: BorderRadius.circular(10),
+              //       boxShadow: [
+              //         BoxShadow(
+              //           color: Colors.grey.withOpacity(0.2),
+              //           blurRadius: 6,
+              //           offset: Offset(0, 3),
+              //         ),
+              //       ],
+              //     ),
+              //     child: Column(
+              //       crossAxisAlignment: CrossAxisAlignment.start,
+              //       children: [
+              //         Row(
+              //           children: [
+              //             Image.asset(
+              //               "assets/images/app-icon_new.png",
+              //               width: 22,
+              //               height: 22,
+              //               fit: BoxFit.contain,
+              //             ),
+              //             const SizedBox(width: 8),
+              //             const Text(
+              //               "Explore more locations",
+              //               style: TextStyle(
+              //                 fontSize: 16,
+              //                 fontWeight: FontWeight.bold,
+              //                 color: Colors.black87,
+              //                 letterSpacing: 0.5,
+              //               ),
+              //             ),
+              //           ],
+              //         ),
+              //
+              //         const SizedBox(height: 12),
+              //         Row(
+              //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //           children: ["Dubai", "AbuDhabi", "Sharjah", "Ajman", "Al Ain"].map((city) {
+              //             return Container(
+              //               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              //               decoration: BoxDecoration(
+              //                 color: Colors.white,
+              //                 borderRadius: BorderRadius.circular(12),
+              //                 boxShadow: [
+              //                   BoxShadow(
+              //                     color: Colors.grey.withOpacity(0.2),
+              //                     blurRadius: 4,
+              //                     offset: Offset(1, 2),
+              //                   ),
+              //                 ],
+              //               ),
+              //               child: Text(
+              //                 city,
+              //                 style: const TextStyle(
+              //                   fontSize: 13,
+              //                   fontWeight: FontWeight.w600,
+              //                   color: Colors.black87,
+              //                 ),
+              //               ),
+              //             );
+              //           }).toList(),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+              // const SizedBox(height: 20),
+
               const Divider(height: 1,indent: 15,endIndent: 15,),
               Container(
                 height: 100,
               ),
               GestureDetector(
-                onTap: (){
-                  setState(() {
-                    String count = propertyTypeModel!.totalFeaturedProperties.toString();
-                    if(count.isNotEmpty){
-                      showResult();
-                    }
-                    else{
-                      return ;
-                    }
-                  });
-
-                  // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
+                onTap: () {
+                  showResult();
                 },
-                child:  Padding(
-                  padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15,right: 15),
-                  child:   Container(
-                    // color: Colors.red,
-                    width: screenSize.width*0.9,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 25.0, left: 15, bottom: 15, right: 15),
+                  child: Container(
+                    width: screenSize.width * 0.9,
                     height: 45,
-                    // color: Colors.red,
-                    padding: const EdgeInsets.only(top: 10,left: 0),
                     decoration: BoxDecoration(
                       color: Colors.red,
                       borderRadius: BorderRadiusDirectional.circular(6.0),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
+                          offset: const Offset(0.3, 0.3),
                           blurRadius: 0.3,
                           spreadRadius: 0.3,
-                        ), //BoxShadow
+                        ),
                         BoxShadow(
                           color: Colors.white,
                           offset: const Offset(0.0, 0.0),
                           blurRadius: 0.0,
                           spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],),
-                    child: Text("Showing ${propertyTypeModel?.totalFeaturedProperties ??0} Results",style: TextStyle(
-
-                        color: Colors.white,letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 15
-                    ),textAlign: TextAlign.center,),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        "Showing $displayedFilterResultCount Results" ,// ✅ Live count!
+                        style: TextStyle(
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
                 ),
               ),
+
+
               Container(
                 height: 10,
               ),
@@ -1573,98 +1880,98 @@ String max_sqrfeet = ' ';
     ) ;
 
   }
-Container buildMyNavBar(BuildContext context) {
-  return Container(
-    height: 50,
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(20),
-        topRight: Radius.circular(20),
+  Container buildMyNavBar(BuildContext context) {
+    return Container(
+      height: 50,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
       ),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        GestureDetector(
-            onTap: ()async{
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          GestureDetector(
+              onTap: ()async{
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+              },
+              child: Image.asset("assets/images/home.png",height: 25,)),
+          // IconButton(
+          //   enableFeedback: false,
+          //   onPressed: () {
+          //     setState(() {
+          //       pageIndex = 1;
+          //     });
+          //   },
+          //   icon: pageIndex == 1
+          //       ? const Icon(
+          //     Icons.search,
+          //     color: Colors.red,
+          //     size: 35,
+          //   )
+          //       : const Icon(
+          //     Icons.search_outlined,
+          //     color: Colors.red,
+          //     size: 35,
+          //   ),
+          // ),
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Logout()));
+                }
+                else if(token.isNotEmpty){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Login()));
+                }
+                // Navigator.push(context, MaterialPageRoute(builder: (context)=> FavoriteButton()));
+
+              });
             },
-            child: Image.asset("assets/images/home.png",height: 25,)),
-        IconButton(
-          enableFeedback: false,
-          onPressed: () {
-            setState(() {
-              pageIndex = 1;
-            });
-          },
-          icon: pageIndex == 1
-              ? const Icon(
-            Icons.search,
-            color: Colors.red,
-            size: 35,
-          )
-              : const Icon(
-            Icons.search_outlined,
-            color: Colors.red,
-            size: 35,
+            icon: pageIndex == 2
+                ? const Icon(
+              Icons.favorite,
+              color: Colors.red,
+              size: 30,
+            )
+                : const Icon(
+              Icons.favorite_border_outlined,
+              color: Colors.red,
+              size: 30,
+            ),
           ),
-        ),
-        IconButton(
-          enableFeedback: false,
-          onPressed: () {
-            setState(() {
-              if(token == ''){
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Logout()));
-              }
-              else if(token.isNotEmpty){
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Login()));
-              }
-              // Navigator.push(context, MaterialPageRoute(builder: (context)=> FavoriteButton()));
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
 
-            });
-          },
-          icon: pageIndex == 2
-              ? const Icon(
-            Icons.favorite,
-            color: Colors.red,
-            size: 30,
-          )
-              : const Icon(
-            Icons.favorite_border_outlined,
-            color: Colors.red,
-            size: 30,
+                }
+              });
+            },
+            icon: pageIndex == 3
+                ? const Icon(
+              Icons.dehaze,
+              color: Colors.red,
+              size: 35,
+            )
+                : const Icon(
+              Icons.dehaze_outlined,
+              color: Colors.red,
+              size: 35,
+            ),
           ),
-        ),
-        IconButton(
-          enableFeedback: false,
-          onPressed: () {
-            setState(() {
-              if(token == ''){
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-              }
-              else{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-              }
-            });
-          },
-          icon: pageIndex == 3
-              ? const Icon(
-            Icons.dehaze,
-            color: Colors.red,
-            size: 35,
-          )
-              : const Icon(
-            Icons.dehaze_outlined,
-            color: Colors.red,
-            size: 35,
-          ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 }
 class Data {
   final double x, y;

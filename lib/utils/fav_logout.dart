@@ -6,7 +6,7 @@ import '../screen/login.dart';
 import '../screen/login_page.dart';
 
 class Fav_Logout extends StatefulWidget {
-   Fav_Logout({super.key,});
+  Fav_Logout({super.key,});
 
   @override
   State<Fav_Logout> createState() => new _Fav_LogoutState();
@@ -186,7 +186,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                         child: TabBarView(
                             children: [
                               Container(
-                                 //color: Colors.grey,
+                                //color: Colors.grey,
                                   margin: const EdgeInsets.only(left: 20,right: 15,top: 10),
                                   height: screenSize.height*0.2,
                                   child:  Column(
@@ -217,7 +217,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                         child: Padding(padding: const EdgeInsets.only(top: 20,left: 10,right: 20),
                                           child: ElevatedButton(
                                               onPressed: (){
-                                                 Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginPage()));
+                                                Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginPage()));
                                               },style:
                                           ElevatedButton.styleFrom(
                                             backgroundColor: Colors.blue,
@@ -242,44 +242,45 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                         padding: const EdgeInsets.only(
                                             left: 15.0, right: 20.0, top: 10, bottom: 0),
                                         child: Container(
-                                          width: screenSize.width*0.9,
+                                          width: screenSize.width * 0.9,
                                           height: 50,
-                                          padding: const EdgeInsets.only(top: 5),
+                                          padding: const EdgeInsets.symmetric(horizontal: 16),
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadiusDirectional.circular(10.0),
+                                            color: Colors.grey.shade300, // grey background for disabled look
+                                            borderRadius: BorderRadius.circular(10.0),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.grey,
-                                                offset: const Offset(
-                                                  0.3,
-                                                  0.3,
-                                                ),
-                                                blurRadius: 0.3,
-                                                spreadRadius: 0.3,
-                                              ), //BoxShadow
-                                              BoxShadow(
-                                                color: Colors.white,
-                                                offset: const Offset(0.0, 0.0),
-                                                blurRadius: 0.0,
-                                                spreadRadius: 0.0,
-                                              ), //BoxShadow
+                                                color: Colors.grey.withOpacity(0.3),
+                                                offset: const Offset(2, 2),
+                                                blurRadius: 4,
+                                                spreadRadius: 1,
+                                              ),
                                             ],
                                           ),
                                           child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center, // center the content
                                             children: [
-                                              Padding(padding: const EdgeInsets.only(left: 60,top: 0),
-                                                child:  Image.asset("assets/images/gi.webp",height: 25,
-                                                  alignment: Alignment.center,) ,
+                                              Image.asset(
+                                                "assets/images/gi.webp",
+                                                height: 25,
+                                                alignment: Alignment.center,
+                                                color: Colors.grey, // optional: tint the image to grey
                                               ),
-                                              Padding(padding: const EdgeInsets.only(left: 5,top: 0),
-                                                child:  Text("Continue with Google",style: TextStyle(fontWeight: FontWeight.bold),) ,
-                                              )
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                "Continue with Google (Coming Soon)", // mark as disabled
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.grey.shade700,
+                                                ),
+                                              ),
                                             ],
                                           ),
                                         ),
+
                                       ),
                                       //facebook button
-                                    /*  Padding(
+                                      /*  Padding(
                                         padding: const EdgeInsets.only(
                                             left: 15.0, right: 20.0, top: 15, bottom: 0),
                                         child: Container(
@@ -358,6 +359,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                       height: screenSize.height*0.1,
                                     ),
                                     Container(
+
                                       margin: const EdgeInsets.all(8.0),
                                       height: screenSize.height*0.13,
                                       width: screenSize.width*0.4,
@@ -390,23 +392,30 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                       height: screenSize.height*0.13,
                                     ),
                                     Container(
-                                      width: screenSize.width*0.9,
-                                      height: screenSize.height*0.1,
-                                      child: Padding(padding: const EdgeInsets.only(top: 40,left: 10,right: 10),
+                                      width: screenSize.width * 0.9,
+                                      height: screenSize.height * 0.1,
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(top: 40, left: 10, right: 10),
                                         child: ElevatedButton(
-                                            onPressed: (){
-                                              // Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                                            },style:
-                                        ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.blue,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:  BorderRadius.all(
-                                                Radius.circular(8)),),),
-                                            child: Text("Start a New Search",
-                                              style: TextStyle(color: Colors.white,
-                                                  fontSize: 15),)),
+                                          onPressed: null, // disabled button (Play Store safe)
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.grey.shade400, // grey disabled look
+                                            disabledBackgroundColor: Colors.grey.shade400, // ensure disabled color
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(8)),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            "Start a New Search (Coming Soon)",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ),
+
                                   ],
                                 ),
                               ),
@@ -432,112 +441,36 @@ class _Fav_LogoutState extends State<Fav_Logout> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-              onTap: ()async{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-              },
-              child: Image.asset("assets/images/home.png",height: 25,)),
-          Container(
-              margin: const EdgeInsets.only(left: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.favorite_border,color: Colors.red,)
-          ),
-
-          Container(
-              margin: const EdgeInsets.only(left: 1),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.add_location_rounded,color: Colors.red,)
-
-          ),
-          Container(
-              margin: const EdgeInsets.only(left: 1,right: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.chat,color: Colors.red,)
-
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+            onTap: () async {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
             },
-            icon: pageIndex == 3
-                ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+              },
+              icon: pageIndex == 3
+                  ? const Icon(
+                Icons.dehaze,
+                color: Colors.red,
+                size: 35,
+              )
+                  : const Icon(
+                Icons.dehaze_outlined,
+                color: Colors.red,
+                size: 35,
+              ),
             ),
           ),
         ],

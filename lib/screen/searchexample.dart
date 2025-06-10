@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/search.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
+
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MaterialApp(
@@ -49,13 +53,36 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   }
 
   Future<List<String>> fetchSuggestionsFromBackend(String query) async {
-    await Future.delayed(Duration(milliseconds: 300));
-    List<String> allLocations = [
-      'Dubai', 'Abu Dhabi', 'Sharjah',
-      'Business bay', 'Downtown', 'Jumeirah'
-    ];
-    return allLocations.where((item) => item.toLowerCase().contains(query.toLowerCase())).toList();
+    try {
+      final response = await http.get(Uri.parse('https://akarat.com/api/filters?search=$query'));
+
+      // Debug print
+      print("API Raw Response: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+
+        List<String> locations = [];
+
+        // FIX: Navigate to jsonData['data']['data'] which is the list
+        for (var item in jsonData['data']['data']) {
+          // Check if 'location' field exists and is not null
+          if (item['location'] != null) {
+            locations.add(item['location']);
+          }
+        }
+
+        return locations;
+      } else {
+        print("❌ API Error: ${response.statusCode}");
+        return [];
+      }
+    } catch (e) {
+      print("❌ Exception: $e");
+      return [];
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -91,9 +118,9 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: (){
-                      Navigator.of(context).pop();
-                    },
+                      onTap: (){
+                        Navigator.of(context).pop();
+                      },
                       child: Icon(Icons.arrow_back, color: Colors.red)),
                   SizedBox(width: 8),
                   Expanded(

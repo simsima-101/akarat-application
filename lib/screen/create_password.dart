@@ -38,26 +38,29 @@ class _CreatePasswordState extends State<CreatePassword> {
 
   Future<void> registerUsers(String emailInput) async {
     try {
+      final url = Uri.parse('https://akarat.com/api/register');
+
       final response = await http.post(
-        Uri.parse('https://akarat.com/api/register'),
+        url,
         headers: {
+          'Accept': 'application/json', // ✅ Important: forces JSON response
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({
           "name": myController.text.trim(),
           "email": emailInput.trim(),
-          "password": passwordController.text,
-          "password_confirmation": confirmpasswordController.text,
+          "password": passwordController.text.trim(),
+          "password_confirmation": confirmpasswordController.text.trim(),
         }),
       );
 
-      debugPrint("Status Code: ${response.statusCode}");
+      debugPrint("📡 Status Code: ${response.statusCode}");
+      debugPrint("📄 Response Body: ${response.body}");
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         registermodel = RegisterModel.fromJson(jsonData);
 
-        // Store values locally
         token = registermodel!.token ?? '';
         email = registermodel!.email ?? '';
         result = registermodel!.name ?? '';
@@ -72,21 +75,26 @@ class _CreatePasswordState extends State<CreatePassword> {
 
         debugPrint("✅ Registered Successfully");
 
-        // Navigate to My Account
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => My_Account()),
         );
       } else {
-        final errorResponse = json.decode(response.body);
-        debugPrint("❌ Registration failed: ${errorResponse["message"] ?? 'Unknown error'}");
-        _showErrorDialog("Registration failed: ${errorResponse["message"] ?? 'Please try again.'}");
+        try {
+          final errorResponse = json.decode(response.body);
+          _showErrorDialog("Registration failed: ${errorResponse["message"] ?? 'Unknown error'}");
+          debugPrint("❌ Registration failed: ${errorResponse["message"]}");
+        } catch (_) {
+          _showErrorDialog("Registration failed: ${response.body}");
+          debugPrint("❌ Server returned non-JSON: ${response.body}");
+        }
       }
     } catch (e) {
-      debugPrint("🚨 Error: $e");
+      debugPrint("🚨 Exception: $e");
       _showErrorDialog("Something went wrong. Please try again later.");
     }
   }
+
 
 // Optional: Show error in a dialog
   void _showErrorDialog(String message) {

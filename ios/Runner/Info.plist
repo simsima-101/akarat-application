@@ -47,5 +47,17 @@
 	</array>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
+
+	<!-- App Transport Security -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+	</dict>
+
+	<!-- Location Permission (Required for Google Maps) -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app uses your location to show properties near you on the map.</string>
+
 </dict>
 </plist>

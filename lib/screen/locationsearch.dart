@@ -1,242 +1,165 @@
-import 'package:Akarat/screen/filter.dart';
-import 'package:Akarat/screen/home.dart';
-import 'package:Akarat/screen/search.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
 
-void main() {
-  runApp(MaterialApp(
-    home: SearchScreen(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
-
-class SearchScreen extends StatefulWidget {
+class HomeScreen extends StatefulWidget {
   @override
-  _SearchScreenState createState() => _SearchScreenState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class Property {
+  final String id;
+  final String title;
+  final String location;
+  final String price;
+  final String imageUrl;
+
+  Property({
+    required this.id,
+    required this.title,
+    required this.location,
+    required this.price,
+    required this.imageUrl,
+  });
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
-
-  List<String> filteredSuggestions = [];
-  bool showSuggestions = false;
-
-  final List<String> recentSearches = ['Dubai'];
-  final List<String> popularLocations = [
-    'Dubai', 'Al Jadaf', 'Dubailand',
-    'Business bay', 'Downtown', 'Jumeirah'
-  ];
+  List<Property> allProperties = [];
+  List<Property> filteredProperties = [];
 
   @override
   void initState() {
     super.initState();
+    _loadProperties();
+    _searchController.addListener(_filterProperties);
+  }
 
-    _searchController.addListener(() async {
-      final input = _searchController.text.trim();
-      if (input.isNotEmpty) {
-        final results = await fetchSuggestionsFromBackend(input);
-        setState(() {
-          filteredSuggestions = results;
-          showSuggestions = true;
-        });
+
+  void _loadProperties() {
+    allProperties = [
+      Property(id: '1', title: 'Modern Apartment', location: 'Dubai', price: '130,000 AED', imageUrl: 'assets/images/photo1.png'),
+      Property(id: '2', title: 'Beach Villa', location: 'Jumeirah', price: '250,000 AED', imageUrl: 'assets/images/photo1.png'),
+      Property(id: '3', title: 'Downtown Flat', location: 'Downtown', price: '180,000 AED', imageUrl: 'assets/images/photo1.png'),
+    ];
+    filteredProperties = List.from(allProperties);
+  }
+
+  void _filterProperties() {
+    final query = _searchController.text.trim().toLowerCase();
+
+    setState(() {
+      if (query.isEmpty) {
+        filteredProperties = List.from(allProperties);
       } else {
-        setState(() {
-          showSuggestions = false;
-        });
+        filteredProperties = allProperties
+            .where((property) => property.location.toLowerCase().contains(query))
+            .toList();
       }
     });
   }
 
-  Future<List<String>> fetchSuggestionsFromBackend(String query) async {
-    await Future.delayed(Duration(milliseconds: 300));
-    List<String> allLocations = [
-      'Dubai', 'Abu Dhabi', 'Sharjah',
-      'Business bay', 'Downtown', 'Jumeirah'
-    ];
-    return allLocations.where((item) => item.toLowerCase().contains(query.toLowerCase())).toList();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search Box
-            Container(
-              width: 400,
-              height: 70,
-              padding: const EdgeInsets.only(top: 8,left: 5),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(25.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.red,
-                    offset: Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.3,
-                  ),
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: Offset(0.0, 0.0),
-                    blurRadius: 0.5,
-                    spreadRadius: 0.0,
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  GestureDetector(
-                      onTap: (){
-                        Navigator.of(context).pop();
-                        // Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: "Rent")));
-                      },
-                      child: Icon(Icons.arrow_back, color: Colors.red)),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      focusNode: _focusNode,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'Select location',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 20),
-
-            // Suggestion Tiles from Backend
-            if (showSuggestions)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 0),
-                child: Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: filteredSuggestions.map((location) {
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _searchController.text = location;
-                            Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => Filter(data: location)),
-                        );
-                        });
-
-
-                      },
-                      child: Chip(
-                        label: Text(location),
-                        backgroundColor: Colors.grey[200],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+            // 🔍 Search Box
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Container(
+                height: 50,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(25),
+                  color: Colors.grey[100],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search, color: Colors.red),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Search by location (e.g. Dubai)',
                         ),
                       ),
-                    );
-                  }).toList(),
+                    ),
+                  ],
                 ),
               ),
+            ),
 
-            SizedBox(height: 20),
-
-            // Recently Searched
-            Row(
-              children: [
-                Icon(Icons.history, color: Colors.red, size: 20),
-                SizedBox(width: 6),
-                Text(
-                  'Recently Searched Location',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            // 🏠 Filtered Property List or Not Found Message
+            Expanded(
+              child: filteredProperties.isEmpty
+                  ? Center(
+                child: Text(
+                  'No locations found. Please try another search.',
+                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                 ),
-              ],
-            ),
-            SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              children: recentSearches.map((loc) => _buildChip(loc, context)).toList(),
-            ),
-
-            SizedBox(height: 30),
-
-            // Popular Locations
-            Row(
-              children: [
-                Icon(Icons.trending_up, color: Colors.red, size: 20),
-                SizedBox(width: 6),
-                Text(
-                  'Popular Locations',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: popularLocations.map((loc) => _buildChip(loc, context)).toList(),
+              )
+                  : ListView.builder(
+                itemCount: filteredProperties.length,
+                itemBuilder: (context, index) {
+                  final item = filteredProperties[index];
+                  return GestureDetector(
+                    onTap: () {
+                      // Navigate to detail page if needed
+                    },
+                    child: Card(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 6,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+                            child: Image.asset(item.imageUrl, height: 150, width: double.infinity, fit: BoxFit.cover),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(item.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text(item.price, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.location_on, size: 14, color: Colors.red),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    item.location,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildChip(String label, BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => Filter(data: label)),
-        );
-      },
-      child: Chip(
-        label: Text(label),
-        backgroundColor: Colors.grey[200],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-      ),
-    );
-  }
-}
-
-class PropertyListScreen extends StatelessWidget {
-  final String location;
-
-  PropertyListScreen({required this.location});
-
-  final List<String> dummyProperties = [
-    "2BHK Apartment with Pool",
-    "Luxury Villa with Garden",
-    "Affordable Studio Flat",
-    "Sea View Penthouse"
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Properties in $location"),
-        backgroundColor: Colors.red,
-      ),
-      body: ListView.builder(
-        itemCount: dummyProperties.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(dummyProperties[index]),
-            subtitle: Text("in $location"),
-            leading: Icon(Icons.home, color: Colors.red),
-          );
-        },
       ),
     );
   }

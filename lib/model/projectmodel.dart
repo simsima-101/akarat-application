@@ -65,6 +65,7 @@ class Data {
   int? bathrooms;
   String? squareFeet;
   List<Media>? media;
+  String? email;
 
   Data(
       {this.id,
@@ -78,7 +79,8 @@ class Data {
         this.bedrooms,
         this.bathrooms,
         this.squareFeet,
-        this.media});
+        this.media,
+        this.email,});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -98,6 +100,7 @@ class Data {
         media!.add(new Media.fromJson(v));
       });
     }
+    email = json['email'];
   }
 
   Map<String, dynamic> toJson() {
@@ -116,6 +119,7 @@ class Data {
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
     }
+    data['email'] = this.email;
     return data;
   }
 }

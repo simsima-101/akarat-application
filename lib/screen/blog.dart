@@ -319,39 +319,71 @@ class _BlogDemoState extends State<BlogDemo> {
                    spreadRadius: 0.0,
                  ), //BoxShadow
                ]),
-           child: Row(
-             children: [
-               Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
-                   child: Image.asset("assets/images/app_icon.png",height: 25,)
-               ),
-               Padding(padding: const EdgeInsets.only(left: 5,top: 0,right: 0),
-                   child: Image.asset("assets/images/logo-text.png",height: 22,)
-               ),
-               Padding(padding: const EdgeInsets.only(left: 40,top: 0,right: 0),
-                 child: SizedBox(
-                   height: 30,
-                   width: 80,
-                   child: ElevatedButton(onPressed: (){},style:
-                   ElevatedButton.styleFrom(backgroundColor: Color(0xFFFFF59D),
-                     shape: RoundedRectangleBorder(borderRadius:  BorderRadius.all(Radius.circular(10)),),),
-                       child: Text("Rent",style: TextStyle(color: Colors.black,))
+               child: Row(
+                 children: [
+                   Padding(
+                     padding: const EdgeInsets.only(left: 10, top: 0, right: 0),
+                     child: Image.asset("assets/images/app_icon.png", height: 25),
                    ),
-                 ),
-               ),
-               Padding(padding: const EdgeInsets.only(left: 10,top: 0,right: 0),
-                 child: SizedBox(
-                   height: 30,
-                   width: 80,
-                   child: ElevatedButton(onPressed: (){},style:
-                   ElevatedButton.styleFrom(backgroundColor: Color(0xFFF5F5F5),
-                     shape: RoundedRectangleBorder(borderRadius:  BorderRadius.all(Radius.circular(10)),),),
-                       child: Text("Sale",style: TextStyle(color: Colors.black,))
+                   Padding(
+                     padding: const EdgeInsets.only(left: 5, top: 0, right: 0),
+                     child: Image.asset("assets/images/logo-text.png", height: 22),
                    ),
-                 ),
-               )
-             ],
-           ),
-         ),
+                   Padding(
+                     padding: const EdgeInsets.only(left: 20, top: 0, right: 0), // smaller left padding
+                     child: SizedBox(
+                       height: 28, // slightly smaller height
+                       width: 90,  // fits small text
+                       child: ElevatedButton(
+                         onPressed: null,
+                         style: ElevatedButton.styleFrom(
+                           backgroundColor: Colors.grey.shade300,
+                           padding: EdgeInsets.symmetric(horizontal: 4), // reduced padding
+                           shape: RoundedRectangleBorder(
+                             borderRadius: BorderRadius.all(Radius.circular(10)),
+                           ),
+                         ),
+                         child: Text(
+                           "Rent (Coming Soon)",
+                           style: TextStyle(
+                             color: Colors.grey.shade700,
+                             fontSize: 10, // smaller font, will not overflow
+                           ),
+                           textAlign: TextAlign.center,
+                         ),
+                       ),
+                     ),
+                   ),
+                   Padding(
+                     padding: const EdgeInsets.only(left: 8, top: 0, right: 0),
+                     child: SizedBox(
+                       height: 28,
+                       width: 90,
+                       child: ElevatedButton(
+                         onPressed: null,
+                         style: ElevatedButton.styleFrom(
+                           backgroundColor: Colors.grey.shade300,
+                           padding: EdgeInsets.symmetric(horizontal: 4),
+                           shape: RoundedRectangleBorder(
+                             borderRadius: BorderRadius.all(Radius.circular(10)),
+                           ),
+                         ),
+                         child: Text(
+                           "Sale (Coming Soon)",
+                           style: TextStyle(
+                             color: Colors.grey.shade700,
+                             fontSize: 10,
+                           ),
+                           textAlign: TextAlign.center,
+                         ),
+                       ),
+                     ),
+                   ),
+                 ],
+               ),
+
+
+             ),
          );
     }
   Container buildMyNavBar(BuildContext context) {
@@ -366,50 +398,39 @@ class _BlogDemoState extends State<BlogDemo> {
         ),
       ),
       child: Row(
-        spacing: screenSize.width*0.7,
-       // mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-              onTap: ()async{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal:20.0),
-                child: Image.asset("assets/images/home.png",height: 25,),
-              )),
-
+            onTap: () async {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
+            ),
+          ),
           Padding(
-            padding: const EdgeInsets.only(left: 0.0),
+            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
             child: IconButton(
-              alignment: Alignment.bottomRight,
               enableFeedback: false,
               onPressed: () {
-
-               setState(() {
-                 if(token == ''){
-                   Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                 }
-                 else{
-                   Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                 }
-               });
+                setState(() {
+                  if (token == '') {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  }
+                });
               },
               icon: pageIndex == 3
-                  ? const Icon(
-                Icons.dehaze,
-                color: Colors.red,
-                size: 35,
-              )
-                  : const Icon(
-                Icons.dehaze_outlined,
-                color: Colors.red,
-                size: 35,
-              ),
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
             ),
           ),
         ],
       ),
+
     );
   }
 }

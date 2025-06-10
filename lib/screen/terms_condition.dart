@@ -267,137 +267,39 @@ class _TermsConditionState extends State<TermsCondition> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-              onTap: ()async{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-              },
-              child: Image.asset("assets/images/home.png",height: 25,)),
-          Container(
-              margin: const EdgeInsets.only(left: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 0,right: 5,bottom: 5),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-            child: IconButton(
-                padding: EdgeInsets.only(left: 5,top: 7),
-                onPressed: (){
-                  setState(() {
-                    if(token == ''){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Logout()));
-                    }
-                    else if(token.isNotEmpty){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Login()));
-                    }
-                  });
-                }, icon: Icon(Icons.favorite_border,color: Colors.red,)
+            onTap: () async {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
             ),
           ),
-
-          Container(
-              margin: const EdgeInsets.only(left: 1),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.add_location_rounded,color: Colors.red,)
-
-          ),
-          Container(
-              margin: const EdgeInsets.only(left: 1,right: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.chat,color: Colors.red,)
-
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-
-              setState(() {
-                if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                }
-                else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                }
-              });
-            },
-            icon: pageIndex == 3
-                ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                setState(() {
+                  if (token == '') {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  }
+                });
+              },
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
             ),
           ),
         ],
       ),
+
     );
   }
 }

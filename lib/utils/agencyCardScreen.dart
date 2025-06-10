@@ -12,99 +12,97 @@ class Agencycardscreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
-    if(agencyModel == null){
-      return Scaffold(
-        body: Center(
-            child: ShimmerCard()), // Show loading state
-      );
-    }
-    return SingleChildScrollView(
-      child: GestureDetector(
-        onTap: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context) => About_Agency(data: '${agencyModel.id}')));
-        },
-        child : Padding(
-          padding: const EdgeInsets.only(left: 5.0,right: 4,top: 0,bottom: 5),
-          child: Card(
-            color: Colors.white,
-            elevation: 10,
-            shadowColor: Colors.grey.shade100,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 10, top: 10, right: 10, bottom: 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Left image
-                  Container(
-                    width: screenSize.width * 0.25,
-                    height: screenSize.height * 0.12,
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => About_Agency(data: '${agencyModel.id}')));
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+        child: Card(
+          color: Colors.white,
+          elevation: 6,
+          shadowColor: Colors.grey.shade100,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Left image small
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade300, width: 1),
+                  ),
+                  child: ClipOval(
                     child: CachedNetworkImage(
                       imageUrl: agencyModel.image.toString(),
-                      fit: BoxFit.contain,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => ShimmerCard(),
+                      errorWidget: (context, url, error) => Icon(Icons.error, color: Colors.grey),
                     ),
                   ),
+                ),
 
-                  const SizedBox(width: 10), // spacing between image and text
+                const SizedBox(width: 12), // spacing
 
-                  // Right content
-                  Expanded( // ✅ Fixes overflow
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          agencyModel.name.toString(),
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5),
-                          overflow: TextOverflow.ellipsis,
+                // Right content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        agencyModel.name.toString(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          agencyModel.email.toString(),
-                          style: TextStyle(fontSize: 12, letterSpacing: 0.5),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        agencyModel.email.toString(),
+                        style: const TextStyle(fontSize: 12, color: Colors.black54),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        agencyModel.location.toString(),
+                        style: const TextStyle(fontSize: 12, color: Colors.black54),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.blueAccent.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.blueAccent),
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          agencyModel.location.toString(),
-                          style: TextStyle(fontSize: 12, letterSpacing: 0.5),
-                        ),
-                        SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.rectangle,
-                            border: Border.all(width: 1,color: Color(0xFFE0E0E0)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.2),
-                                offset: Offset(4, 4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.8),
-                                offset: Offset(-4, -4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            "${agencyModel.propertiesCount}  Properties",
-                            style: TextStyle(letterSpacing: 0.5, color: Colors.black,fontWeight: FontWeight.bold),
+                        child: Text(
+                          "${agencyModel.propertiesCount} Properties",
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.blueAccent,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          )
+          ),
         ),
       ),
     );

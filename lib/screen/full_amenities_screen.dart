@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
+
 
 import '../model/amenities.dart';
 
@@ -25,6 +28,16 @@ class _FullAmenitiesScreenState extends State<FullAmenitiesScreen> {
   void initState() {
     super.initState();
     _selected = Set.from(widget.selectedIndexes);
+
+    // Pre-cache images after build completes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (var amenity in widget.allAmenities) {
+        final iconUrl = amenity.icon;
+        if (iconUrl != null && iconUrl.isNotEmpty) {
+          precacheImage(NetworkImage(iconUrl), context);
+        }
+      }
+    });
   }
 
   @override
@@ -100,13 +113,19 @@ class _FullAmenitiesScreenState extends State<FullAmenitiesScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Row(
                       children: [
-                        Image.network(
-                          amenity.icon ?? '',
+                        CachedNetworkImage(
+                          imageUrl: amenity.icon ?? '',
                           width: 18,
                           height: 18,
-                          errorBuilder: (context, error, stackTrace) =>
+                          placeholder: (context, url) => const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 1.5),
+                          ),
+                          errorWidget: (context, url, error) =>
                           const Icon(Icons.broken_image, size: 18),
                         ),
+
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
@@ -127,7 +146,7 @@ class _FullAmenitiesScreenState extends State<FullAmenitiesScreen> {
           ),
 
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 40), // ⬅ increased bottom padding
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -142,10 +161,11 @@ class _FullAmenitiesScreenState extends State<FullAmenitiesScreen> {
                   widget.onDone(_selected);
                   Navigator.pop(context);
                 },
-                child: const Text("Done", style: TextStyle(fontSize: 16,color: Colors.white)),
+                child: const Text("Done", style: TextStyle(fontSize: 16, color: Colors.white)),
               ),
             ),
-          ),
+          )
+
         ],
       ),
     );

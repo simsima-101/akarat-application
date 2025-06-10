@@ -30,316 +30,380 @@ import 'my_account.dart';
 
 
 class FliterList extends StatelessWidget {
-
-  final  FilterModel filterModel;
-
+  final FilterModel filterModel;
 
   FliterList({super.key, required this.filterModel});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: FliterListDemo(filterModel: filterModel,),
-    );
+    return FliterListDemo(filterModel: filterModel);  // ✅ No MaterialApp here
+
   }
 }
-  class FliterListDemo extends StatefulWidget {
+class FliterListDemo extends StatefulWidget {
   final FilterModel filterModel;
 
   const FliterListDemo({super.key,required this.filterModel});
 
   @override
   _FliterListDemoState createState() => _FliterListDemoState();
-  }
-  class _FliterListDemoState extends State<FliterListDemo> {
-    late  FilterModel filterModel;
+}
+class _FliterListDemoState extends State<FliterListDemo> {
+  late  FilterModel filterModel;
   int pageIndex = 0;
-    int? property_id ;
-    String token = '';
-    String email = '';
-    String result = '';
+  int? property_id ;
+  String token = '';
+  String email = '';
+  String result = '';
   ToggleModel? toggleModel;
-    bool isDataRead = false;
-    bool isFavorited = false;
+  bool isDataRead = false;
+  bool isFavorited = false;
 
-    // Create an object of SharedPreferencesManager class
-    SharedPreferencesManager prefManager = SharedPreferencesManager();
-    // Method to read data from shared preferences
-    void readData() async {
-      token = await prefManager.readStringFromPref();
-      email = await prefManager.readStringFromPrefemail();
-      result = await prefManager.readStringFromPrefresult();
-      setState(() {
-        isDataRead = true;
-      });
-    }
+  bool isPurposeLoading = false;
+  String selectedPurposeText = "Rent";
 
-    @override
-    void initState() {
-      super.initState();
+  ScrollController _scrollController = ScrollController();
 
-      _rangeController = RangeController(
-        start: start.toString(),
-        end: end.toString(),
-      );
+  List<String> locationList = [];
 
-      _loadFavorites();         // Load local favorites
-      readData();               // Fetch token/user info
-      filterModel = widget.filterModel;
 
-      selectedproduct = 0;
-      purpose = "Rent";         // Default filter
-      propertyApi(purpose);     // Fetch property list
 
-      selectedtype = 0;
+  // Create an object of SharedPreferencesManager class
+  SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // Method to read data from shared preferences
+  void readData() async {
+    token = await prefManager.readStringFromPref();
+    email = await prefManager.readStringFromPrefemail();
+    result = await prefManager.readStringFromPrefresult();
+    setState(() {
+      isDataRead = true;
+    });
+  }
 
-      chartData = List.generate(
-        96,
-            (index) => Data(
-          500 + index * 100.0,
-          yValues[index % yValues.length].toDouble(),
-        ),
-      );
-    }
+  @override
+  void initState() {
+    super.initState();
 
-    late bool isSelected = true;
-    double start = 3000;
-    double end = 5000;
-    SfRangeValues _values = SfRangeValues(3000 ,5000);
-    late RangeController _rangeController;
+    _rangeController = RangeController(
+      start: start.toString(),
+      end: end.toString(),
+    );
 
-    @override
-    void dispose() {
-      _rangeController.dispose();
-      super.dispose();
-    }
-    final List<int> yValues = [5000, 3000, 9000,7000,10000,1500,4000,];
-    late List<Data> chartData;
-    String min_price = '';
-    String max_price = ' ';
-    SearchModel? searchModel;
+    _loadFavorites();         // Load local favorites
+    readData();               // Fetch token/user info
+    filterModel = widget.filterModel;
+
+
+    selectedproduct = 0;
+    purpose = "Rent";         // Default filter
+    propertyApi(purpose);     // Fetch property list
+
+    selectedtype = 0;
+
+    fetchLocations();
+
+    chartData = List.generate(
+      96,
+          (index) => Data(
+        500 + index * 100.0,
+        yValues[index % yValues.length].toDouble(),
+      ),
+
+
+    );
+  }
+
+  late bool isSelected = true;
+  double start = 3000;
+  double end = 5000;
+  SfRangeValues _values = SfRangeValues(3000 ,5000);
+  late RangeController _rangeController;
+
+  @override
+  void dispose() {
+    _rangeController.dispose();
+    super.dispose();
+  }
+  final List<int> yValues = [5000, 3000, 9000,7000,10000,1500,4000,];
+  late List<Data> chartData;
+  String min_price = '';
+  String max_price = ' ';
+  SearchModel? searchModel;
 
 
 
   /*  Future<void> searchApi(String location) async {
-      try {
-        final cacheKey = 'search_cache_$location';
-        final prefs = await SharedPreferences.getInstance();
+        try {
+          final cacheKey = 'search_cache_$location';
+          final prefs = await SharedPreferences.getInstance();
 
-        // Optional: Use cache if available
-        final cachedData = prefs.getString(cacheKey);
-        if (cachedData != null) {
-          final jsonData = jsonDecode(cachedData);
+          // Optional: Use cache if available
+          final cachedData = prefs.getString(cacheKey);
+          if (cachedData != null) {
+            final jsonData = jsonDecode(cachedData);
+            setState(() {
+              searchModel = SearchModel.fromJson(jsonData);
+            });
+            debugPrint("✅ Loaded from cache for $location");
+            return;
+          }
+
+          // Fetch from API if not cached
+          final response = await http.get(
+            Uri.parse("https://akarat.com/api/search-properties?location=$location"),
+          );
+
+          if (response.statusCode == 200) {
+            final data = jsonDecode(response.body);
+            final feature = SearchModel.fromJson(data);
+
+            setState(() {
+              searchModel = feature;
+            });
+
+            // Save response to cache
+            await prefs.setString(cacheKey, response.body);
+            debugPrint("✅ API response cached for $location");
+          } else {
+            debugPrint("❌ API Error: ${response.statusCode}");
+          }
+        } catch (e) {
+          debugPrint("🚨 Exception in searchApi: $e");
+        }
+      }*/
+
+
+  PropertyTypeModel? propertyTypeModel;
+  int? selectedIndex;
+  String ftype = ' ';
+  final List _ftype = [
+    'All', 'Furnished','Semi furnished', 'Unfurnished'
+  ];
+  final List _bedroom = [
+    'studio', '1', '2', '3','4','5','6','7','8','9+'
+  ];
+  int? selectedbedroom;
+  String bedroom = ' ';
+  final List _bathroom = [
+    '1', '2', '3','4','5','6+'
+  ];
+  int? selectedbathroom;
+  final List _product = [
+    'Rent',
+    'Buy',
+    'New Projects',
+    'Commercial'
+  ];
+  final List _rent = [
+    'Yearly',
+    'Monthly',
+    'Daily',
+  ];
+
+
+  Future<void> propertyApi(String purpose) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'property_types_$purpose';
+    final cacheTimeKey = 'property_types_time_$purpose';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final cachedTime = prefs.getInt(cacheTimeKey) ?? 0;
+
+    // Use cache if it's less than 6 hours old
+    if (now - cachedTime < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final jsonData = jsonDecode(cachedData);
+        final cachedModel = PropertyTypeModel.fromJson(jsonData);
+
+        if (mounted) {
           setState(() {
-            searchModel = SearchModel.fromJson(jsonData);
+            propertyTypeModel = cachedModel;
           });
-          debugPrint("✅ Loaded from cache for $location");
-          return;
         }
 
-        // Fetch from API if not cached
-        final response = await http.get(
-          Uri.parse("https://akarat.com/api/search-properties?location=$location"),
+        debugPrint("✅ Loaded property types from cache for '$purpose'");
+        return;
+      }
+    }
+
+    // Else: fetch from API
+    try {
+      final response = await http
+          .get(Uri.parse("https://akarat.com/api/property-types/$purpose"))
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final fetchedTypes = PropertyTypeModel.fromJson(data);
+
+        if (mounted) {
+          setState(() {
+            propertyTypeModel = fetchedTypes;
+          });
+        }
+
+        // Cache the response
+        await prefs.setString(cacheKey, response.body);
+        await prefs.setInt(cacheTimeKey, now);
+
+        debugPrint("✅ Cached property types for '$purpose'");
+      } else {
+        debugPrint("❌ Property API failed [${response.statusCode}]: ${response.reasonPhrase}");
+      }
+    } catch (e) {
+      debugPrint("❌ Property API error: $e");
+    }
+  }
+
+
+  Future<void> showResult() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'filters_result_${property_type}_$ftype$bedroom$min_price$max_price$rent$bathroom$purpose';
+    final cacheTimeKey = '${cacheKey}_time';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+
+    String paymentPeriodParam = '';
+    if (purpose == 'Rent') {
+      paymentPeriodParam = rent;
+    } else {
+      paymentPeriodParam = '';
+    }
+
+    if (purpose == 'Rent' && (property_type.trim().isEmpty || property_type == ' ')) {
+      if (propertyTypeModel != null && propertyTypeModel!.data != null && propertyTypeModel!.data!.isNotEmpty) {
+        property_type = propertyTypeModel!.data![0].name.toString();
+        debugPrint("ℹ️ Auto-selected property_type for Rent: $property_type");
+      } else {
+        debugPrint("❌ Cannot proceed — no property_type selected for Rent");
+        return;
+      }
+    }
+
+    if (now - lastFetched < Duration(hours: 2).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final cachedJson = jsonDecode(cachedData);
+        final cachedResponse = FilterResponseModel.fromJson(cachedJson);
+        final cachedFeature = cachedResponse.data;
+
+        setState(() {
+          filterModel = cachedFeature!;
+        });
+
+        _scrollController.animateTo(
+          0,
+          duration: Duration(milliseconds: 100),
+          curve: Curves.easeInOut,
         );
 
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          final feature = SearchModel.fromJson(data);
-
-          setState(() {
-            searchModel = feature;
-          });
-
-          // Save response to cache
-          await prefs.setString(cacheKey, response.body);
-          debugPrint("✅ API response cached for $location");
-        } else {
-          debugPrint("❌ API Error: ${response.statusCode}");
-        }
-      } catch (e) {
-        debugPrint("🚨 Exception in searchApi: $e");
-      }
-    }*/
-
-
-    PropertyTypeModel? propertyTypeModel;
-    int? selectedIndex;
-    String ftype = ' ';
-    final List _ftype = [
-      'All', 'Furnished','Semi furnished', 'Unfurnished'
-    ];
-    final List _bedroom = [
-      'studio', '1', '2', '3','4','5','6','7','8','9+'
-    ];
-    int? selectedbedroom;
-    String bedroom = ' ';
-    final List _bathroom = [
-      '1', '2', '3','4','5','6+'
-    ];
-    int? selectedbathroom;
-    final List _product = [
-      'Rent',
-      'Buy',
-      'New Projects',
-      'Commercial'
-    ];
-    final List _rent = [
-      'Yearly',
-      'Monthly',
-      'Daily',
-    ];
-
-
-    Future<void> propertyApi(String purpose) async {
-      final prefs = await SharedPreferences.getInstance();
-      final cacheKey = 'property_types_$purpose';
-      final cacheTimeKey = 'property_types_time_$purpose';
-      final now = DateTime.now().millisecondsSinceEpoch;
-      final cachedTime = prefs.getInt(cacheTimeKey) ?? 0;
-
-      // Use cache if it's less than 6 hours old
-      if (now - cachedTime < Duration(hours: 6).inMilliseconds) {
-        final cachedData = prefs.getString(cacheKey);
-        if (cachedData != null) {
-          final jsonData = jsonDecode(cachedData);
-          final cachedModel = PropertyTypeModel.fromJson(jsonData);
-
-          if (mounted) {
-            setState(() {
-              propertyTypeModel = cachedModel;
-            });
-          }
-
-          debugPrint("✅ Loaded property types from cache for '$purpose'");
-          return;
-        }
-      }
-
-      // Else: fetch from API
-      try {
-        final response = await http
-            .get(Uri.parse("https://akarat.com/api/property-types/$purpose"))
-            .timeout(const Duration(seconds: 10));
-
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          final fetchedTypes = PropertyTypeModel.fromJson(data);
-
-          if (mounted) {
-            setState(() {
-              propertyTypeModel = fetchedTypes;
-            });
-          }
-
-          // Cache the response
-          await prefs.setString(cacheKey, response.body);
-          await prefs.setInt(cacheTimeKey, now);
-
-          debugPrint("✅ Cached property types for '$purpose'");
-        } else {
-          debugPrint("❌ Property API failed [${response.statusCode}]: ${response.reasonPhrase}");
-        }
-      } catch (e) {
-        debugPrint("❌ Property API error: $e");
+        debugPrint("✅ Loaded filter results from cache (${filterModel.data?.length ?? 0} items)");
+        return;
       }
     }
 
+    try {
+      final response = await http.get(Uri.parse('https://akarat.com/api/filters?'
+          'search=&amenities=&property_type=$property_type'
+          '&furnished_status=$ftype&bedrooms=$bedroom&min_price=$min_price'
+          '&max_price=$max_price&payment_period=$paymentPeriodParam'
+          '&min_square_feet=&max_square_feet='
+          '&bathrooms=$bathroom&purpose=$purpose'));
 
-    Future<void> showResult() async {
-      final prefs = await SharedPreferences.getInstance();
-      final cacheKey = 'filters_result_${property_type}_$ftype$bedroom$min_price$max_price$rent$bathroom$purpose';
-      final cacheTimeKey = '${cacheKey}_time';
-      final now = DateTime.now().millisecondsSinceEpoch;
-      final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        final featureResponse = FilterResponseModel.fromJson(responseData);
+        final feature = featureResponse.data;
 
-      // Cache valid for 2 hours
-      if (now - lastFetched < Duration(hours: 2).inMilliseconds) {
-        final cachedData = prefs.getString(cacheKey);
-        if (cachedData != null) {
-          final jsonData = jsonDecode(cachedData);
-          final cachedModel = FilterModel.fromJson(jsonData);
+        setState(() {
+          filterModel = feature!;
+        });
 
-          setState(() {
-            filterModel = cachedModel;
-            Navigator.push(context, MaterialPageRoute(builder: (context) => FliterList(filterModel: filterModel)));
-          });
+        _scrollController.animateTo(
+          0,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
 
-          debugPrint("✅ Loaded filter results from cache");
-          return;
-        }
+        debugPrint("✅ Fetched and updated filter result (${filterModel.data?.length ?? 0} items)");
+
+        await prefs.setString(cacheKey, response.body);
+        await prefs.setInt(cacheTimeKey, now);
+      } else {
+        debugPrint("❌ Filter API failed: ${response.statusCode}");
       }
-
-      // If no cache or cache expired
-      try {
-        final response = await http.get(Uri.parse('https://akarat.com/api/filters?'
-            'search=&amenities=&property_type=$property_type'
-            '&furnished_status=$ftype&bedrooms=$bedroom&min_price=$min_price'
-            '&max_price=$max_price&payment_period=$rent&min_square_feet='
-            '&max_square_feet=&bathrooms=$bathroom&purpose=$purpose'));
-
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          final feature = FilterModel.fromJson(data);
-
-          setState(() {
-            filterModel = feature;
-            Navigator.push(context, MaterialPageRoute(builder: (context) => FliterList(filterModel: filterModel)));
-          });
-
-          // Save cache
-          await prefs.setString(cacheKey, response.body);
-          await prefs.setInt(cacheTimeKey, now);
-
-          debugPrint("✅ Fetched and cached filter result");
-        } else {
-          debugPrint("❌ Filter API failed: ${response.statusCode}");
-        }
-      } catch (e) {
-        debugPrint("🚨 Filter API exception: $e");
-      }
+    } catch (e) {
+      debugPrint("🚨 Filter API exception: $e");
     }
+  }
 
 
-    int? selectedtype;
-    String property_type= ' ';
-    String selectedaction = " ";
-    String bathroom = ' ';
-    String purpose = ' ';
-    int? selectedproduct ;
-    int? selectedrent ;
-    String product='';
-    String rent='';
+  Future<void> fetchLocations() async {
+    try {
+      final response = await http.get(Uri.parse("https://akarat.com/api/locations"));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+
+        setState(() {
+          // If your API returns list of strings
+          locationList = data.cast<String>();
+
+          // If your API returns list of objects like { "name": "Dubai" }, change to:
+          // locationList = data.map((item) => item['name'].toString()).toList();
+        });
+
+        debugPrint("✅ Locations loaded: ${locationList.length}");
+      } else {
+        debugPrint("❌ Locations API failed: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Locations API exception: $e");
+    }
+  }
+
+
+
+
+  int? selectedtype;
+  String property_type= ' ';
+  String selectedaction = " ";
+  String bathroom = ' ';
+  String purpose = ' ';
+  int? selectedproduct ;
+  int? selectedrent ;
+  String product='';
+  String rent='';
 
 
   final TextEditingController _searchController = TextEditingController();
 
-    Future<void> toggledApi( token,  propertyId) async {
-      final url = Uri.parse('https://akarat.com/api/toggle-saved-property');
+  Future<void> toggledApi( token,  propertyId) async {
+    final url = Uri.parse('https://akarat.com/api/toggle-saved-property');
 
-      try {
-        final response = await http.post(
-          url,
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json; charset=UTF-8',
-          },
-          body: jsonEncode({"property_id": propertyId}),
-        );
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({"property_id": propertyId}),
+      );
 
-        if (response.statusCode == 200) {
-          final Map<String, dynamic> jsonData = json.decode(response.body);
-          setState(() {
-            toggleModel = ToggleModel.fromJson(jsonData);
-          });
-          debugPrint("✅ Property toggle success for ID: $propertyId");
-        } else {
-          debugPrint("❌ Toggle failed: Status ${response.statusCode}");
-        }
-      } catch (e) {
-        debugPrint("🚨 Toggle error: $e");
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        setState(() {
+          toggleModel = ToggleModel.fromJson(jsonData);
+        });
+        debugPrint("✅ Property toggle success for ID: $propertyId");
+      } else {
+        debugPrint("❌ Toggle failed: Status ${response.statusCode}");
       }
+    } catch (e) {
+      debugPrint("🚨 Toggle error: $e");
     }
+  }
 
 
   Set<int> favoriteProperties = {}; // Stores favorite property IDs
@@ -387,7 +451,7 @@ class FliterList extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
-         // mainAxisSize: MainAxisSize.min,
+          // mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               const SizedBox(height: 10,),
               Stack(
@@ -409,9 +473,9 @@ class FliterList extends StatelessWidget {
                             decoration: _iconBoxDecoration(),
                             child: GestureDetector(
                               onTap: () {
-                                // Navigator.of(context).pop();
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => Filter(data: "Rent")));
+                                Navigator.of(context).pop();
                               },
+
                               child: Image.asset(
                                 "assets/images/ar-left.png",
                                 width: 15,
@@ -422,19 +486,19 @@ class FliterList extends StatelessWidget {
                           ),
 
                           // Like Button
-                          Container(
-                            margin: const EdgeInsets.only(right: 10),
-                            height: 35,
-                            width: 35,
-                            padding: const EdgeInsets.all(7),
-                            decoration: _iconBoxDecoration(),
-                            child: Image.asset(
-                              "assets/images/lov.png",
-                              width: 15,
-                              height: 15,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
+                          // Container(
+                          //   margin: const EdgeInsets.only(right: 10),
+                          //   height: 35,
+                          //   width: 35,
+                          //   padding: const EdgeInsets.all(7),
+                          //   decoration: _iconBoxDecoration(),
+                          //   child: Image.asset(
+                          //     "assets/images/lov.png",
+                          //     width: 15,
+                          //     height: 15,
+                          //     fit: BoxFit.contain,
+                          //   ),
+                          // ),
                         ],
                       ),
                     ),
@@ -443,50 +507,53 @@ class FliterList extends StatelessWidget {
               ),
               //Searchbar
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 10),
-                child: GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> LocationSearchScreen()));
-                  },
-                  child: Container(
-                    width: 400,
-                    height: 70,
-                    padding: const EdgeInsets.only(top: 0,left: 5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(25.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.red,
-                          offset: Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.3,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Container(
+                  width: 400,
+                  height: 70,
+                  padding: const EdgeInsets.only(left: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300, // grey background
+                    borderRadius: BorderRadius.circular(25.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        offset: Offset(0.0, 0.0),
+                        blurRadius: 4.0,
+                        spreadRadius: 1.0,
+                      ),
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.8),
+                        offset: Offset(0.0, 0.0),
+                        blurRadius: 2.0,
+                        spreadRadius: 0.0,
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Icon(Icons.search, color: Colors.grey), // grey icon
                         ),
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: Offset(0.0, 0.0),
-                          blurRadius: 0.5,
-                          spreadRadius: 0.0,
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Text(
+                            "Search (Coming Soon)", // updated text
+                            style: TextStyle(
+                              color: Colors.black45,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
-                    ),
-                    child: Center(
-                      child: Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: Icon(Icons.search, color: Colors.red),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: Text("Search for a locality, area or city",
-                              style: TextStyle(color: Colors.grey,fontSize: 14),),
-                          )
-                        ],
-                      ),
                     ),
                   ),
                 ),
               ),
+
               //filter
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 15),
@@ -560,13 +627,21 @@ class FliterList extends StatelessWidget {
                                             itemBuilder: (context, index) {
                                               bool isSelected = selectedproduct == index;
                                               return GestureDetector(
-                                                onTap: () {
+                                                onTap: () async {
                                                   setModalState(() {
                                                     selectedproduct = index;
                                                     purpose = _product[index];
-                                                    propertyApi(purpose);
+                                                    selectedPurposeText = _product[index]; // update button label if needed
+                                                    isPurposeLoading = true;
                                                   });
-                                                  setState(() {});
+
+                                                  await propertyApi(purpose); // wait for API to finish
+
+                                                  setModalState(() {
+                                                    isPurposeLoading = false;
+                                                  });
+
+                                                  setState(() {}); // in case needed globally
                                                 },
                                                 child: Container(
                                                   margin: const EdgeInsets.only(right: 10),
@@ -592,7 +667,9 @@ class FliterList extends StatelessWidget {
                                             },
                                           ),
                                         ),
+
                                         const SizedBox(height: 15),
+
                                         // Availability list
                                         SizedBox(
                                           height: 50,
@@ -634,19 +711,27 @@ class FliterList extends StatelessWidget {
                                             },
                                           ),
                                         ),
-                                       // const Spacer(),
-                                        SizedBox(height: 10,),
-                                        // Submit Button
+
+                                        const SizedBox(height: 10),
+
+                                        // Show Results button
                                         SizedBox(
                                           width: double.infinity,
                                           child: ElevatedButton(
-                                            onPressed: showResult,
+                                            onPressed: isPurposeLoading
+                                                ? null
+                                                : () {
+                                              showResult();
+                                              Navigator.pop(context); // Close bottom sheet after clicking
+                                            },
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: Colors.red,
                                               padding: const EdgeInsets.symmetric(vertical: 12),
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                             ),
-                                            child: const Text(
+                                            child: isPurposeLoading
+                                                ? const CircularProgressIndicator(color: Colors.white)
+                                                : const Text(
                                               "Showing Results",
                                               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
                                             ),
@@ -660,20 +745,48 @@ class FliterList extends StatelessWidget {
                             },
                           );
                         },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
-                          margin: const EdgeInsets.only(right: 10),
-                          decoration: BoxDecoration(
-                            border: Border.all(width: 1),
-                            borderRadius: BorderRadius.circular(6),
-                            boxShadow: [
-                              BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 2, offset: const Offset(0.5, 0.5)),
-                            ],
-                            color: Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 3, bottom: 3, right: 10),
+                          child: Container(
+                            constraints: const BoxConstraints(
+                              minHeight: 40,
+                              maxHeight: 40,
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.rectangle,
+                              border: Border.all(width: 1),
+                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(0.3, 0.3),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ),
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ),
+                              ],
+                              color: Colors.white,
+                            ),
+                            child: Center(
+                              child: Text(
+                                selectedPurposeText, // Show current selected text here
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                           ),
-                          child: const Text("Rent", style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ),
+
                       //type
                       GestureDetector(
                         onTap: () {
@@ -737,6 +850,8 @@ class FliterList extends StatelessWidget {
                                                       CachedNetworkImage(
                                                         imageUrl: item.icon.toString(),
                                                         height: 35,
+                                                        placeholder: (context, url) => const CircularProgressIndicator(),
+                                                        errorWidget: (context, url, error) => const Icon(Icons.error, size: 35),
                                                       ),
                                                       const SizedBox(height: 6),
                                                       Text(
@@ -758,12 +873,15 @@ class FliterList extends StatelessWidget {
 
                                         const SizedBox(height: 10),
 
-
                                         // Confirm Button
                                         SizedBox(
                                           width: double.infinity,
                                           child: ElevatedButton(
-                                            onPressed: showResult,
+                                            onPressed: () {
+                                              showResult();
+                                              Navigator.pop(context); // Close bottom sheet after clicking
+                                            },
+
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: Colors.red,
                                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -788,27 +906,48 @@ class FliterList extends StatelessWidget {
                             },
                           );
                         },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          margin: const EdgeInsets.only(right: 10),
-                          decoration: BoxDecoration(
-                            border: Border.all(width: 1),
-                            borderRadius: BorderRadius.circular(6),
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.3),
-                                blurRadius: 3,
-                                offset: const Offset(0.5, 0.5),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 3, bottom: 3, right: 10),
+                          child: Container(
+                            constraints: const BoxConstraints(
+                              minHeight: 40, // SAME as Price Range
+                              maxHeight: 40,
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 14), // SAME as Price Range
+                            decoration: BoxDecoration(
+                              shape: BoxShape.rectangle,
+                              border: Border.all(width: 1),
+                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(0.3, 0.3),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ),
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ),
+                              ],
+                              color: Colors.white,
+                            ),
+                            child: const Center(
+                              child: Text(
+                                "All Residential",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14, // SAME as Price Range
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                            ],
-                          ),
-                          child: const Text(
-                            "All Residential",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
                       ),
+
                       //Price Range
                       GestureDetector(
                         onTap: () {
@@ -857,7 +996,7 @@ class FliterList extends StatelessWidget {
                                             min: 500,
                                             max: 10000,
                                             interval: 1000,
-                                            activeColor: Colors.black,
+                                            activeColor: const Color(0xFF2575D4),
                                             inactiveColor: const Color(0x80F1EEEE),
                                             enableTooltip: true,
                                             shouldAlwaysShowTooltip: true,
@@ -866,11 +1005,18 @@ class FliterList extends StatelessWidget {
                                             'AED ${actualValue.toInt()}',
                                             onChanged: (value) {
                                               setModalState(() {
-                                                _values = SfRangeValues(value.start, value.end);
-                                                min_price = value.start.toStringAsFixed(0);
-                                                max_price = value.end.toStringAsFixed(0);
+                                                double roundedMin = ((value.start / 100).round() * 100).toDouble();
+                                                double roundedMax = ((value.end / 100).round() * 100).toDouble();
+
+                                                _values = SfRangeValues(roundedMin, roundedMax);
+
+                                                min_price = roundedMin.toStringAsFixed(0);
+                                                max_price = roundedMax.toStringAsFixed(0);
                                               });
                                             },
+
+
+
                                             child: SizedBox(
                                               height: 60,
                                               width: double.infinity,
@@ -904,8 +1050,10 @@ class FliterList extends StatelessWidget {
                                           height: 45,
                                           child: ElevatedButton(
                                             onPressed: () {
-                                              // showResult();
+                                              showResult();
+                                              Navigator.pop(context); // Close the bottom sheet after showing result
                                             },
+
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: Colors.red,
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
@@ -925,27 +1073,52 @@ class FliterList extends StatelessWidget {
                             },
                           );
                         },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          margin: const EdgeInsets.only(right: 10),
-                          decoration: BoxDecoration(
-                            border: Border.all(width: 1),
-                            borderRadius: BorderRadius.circular(6),
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.3),
-                                blurRadius: 2,
-                                offset: const Offset(0.5, 0.5),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 3, bottom: 3, right: 10),
+                          child: Container(
+                            constraints: const BoxConstraints(
+                              minHeight: 40,
+                              maxHeight: 40,
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.rectangle,
+                              border: Border.all(width: 1),
+                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(0.3, 0.3),
+                                  blurRadius: 0.3,
+                                  spreadRadius: 0.3,
+                                ),
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ),
+                              ],
+                              color: Colors.white,
+                            ),
+                            child: const Center(
+                              child: Text(
+                                "Price Range",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                            ],
+                            ),
                           ),
-                          child: const Text("Price Range", style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ),
+
+
                       //bedroom
                       GestureDetector(
-                        onTap: (){
+                        onTap: () {
                           showModalBottomSheet(
                             context: context,
                             shape: RoundedRectangleBorder(
@@ -955,175 +1128,180 @@ class FliterList extends StatelessWidget {
                             builder: (context) {
                               return StatefulBuilder(
                                 builder: (BuildContext context, StateSetter setModalState) {
-                                  return  Container(
-                                    height: screenSize.height*0.3,
+                                  return Container(
+                                    height: screenSize.height * 0.3,
                                     width: double.infinity,
                                     color: Colors.white,
                                     child: Column(
                                       children: [
                                         Row(
                                           children: [
-                                            Padding(padding: const EdgeInsets.only(top: 40.0,left: 20,bottom: 0),
-                                              // child:  Text(_values.start.toStringAsFixed(2),
-                                              child:  Text("Bedrooms",
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 40.0, left: 20, bottom: 0),
+                                              child: Text(
+                                                "Bedrooms",
                                                 style: TextStyle(
-                                                  color: Colors.black,fontSize: 16.0,
+                                                  color: Colors.black,
+                                                  fontSize: 15.0,
                                                   fontWeight: FontWeight.bold,
-                                                  letterSpacing: 0.5,),
-                                                textAlign: TextAlign.left,),
+                                                  letterSpacing: 0.5,
+                                                ),
+                                                textAlign: TextAlign.left,
+                                              ),
                                             ),
                                           ],
                                         ),
-                                        //studio
+                                        // Bedroom list
                                         Padding(
-                                            padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
-                                            child: Container(
-                                              //color: Colors.grey,
-                                              // width: 60,
-                                              height: 60,
-                                              child:  ListView.builder(
-                                                scrollDirection: Axis.horizontal,
-                                                physics: const ScrollPhysics(),
-                                                itemCount: _bedroom.length,
-                                                shrinkWrap: true,
-                                                itemBuilder: (context, index) {
-                                                  // Colors.grey;
-                                                  return GestureDetector(
-                                                    onTap: (){
-                                                      setModalState(() {
-                                                        selectedbedroom = index;
-                                                        bedroom = _bedroom[index];
-                                                      });
-                                                      setState(() {
-                                                      });
-                                                    },
-                                                    child: Container(
-                                                      // color: selectedIndex == index ? Colors.amber : Colors.transparent,
-                                                      margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
-                                                      // width: screenSize.width * 0.25,
-                                                      // height: 20,
-                                                      padding: const EdgeInsets.only(top: 0,left: 15,right: 15),
-                                                      decoration: BoxDecoration(
-                                                        color: selectedbedroom == index ? Colors.blueAccent : Colors.white,
-                                                        // color: Colors.white,
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                            color: Colors.grey.withOpacity(0.5),
-                                                            offset: Offset(0, 2),
-                                                            blurRadius: 4,
-                                                            spreadRadius: 0,
-                                                          ),
-                                                          BoxShadow(
-                                                            color: Colors.white.withOpacity(0.8),
-                                                            offset: Offset(-4, -4),
-                                                            blurRadius: 8,
-                                                            spreadRadius: 2,
-                                                          ),
-                                                        ],
-                                                        borderRadius: BorderRadius.circular(8),
-                                                      ),
-                                                      child:   Center(
-                                                        child: Text(_bedroom[index],
-                                                          style: TextStyle(
-                                                              color: selectedbedroom == index ? Colors.white : Colors.black,
-                                                              letterSpacing: 0.5,fontWeight: FontWeight.bold,
-                                                              fontSize: 18),textAlign: TextAlign.center,),
-                                                      ),
+                                          padding: const EdgeInsets.only(top: 5, left: 15, right: 10),
+                                          child: Container(
+                                            height: 60,
+                                            child: ListView.builder(
+                                              scrollDirection: Axis.horizontal,
+                                              physics: const ScrollPhysics(),
+                                              itemCount: _bedroom.length,
+                                              shrinkWrap: true,
+                                              itemBuilder: (context, index) {
+                                                return GestureDetector(
+                                                  onTap: () {
+                                                    setModalState(() {
+                                                      selectedbedroom = index;
 
+                                                      if (_bedroom[index] == 'studio') {
+                                                        bedroom = '0';
+                                                      } else if (_bedroom[index] == '9+') {
+                                                        bedroom = '9';
+                                                      } else {
+                                                        bedroom = _bedroom[index]; // 1,2,3
+                                                      }
 
+                                                      print('Selected bedroom for API: $bedroom');
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                                                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                                                    decoration: BoxDecoration(
+                                                      color: selectedbedroom == index ? Colors.blueAccent : Colors.white,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: Colors.grey.withOpacity(0.5),
+                                                          offset: Offset(0, 2),
+                                                          blurRadius: 4,
+                                                          spreadRadius: 0,
+                                                        ),
+                                                        BoxShadow(
+                                                          color: Colors.white.withOpacity(0.8),
+                                                          offset: Offset(-4, -4),
+                                                          blurRadius: 8,
+                                                          spreadRadius: 2,
+                                                        ),
+                                                      ],
+                                                      borderRadius: BorderRadius.circular(8),
                                                     ),
-                                                  );
-                                                },
-                                              ),
-                                            )
+                                                    child: Center(
+                                                      child: Text(
+                                                        _bedroom[index],
+                                                        style: TextStyle(
+                                                          color: selectedbedroom == index ? Colors.white : Colors.black,
+                                                          letterSpacing: 0.5,
+                                                          fontSize: 18,
+                                                        ),
+                                                        textAlign: TextAlign.center,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
                                         ),
+                                        // Show Results button
                                         GestureDetector(
-                                          onTap: (){
+                                          onTap: () {
                                             showResult();
-                                            // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
+                                            Navigator.pop(context); // ✅ Close BottomSheet after API call
                                           },
-                                          child:  Padding(
-                                            padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15,right: 15),
-                                            child:   Container(
-                                              // color: Colors.red,
-                                              width: screenSize.width*0.9,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(top: 25.0, left: 15, bottom: 15, right: 15),
+                                            child: Container(
+                                              width: screenSize.width * 0.9,
                                               height: 45,
-                                              // color: Colors.red,
-                                              padding: const EdgeInsets.only(top: 10,left: 0),
+                                              padding: const EdgeInsets.only(top: 10),
                                               decoration: BoxDecoration(
                                                 color: Colors.red,
                                                 borderRadius: BorderRadiusDirectional.circular(6.0),
                                                 boxShadow: [
                                                   BoxShadow(
                                                     color: Colors.grey,
-                                                    offset: const Offset(
-                                                      0.3,
-                                                      0.3,
-                                                    ),
+                                                    offset: const Offset(0.3, 0.3),
                                                     blurRadius: 0.3,
                                                     spreadRadius: 0.3,
-                                                  ), //BoxShadow
+                                                  ),
                                                   BoxShadow(
                                                     color: Colors.white,
                                                     offset: const Offset(0.0, 0.0),
                                                     blurRadius: 0.0,
                                                     spreadRadius: 0.0,
-                                                  ), //BoxShadow
-                                                ],),
-                                              child: Text("Showing Results",style: TextStyle(
-
-                                                  color: Colors.white,letterSpacing: 0.5,fontWeight: FontWeight.bold,fontSize: 15
-                                              ),textAlign: TextAlign.center,),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Text(
+                                                "Showing Results",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  letterSpacing: 0.5,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
                                   );
-
                                 },
                               );
                             },
-
                           );
                         },
-                        child: Padding (
-                          padding: const EdgeInsets.only(top: 3,bottom: 3,right: 10),
-                          child:  Container(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 3, bottom: 3, right: 10),
+                          child: Container(
                             width: 90,
                             height: 10,
-                            padding: const EdgeInsets.only(left: 0,top: 10),
+                            padding: const EdgeInsets.only(left: 0, top: 10),
                             decoration: BoxDecoration(
                               shape: BoxShape.rectangle,
-                              border: Border.all(
-                                width: 1,
-                              ),
+                              border: Border.all(width: 1),
                               borderRadius: BorderRadiusDirectional.circular(6.0),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
+                                  offset: const Offset(0.3, 0.3),
                                   blurRadius: 0.3,
                                   spreadRadius: 0.3,
-                                ), //BoxShadow
+                                ),
                                 BoxShadow(
                                   color: Colors.white,
                                   offset: const Offset(0.0, 0.0),
                                   blurRadius: 0.0,
                                   spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],),
-                            child:
-                            Text("Bedroom",style: TextStyle(
-                                fontWeight: FontWeight.bold
-                            ),textAlign: TextAlign.center,),
-
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              " Bedroom", // add 1 space in front for same alignment as " Bathroom"
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
+
                       ),
+
                       //bathroom
                       GestureDetector(
                         onTap: (){
@@ -1148,8 +1326,8 @@ class FliterList extends StatelessWidget {
                                               // child:  Text(bedroom,
                                               child:  Text("Bathrooms",
                                                 style: TextStyle(
-                                                    color: Colors.black,fontSize: 16.0,
-                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,fontSize: 16.0,fontWeight: FontWeight.bold,
+
                                                     letterSpacing: 0.5),
                                                 textAlign: TextAlign.left,),
                                             ),
@@ -1180,8 +1358,12 @@ class FliterList extends StatelessWidget {
                                                     },
 
                                                     child: Container(
+
+
                                                       // color: selectedIndex == index ? Colors.amber : Colors.transparent,
                                                       margin: const EdgeInsets.only(left: 5,right: 5,top: 5,bottom: 5),
+                                                      width: 50,  // ✅ smaller fixed width (you can adjust)
+                                                      height: 20,
                                                       // width: screenSize.width * 0.25,
                                                       // height: 20,
                                                       padding: const EdgeInsets.only(top: 0,left: 15,right: 15),
@@ -1208,8 +1390,8 @@ class FliterList extends StatelessWidget {
                                                         child: Text(_bathroom[index],
                                                           style: TextStyle(
                                                             color: selectedbathroom == index ? Colors.white : Colors.black,
-                                                            letterSpacing: 0.5,fontSize: 18,
-                                                            fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                                                            letterSpacing: 0.5,fontSize: 15,
+                                                          ),textAlign: TextAlign.center,),
                                                       ),
 
 
@@ -1220,9 +1402,9 @@ class FliterList extends StatelessWidget {
                                             )
                                         ),
                                         GestureDetector(
-                                          onTap: (){
+                                          onTap: () {
                                             showResult();
-                                            // Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterListDemo()));
+                                            Navigator.pop(context); // ✅ Close BottomSheet after API call
                                           },
                                           child:  Padding(
                                             padding: const EdgeInsets.only(top: 25.0,left: 15,bottom: 15,right: 15),
@@ -1306,103 +1488,119 @@ class FliterList extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: (){
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: "Rent",)));
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => Filter(data: "Rent")));
                         },
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 3,bottom: 3,right: 10),
-                          child:  Container(
+                          padding: const EdgeInsets.only(top: 3, bottom: 3, right: 10),
+                          child: Container(
                             width: 90,
-                            height: 10,
-                            padding: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8), // gives natural height
                             decoration: BoxDecoration(
                               shape: BoxShape.rectangle,
-                              border: Border.all(
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              border: Border.all(width: 1),
+                              borderRadius: BorderRadius.circular(6.0),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
+                                  offset: const Offset(0.3, 0.3),
                                   blurRadius: 0.3,
                                   spreadRadius: 0.3,
-                                ), //BoxShadow
+                                ),
                                 BoxShadow(
                                   color: Colors.white,
                                   offset: const Offset(0.0, 0.0),
                                   blurRadius: 0.0,
                                   spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],),
+                                ),
+                              ],
+                            ),
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center, // center the text
                               children: [
-                                Text(" All Filters",style: TextStyle(
-                                    fontWeight: FontWeight.bold
-                                ),),
-                                Container(
-                                  width: 10,
+                                Text(
+                                  "All Filters",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14, // safe readable size
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                         ),
                       ),
+
                       GestureDetector(
-                        onTap: (){
+                        onTap: () {
+                          setState(() {
+                            // Reset all selections
+                            selectedproduct = 0;
+                            selectedrent = null;
+                            selectedtype = null;
+                            selectedbedroom = null;
+                            selectedbathroom = null;
+                            _values = SfRangeValues(3000, 5000);
+                            min_price = '';
+                            max_price = '';
+                            ftype = ' ';
+                            bedroom = ' ';
+                            bathroom = ' ';
+                            property_type = ' ';
+                            purpose = 'Rent'; // default
+                          });
+
+                          // Reload page
                           Navigator.pushReplacement(
                             context,
                             PageRouteBuilder(
                               transitionDuration: Duration.zero,
-                              pageBuilder: (_, __, ___) => Search(data: purpose,),
+                              pageBuilder: (_, __, ___) => FliterList(filterModel: filterModel),
                             ),
                           );
                         },
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 3,bottom: 3,right: 10,left: 0),
-                          child:  Container(
+                          padding: const EdgeInsets.only(top: 3, bottom: 3, right: 10, left: 0),
+                          child: Container(
                             width: 70,
-                            height: 10,
-                            padding: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                             decoration: BoxDecoration(
                               shape: BoxShape.rectangle,
-                              border: Border.all(
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
+                              border: Border.all(width: 1),
+                              borderRadius: BorderRadius.circular(6.0),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
+                                  offset: const Offset(0.3, 0.3),
                                   blurRadius: 0.3,
                                   spreadRadius: 0.3,
-                                ), //BoxShadow
+                                ),
                                 BoxShadow(
                                   color: Colors.white,
                                   offset: const Offset(0.0, 0.0),
                                   blurRadius: 0.0,
                                   spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],),
+                                ),
+                              ],
+                            ),
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(" Reset",style: TextStyle(
-                                    fontWeight: FontWeight.bold
-                                ),textAlign: TextAlign.center,),
-                                Container(
-                                  width: 15,
+                                Text(
+                                  "Reset",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),
                           ),
                         ),
                       ),
+
+
                     ],
                   ),
                 ),
@@ -1467,219 +1665,238 @@ class FliterList extends StatelessWidget {
                     ),
                   )
               ),
-             ListView.builder(
-               padding: const EdgeInsets.all(0),
-               scrollDirection: Axis.vertical,
-                   physics: const ScrollPhysics(),
-                   itemCount: filterModel.data?.length ?? 0,
-                    shrinkWrap: true,
-                   itemBuilder: (context, index) {
-                     bool isFavorited = favoriteProperties.contains(filterModel.data![index].id);
-                 return Padding(
-                   padding: const EdgeInsets.all(8.0),
-                   child: Card(
-                     elevation: 20,
-                     shadowColor: Colors.white,
-                     color: Colors.white,
-                       child: GestureDetector(
-                       onTap: () async{
-                     String id = filterModel.data![index].id.toString();
-                     Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                         Product_Detail(data: id)));
-                     //Navigator.push(context, MaterialPageRoute(builder: (context) => Blog_Detail(data:blogModel!.data![index].id.toString())));
-                      },
-                     child: Padding(
-                       padding: const EdgeInsets.only(left: 5.0,top: 1,right: 5),
-                       child: Column(
-                         // spacing: 5,// this is the coloumn
-                         children: [
-                           ClipRRect(
-                               borderRadius: BorderRadius.circular(12),
-                               child: Stack(
-                                   children: [
-                                     AspectRatio(
-                                       aspectRatio: 1.5,
-                                       // this is the ratio
-                                       child: CachedNetworkImage( // this is to fetch the image
-                                         imageUrl: (filterModel.data![index].media![index].originalUrl.toString()),
-                                         fit: BoxFit.cover,
-                                         height: 100,
-                                       ),
-                                     ),
-                                     Positioned(
-                                       top: 5,
-                                       right: 10,
-                                       child: Container(
-                                         margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
-                                         height: 35,
-                                         width: 35,
-                                         padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
-                                         decoration: BoxDecoration(
-                                           borderRadius: BorderRadiusDirectional.circular(20.0),
-                                           boxShadow: [
-                                             BoxShadow(
-                                               color: Colors.grey,
-                                               offset: const Offset(
-                                                 0.3,
-                                                 0.3,
-                                               ),
-                                               blurRadius: 0.3,
-                                               spreadRadius: 0.3,
-                                             ), //BoxShadow
-                                             BoxShadow(
-                                               color: Colors.white,
-                                               offset: const Offset(0.0, 0.0),
-                                               blurRadius: 0.0,
-                                               spreadRadius: 0.0,
-                                             ), //BoxShadow
-                                           ],
-                                         ),
-                                         // child: Positioned(
-                                         // child: Icon(Icons.favorite_border,color: Colors.red,),)
-                                         child: IconButton(
-                                           padding: EdgeInsets.only(left: 5,top: 7),
-                                           alignment: Alignment.center,
-                                           icon: Icon(
-                                             isFavorited ? Icons.favorite : Icons.favorite_border,
-                                             color: isFavorited ? Colors.red : Colors.red,
-                                           ),
-                                           onPressed: () {
-                                             setState(() {
-                                               property_id=filterModel.data![index].id;
-                                               if(token == ''){
-                                                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                                               }
-                                               else{
-                                                 toggleFavorite(property_id!);
-                                                 toggledApi(token,property_id);
-                                               }
-                                               isFavorited = !isFavorited;
-                                             });
-                                           },
-                                         ),
-                                         //)
-                                       ),
-                                     ),
-                                   ]
-                               )
-                           ),
+              filterModel.data == null || filterModel.data!.isEmpty
+                  ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 50),
+                child: Center(
+                  child: Text(
+                    "Property Not Found",
+                    style: TextStyle(fontSize: 18, color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              )
+                  :
+              ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(0),
+                scrollDirection: Axis.vertical,
+                physics: const ScrollPhysics(),
+                itemCount: filterModel.data?.length ?? 0,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  bool isFavorited = favoriteProperties.contains(filterModel.data![index].id);
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Card(
+                      elevation: 20,
+                      shadowColor: Colors.white,
+                      color: Colors.white,
+                      child: GestureDetector(
+                        onTap: () async{
+                          String id = filterModel.data![index].id.toString();
+                          Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                              Product_Detail(data: id)));
+                          //Navigator.push(context, MaterialPageRoute(builder: (context) => Blog_Detail(data:blogModel!.data![index].id.toString())));
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 5.0,top: 1,right: 5),
+                          child: Column(
+                            // spacing: 5,// this is the coloumn
+                            children: [
+                              ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Stack(
+                                      children: [
+                                        AspectRatio(
+                                          aspectRatio: 1.5,
+                                          // this is the ratio
+                                          child: CachedNetworkImage(
+                                            imageUrl: filterModel.data![index].media!.isNotEmpty
+                                                ? filterModel.data![index].media![0].originalUrl.toString()
+                                                : 'https://via.placeholder.com/300x200?text=No+Image',
 
-                           Padding(
-                             padding: const EdgeInsets.only(top: 5),
-                             child: ListTile(
-                                title: Text(filterModel.data![index].title.toString(),
-                                  style: TextStyle(
-                            fontSize: 16,height: 1.4
-                        ),),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text('${filterModel.data![index].price} AED',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
-                          ),),
-                        ),
-                             ),
-                           ),
-                           Row(
-                             children: [
-                               Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 0),
-                                 child:  Image.asset("assets/images/map.png",height: 14,),
-                               ),
-                               Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                  child: Text(filterModel.data![index].location.toString(),
+
+                                            fit: BoxFit.cover,
+                                            height: 100,
+                                            placeholder: (context, url) => const CircularProgressIndicator(), // Placeholder while loading
+                                            errorWidget: (context, url, error) => const Icon(Icons.error, size: 100), // Error icon if the image fails to load
+                                          ),
+
+                                        ),
+                                        // Positioned(
+                                        //   top: 5,
+                                        //   right: 10,
+                                        //   child: Container(
+                                        //     margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
+                                        //     height: 35,
+                                        //     width: 35,
+                                        //     padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
+                                        //     decoration: BoxDecoration(
+                                        //       borderRadius: BorderRadiusDirectional.circular(20.0),
+                                        //       boxShadow: [
+                                        //         BoxShadow(
+                                        //           color: Colors.grey,
+                                        //           offset: const Offset(
+                                        //             0.3,
+                                        //             0.3,
+                                        //           ),
+                                        //           blurRadius: 0.3,
+                                        //           spreadRadius: 0.3,
+                                        //         ), //BoxShadow
+                                        //         BoxShadow(
+                                        //           color: Colors.white,
+                                        //           offset: const Offset(0.0, 0.0),
+                                        //           blurRadius: 0.0,
+                                        //           spreadRadius: 0.0,
+                                        //         ), //BoxShadow
+                                        //       ],
+                                        //     ),
+                                        //     // child: Positioned(
+                                        //     // child: Icon(Icons.favorite_border,color: Colors.red,),)
+                                        //     child: IconButton(
+                                        //       padding: EdgeInsets.only(left: 5,top: 7),
+                                        //       alignment: Alignment.center,
+                                        //       icon: Icon(
+                                        //         isFavorited ? Icons.favorite : Icons.favorite_border,
+                                        //         color: isFavorited ? Colors.red : Colors.red,
+                                        //       ),
+                                        //       onPressed: () {
+                                        //         setState(() {
+                                        //           property_id=filterModel.data![index].id;
+                                        //           if(token == ''){
+                                        //             Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
+                                        //           }
+                                        //           else{
+                                        //             toggleFavorite(property_id!);
+                                        //             toggledApi(token,property_id);
+                                        //           }
+                                        //           isFavorited = !isFavorited;
+                                        //         });
+                                        //       },
+                                        //     ),
+                                        //     //)
+                                        //   ),
+                                        // ),
+                                      ]
+                                  )
+                              ),
+
+                              Padding(
+                                padding: const EdgeInsets.only(top: 5),
+                                child: ListTile(
+                                  title: Text(filterModel.data![index].title.toString(),
                                     style: TextStyle(
-                                        fontSize: 13,height: 1.4,
-                                        overflow: TextOverflow.visible
-                          ),),
-                               ),
-                             ],
-                           ),
-                           SizedBox(height: 8),
-                           Padding(
-                             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                             child: Row(
-                               children: [
-                                 Image.asset("assets/images/bed.png", height: 13),
-                                 SizedBox(width: 5),
-                                 Text(filterModel.data![index].bedrooms.toString()),
-                                 SizedBox(width: 10),
-                                 Image.asset("assets/images/bath.png", height: 13),
-                                 SizedBox(width: 5),
-                                 Text(filterModel.data![index].bathrooms.toString()),
-                                 SizedBox(width: 10),
-                                 Image.asset("assets/images/messure.png", height: 13),
-                                 SizedBox(width: 5),
-                                 Text(filterModel.data![index].squareFeet.toString()),
-                               ],
-                             ),
-                           ),
-                           Row(
-                             children: [
-                               const SizedBox(width: 10),
-                               Expanded(
-                                 child: ElevatedButton.icon(
-                                   onPressed: () async {
-                                     String phone = 'tel:${filterModel.data![index].phoneNumber}';
-                                     try {
-                                       final bool launched = await launchUrlString(
-                                         phone,
-                                         mode: LaunchMode.externalApplication,
-                                       );
-                                       if (!launched) print("❌ Could not launch dialer");
-                                     } catch (e) {
-                                       print("❌ Exception: $e");
-                                     }
-                                   },
-                                   icon: const Icon(Icons.call, color: Colors.red),
-                                   label: const Text("Call", style: TextStyle(color: Colors.black)),
-                                   style: ElevatedButton.styleFrom(
-                                     backgroundColor: Colors.grey[100],
-                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                     elevation: 2,
-                                     padding: const EdgeInsets.symmetric(vertical: 10),
-                                   ),
-                                 ),
-                               ),
-                               const SizedBox(width: 10),
-                               Expanded(
-                                 child: ElevatedButton.icon(
-                                   onPressed: () async {
-                                     final phone = filterModel.data![index].whatsapp;
-                                     final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-                                     if (await canLaunchUrl(url)) {
-                                       try {
-                                         final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
-                                         if (!launched) print("❌ Could not launch WhatsApp");
-                                       } catch (e) {
-                                         print("❌ Exception: $e");
-                                       }
-                                     } else {
-                                       print("❌ WhatsApp not available");
-                                     }
-                                   },
-                                   icon: Image.asset("assets/images/whats.png", height: 20),
-                                   label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                   style: ElevatedButton.styleFrom(
-                                     backgroundColor: Colors.grey[100],
-                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                     elevation: 2,
-                                     padding: const EdgeInsets.symmetric(vertical: 10),
-                                   ),
-                                 ),
-                               ),
-                               const SizedBox(width: 10),
-                             ],
-                           ),
-                           const SizedBox(height: 10),
-                         ],
-                       ),
-                     ),
-                       ),
-                   ),
-                 );
-                    // return ProductCard(product: products[index]);
-                   },
-                 ),
+                                        fontSize: 16,height: 1.4
+                                    ),),
+                                  subtitle: Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Text('${filterModel.data![index].price} AED',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
+                                      ),),
+                                  ),
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 0),
+                                    child:  Image.asset("assets/images/map.png",height: 14,),
+                                  ),
+                                  Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
+                                    child: Text(filterModel.data![index].location.toString(),
+                                      style: TextStyle(
+                                          fontSize: 13,height: 1.4,
+                                          overflow: TextOverflow.visible
+                                      ),),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Row(
+                                  children: [
+                                    Image.asset("assets/images/bed.png", height: 13),
+                                    SizedBox(width: 5),
+                                    Text(filterModel.data![index].bedrooms.toString()),
+                                    SizedBox(width: 10),
+                                    Image.asset("assets/images/bath.png", height: 13),
+                                    SizedBox(width: 5),
+                                    Text(filterModel.data![index].bathrooms.toString()),
+                                    SizedBox(width: 10),
+                                    Image.asset("assets/images/messure.png", height: 13),
+                                    SizedBox(width: 5),
+                                    Text(filterModel.data![index].squareFeet.toString()),
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () async {
+                                        String phone = 'tel:${filterModel.data![index].phoneNumber}';
+                                        try {
+                                          final bool launched = await launchUrlString(
+                                            phone,
+                                            mode: LaunchMode.externalApplication,
+                                          );
+                                          if (!launched) print("❌ Could not launch dialer");
+                                        } catch (e) {
+                                          print("❌ Exception: $e");
+                                        }
+                                      },
+                                      icon: const Icon(Icons.call, color: Colors.red),
+                                      label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.grey[100],
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        elevation: 2,
+                                        padding: const EdgeInsets.symmetric(vertical: 10),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () async {
+                                        final phone = filterModel.data![index].whatsapp;
+                                        final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+                                        if (await canLaunchUrl(url)) {
+                                          try {
+                                            final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+                                            if (!launched) print("❌ Could not launch WhatsApp");
+                                          } catch (e) {
+                                            print("❌ Exception: $e");
+                                          }
+                                        } else {
+                                          print("❌ WhatsApp not available");
+                                        }
+                                      },
+                                      icon: Image.asset("assets/images/whats.png", height: 20),
+                                      label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.grey[100],
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        elevation: 2,
+                                        padding: const EdgeInsets.symmetric(vertical: 10),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                  // return ProductCard(product: products[index]);
+                },
+              ),
             ]),
       ),
     );
@@ -1695,97 +1912,39 @@ class FliterList extends StatelessWidget {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-              onTap: ()async{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+            onTap: () async {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                setState(() {
+                  if (token == '') {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  }
+                });
               },
-              child: Image.asset("assets/images/home.png",height: 25,)),
-          /*IconButton(
-            enableFeedback: false,
-            onPressed: () {
-             // setState(() {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-             // });
-            },
-            icon: pageIndex == 0
-                ? const Icon(
-              Icons.home_filled,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.home_outlined,
-              color: Colors.red,
-              size: 35,
-            ),
-          ),*/
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-             // setState(() {
-                pageIndex = 1;
-            //  });
-            },
-            icon: pageIndex == 1
-                ? const Icon(
-              Icons.search,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.search_outlined,
-              color: Colors.red,
-              size: 35,
-            ),
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-            //  setState(() {
-             //   Navigator.push(context, MaterialPageRoute(builder: (context)=> Blog()));
-             // });
-            },
-            icon: pageIndex == 2
-                ? const Icon(
-              Icons.favorite,
-              color: Colors.red,
-              size: 30,
-            )
-                : const Icon(
-              Icons.favorite_border_outlined,
-              color: Colors.red,
-              size: 30,
-            ),
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                }
-                else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                }
-              });
-            },
-            icon: pageIndex == 3
-                ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
             ),
           ),
         ],
       ),
+
     );
   }
 }

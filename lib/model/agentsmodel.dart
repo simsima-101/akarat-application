@@ -52,6 +52,10 @@ class AgentsModel {
   final int sale;
   final int rent;
   final String image;
+  final String? bio;
+  final String? phoneNumber;  // this maps to "phone_number"
+  final String? whatsapp;     // this maps to "whatsapp"
+
 
   AgentsModel({
     required this.id,
@@ -63,6 +67,9 @@ class AgentsModel {
     required this.sale,
     required this.rent,
     required this.image,
+    this.bio,
+    this.phoneNumber,   // ✅ add here
+    this.whatsapp,      // ✅ add here
   });
 
   factory AgentsModel.fromJson(Map<String, dynamic> json) {
@@ -75,7 +82,7 @@ class AgentsModel {
       agency: json['agency'] ?? 'N/A',
       sale: json['sale'] ?? 0,
       rent: json['rent'] ?? 0,
-      image: json['image'] ?? 'https://example.com/default-image.jpg',
+      image: json['image'] ?? 'https://akarat.com/default-image.jpg',
     );
   }
 

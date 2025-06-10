@@ -18,6 +18,8 @@ import '../model/togglemodel.dart';
 import '../utils/shared_preference_manager.dart';
 import 'htmlEpandableText.dart';
 import 'login.dart';
+import 'package:Akarat/utils/whatsapp_button.dart';
+
 
 class About_Agency extends StatefulWidget {
   const About_Agency({super.key, required this.data});
@@ -327,89 +329,57 @@ class _About_AgencyState extends State<About_Agency> {
                 children: <Widget>[
                   const SizedBox(height: 20,),
                   Container(
-                    height: screenSize.height*0.22,
+                    height: screenSize.height * 0.22,
                     color: Color(0xFFF5F5F5),
-                   // color: Colors.grey,
                     child: Column(
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Row(
-                            spacing:screenSize.width*0.7,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ instead of spacing
                             children: [
                               Container(
-                                margin: const EdgeInsets.only(left: 20,top: 0,bottom: 0),
+                                margin: const EdgeInsets.only(left: 20),
                                 height: 35,
                                 width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
+                                padding: const EdgeInsets.all(7),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
+                                  borderRadius: BorderRadius.circular(20.0),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.grey,
-                                      offset: const Offset(
-                                        0.3,
-                                        0.3,
-                                      ),
+                                      offset: Offset(0.3, 0.3),
                                       blurRadius: 0.3,
                                       spreadRadius: 0.3,
-                                    ), //BoxShadow
+                                    ),
                                     BoxShadow(
                                       color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
+                                      offset: Offset(0.0, 0.0),
                                       blurRadius: 0.0,
                                       spreadRadius: 0.0,
-                                    ), //BoxShadow
+                                    ),
                                   ],
                                 ),
                                 child: GestureDetector(
-                                  onTap: (){
+                                  onTap: () {
                                     Navigator.of(context).pop();
                                   },
-                                          child: Image.asset("assets/images/ar-left.png",
-                                            width: 15,
-                                            height: 15,
-                                            fit: BoxFit.contain,),
+                                  child: Image.asset(
+                                    "assets/images/ar-left.png",
+                                    width: 15,
+                                    height: 15,
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
                               ),
-                             /* Container(
-                                margin: const EdgeInsets.only(left: 0,top: 10,bottom: 15),
-                                height: 35,
-                                width: 35,
-                                padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: const Offset(
-                                        0.3,
-                                        0.3,
-                                      ),
-                                      blurRadius: 0.3,
-                                      spreadRadius: 0.3,
-                                    ), //BoxShadow
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: const Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ), //BoxShadow
-                                  ],
-                                ),
-                                child: Image.asset("assets/images/share.png",
-                                  width: 15,
-                                  height: 15,
-                                  fit: BoxFit.contain,),
-                              ),*/
                             ],
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(left: 0,top: 10,right: 0,bottom: 0),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                           child: Container(
-                            height: screenSize.height*0.12,
-                            width: screenSize.width*0.91,
+                            height: screenSize.height * 0.12,
+                            width: screenSize.width * 0.91,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               boxShadow: [
@@ -428,81 +398,73 @@ class _About_AgencyState extends State<About_Agency> {
                               ],
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child:  Row(
+                            child: Row(
                               children: [
                                 Container(
-                                  margin: const EdgeInsets.only(top: 0,left: 0),
-                                  width: screenSize.width*0.29,
-                                  height: screenSize.height*0.1,
-                                 // color: Colors.grey,
-                                  child: CachedNetworkImage( // this is to fetch the image
+                                  width: screenSize.width * 0.29,
+                                  height: screenSize.height * 0.1,
+                                  child: CachedNetworkImage(
                                     imageUrl: (agencyDetailmodel!.image.toString()),
                                     fit: BoxFit.contain,
-
                                   ),
-
                                 ),
-                                Container(
-                                  margin: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                  height: screenSize.height*0.088,
-                                  width: screenSize.width*0.61,
-                                  // color: Colors.grey,
+                                SizedBox(width: 8), // ✅ Add spacing
+                                Expanded(
                                   child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center, // ✅ Center vertically
+                                    crossAxisAlignment: CrossAxisAlignment.start, // ✅ Align text left
                                     children: [
-                                      Row(
-                                        children: [
-                                          Padding(padding: const EdgeInsets.only(left: 10,right: 0,top: 10),
-                                            child: Text(agencyDetailmodel!.name.toString(),style: TextStyle(
-                                                fontSize: 17,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                                            ),),
-                                          ),
-
-                                        ],
+                                      Text(
+                                        agencyDetailmodel!.name.toString(),
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          letterSpacing: 0.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis, // ✅ To prevent overflow
+                                        maxLines: 1,
                                       ),
-                                      Row(
-                                        children: [
-                                          Padding(padding: const EdgeInsets.only(left: 10,right: 0,top: 5,bottom: 5),
-                                            child: Container(
-                                              width: screenSize.width*0.3,
-                                              height: screenSize.height*0.033,
-                                              padding: const EdgeInsets.only(top: 5,),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.grey.withOpacity(0.5),
-                                                    offset: Offset(4, 4),
-                                                    blurRadius: 8,
-                                                    spreadRadius: 2,
-                                                  ),
-                                                  BoxShadow(
-                                                    color: Colors.white.withOpacity(0.8),
-                                                    offset: Offset(-4, -4),
-                                                    blurRadius: 8,
-                                                    spreadRadius: 2,
-                                                  ),
-                                                ],
-                                                borderRadius: BorderRadius.circular(6),),
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(left: 3.0,right: 3),
-                                                child: Text("${agencyDetailmodel!.propertiesCount}  Properties",textAlign: TextAlign.center,style:
-                                                TextStyle(letterSpacing: 0.5,color: Colors.blueAccent)),
-                                              ),
+                                      SizedBox(height: 5),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.5),
+                                              offset: Offset(4, 4),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
                                             ),
+                                            BoxShadow(
+                                              color: Colors.white.withOpacity(0.8),
+                                              offset: Offset(-4, -4),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                          ],
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          "${agencyDetailmodel!.propertiesCount} Properties",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            letterSpacing: 0.5,
+                                            color: Colors.blueAccent,
                                           ),
-                                        ],
+                                        ),
                                       ),
                                     ],
                                   ),
-                                )
+                                ),
                               ],
                             ),
                           ),
                         ),
                       ],
                     ),
-
                   ),
+
                   TabBar(
                     padding: const EdgeInsets.only(top: 15,left: 0,right: 0),
                     labelPadding: const EdgeInsets.symmetric(horizontal: 0,),
@@ -668,39 +630,39 @@ class _About_AgencyState extends State<About_Agency> {
                                       ),
 
                                       const SizedBox(height: 10,),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                        child: Row(
-                                          children: [
-                                            Text("Properties", style: TextStyle(
-                                                fontSize: 15, color: Colors.grey, letterSpacing: 0.5
-                                            ),),
-                                            Text(""),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10,),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                        height: MediaQuery.of(context).size.height * 0.06,
-                                        alignment: Alignment.centerLeft,
-                                        child: ListView(
-                                          scrollDirection: Axis.horizontal,
-                                          physics: const BouncingScrollPhysics(),
-                                          shrinkWrap: true,
-                                          children: [
-                                            _buildTagContainer(
-                                              text: "18 Properties for Rent",
-                                              iconPath: "assets/images/arrow.png",
-                                            ),
-                                            const SizedBox(width: 4,),
-                                            _buildTagContainer(
-                                              text: "18 Properties for Sale",
-                                              iconPath: "assets/images/arrow.png",
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                      // Padding(
+                                      //   padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                      //   child: Row(
+                                      //     children: [
+                                      //       Text("Properties", style: TextStyle(
+                                      //           fontSize: 15, color: Colors.grey, letterSpacing: 0.5
+                                      //       ),),
+                                      //       Text(""),
+                                      //     ],
+                                      //   ),
+                                      // ),
+                                      // const SizedBox(height: 10,),
+                                      // Container(
+                                      //   padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                      //   height: MediaQuery.of(context).size.height * 0.06,
+                                      //   alignment: Alignment.centerLeft,
+                                      //   child: ListView(
+                                      //     scrollDirection: Axis.horizontal,
+                                      //     physics: const BouncingScrollPhysics(),
+                                      //     shrinkWrap: true,
+                                      //     children: [
+                                      //       _buildTagContainer(
+                                      //         text: "18 Properties for Rent",
+                                      //         iconPath: "assets/images/arrow.png",
+                                      //       ),
+                                      //       const SizedBox(width: 4,),
+                                      //       _buildTagContainer(
+                                      //         text: "18 Properties for Sale",
+                                      //         iconPath: "assets/images/arrow.png",
+                                      //       ),
+                                      //     ],
+                                      //   ),
+                                      // ),
                                       const SizedBox(height: 10,),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -826,48 +788,53 @@ class _About_AgencyState extends State<About_Agency> {
                                             child: Container(
                                               height: 45,
                                               decoration: BoxDecoration(
+                                                color: Colors.grey.shade300, // grey background
                                                 borderRadius: BorderRadius.circular(10.0),
-                                                boxShadow: const [
+                                                boxShadow: [
                                                   BoxShadow(
-                                                    color: Colors.grey,
+                                                    color: Colors.grey.withOpacity(0.5),
                                                     offset: Offset(0.3, 0.3),
                                                     blurRadius: 0.3,
                                                     spreadRadius: 0.3,
                                                   ),
                                                   BoxShadow(
-                                                    color: Colors.white,
+                                                    color: Colors.white.withOpacity(0.8),
                                                     offset: Offset(0.0, 0.0),
                                                     blurRadius: 0.0,
                                                     spreadRadius: 0.0,
                                                   ),
                                                 ],
                                               ),
-                                              child: TextField(
-                                                controller: _searchController,
-                                                decoration: InputDecoration(
-                                                  border: InputBorder.none,
-                                                  hintText: 'Select Location',
-                                                  hintStyle: TextStyle(
-                                                    color: Colors.grey,
-                                                    fontSize: 15,
-                                                    letterSpacing: 0.5,
+                                              alignment: Alignment.centerLeft,
+                                              padding: EdgeInsets.symmetric(horizontal: 12),
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.location_on, color: Colors.grey), // grey icon
+                                                  SizedBox(width: 8),
+                                                  Text(
+                                                    "Select Location (Coming Soon)", // safe text
+                                                    style: TextStyle(
+                                                      color: Colors.black45,
+                                                      fontSize: 15,
+                                                      letterSpacing: 0.5,
+                                                    ),
                                                   ),
-                                                  prefixIcon: Icon(Icons.location_on, color: Colors.red),
-                                                ),
+                                                ],
                                               ),
                                             ),
                                           ),
+
                                           const SizedBox(width: 16),
                                           // Filter Icon and Label
-                                          Column(
-                                            children: [
-                                              Image.asset("assets/images/filter.png", width: 20, height: 30),
-                                              const Text(
-                                                "Filters",
-                                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                                              ),
-                                            ],
-                                          ),
+                                          // Column(
+                                          //   children: [
+                                          //     Image.asset("assets/images/filter.png", width: 20, height: 30),
+                                          //     const Text(
+                                          //       "Filters",
+                                          //       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                          //     ),
+                                          //   ],
+                                          // ),
                                         ],
                                       ),
                                     ),
@@ -876,12 +843,15 @@ class _About_AgencyState extends State<About_Agency> {
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: ["All", "Buy", "Rent"].map((label) {
+                                          // All buttons disabled → adding "(Coming Soon)" to label
+                                          String displayLabel = "$label (Coming Soon)";
+
                                           return Container(
                                             width: screenSize.width * 0.25,
                                             height: 35,
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
-                                              color: Colors.white,
+                                              color: Colors.grey.shade300, // grey background
                                               borderRadius: BorderRadius.circular(10),
                                               boxShadow: [
                                                 BoxShadow(
@@ -899,11 +869,12 @@ class _About_AgencyState extends State<About_Agency> {
                                               ],
                                             ),
                                             child: Text(
-                                              label,
-                                              style: const TextStyle(
+                                              displayLabel, // Show "Buy (Coming Soon)"
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
                                                 letterSpacing: 0.5,
-                                                color: Colors.black,
-                                                fontSize: 12,
+                                                color: Colors.black45,
+                                                fontSize: 11, // slightly smaller to fit
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
@@ -911,6 +882,8 @@ class _About_AgencyState extends State<About_Agency> {
                                         }).toList(),
                                       ),
                                     ),
+
+
                                     Expanded(
                                       child: Padding(
                                         padding: const EdgeInsets.only(left: 0,right: 0,top: 15),
@@ -974,62 +947,62 @@ class _About_AgencyState extends State<About_Agency> {
                                                                                   }
                                                                               ),
                                                                             ),
-                                                                            Positioned(
-                                                                              top: 5,
-                                                                              right: 10,
-                                                                              child: Container(
-                                                                                margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
-                                                                                height: 35,
-                                                                                width: 35,
-                                                                                 padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
-                                                                                decoration: BoxDecoration(
-                                                                                  borderRadius: BorderRadiusDirectional.circular(20.0),
-                                                                                  boxShadow: [
-                                                                                    BoxShadow(
-                                                                                      color: Colors.grey,
-                                                                                      offset: const Offset(
-                                                                                        0.3,
-                                                                                        0.3,
-                                                                                      ),
-                                                                                      blurRadius: 0.3,
-                                                                                      spreadRadius: 0.3,
-                                                                                    ), //BoxShadow
-                                                                                    BoxShadow(
-                                                                                      color: Colors.white,
-                                                                                      offset: const Offset(0.0, 0.0),
-                                                                                      blurRadius: 0.0,
-                                                                                      spreadRadius: 0.0,
-                                                                                    ), //BoxShadow
-                                                                                  ],
-                                                                                ),
-                                                                                // child: Positioned(
-                                                                                // child: Icon(Icons.favorite_border,color: Colors.red,),)
-                                                                                child: IconButton(
-                                                                                  padding: const EdgeInsets.only(left: 5, top: 7),
-                                                                                  alignment: Alignment.center,
-                                                                                  icon: Icon(
-                                                                                    isFavorited ? Icons.favorite : Icons.favorite_border,
-                                                                                    color: isFavorited ? Colors.red : Colors.red,
-                                                                                  ),
-                                                                                  onPressed: () {
-                                                                                    setState(() {
-                                                                                      property_id = property.id; // ✅ Use 'property', not agencyPropertiesModel
-                                                                                      if (token == '') {
-                                                                                        Navigator.push(
-                                                                                          context,
-                                                                                          MaterialPageRoute(builder: (context) => Login()),
-                                                                                        );
-                                                                                      } else {
-                                                                                        toggleFavorite(property_id!);
-                                                                                        toggledApi(token, property_id);
-                                                                                      }
-                                                                                      isFavorited = !isFavorited;
-                                                                                    });
-                                                                                  },
-                                                                                ),
-                                                                                //)
-                                                                              ),
-                                                                            ),
+                                                                            // Positioned(
+                                                                            //   top: 5,
+                                                                            //   right: 10,
+                                                                            //   child: Container(
+                                                                            //     margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
+                                                                            //     height: 35,
+                                                                            //     width: 35,
+                                                                            //      padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
+                                                                            //     decoration: BoxDecoration(
+                                                                            //       borderRadius: BorderRadiusDirectional.circular(20.0),
+                                                                            //       boxShadow: [
+                                                                            //         BoxShadow(
+                                                                            //           color: Colors.grey,
+                                                                            //           offset: const Offset(
+                                                                            //             0.3,
+                                                                            //             0.3,
+                                                                            //           ),
+                                                                            //           blurRadius: 0.3,
+                                                                            //           spreadRadius: 0.3,
+                                                                            //         ), //BoxShadow
+                                                                            //         BoxShadow(
+                                                                            //           color: Colors.white,
+                                                                            //           offset: const Offset(0.0, 0.0),
+                                                                            //           blurRadius: 0.0,
+                                                                            //           spreadRadius: 0.0,
+                                                                            //         ), //BoxShadow
+                                                                            //       ],
+                                                                            //     ),
+                                                                            //     // child: Positioned(
+                                                                            //     // child: Icon(Icons.favorite_border,color: Colors.red,),)
+                                                                            //     child: IconButton(
+                                                                            //       padding: const EdgeInsets.only(left: 5, top: 7),
+                                                                            //       alignment: Alignment.center,
+                                                                            //       icon: Icon(
+                                                                            //         isFavorited ? Icons.favorite : Icons.favorite_border,
+                                                                            //         color: isFavorited ? Colors.red : Colors.red,
+                                                                            //       ),
+                                                                            //       onPressed: () {
+                                                                            //         setState(() {
+                                                                            //           property_id = property.id; // ✅ Use 'property', not agencyPropertiesModel
+                                                                            //           if (token == '') {
+                                                                            //             Navigator.push(
+                                                                            //               context,
+                                                                            //               MaterialPageRoute(builder: (context) => Login()),
+                                                                            //             );
+                                                                            //           } else {
+                                                                            //             toggleFavorite(property_id!);
+                                                                            //             toggledApi(token, property_id);
+                                                                            //           }
+                                                                            //           isFavorited = !isFavorited;
+                                                                            //         });
+                                                                            //       },
+                                                                            //     ),
+                                                                            //     //)
+                                                                            //   ),
+                                                                            // ),
                                                                           ]
                                                                       )
                                                                   )
@@ -1065,63 +1038,63 @@ class _About_AgencyState extends State<About_Agency> {
                                                                   ),
                                                                 ],
                                                               ),
-                                                              Row(
-                                                                children: [
-                                                                  const SizedBox(width: 10),
-                                                                  Expanded(
-                                                                    child: ElevatedButton.icon(
-                                                                      onPressed: () async {
-                                                                        String phone = 'tel:${property.phoneNumber}';
-                                                                        try {
-                                                                          final bool launched = await launchUrlString(
-                                                                            phone,
-                                                                            mode: LaunchMode.externalApplication,
-                                                                          );
-                                                                          if (!launched) print("❌ Could not launch dialer");
-                                                                        } catch (e) {
-                                                                          print("❌ Exception: $e");
-                                                                        }
-                                                                      },
-                                                                      icon: const Icon(Icons.call, color: Colors.red),
-                                                                      label: const Text("Call", style: TextStyle(color: Colors.black)),
-                                                                      style: ElevatedButton.styleFrom(
-                                                                        backgroundColor: Colors.grey[100],
-                                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                                        elevation: 3,
-                                                                        padding: const EdgeInsets.symmetric(vertical: 10),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                  const SizedBox(width: 10),
-                                                                  Expanded(
-                                                                    child: ElevatedButton.icon(
-                                                                      onPressed: () async {
-                                                                        final phone = property.whatsapp;
-                                                                        final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-                                                                        if (await canLaunchUrl(url)) {
-                                                                          try {
-                                                                            final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
-                                                                            if (!launched) print("❌ Could not launch WhatsApp");
-                                                                          } catch (e) {
-                                                                            print("❌ Exception: $e");
-                                                                          }
-                                                                        } else {
-                                                                          print("❌ WhatsApp not available");
-                                                                        }
-                                                                      },
-                                                                      icon: Image.asset("assets/images/whats.png", height: 20),
-                                                                      label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                                                      style: ElevatedButton.styleFrom(
-                                                                        backgroundColor: Colors.grey[100],
-                                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                                        elevation: 1,
-                                                                        padding: const EdgeInsets.symmetric(vertical: 10),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                  const SizedBox(width: 10),
-                                                                ],
-                                                              ),
+                                                              // Row(
+                                                              //   children: [
+                                                              //     const SizedBox(width: 10),
+                                                              //     Expanded(
+                                                              //       child: ElevatedButton.icon(
+                                                              //         onPressed: () async {
+                                                              //           String phone = 'tel:${property.phoneNumber}';
+                                                              //           try {
+                                                              //             final bool launched = await launchUrlString(
+                                                              //               phone,
+                                                              //               mode: LaunchMode.externalApplication,
+                                                              //             );
+                                                              //             if (!launched) print("❌ Could not launch dialer");
+                                                              //           } catch (e) {
+                                                              //             print("❌ Exception: $e");
+                                                              //           }
+                                                              //         },
+                                                              //         icon: const Icon(Icons.call, color: Colors.red),
+                                                              //         label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                                              //         style: ElevatedButton.styleFrom(
+                                                              //           backgroundColor: Colors.grey[100],
+                                                              //           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                              //           elevation: 3,
+                                                              //           padding: const EdgeInsets.symmetric(vertical: 10),
+                                                              //         ),
+                                                              //       ),
+                                                              //     ),
+                                                              //     const SizedBox(width: 10),
+                                                              //     Expanded(
+                                                              //       child: ElevatedButton.icon(
+                                                              //         onPressed: () async {
+                                                              //           final phone = property.whatsapp;
+                                                              //           final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+                                                              //           if (await canLaunchUrl(url)) {
+                                                              //             try {
+                                                              //               final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                              //               if (!launched) print("❌ Could not launch WhatsApp");
+                                                              //             } catch (e) {
+                                                              //               print("❌ Exception: $e");
+                                                              //             }
+                                                              //           } else {
+                                                              //             print("❌ WhatsApp not available");
+                                                              //           }
+                                                              //         },
+                                                              //         icon: Image.asset("assets/images/whats.png", height: 20),
+                                                              //         label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                                              //         style: ElevatedButton.styleFrom(
+                                                              //           backgroundColor: Colors.grey[100],
+                                                              //           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                              //           elevation: 1,
+                                                              //           padding: const EdgeInsets.symmetric(vertical: 10),
+                                                              //         ),
+                                                              //       ),
+                                                              //     ),
+                                                              //     const SizedBox(width: 10),
+                                                              //   ],
+                                                              // ),
                                                               const SizedBox(height: 10),
                                                             ],
                                                           ),
@@ -1142,204 +1115,164 @@ class _About_AgencyState extends State<About_Agency> {
                                 ),
                            // ),
                             //Agent
-                            SingleChildScrollView(
-                                child:  Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    children: [
-                                       ListView.builder(
-                                        scrollDirection: Axis.vertical,
-                                        physics: const ScrollPhysics(),
-                                        itemCount: agencyAgentsModel?.data?.length ?? 0,
-                                        shrinkWrap: true,
-                                        itemBuilder: (context, index) {
-                                          if(agencyAgentsModel== null){
-                                            return Scaffold(
-                                              body: Center(child: CircularProgressIndicator()), // Show loading state
-                                            );
-                                          }
-                                          return SingleChildScrollView(
-                                            child: GestureDetector(
-                                              onTap: (){
-                                               // Navigator.push(context, MaterialPageRoute(builder: (context) => AboutAgent(data: '${agentsModel.id}')));
-                                              },
-                                              child : Padding(
-                                                padding: const EdgeInsets.only(left: 0.0,right: 0,top: 0,bottom: 5),
-                                                child: Card(
-                                                  color: Colors.white,
-                                                  shadowColor: Colors.white,
-                                                  elevation: 20,
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.only(left: 0.0,top: 0,right: 0,bottom: 5),
+                            // AGENTS TAB
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ListView.builder(
+                                itemCount: agencyAgentsModel?.data?.length ?? 0,
+                                shrinkWrap: true,
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  if (agencyAgentsModel == null) {
+                                    return Center(child: CircularProgressIndicator());
+                                  }
+
+                                  return GestureDetector(
+                                    onTap: () {
+                                      // Navigate if needed
+                                    },
+                                    child: Card(
+                                      color: Colors.white,
+                                      elevation: 10,
+                                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Row(
+                                          children: [
+                                            // Agent image
+                                            Container(
+                                              width: screenSize.width * 0.2,
+                                              height: screenSize.width * 0.2,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey.withOpacity(0.3),
+                                                    offset: Offset(0, 2),
+                                                    blurRadius: 4,
+                                                  ),
+                                                ],
+                                              ),
+                                              child: CircleAvatar(
+                                                backgroundImage: NetworkImage(agencyAgentsModel!.data![index].image.toString()),
+                                              ),
+                                            ),
+
+                                            SizedBox(width: 10),
+
+                                            // Agent details
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  // Name
+                                                  Text(
+                                                    agencyAgentsModel!.data![index].name.toString(),
+                                                    style: TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.bold,
+                                                      letterSpacing: 0.5,
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 4),
+
+                                                  // Speaks
+                                                  Text(
+                                                    "Speaks: ${agencyAgentsModel!.data![index].languages.toString()}",
+                                                    style: TextStyle(fontSize: 12, letterSpacing: 0.5),
+                                                  ),
+                                                  SizedBox(height: 8),
+
+                                                  // Sale & Rent buttons
+                                                  Container(
+                                                    width: screenSize.width * 0.35,
+                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius: BorderRadius.circular(6),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: Colors.grey.withOpacity(0.3),
+                                                          offset: Offset(2, 2),
+                                                          blurRadius: 6,
+                                                          spreadRadius: 1,
+                                                        ),
+                                                      ],
+                                                    ),
                                                     child: Column(
-                                                      // spacing: 5,// this is the coloumn
+                                                      crossAxisAlignment: CrossAxisAlignment.stretch,
                                                       children: [
-                                                        Row(
-                                                          children: [
-                                                            Container(
-                                                                margin: const EdgeInsets.only(top: 0,left: 5),
-                                                                width: screenSize.width*0.25,
-                                                                height: screenSize.height*0.1,
-                                                                decoration: BoxDecoration(
-                                                                  borderRadius: BorderRadiusDirectional.circular(63.0),
-                                                                  boxShadow: [
-                                                                    BoxShadow(
-                                                                      color: Colors.grey,
-                                                                      offset: const Offset(
-                                                                        0.0,
-                                                                        0.0,
-                                                                      ),
-                                                                      blurRadius: 0.0,
-                                                                      spreadRadius: 0.0,
-                                                                    ), //BoxShadow
-                                                                    BoxShadow(
-                                                                      color: Colors.white,
-                                                                      offset: const Offset(0.0, 0.0),
-                                                                      blurRadius: 0.5,
-                                                                      spreadRadius: 0.5,
-                                                                    ), //BoxShadow
-                                                                  ],
-                                                                ),
-                                                                child: CircleAvatar(
-                                                                  backgroundImage: NetworkImage(agencyAgentsModel!.data![index].image.toString()),
-                                                                )
-                                                            ),
-                                                            Container(
-                                                              margin: const EdgeInsets.only(left: 10,right: 0,top: 10),
-                                                              height: screenSize.height*0.13,
-                                                              width: screenSize.width*0.55,
-                                                             // color: Colors.grey,
-                                                              child: Column(
-                                                                children: [
-                                                                  Row(
-                                                                    children: [
-                                                                      Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 10),
-                                                                        child: Text(agencyAgentsModel!.data![index].name.toString(),style: TextStyle(
-                                                                            fontSize: 17,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                                                                        ),),
-                                                                      ),
-                                                                      Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                                                        child: Text(""),),
-                                                                    ],
-                                                                  ),
-                                                                  Row(
-                                                                    children: [
-                                                                      Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                                                        child: Text("Speaks:",style: TextStyle(
-                                                                            fontSize: 12,letterSpacing: 0.5
-                                                                        ),),),
-                                                                      Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                                                        child: Text(agencyAgentsModel!.data![index].languages.toString(),style: TextStyle(
-                                                                            fontSize: 12,letterSpacing: 0.5
-                                                                        ),),),
-                                                                    ],
-                                                                  ),
-                                                                  Row(
-                                                                    children: [
-                                                                      Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 10),
-                                                                        child: Container(
-                                                                          width: screenSize.width*0.16,
-                                                                          height: screenSize.height*0.029,
-                                                                          padding: const EdgeInsets.only(top: 2,),
-                                                                          decoration: BoxDecoration(
-                                                                            color: Colors.white,
-                                                                            boxShadow: [
-                                                                              BoxShadow(
-                                                                                color: Colors.grey.withOpacity(0.5),
-                                                                                offset: Offset(4, 4),
-                                                                                blurRadius: 8,
-                                                                                spreadRadius: 2,
-                                                                              ),
-                                                                              BoxShadow(
-                                                                                color: Colors.white.withOpacity(0.8),
-                                                                                offset: Offset(-4, -4),
-                                                                                blurRadius: 8,
-                                                                                spreadRadius: 2,
-                                                                              ),
-                                                                            ],
-                                                                            borderRadius: BorderRadius.circular(6),),
-                                                                          child:
-                                                                          Row(
-                                                                            children: [
-                                                                              Padding(
-                                                                                padding: const EdgeInsets.only(left: 8.0),
-                                                                                child: Text(agencyAgentsModel!.data![index].sale.toString(),textAlign: TextAlign.center,style:
-                                                                                TextStyle(letterSpacing: 0.5,color: Colors.blueAccent)),
-                                                                              ),
-                                                                              Padding(
-                                                                                padding: const EdgeInsets.only(left: 5.0),
-                                                                                child: Text("Sale",textAlign: TextAlign.center,style:
-                                                                                TextStyle(letterSpacing: 0.5,color: Colors.blueAccent)),
-                                                                              ),
-                                                                            ],
-                                                                          ),
-
-                                                                        ),
-                                                                      ),
-                                                                      Padding(
-                                                                        padding: const EdgeInsets.only(left: 10,right: 0,top: 10),
-                                                                        child: Container(
-                                                                          width: screenSize.width*0.16,
-                                                                          height: screenSize.height*0.029,
-                                                                          padding: const EdgeInsets.only(top: 2,),
-                                                                          decoration: BoxDecoration(
-                                                                            color: Colors.white,
-                                                                            boxShadow: [
-                                                                              BoxShadow(
-                                                                                color: Colors.grey.withOpacity(0.5),
-                                                                                offset: Offset(4, 4),
-                                                                                blurRadius: 8,
-                                                                                spreadRadius: 2,
-                                                                              ),
-                                                                              BoxShadow(
-                                                                                color: Colors.white.withOpacity(0.8),
-                                                                                offset: Offset(-4, -4),
-                                                                                blurRadius: 8,
-                                                                                spreadRadius: 2,
-                                                                              ),
-                                                                            ],
-                                                                            borderRadius: BorderRadius.circular(6),),
-                                                                          child:
-                                                                          Row(
-                                                                            children: [
-                                                                              Padding(
-                                                                                padding: const EdgeInsets.only(left: 8.0),
-                                                                                child: Text(agencyAgentsModel!.data![index].rent.toString(),textAlign: TextAlign.center,style:
-                                                                                TextStyle(letterSpacing: 0.5,color: Colors.blueAccent)),
-                                                                              ),
-                                                                              Padding(
-                                                                                padding: const EdgeInsets.only(left: 5.0),
-                                                                                child: Text("Rent",textAlign: TextAlign.center,style:
-                                                                                TextStyle(letterSpacing: 0.5,color: Colors.blueAccent)),
-                                                                              ),
-                                                                            ],
-                                                                          ),
-
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ],
+                                                        // Sale button
+                                                        Container(
+                                                          height: 24,
+                                                          alignment: Alignment.center,
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.grey.shade200,
+                                                            borderRadius: BorderRadius.circular(4),
+                                                            boxShadow: [
+                                                              BoxShadow(
+                                                                color: Colors.grey.withOpacity(0.2),
+                                                                offset: Offset(1, 1),
+                                                                blurRadius: 3,
+                                                                spreadRadius: 1,
                                                               ),
-                                                            )
-                                                          ],
+                                                            ],
+                                                          ),
+                                                          child: Text(
+                                                            "${agencyAgentsModel!.data![index].sale} Sale (Coming Soon)",
+                                                            textAlign: TextAlign.center,
+                                                            style: TextStyle(
+                                                              letterSpacing: 0.4,
+                                                              color: Colors.black54,
+                                                              fontWeight: FontWeight.w500,
+                                                              fontSize: 9,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        SizedBox(height: 5),
+
+                                                        // Rent button
+                                                        Container(
+                                                          height: 24,
+                                                          alignment: Alignment.center,
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.grey.shade200,
+                                                            borderRadius: BorderRadius.circular(4),
+                                                            boxShadow: [
+                                                              BoxShadow(
+                                                                color: Colors.grey.withOpacity(0.2),
+                                                                offset: Offset(1, 1),
+                                                                blurRadius: 3,
+                                                                spreadRadius: 1,
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          child: Text(
+                                                            "${agencyAgentsModel!.data![index].rent} Rent (Coming Soon)",
+                                                            textAlign: TextAlign.center,
+                                                            style: TextStyle(
+                                                              letterSpacing: 0.4,
+                                                              color: Colors.black54,
+                                                              fontWeight: FontWeight.w500,
+                                                              fontSize: 9,
+                                                            ),
+                                                          ),
                                                         ),
                                                       ],
                                                     ),
                                                   ),
-
-                                                ),
+                                                ],
                                               ),
                                             ),
-
-                                          );
-                                        },
+                                          ],
+                                        ),
                                       ),
-
-                                    ],
-                                  ),
-                                )
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
+
                             //Review
                             SingleChildScrollView(
                                   child:  Padding(
@@ -1485,178 +1418,39 @@ class _About_AgencyState extends State<About_Agency> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-              onTap: ()async{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-              },
-              child: Image.asset("assets/images/home.png",height: 25,)),
-          Container(
-              margin: const EdgeInsets.only(left: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: GestureDetector(
-                  onTap:  () async {
-                      String phone = 'tel:${agencyDetailmodel!.phone}';
-                      try {
-                        final bool launched = await launchUrlString(
-                          phone,
-                          mode: LaunchMode.externalApplication, // ✅ Force external
-                        );
-                        if (!launched) {
-                          print("❌ Could not launch dialer");
-                        }
-                      } catch (e) {
-                        print("❌ Exception: $e");
-                      }
-
-                  },
-                  child: Icon(Icons.call_outlined,color: Colors.red,))
-          ),
-          Container(
-              margin: const EdgeInsets.only(left: 1),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: GestureDetector(
-                  onTap: () async {
-                    final phone = agencyDetailmodel!.whatsapp; // without plus
-                    final message = Uri.encodeComponent("Hello");
-                    // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
-                    // final url = Uri.parse("https://wa.me/?text=hello");
-                    final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-
-                    if (await canLaunchUrl(url)) {
-                      try {
-                        final launched = await launchUrl(
-                          url,
-                          mode: LaunchMode.externalApplication, // 💥 critical on Android 15
-                        );
-
-                        if (!launched) {
-                          print("❌ Could not launch WhatsApp");
-                        }
-                      } catch (e) {
-                        print("❌ Exception: $e");
-                      }
-                    } else {
-                      print("❌ WhatsApp not available or URL not supported");
-                    }
-                  },
-                  child: Image.asset("assets/images/whats.png",height: 20,))
-
-          ),
-          Container(
-              margin: const EdgeInsets.only(left: 1,right: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: GestureDetector(
-                  onTap: () async {
-                    final Uri emailUri = Uri(
-                      scheme: 'mailto',
-                      path: '${agencyDetailmodel!.email}', // Replace with actual email
-                      query: 'subject=Property Inquiry&body=Hi, I saw your property on Akarat.',
-                    );
-
-                    if (await canLaunchUrl(emailUri)) {
-                      await launchUrl(emailUri);
-                    } else {
-                      throw 'Could not launch $emailUri';
-                    }
-                  },
-                  child: Icon(Icons.mail,color: Colors.red,))
-
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                }
-                else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                }
-              });
+            onTap: () async {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
             },
-            icon: pageIndex == 3
-                ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                setState(() {
+                  if (token == '') {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  }
+                });
+              },
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
             ),
           ),
         ],
       ),
+
     );
   }
 

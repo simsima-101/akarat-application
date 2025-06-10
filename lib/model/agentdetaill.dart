@@ -15,58 +15,72 @@ class AgentDetail {
   int? rent;
   String? image;
 
-  AgentDetail(
-      {this.id,
-        this.userId,
-        this.name,
-        this.email,
-        this.languages,
-        this.expertise,
-        this.agency,
-        this.about,
-        this.address,
-        this.experience,
-        this.brokerRegisterationNumber,
-        this.serviceAreas,
-        this.sale,
-        this.rent,
-        this.image});
+  String? phone;
+  String? whatsapp;
 
-  AgentDetail.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    userId = json['user_id'];
-    name = json['name'];
-    email = json['email'];
-    languages = json['languages'];
-    expertise = json['expertise'];
-    agency = json['agency'];
-    about = json['about'];
-    address = json['address'];
-    experience = json['experience'];
-    brokerRegisterationNumber = json['broker_registeration_number'];
-    serviceAreas = json['service_areas'];
-    sale = json['sale'];
-    rent = json['rent'];
-    image = json['image'];
+  AgentDetail({
+    this.id,
+    this.userId,
+    this.name,
+    this.email,
+    this.languages,
+    this.expertise,
+    this.agency,
+    this.about,
+    this.address,
+    this.experience,
+    this.brokerRegisterationNumber,
+    this.serviceAreas,
+    this.sale,
+    this.rent,
+    this.image,
+    this.phone,       // ✅ ADD HERE
+    this.whatsapp,    // ✅ ADD HERE
+  });
+
+  factory AgentDetail.fromJson(Map<String, dynamic> json) {
+    return AgentDetail(
+      id: json['id'],
+      userId: json['user_id'],
+      name: json['name'],
+      email: json['email'],
+      languages: json['languages'],
+      expertise: json['expertise'],
+      agency: json['agency'],
+      about: json['about'],
+      address: json['address'],
+      experience: json['experience'],
+      brokerRegisterationNumber: json['broker_registeration_number'],
+      serviceAreas: json['service_areas'],
+      sale: json['sale'],
+      rent: json['rent'],
+      image: json['image'],
+      phone: json['phone'], // CORRECT ✅
+      whatsapp: json['whatsapp'],
+
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['user_id'] = this.userId;
-    data['name'] = this.name;
-    data['email'] = this.email;
-    data['languages'] = this.languages;
-    data['expertise'] = this.expertise;
-    data['agency'] = this.agency;
-    data['about'] = this.about;
-    data['address'] = this.address;
-    data['experience'] = this.experience;
-    data['broker_registeration_number'] = this.brokerRegisterationNumber;
-    data['service_areas'] = this.serviceAreas;
-    data['sale'] = this.sale;
-    data['rent'] = this.rent;
-    data['image'] = this.image;
-    return data;
+    return {
+      'id': id,
+      'user_id': userId,
+      'name': name,
+      'email': email,
+      'languages': languages,
+      'expertise': expertise,
+      'agency': agency,
+      'about': about,
+      'address': address,
+      'experience': experience,
+      'broker_registeration_number': brokerRegisterationNumber,
+      'service_areas': serviceAreas,
+      'sale': sale,
+      'rent': rent,
+      'image': image,
+      'phone': phone,
+      'whatsapp': whatsapp,
+
+    };
   }
 }

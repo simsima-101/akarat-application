@@ -49,6 +49,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   String email = '';
   String result = '';
   bool isDataRead = false;
+
   // Create an object of SharedPreferencesManager class
   SharedPreferencesManager prefManager = SharedPreferencesManager();
   // Method to read data from shared preferences
@@ -71,7 +72,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
   // final List<String> services = ["Residential For Sale", "Residential For Rent", "Commercial For Sale","Commercial For Rent"];
   final serviceOptions = [
-    {'label': 'Services needed', 'value': ''},
+    // {'label': 'Services needed', 'value': ''},
     {'label': 'Residential For Sale', 'value': 'residential-for-sale'},
     {'label': 'Residential For Rent', 'value': 'residential-for-rent'},
     {'label': 'Commercial For Sale', 'value': 'commercial-for-sale'},
@@ -84,8 +85,8 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     {'label': 'Commercial For Sale', 'value': 'commercial-for-sale'},
     {'label': 'Commercial For Rent', 'value': 'commercial-for-rent'},
   ];// final List<String> agencyservices = ["Residential For Sale", "Residential For Rent", "Commercial For Sale","Commercial For Rent"];
- // final List<String> languages = ["English", "Arabic", "Hindi"];
- // final List<String> nationalities = ["Indian", "Emirati", "Pakistani"];
+  // final List<String> languages = ["English", "Arabic", "Hindi"];
+  // final List<String> nationalities = ["Indian", "Emirati", "Pakistani"];
   late Future<Language> languageFuture;
 
   ScrollController _scrollController = ScrollController();
@@ -274,55 +275,55 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   }
 
 
-/*    if (!loadMore && now - lastFetched < Duration(hours: 6).inMilliseconds) {
-      final cachedData = prefs.getString(cacheKey);
+  /*    if (!loadMore && now - lastFetched < Duration(hours: 6).inMilliseconds) {
+        final cachedData = prefs.getString(cacheKey);
 
-      
-      if (cachedData != null) {
-        final model = await compute(decodeAgencyData, cachedData);
-        final fetchedAgencies = model.data?.data ?? [];
 
-        setState(() {
-          agencyList = fetchedAgencies;
-          currentPage = model.data?.meta?.currentPage ?? 1;
-          hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
-          isLoading = false;
-        });
-        debugPrint("✅ Loaded agency data from cache");
-        return;
-      }
-    }
+        if (cachedData != null) {
+          final model = await compute(decodeAgencyData, cachedData);
+          final fetchedAgencies = model.data?.data ?? [];
 
-    try {
-      final response = await http.get(uri);
-      if (response.statusCode == 200) {
-        final model = await compute(decodeAgencyData, response.body);
-        final fetchedAgencies = model.data?.data ?? [];
-
-        setState(() {
-          if (loadMore) {
-            agencyList.addAll(fetchedAgencies);
-          } else {
+          setState(() {
             agencyList = fetchedAgencies;
-          }
-          currentPage++;
-          hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
-          isLoading = false;
-        });
-
-        if (!loadMore) {
-          await prefs.setString(cacheKey, response.body);
-          await prefs.setInt(cacheTimeKey, now);
-          debugPrint("📦 Cached agency data");
+            currentPage = model.data?.meta?.currentPage ?? 1;
+            hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
+            isLoading = false;
+          });
+          debugPrint("✅ Loaded agency data from cache");
+          return;
         }
-      } else {
-        debugPrint("❌ API Error: ${response.statusCode}");
       }
-    } catch (e) {
-      debugPrint("🚨 Exception in agencyfetch: $e");
-      setState(() => isLoading = false);
-    }
-  }*/
+
+      try {
+        final response = await http.get(uri);
+        if (response.statusCode == 200) {
+          final model = await compute(decodeAgencyData, response.body);
+          final fetchedAgencies = model.data?.data ?? [];
+
+          setState(() {
+            if (loadMore) {
+              agencyList.addAll(fetchedAgencies);
+            } else {
+              agencyList = fetchedAgencies;
+            }
+            currentPage++;
+            hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
+            isLoading = false;
+          });
+
+          if (!loadMore) {
+            await prefs.setString(cacheKey, response.body);
+            await prefs.setInt(cacheTimeKey, now);
+            debugPrint("📦 Cached agency data");
+          }
+        } else {
+          debugPrint("❌ API Error: ${response.statusCode}");
+        }
+      } catch (e) {
+        debugPrint("🚨 Exception in agencyfetch: $e");
+        setState(() => isLoading = false);
+      }
+    }*/
 
 
 
@@ -402,70 +403,104 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
         backgroundColor: Colors.white, // Light grey background
         appBar: AppBar(
           title: const Text(
-              "Find My Agent", style: TextStyle(color: Colors.black,
-              fontWeight: FontWeight.bold)),
+              "Find My Agent",
+              style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold
+              )
+          ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.red),
-            onPressed: ()async {
+            onPressed: () async {
               setState(() {
                 if(token == ''){
                   Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                }
-                else{
+                } else {
                   Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
                 }
               });
             },
           ),
+          actions: [
+            TextButton.icon(
+              onPressed: () async {
+                // Reset all filters
+                setState(() {
+                  _agentSearchController.clear();
+                  _agencySearchController.clear();
+                  locationController.clear();
+                  selectedService = null;
+                  selectedAgencyService = null;
+                  selectedLanguage = null;
+                  selectedNationality = null;
+                  agentsmodel.clear();
+                  agencyList.clear();
+                  currentPage = 1;
+                  hasMore = true;
+                });
+                // Reload data
+                await agentfetch();
+                await agencyfetch();
+              },
+              icon: const Icon(Icons.refresh, color: Colors.red, size: 20),
+              label: const Text(
+                'Reset',
+                style: TextStyle(color: Colors.red, fontSize: 14),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+            ),
+          ],
           centerTitle: true,
           backgroundColor: Color(0xFFFFFFFF),
           iconTheme: const IconThemeData(color: Colors.red),
           elevation: 1,
         ),
+
         body: SafeArea(
           child: Column(
             children: [
               /*Padding(
-                padding: const EdgeInsets.only(top: 20, left: 16, right: 16),
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                       // Navigator.of(context).pop();
-                        setState(() {
-                          if (token == '') {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
-                          } else {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                          }
-                        });
-                      },
-                      child: Container(
-                        height: 30,
-                        width: 30,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: Offset(0.5, 0.5),
-                              blurRadius: 1.0,
-                              spreadRadius: 0.5,
-                            ),
-                          ],
-                          color: Colors.white,
+                  padding: const EdgeInsets.only(top: 20, left: 16, right: 16),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                         // Navigator.of(context).pop();
+                          setState(() {
+                            if (token == '') {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                            } else {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                            }
+                          });
+                        },
+                        child: Container(
+                          height: 30,
+                          width: 30,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: Offset(0.5, 0.5),
+                                blurRadius: 1.0,
+                                spreadRadius: 0.5,
+                              ),
+                            ],
+                            color: Colors.white,
+                          ),
+                          child: Icon(Icons.arrow_back, color: Colors.red),
                         ),
-                        child: Icon(Icons.arrow_back, color: Colors.red),
                       ),
-                    ),
-                    SizedBox(width: 20),
-                    Image.asset('assets/images/app_icon.png', height: 40),
-                    SizedBox(width: 10),
-                    Text("Find My Agent", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
-                  ],
-                ),
-              ),*/
+                      SizedBox(width: 20),
+                      Image.asset('assets/images/app_icon.png', height: 40),
+                      SizedBox(width: 10),
+                      Text("Find My Agent", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
+                    ],
+                  ),
+                ),*/
               Container(
                 margin: const EdgeInsets.only(top: 20, left: 15, right: 15),
                 decoration: BoxDecoration(
@@ -501,11 +536,11 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
               Expanded(
                 child: TabBarView(
                   children: [
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.6, // set height constraint
+                    SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+
                           Container(
                             padding: const EdgeInsets.all(15),
                             margin: const EdgeInsets.symmetric(vertical: 15,horizontal: 12),
@@ -523,40 +558,56 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                buildSearchBar(_agentSearchController, 'Search for a locality, area or city', Icons.search),
+                                buildSearchBarComingSoon(),
+
                                 const SizedBox(height: 10),
 
                                 // Services Dropdown
                                 SafeArea(
-                                 // child: SingleChildScrollView(
-                                    child: Column(
-                                      children: [
-                                        DropdownButtonFormField<String>(
-                                          isExpanded: true,
-                                          decoration: _dropdownDecoration("Services needed"),
-                                          dropdownColor: Colors.white,
-                                          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
-                                          style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black,
+                                  child: Column(
+                                    children: [
+                                      DropdownButtonFormField<String>(
+                                        isExpanded: true,
+                                        decoration: _dropdownDecoration("Services needed"), // just hint
+                                        dropdownColor: Colors.white,
+                                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
+                                        ),
+                                        value: selectedService,
+                                        items: [
+                                          // Add grey header item
+                                          const DropdownMenuItem<String>(
+                                            value: null,
+                                            enabled: false,
+                                            child: Text(
+                                              "Services needed", // this is the header inside dropdown
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
                                           ),
-                                          value: selectedService,
-                                          items: services.map((option){
+                                          // Now your real options
+                                          ...serviceOptions.map((option) {
                                             return DropdownMenuItem<String>(
                                               value: option['value'],
-                                              child: Text(
-                                                option['label']!,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
+                                              child: Text(option['label']!),
                                             );
                                           }).toList(),
-                                          onChanged: (value) => setState(() => selectedService = value!),
-                                        ),
-                                      ],
-                                    ),
-                                 // ),
+                                        ],
+                                        onChanged: (value) {
+                                          if (value != null) {
+                                            setState(() => selectedService = value);
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  ),
                                 ),
+
 
                                 const SizedBox(height: 10),
 
@@ -578,10 +629,16 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                     } else if (snapshot.hasError) {
                                       return Text("Error: ${snapshot.error}");
                                     } else {
-                                      final language = ["Language"]; // add default item
-                                      language.addAll(snapshot.data?.languages?.toSet().toList() ?? []);
+                                      final language = ["Language"];
+                                      language.addAll(
+                                          snapshot.data?.languages
+                                              ?.where((lang) => lang.trim().isNotEmpty && lang.trim().length > 1)
+                                              .toSet()
+                                              .toList() ?? []
+                                      );
+
                                       return DropdownButtonFormField<String>(
-                                        isExpanded: true, // ✅ Important to avoid overflow
+                                        isExpanded: true,
                                         decoration: _dropdownDecoration("Language"),
                                         dropdownColor: Colors.white,
                                         icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
@@ -614,6 +671,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                           });
                                         },
                                       );
+
                                     }
                                   },
                                 ),
@@ -702,6 +760,20 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                   ),
                                   child: const Text("Search", style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
                                 ),
+
+                                if (agentsmodel.isEmpty && !isLoading) ...[
+                                  const SizedBox(height: 15),
+                                  Center(
+                                    child: Text(
+                                      "No Results",
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
@@ -749,34 +821,55 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                             padding: const EdgeInsets.symmetric(horizontal: 15.0),
                             child: Text("Explore agents with a proven track record of high response rates and authentic listings."),
                           ),
-                          Expanded(
-                            child: ListView.builder(
-                              controller: _scrollController,
-                              itemCount: agentsmodel.length + (hasMore ? 1 :0),
-                              itemBuilder: (context, index) {
-                                if(index < agentsmodel.length){
-                                  return Agentcardscreen(agentsModel: agentsmodel[index]);
-                                }
-                                else {
-                                  return const Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Center(child: CircularProgressIndicator()),
-                                  );
-                                }
-                              },
+                          SingleChildScrollView(
+                            controller: _scrollController,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // ... your widgets above the list (like search bar, filters, titles, etc.) ...
+
+                                // Example header widgets:
+                                // Padding(
+                                //   padding: EdgeInsets.symmetric(horizontal: 15.0),
+                                //   child: Text("Explore agents with a proven track record of high response rates and authentic listings."),
+                                // ),
+                                const SizedBox(height: 10),
+
+                                // The agent list - this is the important part!
+                                ListView.builder(
+                                  controller: _scrollController, // 🚀 Use controller for pagination!
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  itemCount: agentsmodel.length + (hasMore ? 1 : 0),
+                                  itemBuilder: (context, index) {
+                                    if (index < agentsmodel.length) {
+                                      // Add fallback image handling inside your Agentcardscreen
+                                      return Agentcardscreen(agentsModel: agentsmodel[index]);
+                                    } else {
+                                      // Show loader when loading more
+                                      return const Padding(
+                                        padding: EdgeInsets.all(16.0),
+                                        child: Center(child: CircularProgressIndicator()),
+                                      );
+                                    }
+                                  },
+                                ),
+
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.6, // set height constraint
+                    SingleChildScrollView(
+                      controller: _scrollController,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
                             padding: const EdgeInsets.all(15),
-                            margin: const EdgeInsets.symmetric(vertical: 15,horizontal: 12),
+                            margin: const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(15),
@@ -791,7 +884,8 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                buildSearchBar(_agentSearchController, 'Search for a locality, area or city', Icons.search),
+                                buildSearchBarComingSoon(),
+
                                 const SizedBox(height: 10),
                                 DropdownButtonFormField<String>(
                                   isExpanded: true,
@@ -823,7 +917,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                     print("Location: ${locationController.text}");
                                     print("Service: $selectedService");
                                     agencyfetch();
-                                  } ,
+                                  },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.blue,
                                     minimumSize: const Size.fromHeight(45),
@@ -833,6 +927,21 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                   ),
                                   child: const Text("Find", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                                 ),
+
+                                if (agencyList.isEmpty && !isAgencyLoading) ...[
+                                  const SizedBox(height: 15),
+                                  Center(
+                                    child: Text(
+                                      "No Results",
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+
                               ],
                             ),
                           ),
@@ -846,26 +955,26 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                             padding: const EdgeInsets.symmetric(horizontal: 15.0),
                             child: const Text("Explore agencies with a proven track record of high response rates and authentic listings."),
                           ),
-                          Expanded(
-                            child: ListView.builder(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              controller: _scrollController,
-                              itemCount: agencyList.length + (hasMore ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index < agencyList.length) {
-                                  return Agencycardscreen(agencyModel: agencyList[index]);
-                                } else {
-                                  return const Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Center(child: CircularProgressIndicator()),
-                                  );
-                                }
-                              },
-                            ),
+                          // The important change is here!
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            itemCount: agencyList.length + (hasMore ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index < agencyList.length) {
+                                return Agencycardscreen(agencyModel: agencyList[index]);
+                              } else {
+                                return const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Center(child: CircularProgressIndicator()),
+                                );
+                              }
+                            },
                           ),
                         ],
                       ),
-                    ),
+                    )
                   ],
                 ),
               )
@@ -889,24 +998,25 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     );
 
   }
-  Widget buildSearchBar(TextEditingController controller, String hint, IconData icon) {
+  Widget buildSearchBarComingSoon() {
     return Container(
       width: 400,
       height: 50,
-      padding: const EdgeInsets.only(top: 0, left: 5),
+      padding: const EdgeInsets.only(left: 5),
       decoration: BoxDecoration(
+        color: Colors.grey.shade300, // grey background
         borderRadius: BorderRadius.circular(10.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey,
+            color: Colors.grey.withOpacity(0.5),
             offset: Offset(0.0, 0.0),
-            blurRadius: 0.0,
-            spreadRadius: 0.3,
+            blurRadius: 4.0,
+            spreadRadius: 1.0,
           ),
           BoxShadow(
-            color: Colors.white,
+            color: Colors.white.withOpacity(0.8),
             offset: Offset(0.0, 0.0),
-            blurRadius: 0.5,
+            blurRadius: 2.0,
             spreadRadius: 0.0,
           ),
         ],
@@ -915,14 +1025,16 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
         children: [
           const Padding(
             padding: EdgeInsets.only(left: 8.0),
-            child: Icon(Icons.search, color: Colors.red),
+            child: Icon(Icons.search, color: Colors.grey), // grey icon
           ),
+          const SizedBox(width: 8),
           Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: "Search for a locality, area or city",
-                hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
-                border: InputBorder.none,
+            child: Text(
+              "Search (Coming Soon)",
+              style: TextStyle(
+                color: Colors.black45,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -930,6 +1042,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
       ),
     );
   }
+
   Container buildMyNavBar(BuildContext context) {
     return Container(
       height: 50,
@@ -941,126 +1054,39 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-              onTap: ()async{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-              },
-              child: Image.asset("assets/images/home.png",height: 25,)),
-          Container(
-              margin: const EdgeInsets.only(left: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.favorite_border,color: Colors.red,)
-          ),
-
-          Container(
-              margin: const EdgeInsets.only(left: 1),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.add_location_rounded,color: Colors.red,)
-
-          ),
-          Container(
-              margin: const EdgeInsets.only(left: 1,right: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.chat,color: Colors.red,)
-
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-
-              setState(() {
-                if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                }
-                else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                }
-              });
-
+            onTap: () async {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
             },
-            icon: pageIndex == 3
-                ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                setState(() {
+                  if (token == '') {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  }
+                });
+              },
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
             ),
           ),
         ],
       ),
+
     );
   }
 }

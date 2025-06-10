@@ -14,10 +14,13 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../model/productmodel.dart';
 import '../utils/shared_preference_manager.dart';
+import 'about_agent.dart';
 import 'full_map_screen.dart';
 import 'htmlEpandableText.dart';
 import 'my_account.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
+import 'package:Akarat/utils/whatsapp_button.dart';
+
 
 
 class Agency_Detail extends StatefulWidget {
@@ -29,6 +32,31 @@ class Agency_Detail extends StatefulWidget {
 class _Agency_DetailState extends State<Agency_Detail> {
   int pageIndex = 0;
   ProductModel? productModels;
+
+  // For phone calls: Always output in +971... format
+  // Phone sanitizer: always outputs +971XXXXXXXXX
+  String phoneCallNumber(String input) {
+    input = input.replaceAll(RegExp(r'[^\d+]'), '');
+    if (input.startsWith('+971')) return input;
+    if (input.startsWith('00971')) return '+971${input.substring(5)}';
+    if (input.startsWith('971')) return '+971${input.substring(3)}';
+    if (input.startsWith('0') && input.length == 10)
+      return '+971${input.substring(1)}';
+    if (input.length == 9) return '+971$input';
+    return input; // fallback
+  }
+
+  String whatsAppNumber(String input) {
+    input = input.replaceAll(RegExp(r'[^\d]'), '');
+    if (input.startsWith('971')) return input;
+    if (input.startsWith('00971')) return input.substring(2);
+    if (input.startsWith('+971')) return input.substring(1);
+    if (input.startsWith('0') && input.length == 10)
+      return '971${input.substring(1)}';
+    if (input.length == 9) return '971$input';
+    return input; // fallback
+  }
+
   @override
   void initState() {
     SystemChrome.setEnabledSystemUIMode(
@@ -476,41 +504,59 @@ class _Agency_DetailState extends State<Agency_Detail> {
                     ],
                   ),
                   SizedBox(height: 5,),
-                  Container(
-                    height: screenSize.height * 0.122,
-                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  // Instead of Container(height: ...), use just Padding (or nothing):
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // First column
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children:  [
+                          children: [
                             Text("Project"),
                             SizedBox(height: 4),
-                            Text(productModels!.data!.project.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                              productModels!.data!.project.toString(),
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                             SizedBox(height: 10),
                             Text("Delivery Date"),
                             SizedBox(height: 4),
-                            Text(productModels!.data!.deliveryDate.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                              productModels!.data!.deliveryDate.toString(),
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ],
                         ),
+                        SizedBox(width: 20),
+                        // Second column
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children:  [
+                          children: [
                             Text("Developer"),
                             SizedBox(height: 4),
-                            Text(productModels!.data!.developer.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                              productModels!.data!.developer.toString(),
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                             SizedBox(height: 10),
                             Text("Property Type"),
                             SizedBox(height: 4),
-                            Text(productModels!.data!.propertyType.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                              productModels!.data!.propertyType.toString(),
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ],
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(height: 5,),
+                  SizedBox(height: 20,),
                   Container(
                     height: screenSize.height * 0.17,
                     margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -557,40 +603,51 @@ class _Agency_DetailState extends State<Agency_Detail> {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              Text(
-                                productModels!.data!.developer.toString(),
+                              const Text(
+                                "MAG Property Development",
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              Container(
-                                height: screenSize.height * 0.04,
-                                width: screenSize.width * 0.4,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.red,
-                                      offset: Offset(0.5, 0.5),
-                                      blurRadius: 0.3,
-                                      spreadRadius: 0.3,
+                              GestureDetector(
+                                onTap: () {
+                                  String agentId = productModels!.data!.agentId.toString();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => AboutAgent(data: agentId)),
+                                  );
+
+                                },
+                                child: Container(
+                                  height: screenSize.height * 0.04,
+                                  width: screenSize.width * 0.4,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.red,
+                                        offset: Offset(0.5, 0.5),
+                                        blurRadius: 0.3,
+                                        spreadRadius: 0.3,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Text(
+                                    "View All Project Details",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
                                     ),
-                                  ],
-                                ),
-                                child: const Text(
-                                  "View All Project Details",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.5,
                                   ),
                                 ),
                               ),
+
                             ],
                           ),
                         ),
@@ -644,7 +701,7 @@ class _Agency_DetailState extends State<Agency_Detail> {
                               target: LatLng(latitude, longitude), // Dubai
                               zoom: 12,
                             ),
-                           /* markers: {
+                            /* markers: {
                               Marker(
                                 markerId: MarkerId('main'),
                                 position: LatLng(latitude, longitude),
@@ -750,17 +807,28 @@ class _Agency_DetailState extends State<Agency_Detail> {
                               ), //BoxShadow
                             ],
                           ),
-                          child: CachedNetworkImage( // this is to fetch the image
-                            imageUrl: (productModels!.data!.agentImage.toString()),
+                          child: CachedNetworkImage(
+                            imageUrl: productModels!.data!.agentImage?.isNotEmpty == true
+                                ? productModels!.data!.agentImage!
+                                : 'https://via.placeholder.com/100',
+// fallback image
                             fit: BoxFit.cover,
                             height: 100,
+                            placeholder: (context, url) => CircularProgressIndicator(),
+                            errorWidget: (context, url, error) => Icon(Icons.person, size: 60, color: Colors.grey),
+                          ),
+
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: Text(productModels!.data!.agent.toString(),
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5
+                            ),
                           ),
                         ),
-                        Padding(padding: const EdgeInsets.only(top: 10),
-                          child: Text(productModels!.data!.agent.toString(),style: TextStyle(
-                              fontWeight: FontWeight.bold,letterSpacing: 0.5
-                          ),),
-                        ),
+
                         Row(
                           children: [
                             Padding(padding: const EdgeInsets.only(top: 5,left: 80),
@@ -798,40 +866,51 @@ class _Agency_DetailState extends State<Agency_Detail> {
                               child: Text("Closed Deals"),
                             ),
                             Padding(padding: const EdgeInsets.only(top: 5,left: 63),
-                              child: Text(productModels!.data!.closedDeals.toString()),
+                              child: Text("17"),
                             ),
                           ],
                         ),
-                        Container(
-                          height: 35,
-                          width: screenSize.width*0.5,
-                          margin: const EdgeInsets.only(left: 15,right: 10,top: 15),
-                          padding: const EdgeInsets.only(top: 8),
-                          // color: Colors.grey,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadiusDirectional.circular(8.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.red,
-                                offset: const Offset(
-                                  0.5,
-                                  0.5,
+                        GestureDetector(
+                          onTap: () {
+                            String agentId = productModels!.data!.agentId.toString();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => AboutAgent(data: agentId)),
+                            );
+                          },
+
+                          child: Container(
+                            height: 35,
+                            width: screenSize.width * 0.5,
+                            margin: const EdgeInsets.only(left: 15, right: 10, top: 15),
+                            padding: const EdgeInsets.only(top: 8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadiusDirectional.circular(8.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.red,
+                                  offset: const Offset(0.5, 0.5),
+                                  blurRadius: 0.5,
+                                  spreadRadius: 0.3,
                                 ),
-                                blurRadius: 0.5,
-                                spreadRadius: 0.3,
-                              ), //BoxShadow
-                              BoxShadow(
-                                color: Colors.white,
-                                offset: const Offset(0.0, 0.0),
-                                blurRadius: 0.0,
-                                spreadRadius: 0.0,
-                              ), //BoxShadow
-                            ],
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              "See Agents Properties",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                letterSpacing: 0.5,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                          child: Text("See Agents Properties",textAlign: TextAlign.center,
-                            style: TextStyle(
-                                letterSpacing: 0.5,fontSize: 13,fontWeight: FontWeight.bold
-                            ),),
                         ),
                       ],
                     ),
@@ -1071,149 +1150,155 @@ class _Agency_DetailState extends State<Agency_Detail> {
                 Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
               },
               child: Image.asset("assets/images/home.png",height: 25,)),
-          Container(
-              margin: const EdgeInsets.only(left: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: GestureDetector(
-                  onTap:  () async {
-                    String phone = 'tel:${productModels!.data!.phoneNumber}';
-                    try {
-                      final bool launched = await launchUrlString(
-                        phone,
-                        mode: LaunchMode.externalApplication, // ✅ Force external
-                      );
-                      if (!launched) {
-                        print("❌ Could not launch dialer");
-                      }
-                    } catch (e) {
-                      print("❌ Exception: $e");
-                    }
-
-                  },
-                  child: Icon(Icons.call_outlined,color: Colors.red,))
-          ),
-
-          Container(
-              margin: const EdgeInsets.only(left: 1),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: GestureDetector(
-                  onTap: () async {
-                    final phone = productModels!.data!.whatsapp; // without plus
-                    final message = Uri.encodeComponent("Hello");
-                    // final url = Uri.parse("https://api.whatsapp.com/send/?phone=971503440250&text=Hello");
-                    // final url = Uri.parse("https://wa.me/?text=hello");
-                    final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-
-                    if (await canLaunchUrl(url)) {
-                      try {
-                        final launched = await launchUrl(
-                          url,
-                          mode: LaunchMode.externalApplication, // 💥 critical on Android 15
-                        );
-
-                        if (!launched) {
-                          print("❌ Could not launch WhatsApp");
-                        }
-                      } catch (e) {
-                        print("❌ Exception: $e");
-                      }
-                    } else {
-                      print("❌ WhatsApp not available or URL not supported");
-                    }
-                  },
-                  child: Image.asset("assets/images/whats.png",height: 20,))
-
-          ),
-          Container(
-              margin: const EdgeInsets.only(left: 1,right: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: GestureDetector(
-                  onTap: () async {
-                    final Uri emailUri = Uri(
-                      scheme: 'mailto',
-                      path: '${productModels!.data!.email}', // Replace with actual email
-                      query: 'subject=Property Inquiry&body=Hi, I saw your property on Akarat.',
-                    );
-
-                    if (await canLaunchUrl(emailUri)) {
-                      await launchUrl(emailUri);
-                    } else {
-                      throw 'Could not launch $emailUri';
-                    }
-                  },
-                  child: Icon(Icons.mail,color: Colors.red,))
-
-          ),
+          // Container(
+          //     margin: const EdgeInsets.only(left: 40),
+          //     height: 35,
+          //     width: 35,
+          //     padding: const EdgeInsets.only(top: 2),
+          //     decoration: BoxDecoration(
+          //       borderRadius: BorderRadiusDirectional.circular(20.0),
+          //       boxShadow: [
+          //         BoxShadow(
+          //           color: Colors.grey,
+          //           offset: const Offset(
+          //             0.5,
+          //             0.5,
+          //           ),
+          //           blurRadius: 1.0,
+          //           spreadRadius: 0.5,
+          //         ), //BoxShadow
+          //         BoxShadow(
+          //           color: Colors.white,
+          //           offset: const Offset(0.0, 0.0),
+          //           blurRadius: 0.0,
+          //           spreadRadius: 0.0,
+          //         ), //BoxShadow
+          //       ],
+          //     ),
+          //     child: GestureDetector(
+          //         onTap: () async {
+          //           final phone = whatsAppNumber(productModels!.data!.phoneNumber ?? '');
+          //           final message = Uri.encodeComponent("Hello");
+          //           final waUrl = Uri.parse("https://wa.me/$phone?text=$message");
+          //
+          //           if (await canLaunchUrl(waUrl)) {
+          //             try {
+          //               final launched = await launchUrl(
+          //                 waUrl,
+          //                 mode: LaunchMode.externalApplication, // 💥 critical on Android 15
+          //               );
+          //
+          //               if (!launched) {
+          //                 print("❌ Could not launch WhatsApp");
+          //               }
+          //             } catch (e) {
+          //               print("❌ Exception: $e");
+          //             }
+          //           } else {
+          //             print("❌ WhatsApp not available or URL not supported");
+          //           }
+          //         },
+          //         child: Icon(Icons.call_outlined,color: Colors.red,))
+          // ),
+          //
+          // Container(
+          //   margin: const EdgeInsets.only(left: 1),
+          //   height: 35,
+          //   width: 35,
+          //   padding: const EdgeInsets.only(top: 2),
+          //   decoration: BoxDecoration(
+          //     borderRadius: BorderRadiusDirectional.circular(20.0),
+          //     boxShadow: [
+          //       BoxShadow(
+          //         color: Colors.grey,
+          //         offset: const Offset(0.5, 0.5),
+          //         blurRadius: 1.0,
+          //         spreadRadius: 0.5,
+          //       ),
+          //       BoxShadow(
+          //         color: Colors.white,
+          //         offset: const Offset(0.0, 0.0),
+          //         blurRadius: 0.0,
+          //         spreadRadius: 0.0,
+          //       ),
+          //     ],
+          //   ),
+          //   child: GestureDetector(
+          //     onTap: () async {
+          //       if (productModels?.data?.whatsapp == null || productModels!.data!.whatsapp!.isEmpty) {
+          //         print("❌ No WhatsApp number provided.");
+          //         return;
+          //       }
+          //       final phoneRaw = productModels!.data!.whatsapp!;
+          //       final phone = whatsAppNumber(phoneRaw); // always in 971XXXXXXXXX
+          //       final message = Uri.encodeComponent("Hello");
+          //       final waUrl = Uri.parse("https://wa.me/$phone?text=$message"); // CORRECT format
+          //
+          //       print("WhatsApp link: $waUrl");
+          //       if (await canLaunchUrl(waUrl)) {
+          //         try {
+          //           final launched = await launchUrl(
+          //             waUrl,
+          //             mode: LaunchMode.externalApplication,
+          //           );
+          //           if (!launched) {
+          //             print("❌ Could not launch WhatsApp");
+          //           }
+          //         } catch (e) {
+          //           print("❌ Exception: $e");
+          //         }
+          //       } else {
+          //         print("❌ WhatsApp not available or URL not supported");
+          //       }
+          //     },
+          //     child: Image.asset("assets/images/whats.png", height: 20),
+          //   ),
+          // ),
+          // Container(
+          //     margin: const EdgeInsets.only(left: 1,right: 40),
+          //     height: 35,
+          //     width: 35,
+          //     padding: const EdgeInsets.only(top: 2),
+          //     decoration: BoxDecoration(
+          //       borderRadius: BorderRadiusDirectional.circular(20.0),
+          //       boxShadow: [
+          //         BoxShadow(
+          //           color: Colors.grey,
+          //           offset: const Offset(
+          //             0.5,
+          //             0.5,
+          //           ),
+          //           blurRadius: 1.0,
+          //           spreadRadius: 0.5,
+          //         ), //BoxShadow
+          //         BoxShadow(
+          //           color: Colors.white,
+          //           offset: const Offset(0.0, 0.0),
+          //           blurRadius: 0.0,
+          //           spreadRadius: 0.0,
+          //         ), //BoxShadow
+          //       ],
+          //     ),
+          //     child: GestureDetector(
+          //         onTap: () async {
+          //           final Uri emailUri = Uri(
+          //             scheme: 'mailto',
+          //             path: '${productModels!.data!.email}', // Replace with actual email
+          //             query: 'subject=Property Inquiry&body=Hi, I saw your property on Akarat.',
+          //           );
+          //
+          //           if (await canLaunchUrl(emailUri)) {
+          //             await launchUrl(emailUri);
+          //           } else {
+          //             throw 'Could not launch $emailUri';
+          //           }
+          //         },
+          //         child: Icon(Icons.mail,color: Colors.red,))
+          //
+          // ),
           IconButton(
             enableFeedback: false,
             onPressed: () {
-
               setState(() {
                 if(token == ''){
                   Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
@@ -1223,7 +1308,6 @@ class _Agency_DetailState extends State<Agency_Detail> {
 
                 }
               });
-
             },
             icon: pageIndex == 3
                 ? const Icon(

@@ -1,4 +1,4 @@
-package com.example.drawerdemo;
+package com.akarat.drawerdemo;
 
 import io.flutter.embedding.android.FlutterActivity;
 
