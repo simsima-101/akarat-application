@@ -137,7 +137,7 @@ class _CreatePasswordState extends State<CreatePassword> {
                               onTap: () {
                                 setState(() => _showClose = false);
                                 Navigator.push(context, MaterialPageRoute(
-                                  builder: (_) => Profile_Login(),
+                                  builder: (_) => My_Account(),
                                 ));
                               },
                               child: AnimatedScale(

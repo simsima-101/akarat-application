@@ -7,6 +7,8 @@ import 'dart:async';
 
 import 'package:http/http.dart' as http;
 
+import 'filter_list.dart';
+
 void main() {
   runApp(MaterialApp(
     home: LocationSearchScreen(),
@@ -66,11 +68,11 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 
         // FIX: Navigate to jsonData['data']['data'] which is the list
         for (var item in jsonData['data']['data']) {
-          // Check if 'location' field exists and is not null
           if (item['location'] != null) {
             locations.add(item['location']);
           }
         }
+
 
         return locations;
       } else {
@@ -152,8 +154,9 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
                         _searchController.text = location;
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => Search(data: location)),
+                          MaterialPageRoute(builder: (_) => FliterList(location: location)),
                         );
+
                       },
                       child: Chip(
                         label: Text(location),
@@ -216,9 +219,10 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => Search(data: label)),
+          MaterialPageRoute(builder: (_) => FliterList(location: label)),
         );
-      },
+      }
+      ,
       child: Chip(
         label: Text(label),
         backgroundColor: Colors.grey[200],

@@ -15,6 +15,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../model/togglemodel.dart';
 import '../utils/shared_preference_manager.dart';
 import 'agent_detail.dart';
+import 'findagent.dart';
 import 'htmlEpandableText.dart';
 import 'login.dart';
 import 'package:auto_size_text/auto_size_text.dart';
@@ -399,87 +400,87 @@ class _AboutAgentState extends State<AboutAgent> {
                   width: double.infinity,
                   color: const Color(0xFFEEEEEE),
                 ),
+
                 // Big Avatar
-                Container(
-
-                  padding: EdgeInsets.only(left: 4, top: 70, bottom: 0.5),
-                  child: Positioned(
-                    left: 20,
-                    top: 70,
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(65),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: Offset(0.5, 0.5),
-                            blurRadius: 1.0,
-                            spreadRadius: 1.0,
-                          ),
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: Offset(0.0, 0.0),
-                            blurRadius: 0.5,
-                            spreadRadius: 0.5,
-                          ),
-                        ],
-                      ),
-                      child: CircleAvatar(
-                        radius: 50,  // you can adjust radius
-                        backgroundColor: Colors.grey.shade200,
-                        backgroundImage: isValidImage
-                            ? NetworkImage(imageUrl)
-                            : const AssetImage('assets/images/profile.png') as ImageProvider,
-                      ),
-
-                    ),
-                  ),
-                ),
-                // Back button (top left)
                 Positioned(
                   left: 20,
-                  top: 20,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Container(
-                        height: 28,
-                        width: 28,
-                        padding: const EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: Offset(0.0, 0.0),
-                              blurRadius: 0.1,
-                              spreadRadius: 0.1,
-                            ),
-                            BoxShadow(
-                              color: Colors.white,
-                              offset: Offset(0.0, 0.0),
-                              blurRadius: 0.0,
-                              spreadRadius: 0.0,
-                            ),
-                          ],
+                  top: 70,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(65),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: Offset(0.5, 0.5),
+                          blurRadius: 1.0,
+                          spreadRadius: 1.0,
                         ),
-                        child: Image.asset(
-                          "assets/images/ar-left.png",
-                          width: 12,
-                          height: 12,
-                          fit: BoxFit.contain,
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: Offset(0.0, 0.0),
+                          blurRadius: 0.5,
+                          spreadRadius: 0.5,
                         ),
-                      ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.grey.shade200,
+                      backgroundImage: isValidImage
+                          ? NetworkImage(imageUrl)
+                          : const AssetImage('assets/images/profile.png') as ImageProvider,
                     ),
                   ),
                 ),
+
+                // Back button — ✅ WORKING AFTER FIX
+                // Positioned(
+                //   left: 20,
+                //   top: 20,
+                //   child: GestureDetector(
+                //     onTap: () {
+                //       Navigator.push(
+                //         context,
+                //         MaterialPageRoute(builder: (context) => FindAgentDemo()),
+                //       );
+                //     },
+                //     child: Container(
+                //       height: 28,
+                //       width: 28,
+                //       padding: const EdgeInsets.all(7),
+                //       decoration: BoxDecoration(
+                //         borderRadius: BorderRadius.circular(20.0),
+                //         boxShadow: [
+                //           BoxShadow(
+                //             color: Colors.grey,
+                //             offset: Offset(0.0, 0.0),
+                //             blurRadius: 0.1,
+                //             spreadRadius: 0.1,
+                //           ),
+                //           BoxShadow(
+                //             color: Colors.white,
+                //             offset: Offset(0.0, 0.0),
+                //             blurRadius: 0.0,
+                //             spreadRadius: 0.0,
+                //           ),
+                //         ],
+                //       ),
+                //       child: Image.asset(
+                //         "assets/images/ar-left.png",
+                //         width: 12,
+                //         height: 12,
+                //         fit: BoxFit.contain,
+                //       ),
+                //     ),
+                //   ),
+                // ),
               ],
             ),
+
+
+
 
             // --- AGENT NAME ROW (only once) ---
             Padding(
@@ -825,139 +826,145 @@ class _AboutAgentState extends State<AboutAgent> {
                     child: Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(top: 5,left: 5),
-                          child:  Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 5,left: 5,right: 15),
-                                child: Container(
-                                  width: screenSize.width * 0.85,
-                                  height: 40,
-                                  padding: const EdgeInsets.only(top: 5),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade300, // grey background
-                                    borderRadius: BorderRadiusDirectional.circular(10.0),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(top: 1, bottom: 3),
-                                    child: TextField(
-                                      textAlign: TextAlign.left,
-                                      controller: _searchController,
-                                      enabled: false, // disable the field
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: 'Select Location (Coming Soon)',
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey.shade700,
-                                          fontSize: 15,
-                                          letterSpacing: 0.5,
-                                        ),
-                                        prefixIcon: Padding(
-                                          padding: const EdgeInsets.only(top: 1, bottom: 2),
-                                          child: Icon(Icons.location_on, color: Colors.grey), // grey icon
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                              ),
-                              /* Padding(
-                                    padding: const EdgeInsets.only(top: 15,left: 15,right: 0),
-                                    child: Image.asset("assets/images/filter.png",width: 20,height: 30,),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 15,left: 5,right: 10),
-                                    child: Text("Filters",style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),),
-                                  )*/
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10, left: 2),
+                          padding: const EdgeInsets.only(top: 5, left: 5),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 10.0, right: 2.0, top: 20, bottom: 0),
-                                child: Container(
-                                  width: 80,
-                                  height: 35,
-                                  padding: const EdgeInsets.only(top: 10, left: 5, right: 0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade300, // grey background
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 1, right: 3),
-                                    child: Text(
-                                      "All\n(Coming Soon)", // updated text
-                                      style: TextStyle(
-                                        letterSpacing: 0.5,
-                                        color: Colors.grey.shade700, // grey text
-                                        fontSize: 8,
-                                        height: 1.2,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 10.0, right: 2.0, top: 20, bottom: 0),
-                                child: Container(
-                                  width: 80,
-                                  height: 35,
-                                  padding: const EdgeInsets.only(top: 10, left: 5, right: 0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade300, // grey background
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 1, right: 3),
-                                    child: Text(
-                                      "Ready\n(Coming Soon)",
-                                      style: TextStyle(
-                                        letterSpacing: 0.5,
-                                        color: Colors.grey.shade700, // grey text
-                                        fontSize: 8,
-                                        height: 1.2,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 10.0, right: 5.0, top: 20, bottom: 0),
-                                child: Container(
-                                  width: 80,
-                                  height: 35,
-                                  padding: const EdgeInsets.only(top: 10, left: 5, right: 0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade300, // grey background
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 1, right: 3),
-                                    child: Text(
-                                      "Off-Plan\n(Coming Soon)",
-                                      style: TextStyle(
-                                        letterSpacing: 0.5,
-                                        color: Colors.grey.shade700, // grey text
-                                        fontSize: 8,
-                                        height: 1.2,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              // Padding(
+                              //   padding: const EdgeInsets.only(top: 5, left: 5, right: 15),
+                              //   child: Container(
+                              //     width: screenSize.width * 0.85,
+                              //     height: 40,
+                              //     padding: const EdgeInsets.only(top: 5),
+                              //     decoration: BoxDecoration(
+                              //       color: Colors.white,                           // active background
+                              //       borderRadius: BorderRadiusDirectional.circular(10.0),
+                              //       border: Border.all(color: Colors.grey.shade400, width: 1), // optional border
+                              //     ),
+                              //     child: Padding(
+                              //       padding: const EdgeInsets.only(top: 1, bottom: 3),
+                              //       child: TextField(
+                              //         textAlign: TextAlign.left,
+                              //         controller: _searchController,
+                              //         decoration: InputDecoration(
+                              //           border: InputBorder.none,
+                              //           hintText: 'Select Location',               // removed “(Coming Soon)”
+                              //           hintStyle: TextStyle(
+                              //             color: Colors.grey.shade600,
+                              //             fontSize: 15,
+                              //             letterSpacing: 0.5,
+                              //           ),
+                              //           prefixIcon: Padding(
+                              //             padding: const EdgeInsets.only(top: 1, bottom: 2),
+                              //             child: Icon(Icons.location_on, color: Colors.red), // active icon color
+                              //           ),
+                              //         ),
+                              //         onTap: () {
+                              //           // TODO: open location selector
+                              //         },
+                              //       ),
+                              //     ),
+                              //   ),
+                              // ),
+                              /* Uncomment and style these if you need filter buttons again:
+      Padding(
+        padding: const EdgeInsets.only(top: 15, left: 15, right: 0),
+        child: Image.asset("assets/images/filter.png", width: 20, height: 30),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(top: 15, left: 5, right: 10),
+        child: Text(
+          "Filters",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+      */
                             ],
                           ),
                         ),
+
+                        // Padding(
+                        //   padding: const EdgeInsets.only(top: 10, left: 2),
+                        //   child: Row(
+                        //     mainAxisAlignment: MainAxisAlignment.start,
+                        //     children: [
+                        //       Padding(
+                        //         padding: const EdgeInsets.only(left: 10.0, right: 2.0, top: 20, bottom: 0),
+                        //         child: Container(
+                        //           width: 80,
+                        //           height: 35,
+                        //           padding: const EdgeInsets.only(top: 10, left: 5, right: 0),
+                        //           decoration: BoxDecoration(
+                        //             color: Colors.grey.shade300, // grey background
+                        //             borderRadius: BorderRadius.circular(8),
+                        //           ),
+                        //           child: Padding(
+                        //             padding: const EdgeInsets.only(left: 1, right: 3),
+                        //             child: Text(
+                        //               "All\n(Coming Soon)", // updated text
+                        //               style: TextStyle(
+                        //                 letterSpacing: 0.5,
+                        //                 color: Colors.grey.shade700, // grey text
+                        //                 fontSize: 8,
+                        //                 height: 1.2,
+                        //               ),
+                        //               textAlign: TextAlign.center,
+                        //             ),
+                        //           ),
+                        //         ),
+                        //       ),
+                        //       Padding(
+                        //         padding: const EdgeInsets.only(left: 10.0, right: 2.0, top: 20, bottom: 0),
+                        //         child: Container(
+                        //           width: 80,
+                        //           height: 35,
+                        //           padding: const EdgeInsets.only(top: 10, left: 5, right: 0),
+                        //           decoration: BoxDecoration(
+                        //             color: Colors.grey.shade300, // grey background
+                        //             borderRadius: BorderRadius.circular(8),
+                        //           ),
+                        //           child: Padding(
+                        //             padding: const EdgeInsets.only(left: 1, right: 3),
+                        //             child: Text(
+                        //               "Ready\n(Coming Soon)",
+                        //               style: TextStyle(
+                        //                 letterSpacing: 0.5,
+                        //                 color: Colors.grey.shade700, // grey text
+                        //                 fontSize: 8,
+                        //                 height: 1.2,
+                        //               ),
+                        //               textAlign: TextAlign.center,
+                        //             ),
+                        //           ),
+                        //         ),
+                        //       ),
+                        //       Padding(
+                        //         padding: const EdgeInsets.only(left: 10.0, right: 5.0, top: 20, bottom: 0),
+                        //         child: Container(
+                        //           width: 80,
+                        //           height: 35,
+                        //           padding: const EdgeInsets.only(top: 10, left: 5, right: 0),
+                        //           decoration: BoxDecoration(
+                        //             color: Colors.grey.shade300, // grey background
+                        //             borderRadius: BorderRadius.circular(8),
+                        //           ),
+                        //           child: Padding(
+                        //             padding: const EdgeInsets.only(left: 1, right: 3),
+                        //             child: Text(
+                        //               "Off-Plan\n(Coming Soon)",
+                        //               style: TextStyle(
+                        //                 letterSpacing: 0.5,
+                        //                 color: Colors.grey.shade700, // grey text
+                        //                 fontSize: 8,
+                        //                 height: 1.2,
+                        //               ),
+                        //               textAlign: TextAlign.center,
+                        //             ),
+                        //           ),
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
 
                         Expanded(
                           child: Padding(
@@ -1341,7 +1348,7 @@ class _AboutAgentState extends State<AboutAgent> {
               onPressed: () {
                 setState(() {
                   if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   } else {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   }

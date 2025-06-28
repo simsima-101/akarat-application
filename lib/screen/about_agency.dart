@@ -38,6 +38,8 @@ class _About_AgencyState extends State<About_Agency> {
   bool isDataRead = false;
   // Create an object of SharedPreferencesManager class
   SharedPreferencesManager prefManager = SharedPreferencesManager();
+
+  final TextEditingController _locationController = TextEditingController();
   // Method to read data from shared preferences
   void readData() async {
     token = await prefManager.readStringFromPref();
@@ -338,40 +340,40 @@ class _About_AgencyState extends State<About_Agency> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ instead of spacing
                             children: [
-                              Container(
-                                margin: const EdgeInsets.only(left: 20),
-                                height: 35,
-                                width: 35,
-                                padding: const EdgeInsets.all(7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      offset: Offset(0.3, 0.3),
-                                      blurRadius: 0.3,
-                                      spreadRadius: 0.3,
-                                    ),
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: Offset(0.0, 0.0),
-                                      blurRadius: 0.0,
-                                      spreadRadius: 0.0,
-                                    ),
-                                  ],
-                                ),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Image.asset(
-                                    "assets/images/ar-left.png",
-                                    width: 15,
-                                    height: 15,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              ),
+                              // Container(
+                              //   margin: const EdgeInsets.only(left: 20),
+                              //   height: 35,
+                              //   width: 35,
+                              //   padding: const EdgeInsets.all(7),
+                              //   decoration: BoxDecoration(
+                              //     borderRadius: BorderRadius.circular(20.0),
+                              //     boxShadow: [
+                              //       BoxShadow(
+                              //         color: Colors.grey,
+                              //         offset: Offset(0.3, 0.3),
+                              //         blurRadius: 0.3,
+                              //         spreadRadius: 0.3,
+                              //       ),
+                              //       BoxShadow(
+                              //         color: Colors.white,
+                              //         offset: Offset(0.0, 0.0),
+                              //         blurRadius: 0.0,
+                              //         spreadRadius: 0.0,
+                              //       ),
+                              //     ],
+                              //   ),
+                              //   child: GestureDetector(
+                              //     onTap: () {
+                              //       Navigator.of(context).pop();
+                              //     },
+                              //     child: Image.asset(
+                              //       "assets/images/ar-left.png",
+                              //       width: 15,
+                              //       height: 15,
+                              //       fit: BoxFit.contain,
+                              //     ),
+                              //   ),
+                              // ),
                             ],
                           ),
                         ),
@@ -779,109 +781,116 @@ class _About_AgencyState extends State<About_Agency> {
                                   children: [
                                     //About details
                                    // const SizedBox(height: 20,),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                      child: Row(
-                                        children: [
-                                          // Search Box (Flexible instead of Expanded)
-                                          Flexible(
-                                            child: Container(
-                                              height: 45,
-                                              decoration: BoxDecoration(
-                                                color: Colors.grey.shade300, // grey background
-                                                borderRadius: BorderRadius.circular(10.0),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.grey.withOpacity(0.5),
-                                                    offset: Offset(0.3, 0.3),
-                                                    blurRadius: 0.3,
-                                                    spreadRadius: 0.3,
-                                                  ),
-                                                  BoxShadow(
-                                                    color: Colors.white.withOpacity(0.8),
-                                                    offset: Offset(0.0, 0.0),
-                                                    blurRadius: 0.0,
-                                                    spreadRadius: 0.0,
-                                                  ),
-                                                ],
-                                              ),
-                                              alignment: Alignment.centerLeft,
-                                              padding: EdgeInsets.symmetric(horizontal: 12),
-                                              child: Row(
-                                                children: [
-                                                  Icon(Icons.location_on, color: Colors.grey), // grey icon
-                                                  SizedBox(width: 8),
-                                                  Text(
-                                                    "Select Location (Coming Soon)", // safe text
-                                                    style: TextStyle(
-                                                      color: Colors.black45,
-                                                      fontSize: 15,
-                                                      letterSpacing: 0.5,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
+                                   //  Padding(
+                                   //    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                   //    child: Row(
+                                   //      crossAxisAlignment: CrossAxisAlignment.center,  // center children vertically
+                                   //      children: [
+                                   //        Expanded(
+                                   //          child: Container(
+                                   //            height: 45,
+                                   //            decoration: BoxDecoration(
+                                   //              color: Colors.white,
+                                   //              borderRadius: BorderRadius.circular(10.0),
+                                   //              boxShadow: [
+                                   //                BoxShadow(
+                                   //                  color: Colors.grey.withOpacity(0.3),
+                                   //                  offset: const Offset(0.3, 0.3),
+                                   //                  blurRadius: 2.0,
+                                   //                  spreadRadius: 0.3,
+                                   //                ),
+                                   //                BoxShadow(
+                                   //                  color: Colors.white.withOpacity(0.8),
+                                   //                  offset: const Offset(0, 0),
+                                   //                  blurRadius: 0,
+                                   //                  spreadRadius: 0,
+                                   //                ),
+                                   //              ],
+                                   //            ),
+                                   //            child: TextField(
+                                   //              controller: _locationController,
+                                   //              readOnly: true,
+                                   //              onTap: () {
+                                   //                // TODO: open your location picker here
+                                   //              },
+                                   //              decoration: InputDecoration(
+                                   //                hintText: "Select Location",
+                                   //                hintStyle: TextStyle(
+                                   //                  color: Colors.grey.shade600,
+                                   //                  fontSize: 15,
+                                   //                  letterSpacing: 0.5,
+                                   //                ),
+                                   //                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                                   //                prefixIconConstraints: const BoxConstraints(
+                                   //                  minWidth: 40,
+                                   //                  minHeight: 40,
+                                   //                ),
+                                   //                prefixIcon: Padding(
+                                   //                  padding: const EdgeInsets.only(left: 8, right: 8),
+                                   //                  child: Image.asset(
+                                   //                    "assets/images/map.png",
+                                   //                    width: 24,
+                                   //                    height: 24,
+                                   //                    fit: BoxFit.contain,
+                                   //                  ),
+                                   //                ),
+                                   //                border: InputBorder.none,
+                                   //              ),
+                                   //            ),
+                                   //          ),
+                                   //        ),
+                                   //
+                                   //        // if you want a filter button/icon next to it:
+                                   //        const SizedBox(width: 16),
+                                   //        // Image.asset("assets/images/filter.png", width: 24, height: 24),
+                                   //      ],
+                                   //    ),
+                                   //  ),
 
-                                          const SizedBox(width: 16),
-                                          // Filter Icon and Label
-                                          // Column(
-                                          //   children: [
-                                          //     Image.asset("assets/images/filter.png", width: 20, height: 30),
-                                          //     const Text(
-                                          //       "Filters",
-                                          //       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                                          //     ),
-                                          //   ],
-                                          // ),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: ["All", "Buy", "Rent"].map((label) {
-                                          // All buttons disabled → adding "(Coming Soon)" to label
-                                          String displayLabel = "$label (Coming Soon)";
-
-                                          return Container(
-                                            width: screenSize.width * 0.25,
-                                            height: 35,
-                                            alignment: Alignment.center,
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey.shade300, // grey background
-                                              borderRadius: BorderRadius.circular(10),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
-                                                  offset: Offset(4, 4),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                                BoxShadow(
-                                                  color: Colors.white.withOpacity(0.8),
-                                                  offset: Offset(-4, -4),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                              ],
-                                            ),
-                                            child: Text(
-                                              displayLabel, // Show "Buy (Coming Soon)"
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                letterSpacing: 0.5,
-                                                color: Colors.black45,
-                                                fontSize: 11, // slightly smaller to fit
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          );
-                                        }).toList(),
-                                      ),
-                                    ),
+                                    // Padding(
+                                    //   padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                    //   child: Row(
+                                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    //     children: ["All", "Buy", "Rent"].map((label) {
+                                    //       // All buttons disabled → adding "(Coming Soon)" to label
+                                    //       String displayLabel = "$label (Coming Soon)";
+                                    //
+                                    //       return Container(
+                                    //         width: screenSize.width * 0.25,
+                                    //         height: 35,
+                                    //         alignment: Alignment.center,
+                                    //         decoration: BoxDecoration(
+                                    //           color: Colors.grey.shade300, // grey background
+                                    //           borderRadius: BorderRadius.circular(10),
+                                    //           boxShadow: [
+                                    //             BoxShadow(
+                                    //               color: Colors.grey.withOpacity(0.5),
+                                    //               offset: Offset(4, 4),
+                                    //               blurRadius: 8,
+                                    //               spreadRadius: 2,
+                                    //             ),
+                                    //             BoxShadow(
+                                    //               color: Colors.white.withOpacity(0.8),
+                                    //               offset: Offset(-4, -4),
+                                    //               blurRadius: 8,
+                                    //               spreadRadius: 2,
+                                    //             ),
+                                    //           ],
+                                    //         ),
+                                    //         child: Text(
+                                    //           displayLabel, // Show "Buy (Coming Soon)"
+                                    //           textAlign: TextAlign.center,
+                                    //           style: TextStyle(
+                                    //             letterSpacing: 0.5,
+                                    //             color: Colors.black45,
+                                    //             fontSize: 11, // slightly smaller to fit
+                                    //             fontWeight: FontWeight.bold,
+                                    //           ),
+                                    //         ),
+                                    //       );
+                                    //     }).toList(),
+                                    //   ),
+                                    // ),
 
 
                                     Expanded(
@@ -1184,83 +1193,83 @@ class _About_AgencyState extends State<About_Agency> {
                                                   SizedBox(height: 8),
 
                                                   // Sale & Rent buttons
-                                                  Container(
-                                                    width: screenSize.width * 0.35,
-                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      borderRadius: BorderRadius.circular(6),
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: Colors.grey.withOpacity(0.3),
-                                                          offset: Offset(2, 2),
-                                                          blurRadius: 6,
-                                                          spreadRadius: 1,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                                                      children: [
-                                                        // Sale button
-                                                        Container(
-                                                          height: 24,
-                                                          alignment: Alignment.center,
-                                                          decoration: BoxDecoration(
-                                                            color: Colors.grey.shade200,
-                                                            borderRadius: BorderRadius.circular(4),
-                                                            boxShadow: [
-                                                              BoxShadow(
-                                                                color: Colors.grey.withOpacity(0.2),
-                                                                offset: Offset(1, 1),
-                                                                blurRadius: 3,
-                                                                spreadRadius: 1,
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          child: Text(
-                                                            "${agencyAgentsModel!.data![index].sale} Sale (Coming Soon)",
-                                                            textAlign: TextAlign.center,
-                                                            style: TextStyle(
-                                                              letterSpacing: 0.4,
-                                                              color: Colors.black54,
-                                                              fontWeight: FontWeight.w500,
-                                                              fontSize: 9,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        SizedBox(height: 5),
-
-                                                        // Rent button
-                                                        Container(
-                                                          height: 24,
-                                                          alignment: Alignment.center,
-                                                          decoration: BoxDecoration(
-                                                            color: Colors.grey.shade200,
-                                                            borderRadius: BorderRadius.circular(4),
-                                                            boxShadow: [
-                                                              BoxShadow(
-                                                                color: Colors.grey.withOpacity(0.2),
-                                                                offset: Offset(1, 1),
-                                                                blurRadius: 3,
-                                                                spreadRadius: 1,
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          child: Text(
-                                                            "${agencyAgentsModel!.data![index].rent} Rent (Coming Soon)",
-                                                            textAlign: TextAlign.center,
-                                                            style: TextStyle(
-                                                              letterSpacing: 0.4,
-                                                              color: Colors.black54,
-                                                              fontWeight: FontWeight.w500,
-                                                              fontSize: 9,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
+                                                  // Container(
+                                                  //   width: screenSize.width * 0.35,
+                                                  //   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                                                  //   decoration: BoxDecoration(
+                                                  //     color: Colors.white,
+                                                  //     borderRadius: BorderRadius.circular(6),
+                                                  //     boxShadow: [
+                                                  //       BoxShadow(
+                                                  //         color: Colors.grey.withOpacity(0.3),
+                                                  //         offset: Offset(2, 2),
+                                                  //         blurRadius: 6,
+                                                  //         spreadRadius: 1,
+                                                  //       ),
+                                                  //     ],
+                                                  //   ),
+                                                  //   child: Column(
+                                                  //     crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                  //     children: [
+                                                  //       // Sale button
+                                                  //       // Container(
+                                                  //       //   height: 24,
+                                                  //       //   alignment: Alignment.center,
+                                                  //       //   decoration: BoxDecoration(
+                                                  //       //     color: Colors.grey.shade200,
+                                                  //       //     borderRadius: BorderRadius.circular(4),
+                                                  //       //     boxShadow: [
+                                                  //       //       BoxShadow(
+                                                  //       //         color: Colors.grey.withOpacity(0.2),
+                                                  //       //         offset: Offset(1, 1),
+                                                  //       //         blurRadius: 3,
+                                                  //       //         spreadRadius: 1,
+                                                  //       //       ),
+                                                  //       //     ],
+                                                  //       //   ),
+                                                  //       //   child: Text(
+                                                  //       //     "${agencyAgentsModel!.data![index].sale} Sale (Coming Soon)",
+                                                  //       //     textAlign: TextAlign.center,
+                                                  //       //     style: TextStyle(
+                                                  //       //       letterSpacing: 0.4,
+                                                  //       //       color: Colors.black54,
+                                                  //       //       fontWeight: FontWeight.w500,
+                                                  //       //       fontSize: 9,
+                                                  //       //     ),
+                                                  //       //   ),
+                                                  //       // ),
+                                                  //       // SizedBox(height: 5),
+                                                  //       //
+                                                  //       // // Rent button
+                                                  //       // Container(
+                                                  //       //   height: 24,
+                                                  //       //   alignment: Alignment.center,
+                                                  //       //   decoration: BoxDecoration(
+                                                  //       //     color: Colors.grey.shade200,
+                                                  //       //     borderRadius: BorderRadius.circular(4),
+                                                  //       //     boxShadow: [
+                                                  //       //       BoxShadow(
+                                                  //       //         color: Colors.grey.withOpacity(0.2),
+                                                  //       //         offset: Offset(1, 1),
+                                                  //       //         blurRadius: 3,
+                                                  //       //         spreadRadius: 1,
+                                                  //       //       ),
+                                                  //       //     ],
+                                                  //       //   ),
+                                                  //       //   child: Text(
+                                                  //       //     "${agencyAgentsModel!.data![index].rent} Rent (Coming Soon)",
+                                                  //       //     textAlign: TextAlign.center,
+                                                  //       //     style: TextStyle(
+                                                  //       //       letterSpacing: 0.4,
+                                                  //       //       color: Colors.black54,
+                                                  //       //       fontWeight: FontWeight.w500,
+                                                  //       //       fontSize: 9,
+                                                  //       //     ),
+                                                  //       //   ),
+                                                  //       // ),
+                                                  //     ],
+                                                  //   ),
+                                                  // ),
                                                 ],
                                               ),
                                             ),
@@ -1437,7 +1446,7 @@ class _About_AgencyState extends State<About_Agency> {
               onPressed: () {
                 setState(() {
                   if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   } else {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   }

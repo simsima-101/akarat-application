@@ -8,7 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import '../model/favoritemodel.dart';
+import '../model/favoritemodel.dart' as favModel;
+import '../model/propertymodel.dart'as propModel;
 import '../model/togglemodel.dart';
 import '../screen/home.dart';
 import '../screen/login.dart';
@@ -73,7 +74,7 @@ class _Fav_LoginState extends State<Fav_Login> {
   int currentPage = 1;
   bool isLoading = false;
   bool hasMore = true;
-  List<Data> favoriteModel = [];
+  List<favModel.Data> favoriteModel = [];
 
   @override
   void initState() {
@@ -94,7 +95,7 @@ class _Fav_LoginState extends State<Fav_Login> {
       final cachedData = prefs.getString(cacheKey);
       if (cachedData != null) {
         try {
-          final cachedModel = FavoriteResponseModel.fromJson(json.decode(cachedData));
+          final cachedModel = favModel.FavoriteResponseModel.fromJson(json.decode(cachedData));
           setState(() {
             favoriteModel = cachedModel.data?.data ?? [];
             print("favoriteModel length (cache): ${favoriteModel.length}");
@@ -142,7 +143,7 @@ class _Fav_LoginState extends State<Fav_Login> {
 
           // Defensive: check if keys exist and are not null
           if (jsonData['data'] != null && jsonData['data']['data'] != null) {
-            final feature = FavoriteResponseModel.fromJson(jsonData);
+            final feature = favModel.FavoriteResponseModel.fromJson(jsonData);
 
             await prefs.setString(cacheKey, json.encode(jsonData));
             await prefs.setInt(cacheTimeKey, now);
@@ -189,15 +190,17 @@ class _Fav_LoginState extends State<Fav_Login> {
   void toggleFavorite(int propertyId) async {
     setState(() {
       if (favoriteProperties.contains(propertyId)) {
-        favoriteProperties.remove(propertyId);
-        getFilesApi(token);
+        favoriteProperties.remove(propertyId); // ❌ Remove from favorites
       } else {
-        favoriteProperties.add(propertyId);
+        favoriteProperties.add(propertyId);    // ✅ Add to favorites
       }
     });
-    await _saveFavorites();
-    getFilesApi(token);
+
+    await _saveFavorites();     // 💾 Save updated favorites
+    await getFilesApi(token);   // 🔄 Refresh list from API
   }
+
+
 
   Future<void> _loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
@@ -213,37 +216,36 @@ class _Fav_LoginState extends State<Fav_Login> {
         'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
   }
 
-  Future<bool> toggledApi(token, propertyId) async {
+  Future<bool> toggledApi(String token, int propertyId) async {
     try {
       final response = await http.post(
-        Uri.parse('https://akarat.com/api/toggle-saved-property'),
+        Uri.parse('https://akarat.com/api/toggle-saved-property/$propertyId'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode({
-          "property_id": propertyId,
-        }),
       );
 
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        toggleModel = ToggleModel.fromJson(jsonData);
-        print("✅ Toggle saved/unsaved successful.");
+        print("✅ Favorite toggled successfully");
         return true;
       } else {
-        print("❌ Toggle failed with status code: ${response.statusCode}");
+        print("❌ Failed to toggle favorite: ${response.statusCode}");
         return false;
       }
     } catch (e) {
-      print("🚨 Exception in toggledApi: $e");
+      print("🚨 Error in toggledApi: $e");
       return false;
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
-    List<Data> allFavorites = favoriteModel;
+    List<favModel.Data> allFavorites = favoriteModel
+        .where((item) => favoriteProperties.contains(item.id))
+        .toList();
+
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
@@ -396,6 +398,8 @@ class _Fav_LoginState extends State<Fav_Login> {
                   itemBuilder: (context, index) {
                     final item = allFavorites[index];
                     String id = item.id.toString();
+
+                    print('🏷️ Property ${item.id} using URL → "${item.image}"');
                     bool isFavorited = favoriteProperties.contains(item.id);
                     return SingleChildScrollView(
                         child: GestureDetector(
@@ -423,11 +427,58 @@ class _Fav_LoginState extends State<Fav_Login> {
                                           AspectRatio(
                                             aspectRatio: 1.5,
                                             child: CachedNetworkImage(
-                                              imageUrl: (item.image.toString()),
+                                              imageUrl: item.image ?? getFullImageUrl(null),
                                               fit: BoxFit.cover,
-                                              height: 100,
+                                              placeholder: (c, u) => const Center(child: CircularProgressIndicator()),
+                                              errorWidget: (c, u, e) => const Icon(Icons.broken_image),
+                                            ),
+
+
+                                          ),
+                                          Positioned(
+                                            top: 10,
+                                            right: 10,
+                                            child: Container(
+                                              height: 35,
+                                              width: 35,
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                shape: BoxShape.circle,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey.withOpacity(0.5),
+                                                    blurRadius: 4,
+                                                    offset: Offset(2, 2),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Center(
+                                                child: IconButton(
+                                                  icon: Icon(
+                                                    favoriteProperties.contains(item.id)
+                                                        ? Icons.favorite
+                                                        : Icons.favorite_border,
+                                                    color: Colors.red,
+                                                    size: 18,
+                                                  ),
+                                                  onPressed: () async {
+                                                    if (token.isEmpty) {
+                                                      Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+                                                      return;
+                                                    }
+
+                                                    final success = await toggledApi(token, item.id!);
+                                                    if (success) {
+                                                      toggleFavorite(item.id!); // ✅ update list
+                                                    } else {
+                                                      debugPrint("❌ API toggle failed");
+                                                    }
+                                                  },
+                                                ),
+                                              ),
                                             ),
                                           ),
+
                                           // Positioned(
                                           //   top: 5,
                                           //   right: 10,
@@ -615,4 +666,25 @@ class _Fav_LoginState extends State<Fav_Login> {
       ),
     );
   }
+}
+
+// ✅ Add this helper function outside the class (at the bottom of Fav_Login.dart)
+
+String getFullImageUrl(String? url) {
+  if (url == null || url.isEmpty) {
+    return 'https://via.placeholder.com/400x300.png?text=No+Image';
+  }
+
+  if (url.contains('/conversions/') && url.endsWith('.webp')) {
+    final fallbackUrl = url
+        .replaceAll('/conversions/', '/')
+        .replaceAll('-thumbnail.webp', '.jpg');
+    return fallbackUrl;
+  }
+
+  if (url.startsWith('http')) {
+    return url;
+  }
+
+  return 'https://akarat.com/$url';
 }

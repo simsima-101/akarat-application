@@ -16,41 +16,33 @@ import 'package:Akarat/secure_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  final token = await SecureStorage.getToken();
-
   runApp(
     ChangeNotifierProvider(
       create: (_) => FavoriteProvider(),
-      child: MyApp(initialRoute: token == null ? '/login' : '/my_accounts'),
+      child: const MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  final String initialRoute;
-
-  const MyApp({Key? key, required this.initialRoute}) : super(key: key);
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: initialRoute,
+      home: const Home(), // ✅ Always show Home screen on launch
       routes: {
         '/login': (context) => const Login(),
         '/register': (context) => RegisterScreen(),
         '/my_accounts': (context) => My_Account(),
         '/home': (context) => const Home(),
-
-        // Password Reset Flow Routes
         '/forgot-password': (context) => const ForgotPasswordScreen(),
         '/verify-otp': (context) => const OtpVerificationScreen(),
         '/reset-password': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-          print('reset-password route args: $args');
           if (args == null || !args.containsKey('email') || !args.containsKey('token')) {
-            return Scaffold(body: Center(child: Text('Missing arguments for reset password.')));
+            return const Scaffold(body: Center(child: Text('Missing arguments for reset password.')));
           }
           return ResetPasswordScreen(
             email: args['email'] ?? '',

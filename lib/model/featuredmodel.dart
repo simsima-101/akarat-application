@@ -71,6 +71,7 @@ class Data {
   int? bathrooms;
   String? squareFeet;
   List<Media>? media;
+  bool? saved;
 
   Data(
       {this.id,
@@ -84,7 +85,8 @@ class Data {
         this.bedrooms,
         this.bathrooms,
         this.squareFeet,
-        this.media});
+        this.media,
+        this.saved,});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -98,6 +100,7 @@ class Data {
     bedrooms = json['bedrooms'];
     bathrooms = json['bathrooms'];
     squareFeet = json['square_feet'];
+    saved = json['saved'];
     if (json['media'] != null) {
       media = <Media>[];
       json['media'].forEach((v) {
@@ -119,6 +122,7 @@ class Data {
     data['bedrooms'] = this.bedrooms;
     data['bathrooms'] = this.bathrooms;
     data['square_feet'] = this.squareFeet;
+    data['saved'] = this.saved;
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
     }
@@ -228,7 +232,7 @@ class MetaLinks {
 
   MetaLinks.fromJson(Map<String, dynamic> json) {
     url = json['url'];
-    label = json['label'];
+    label = json['label']?.toString();
     active = json['active'];
   }
 

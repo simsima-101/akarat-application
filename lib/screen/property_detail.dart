@@ -343,14 +343,14 @@ class _Property_DetailState extends State<Property_Detail> {
                                     ),
                                   ),
                                   SizedBox(height: 5),
-                                  Text(
-                                    "View Developer Details",
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.blue,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
+                                  // Text(
+                                  //   "View Developer Details",
+                                  //   style: TextStyle(
+                                  //     fontSize: 11,
+                                  //     color: Colors.blue,
+                                  //     letterSpacing: 0.5,
+                                  //   ),
+                                  // ),
                                 ],
                               ),
                             ),
@@ -632,46 +632,46 @@ class _Property_DetailState extends State<Property_Detail> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 10,),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 0, left: 15, right: 15),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Units from Developer",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 5, left: 15, right: 15),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Apartments",
-                        style: TextStyle(
-                          fontSize: 14,
-                          letterSpacing: 0.5,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10,),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                    child: Column(
-                      children: [
-                        _unitRow("3 beds"),
-                        const SizedBox(height: 15),
-                        _unitRow("4 beds"),
-                      ],
-                    ),
-                  ),
+                  // const SizedBox(height: 10,),
+                  // Padding(
+                  //   padding: const EdgeInsets.only(top: 0, left: 15, right: 15),
+                  //   child: Align(
+                  //     alignment: Alignment.centerLeft,
+                  //     child: Text(
+                  //       "Units from Developer",
+                  //       style: TextStyle(
+                  //         fontWeight: FontWeight.bold,
+                  //         fontSize: 18,
+                  //         letterSpacing: 0.5,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                  // Padding(
+                  //   padding: const EdgeInsets.only(top: 5, left: 15, right: 15),
+                  //   child: Align(
+                  //     alignment: Alignment.centerLeft,
+                  //     child: Text(
+                  //       "Apartments",
+                  //       style: TextStyle(
+                  //         fontSize: 14,
+                  //         letterSpacing: 0.5,
+                  //         color: Colors.grey[700],
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 10,),
+                  // Padding(
+                  //   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                  //   child: Column(
+                  //     children: [
+                  //       _unitRow("3 beds"),
+                  //       const SizedBox(height: 15),
+                  //       _unitRow("4 beds"),
+                  //     ],
+                  //   ),
+                  // ),
                   const SizedBox(height: 10,),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
@@ -707,7 +707,7 @@ class _Property_DetailState extends State<Property_Detail> {
 
   Container buildMyNavBar(BuildContext context) {
     return Container(
-      height: 40,
+      height: 50,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -716,124 +716,39 @@ class _Property_DetailState extends State<Property_Detail> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-              onTap: ()async{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-              },
-              child: Image.asset("assets/images/home.png",height: 25,)),
-          Container(
-              margin: const EdgeInsets.only(left: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.call_outlined,color: Colors.red,)
-          ),
-
-          Container(
-              margin: const EdgeInsets.only(left: 1),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Image.asset("assets/images/whats.png",height: 20,)
-
-          ),
-          Container(
-              margin: const EdgeInsets.only(left: 1,right: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child: Icon(Icons.mail,color: Colors.red,)
-
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-                }
-                else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                }
-              });
+            onTap: () async {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
             },
-            icon: pageIndex == 3
-                ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                setState(() {
+                  if (token == '') {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  }
+                });
+              },
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
             ),
           ),
         ],
       ),
+
     );
   }
 }

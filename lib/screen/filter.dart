@@ -18,12 +18,15 @@ import 'package:syncfusion_flutter_core/core.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
+import '../secure_storage.dart';
 import '../utils/fav_login.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'filter_list.dart';
 import 'full_amenities_screen.dart';
 import 'locationsearch.dart';
+import 'login.dart';
 import 'my_account.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -427,7 +430,6 @@ class _FilterDemoState extends State<FilterDemo> {
     // After updating count — if NOT autoUpdate → navigate
     if (!autoUpdate && mounted) {
       if (filterResultCount == 0) {
-        // No property found → show empty screen
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -442,35 +444,20 @@ class _FilterDemoState extends State<FilterDemo> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.asset(
-                        "assets/images/not_found.png",
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.contain,
-                      ),
+                      Image.asset("assets/images/not_found.png", width: 50, height: 50),
                       SizedBox(height: 20),
-                      Text(
-                        'No Property Found',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
+                      Text('No Property Found', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       SizedBox(height: 10),
-                      Text(
-                        'Please select other filters to get results.',
-                        style: TextStyle(fontSize: 16, color: Colors.black54),
-                        textAlign: TextAlign.center,
-                      ),
+                      Text('Please select other filters to get results.',
+                          style: TextStyle(fontSize: 16, color: Colors.black54),
+                          textAlign: TextAlign.center),
                       SizedBox(height: 30),
                       ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                        ),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        child: Text(
-                          'Back to Filters',
-                          style: TextStyle(fontSize: 14, color: Colors.white),
-                        ),
+                        child: Text('Back to Filters', style: TextStyle(fontSize: 14, color: Colors.white)),
                       ),
                     ],
                   ),
@@ -480,7 +467,7 @@ class _FilterDemoState extends State<FilterDemo> {
           ),
         );
       } else {
-        // Properties found → navigate to result list
+        // ✅ Correct Navigation when data exists
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -489,6 +476,7 @@ class _FilterDemoState extends State<FilterDemo> {
         );
       }
     }
+
 
     if (mounted) {
       setState(() {
@@ -802,37 +790,48 @@ class _FilterDemoState extends State<FilterDemo> {
 
 
               const SizedBox(height: 20),
-              const Divider(height: 1,indent: 15,endIndent: 15,),
-              const SizedBox(height: 20),
+              // const Divider(height: 1,indent: 15,endIndent: 15,),
+              // const SizedBox(height: 20),
               //Searchbar
-              Padding(
-                padding: const EdgeInsets.only(left: 10.0, right: 10),
-                child: Container(
-                  height: 65,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300, // grey background
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(color: Colors.grey, width: 1), // grey border for disabled look
-                  ),
-                  child: Row(
-                    children: [
-                      Image.asset("assets/images/map.png", height: 22, color: Colors.grey), // greyscale icon
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          "Search (Coming Soon)", // updated text
-                          style: TextStyle(
-                            color: Colors.black45,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 10),
+              //   child: Container(
+              //     height: 65,
+              //     padding: const EdgeInsets.symmetric(horizontal: 12),
+              //     decoration: BoxDecoration(
+              //       color: Colors.white,                          // white background
+              //       borderRadius: BorderRadius.circular(25),
+              //       border: Border.all(color: Colors.red.shade200, width: 1),  // colored border
+              //     ),
+              //     child: Row(
+              //       children: [
+              //         Image.asset(
+              //           "assets/images/map.png",
+              //           height: 22,
+              //           color: Colors.red,                         // active icon color
+              //         ),
+              //         const SizedBox(width: 10),
+              //         Expanded(
+              //           child: TextField(
+              //             controller: _searchController,            // define in your State
+              //             decoration: InputDecoration(
+              //               hintText: "Search for a locality, area or city",
+              //               hintStyle: TextStyle(
+              //                 color: Colors.grey.shade600,
+              //                 fontSize: 14,
+              //               ),
+              //               border: InputBorder.none,
+              //             ),
+              //             onChanged: (value) {
+              //               // TODO: your search logic here
+              //             },
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+
 
               const SizedBox(height: 20),
               const Divider(height: 1,indent: 15,endIndent: 15,),
@@ -1919,36 +1918,102 @@ class _FilterDemoState extends State<FilterDemo> {
           // ),
           IconButton(
             enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Logout()));
-                }
-                else if(token.isNotEmpty){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Fav_Login()));
-                }
-                // Navigator.push(context, MaterialPageRoute(builder: (context)=> FavoriteButton()));
+            onPressed: () async {
+              final token = await SecureStorage.getToken();
 
-              });
+              if (token == null || token.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // white container
+                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
+                        },
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              else {
+                // ✅ Logged in – go to favorites
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Fav_Logout()),
+                );
+              }
             },
             icon: pageIndex == 2
-                ? const Icon(
-              Icons.favorite,
-              color: Colors.red,
-              size: 30,
-            )
-                : const Icon(
-              Icons.favorite_border_outlined,
-              color: Colors.red,
-              size: 30,
-            ),
+                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
           ),
-          IconButton(
+
+
+
+
+
+
+
+
+    IconButton(
+    tooltip: "Email",
+    icon: const Icon(Icons.email, color: Colors.red),
+    onPressed: () async {
+    final Uri emailUri = Uri.parse(
+    'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+    );
+
+    if (await canLaunchUrl(emailUri)) {
+    await launchUrl(emailUri);
+    } else {
+    showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+    title: const Text('Email not available'),
+    content: const Text('No email app is configured on this device. Please add a mail account first.'),
+    actions: [
+    TextButton(
+    onPressed: () => Navigator.pop(context),
+    child: const Text('OK'),
+    ),
+    ],
+    ),
+    );
+    }
+    },
+    ),
+
+
+
+
+
+
+
+
+    IconButton(
             enableFeedback: false,
             onPressed: () {
               setState(() {
                 if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
                 }
                 else{
                   Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));

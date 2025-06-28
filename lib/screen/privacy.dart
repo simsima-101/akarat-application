@@ -196,7 +196,38 @@ class _PrivacyState extends State<Privacy> {
                       fontSize: 16,letterSpacing: 0.5
                   ),),
 
-          ]
+          const SizedBox(height: 16),
+          Text("Account Deletion",
+            style: TextStyle(
+                fontSize: 17,
+                letterSpacing: 0.5,
+                fontWeight: FontWeight.bold
+            ),
+            textAlign: TextAlign.left,
+          ),
+          const SizedBox(height: 6),
+          Text("You have the right to delete your account and all associated data at any time. "
+              "This can be done within the app by going to 'My Account' and tapping 'Delete Your Account'. "
+              "Once deleted, your personal data will be permanently removed from our systems.",
+            style: TextStyle(fontSize: 16, letterSpacing: 0.5),
+          ),
+
+          const SizedBox(height: 16),
+          Text("Tracking and Cookies",
+            style: TextStyle(
+                fontSize: 17,
+                letterSpacing: 0.5,
+                fontWeight: FontWeight.bold
+            ),
+            textAlign: TextAlign.left,
+          ),
+          const SizedBox(height: 6),
+          Text("We do not use cookies, advertising trackers, or App Tracking Transparency (ATT) technology in this app.",
+            style: TextStyle(fontSize: 16, letterSpacing: 0.5),
+          ),
+
+
+        ]
           )
         )
     );
@@ -231,7 +262,7 @@ class _PrivacyState extends State<Privacy> {
               onPressed: () {
                 setState(() {
                   if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   } else {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   }

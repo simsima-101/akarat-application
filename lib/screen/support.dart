@@ -92,7 +92,7 @@ class _SupportState extends State<Support> {
           // Optionally navigate
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const Profile_Login()),
+            MaterialPageRoute(builder: (context) => My_Account()),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -161,7 +161,7 @@ class _SupportState extends State<Support> {
                                 onTap: (){
                                   setState(() {
                                     if(token == ''){
-                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
                                     }
                                     else{
                                       Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
@@ -581,7 +581,7 @@ class _SupportState extends State<Support> {
               onPressed: () {
                 setState(() {
                   if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   } else {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   }

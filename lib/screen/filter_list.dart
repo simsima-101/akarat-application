@@ -30,20 +30,24 @@ import 'my_account.dart';
 
 
 class FliterList extends StatelessWidget {
-  final FilterModel filterModel;
+  final FilterModel? filterModel;  // ❌ was required, ✅ now optional
+  final String? location;
+  final bool forceRefresh;
 
-  FliterList({super.key, required this.filterModel});
+  FliterList({super.key, this.filterModel, this.location, this.forceRefresh = false});
 
   @override
   Widget build(BuildContext context) {
-    return FliterListDemo(filterModel: filterModel);  // ✅ No MaterialApp here
-
+    return FliterListDemo(filterModel: filterModel, location: location);
   }
 }
-class FliterListDemo extends StatefulWidget {
-  final FilterModel filterModel;
 
-  const FliterListDemo({super.key,required this.filterModel});
+class FliterListDemo extends StatefulWidget {
+  final FilterModel? filterModel;   // ✅ updated as nullable
+  final String? location;
+
+  const FliterListDemo({super.key, this.filterModel, this.location});
+
 
   @override
   _FliterListDemoState createState() => _FliterListDemoState();
@@ -59,12 +63,18 @@ class _FliterListDemoState extends State<FliterListDemo> {
   bool isDataRead = false;
   bool isFavorited = false;
 
+
+
   bool isPurposeLoading = false;
   String selectedPurposeText = "Rent";
+  bool _isLoading = true;   // ✅ add this
+
 
   ScrollController _scrollController = ScrollController();
 
   List<String> locationList = [];
+  String? selectedLocation;
+
 
 
 
@@ -80,38 +90,78 @@ class _FliterListDemoState extends State<FliterListDemo> {
     });
   }
 
+  void _resetAllFilters() {
+    selectedproduct = 0;
+    selectedrent = null;
+    selectedtype = null;
+    selectedbedroom = null;
+    selectedbathroom = null;
+    _values = SfRangeValues(3000, 5000);
+    min_price = '';
+    max_price = '';
+    ftype = ' ';
+    bedroom = ' ';
+    bathroom = ' ';
+    property_type = ' ';
+    purpose = 'Rent';
+  }
+
+
+  String buildApiUrl() {
+    Map<String, String> params = {
+      if ((selectedLocation ?? '').isNotEmpty) 'location': selectedLocation!,
+      if (purpose.isNotEmpty) 'purpose': purpose,
+      if (property_type.trim().isNotEmpty) 'property_type': property_type.trim(),
+      if (ftype.trim().isNotEmpty && ftype != 'All') 'furnished_status': ftype.trim(),
+      if (bedroom.trim().isNotEmpty) 'bedrooms': bedroom.trim(),
+      if (bathroom.trim().isNotEmpty) 'bathrooms': bathroom.trim(),
+      if (min_price.isNotEmpty) 'min_price': min_price,
+      if (max_price.isNotEmpty) 'max_price': max_price,
+      if (rent.isNotEmpty) 'payment_period': rent,
+    };
+
+    final queryString = params.entries.map((e) => "${e.key}=${Uri.encodeComponent(e.value)}").join('&');
+    return 'https://akarat.com/api/filters?$queryString';
+  }
+
+
   @override
   void initState() {
     super.initState();
 
-    _rangeController = RangeController(
-      start: start.toString(),
-      end: end.toString(),
-    );
-
-    _loadFavorites();         // Load local favorites
-    readData();               // Fetch token/user info
-    filterModel = widget.filterModel;
-
+    _rangeController = RangeController(start: start.toString(), end: end.toString());
+    _loadFavorites();
+    readData();
+    filterModel = widget.filterModel ?? FilterModel();
 
     selectedproduct = 0;
-    purpose = "Rent";         // Default filter
-    propertyApi(purpose);     // Fetch property list
-
+    purpose = "Rent";
     selectedtype = 0;
+    selectedLocation = widget.location?.toString();
+
 
     fetchLocations();
-
     chartData = List.generate(
       96,
-          (index) => Data(
-        500 + index * 100.0,
-        yValues[index % yValues.length].toDouble(),
-      ),
-
-
+          (index) => Data(500 + index * 100.0, yValues[index % yValues.length].toDouble()),
     );
+
+    Future.delayed(Duration.zero, () async {
+      // 1️⃣ Load filter results first (faster search result shown to user)
+      await showResult();  // ⚠️ Don't use forceRefresh on initial load
+
+      // 2️⃣ After result, load property types (for filters UI)
+      await propertyApi(purpose, location: selectedLocation);
+
+      if (propertyTypeModel != null && propertyTypeModel!.data!.isNotEmpty) {
+        property_type = propertyTypeModel!.data!.first.name ?? '';
+      }
+    });
+
   }
+
+
+
 
   late bool isSelected = true;
   double start = 3000;
@@ -127,7 +177,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
   final List<int> yValues = [5000, 3000, 9000,7000,10000,1500,4000,];
   late List<Data> chartData;
   String min_price = '';
-  String max_price = ' ';
+  String max_price = '';
   SearchModel? searchModel;
 
 
@@ -173,6 +223,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
       }*/
 
 
+
+
   PropertyTypeModel? propertyTypeModel;
   int? selectedIndex;
   String ftype = ' ';
@@ -201,10 +253,10 @@ class _FliterListDemoState extends State<FliterListDemo> {
   ];
 
 
-  Future<void> propertyApi(String purpose) async {
+  Future<void> propertyApi(String purpose, {String? location}) async {
     final prefs = await SharedPreferences.getInstance();
-    final cacheKey = 'property_types_$purpose';
-    final cacheTimeKey = 'property_types_time_$purpose';
+    final cacheKey = 'property_types_${purpose}_${location ?? ''}';
+    final cacheTimeKey = 'property_types_time_${purpose}_${location ?? ''}';
     final now = DateTime.now().millisecondsSinceEpoch;
     final cachedTime = prefs.getInt(cacheTimeKey) ?? 0;
 
@@ -221,15 +273,22 @@ class _FliterListDemoState extends State<FliterListDemo> {
           });
         }
 
-        debugPrint("✅ Loaded property types from cache for '$purpose'");
+        debugPrint("✅ Loaded property types from cache for '$purpose' ${location != null ? 'with location $location' : ''}");
         return;
       }
     }
 
-    // Else: fetch from API
+    // Build correct API URL based on whether location is provided
+    String url;
+    if (location != null) {
+      url = "https://akarat.com/api/property-types/$purpose?location=${Uri.encodeQueryComponent(location)}";
+    } else {
+      url = "https://akarat.com/api/property-types/$purpose";
+    }
+
     try {
       final response = await http
-          .get(Uri.parse("https://akarat.com/api/property-types/$purpose"))
+          .get(Uri.parse(url))
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
@@ -246,7 +305,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
         await prefs.setString(cacheKey, response.body);
         await prefs.setInt(cacheTimeKey, now);
 
-        debugPrint("✅ Cached property types for '$purpose'");
+        debugPrint("✅ Cached property types for '$purpose' ${location != null ? 'with location $location' : ''}");
       } else {
         debugPrint("❌ Property API failed [${response.statusCode}]: ${response.reasonPhrase}");
       }
@@ -256,7 +315,10 @@ class _FliterListDemoState extends State<FliterListDemo> {
   }
 
 
-  Future<void> showResult() async {
+
+  Future<void> showResult({bool forceRefresh = false}) async {
+    setState(() { _isLoading = true; });   // Start loading
+
     final prefs = await SharedPreferences.getInstance();
     final cacheKey = 'filters_result_${property_type}_$ftype$bedroom$min_price$max_price$rent$bathroom$purpose';
     final cacheTimeKey = '${cacheKey}_time';
@@ -276,81 +338,74 @@ class _FliterListDemoState extends State<FliterListDemo> {
         debugPrint("ℹ️ Auto-selected property_type for Rent: $property_type");
       } else {
         debugPrint("❌ Cannot proceed — no property_type selected for Rent");
+        setState(() { _isLoading = false; });  // ✅ Stop loading if failure
         return;
       }
     }
 
-    if (now - lastFetched < Duration(hours: 2).inMilliseconds) {
-      final cachedData = prefs.getString(cacheKey);
-      if (cachedData != null) {
-        final cachedJson = jsonDecode(cachedData);
-        final cachedResponse = FilterResponseModel.fromJson(cachedJson);
-        final cachedFeature = cachedResponse.data;
-
-        setState(() {
-          filterModel = cachedFeature!;
-        });
-
-        _scrollController.animateTo(
-          0,
-          duration: Duration(milliseconds: 100),
-          curve: Curves.easeInOut,
-        );
-
-        debugPrint("✅ Loaded filter results from cache (${filterModel.data?.length ?? 0} items)");
-        return;
-      }
-    }
+    // if (!forceRefresh && now - lastFetched < Duration(hours: 2).inMilliseconds) {
+    //   final cachedData = prefs.getString(cacheKey);
+    //   if (cachedData != null) {
+    //     final cachedJson = jsonDecode(cachedData);
+    //     final cachedResponse = FilterResponseModel.fromJson(cachedJson);
+    //     final cachedFeature = cachedResponse.data;
+    //
+    //     setState(() {
+    //       filterModel = cachedFeature!;
+    //       _isLoading = false;  // ✅ Stop loading after loading cache
+    //     });
+    //
+    //     _scrollController.animateTo(0, duration: Duration(milliseconds: 100), curve: Curves.easeInOut);
+    //     debugPrint("✅ Loaded filter results from cache (${filterModel.data?.length ?? 0} items)");
+    //     return;
+    //   }
+    // }
 
     try {
-      final response = await http.get(Uri.parse('https://akarat.com/api/filters?'
-          'search=&amenities=&property_type=$property_type'
-          '&furnished_status=$ftype&bedrooms=$bedroom&min_price=$min_price'
-          '&max_price=$max_price&payment_period=$paymentPeriodParam'
-          '&min_square_feet=&max_square_feet='
-          '&bathrooms=$bathroom&purpose=$purpose'));
+      final apiUrl = buildApiUrl();
+      final response = await http.get(Uri.parse(apiUrl));
+
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         final featureResponse = FilterResponseModel.fromJson(responseData);
         final feature = featureResponse.data;
 
+        if (selectedLocation != null && feature != null) {
+
+        }
+
         setState(() {
           filterModel = feature!;
+          _isLoading = false;   // ✅ Stop loading after success
         });
 
-        _scrollController.animateTo(
-          0,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-
+        _scrollController.animateTo(0, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
         debugPrint("✅ Fetched and updated filter result (${filterModel.data?.length ?? 0} items)");
 
         await prefs.setString(cacheKey, response.body);
         await prefs.setInt(cacheTimeKey, now);
       } else {
         debugPrint("❌ Filter API failed: ${response.statusCode}");
+        setState(() { _isLoading = false; });
       }
     } catch (e) {
       debugPrint("🚨 Filter API exception: $e");
+      setState(() { _isLoading = false; });
     }
   }
 
 
+
   Future<void> fetchLocations() async {
     try {
-      final response = await http.get(Uri.parse("https://akarat.com/api/locations"));
+      final response = await http.get(Uri.parse("https://akarat.com/api/locations?q="));
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+        final List<dynamic> jsonData = jsonDecode(response.body);
 
         setState(() {
-          // If your API returns list of strings
-          locationList = data.cast<String>();
-
-          // If your API returns list of objects like { "name": "Dubai" }, change to:
-          // locationList = data.map((item) => item['name'].toString()).toList();
+          locationList = List<String>.from(jsonData);
         });
 
         debugPrint("✅ Locations loaded: ${locationList.length}");
@@ -365,11 +420,13 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
 
 
+
+
   int? selectedtype;
   String property_type= ' ';
   String selectedaction = " ";
   String bathroom = ' ';
-  String purpose = ' ';
+  String purpose = '';
   int? selectedproduct ;
   int? selectedrent ;
   String product='';
@@ -378,9 +435,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
   final TextEditingController _searchController = TextEditingController();
 
-  Future<void> toggledApi( token,  propertyId) async {
+  Future<bool> toggledApi(String token, int propertyId) async {
     final url = Uri.parse('https://akarat.com/api/toggle-saved-property');
-
     try {
       final response = await http.post(
         url,
@@ -392,18 +448,18 @@ class _FliterListDemoState extends State<FliterListDemo> {
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = json.decode(response.body);
-        setState(() {
-          toggleModel = ToggleModel.fromJson(jsonData);
-        });
-        debugPrint("✅ Property toggle success for ID: $propertyId");
+        print("✅ Favorite toggled successfully");
+        return true;
       } else {
-        debugPrint("❌ Toggle failed: Status ${response.statusCode}");
+        print("❌ Failed to toggle favorite: ${response.statusCode}");
+        return false;
       }
     } catch (e) {
-      debugPrint("🚨 Toggle error: $e");
+      print("🚨 Error in toggledApi: $e");
+      return false;
     }
   }
+
 
 
   Set<int> favoriteProperties = {}; // Stores favorite property IDs
@@ -438,13 +494,16 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
   @override
   Widget build(BuildContext context) {
-    if (filterModel == null) {
+
+    if (_isLoading) {
       return Scaffold(
-          body: ListView.builder(
-            itemCount: 5,
-            itemBuilder: (context, index) => const ShimmerCard(),) // Show loading state
+        body: ListView.builder(
+          itemCount: 5,
+          itemBuilder: (context, index) => const ShimmerCard(),
+        ),
       );
     }
+
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
       bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
@@ -473,9 +532,15 @@ class _FliterListDemoState extends State<FliterListDemo> {
                             decoration: _iconBoxDecoration(),
                             child: GestureDetector(
                               onTap: () {
-                                Navigator.of(context).pop();
+                                if (Navigator.canPop(context)) {
+                                  Navigator.pop(context);
+                                } else {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => Filter(data: "Rent")),
+                                  );
+                                }
                               },
-
                               child: Image.asset(
                                 "assets/images/ar-left.png",
                                 width: 15,
@@ -485,7 +550,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                             ),
                           ),
 
-                          // Like Button
+                          // Like Button (optional)
                           // Container(
                           //   margin: const EdgeInsets.only(right: 10),
                           //   height: 35,
@@ -505,54 +570,63 @@ class _FliterListDemoState extends State<FliterListDemo> {
                   ),
                 ],
               ),
+
               //Searchbar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Container(
-                  width: 400,
-                  height: 70,
-                  padding: const EdgeInsets.only(left: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300, // grey background
-                    borderRadius: BorderRadius.circular(25.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        offset: Offset(0.0, 0.0),
-                        blurRadius: 4.0,
-                        spreadRadius: 1.0,
-                      ),
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.8),
-                        offset: Offset(0.0, 0.0),
-                        blurRadius: 2.0,
-                        spreadRadius: 0.0,
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Icon(Icons.search, color: Colors.grey), // grey icon
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Text(
-                            "Search (Coming Soon)", // updated text
-                            style: TextStyle(
-                              color: Colors.black45,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              // Responsive universal search bar
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              //   child: Container(
+              //     width: double.infinity,
+              //     height: 55,
+              //     decoration: BoxDecoration(
+              //       color: Colors.white,
+              //       borderRadius: BorderRadius.circular(30),
+              //       boxShadow: [
+              //         BoxShadow(
+              //           color: Colors.grey.withOpacity(0.2),
+              //           blurRadius: 6,
+              //           offset: Offset(0, 3),
+              //         ),
+              //       ],
+              //     ),
+              //     child: Row(
+              //       children: [
+              //         Expanded(
+              //           child: Container(
+              //             margin: const EdgeInsets.symmetric(horizontal: 8),
+              //             decoration: BoxDecoration(
+              //               border: Border.all(color: Colors.red.shade200),
+              //               borderRadius: BorderRadius.circular(30),
+              //             ),
+              //             padding: const EdgeInsets.symmetric(horizontal: 12),
+              //             height: 45,
+              //             child: Row(
+              //               children: [
+              //                 Icon(Icons.search, color: Colors.red),
+              //                 const SizedBox(width: 10),
+              //                 Expanded(
+              //                   child: TextField(
+              //                     controller: _searchController,
+              //                     decoration: InputDecoration(
+              //                       hintText: "Search for a locality, area or city",
+              //                       hintStyle: TextStyle(
+              //                         color: Colors.grey,
+              //                         fontSize: 14,
+              //                       ),
+              //                       border: InputBorder.none,
+              //                     ),
+              //                   ),
+              //                 ),
+              //
+              //               ],
+              //             ),
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+
 
               //filter
               Padding(
@@ -631,18 +705,14 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                   setModalState(() {
                                                     selectedproduct = index;
                                                     purpose = _product[index];
-                                                    selectedPurposeText = _product[index]; // update button label if needed
-                                                    isPurposeLoading = true;
+                                                    selectedPurposeText = _product[index];
                                                   });
 
-                                                  await propertyApi(purpose); // wait for API to finish
-
-                                                  setModalState(() {
-                                                    isPurposeLoading = false;
-                                                  });
-
-                                                  setState(() {}); // in case needed globally
+                                                  await showResult(forceRefresh: true);
+                                                  Navigator.pop(context);
                                                 },
+
+
                                                 child: Container(
                                                   margin: const EdgeInsets.only(right: 10),
                                                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -680,13 +750,16 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                               bool isSelected = selectedrent == index;
                                               final label = propertyTypeModel!.availability![index].toString();
                                               return GestureDetector(
-                                                onTap: () {
+                                                onTap: () async {
                                                   setModalState(() {
                                                     selectedrent = index;
                                                     rent = label;
                                                   });
-                                                  setState(() {});
+
+                                                  await showResult(forceRefresh: true);
+                                                  Navigator.pop(context);
                                                 },
+
                                                 child: Container(
                                                   margin: const EdgeInsets.only(right: 10),
                                                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -720,10 +793,13 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                           child: ElevatedButton(
                                             onPressed: isPurposeLoading
                                                 ? null
-                                                : () {
-                                              showResult();
-                                              Navigator.pop(context); // Close bottom sheet after clicking
+                                                : () async {  // <-- add async here
+                                              await showResult(forceRefresh: true);
+
+                                              Navigator.pop(context);
                                             },
+
+
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: Colors.red,
                                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -823,13 +899,16 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                               final isSelected = selectedtype == index;
 
                                               return GestureDetector(
-                                                onTap: () {
+                                                onTap: () async {
                                                   setModalState(() {
                                                     selectedtype = index;
                                                     property_type = item.name.toString();
                                                   });
-                                                  setState(() {});
+
+                                                  await showResult(forceRefresh: true);
+                                                  Navigator.pop(context);
                                                 },
+
                                                 child: Container(
                                                   margin: const EdgeInsets.symmetric(horizontal: 8),
                                                   padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
@@ -878,9 +957,10 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                           width: double.infinity,
                                           child: ElevatedButton(
                                             onPressed: () {
-                                              showResult();
-                                              Navigator.pop(context); // Close bottom sheet after clicking
+                                              showResult(forceRefresh: true);   // 🔥 added forceRefresh
+                                              Navigator.pop(context);
                                             },
+
 
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: Colors.red,
@@ -1017,6 +1097,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
 
 
+
                                             child: SizedBox(
                                               height: 60,
                                               width: double.infinity,
@@ -1049,8 +1130,9 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                           width: double.infinity,
                                           height: 45,
                                           child: ElevatedButton(
-                                            onPressed: () {
-                                              showResult();
+                                            onPressed: () async {
+                                              await showResult(forceRefresh: true);
+
                                               Navigator.pop(context); // Close the bottom sheet after showing result
                                             },
 
@@ -1163,7 +1245,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                               shrinkWrap: true,
                                               itemBuilder: (context, index) {
                                                 return GestureDetector(
-                                                  onTap: () {
+                                                  onTap: () async {
                                                     setModalState(() {
                                                       selectedbedroom = index;
 
@@ -1172,12 +1254,16 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                       } else if (_bedroom[index] == '9+') {
                                                         bedroom = '9';
                                                       } else {
-                                                        bedroom = _bedroom[index]; // 1,2,3
+                                                        bedroom = _bedroom[index];
                                                       }
 
                                                       print('Selected bedroom for API: $bedroom');
                                                     });
+
+                                                    await showResult(forceRefresh: true);
+                                                    Navigator.pop(context);
                                                   },
+
                                                   child: Container(
                                                     margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                                                     padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -1218,8 +1304,9 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                         ),
                                         // Show Results button
                                         GestureDetector(
-                                          onTap: () {
-                                            showResult();
+                                          onTap: () async {
+                                            await showResult(forceRefresh: true);
+
                                             Navigator.pop(context); // ✅ Close BottomSheet after API call
                                           },
                                           child: Padding(
@@ -1348,14 +1435,16 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                 itemBuilder: (context, index) {
                                                   // Colors.grey;
                                                   return GestureDetector(
-                                                    onTap: (){
+                                                    onTap: () async {
                                                       setModalState(() {
                                                         selectedbathroom = index;
                                                         bathroom = _bathroom[index];
                                                       });
-                                                      setState(() {
-                                                      });
+
+                                                      await showResult(forceRefresh: true);
+                                                      Navigator.pop(context);
                                                     },
+
 
                                                     child: Container(
 
@@ -1402,8 +1491,9 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                             )
                                         ),
                                         GestureDetector(
-                                          onTap: () {
-                                            showResult();
+                                          onTap: () async {
+                                            await showResult(forceRefresh: true);
+
                                             Navigator.pop(context); // ✅ Close BottomSheet after API call
                                           },
                                           child:  Padding(
@@ -1487,6 +1577,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                           ),
                         ),
                       ),
+
                       GestureDetector(
                         onTap: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => Filter(data: "Rent")));
@@ -1534,31 +1625,11 @@ class _FliterListDemoState extends State<FliterListDemo> {
                       GestureDetector(
                         onTap: () {
                           setState(() {
-                            // Reset all selections
-                            selectedproduct = 0;
-                            selectedrent = null;
-                            selectedtype = null;
-                            selectedbedroom = null;
-                            selectedbathroom = null;
-                            _values = SfRangeValues(3000, 5000);
-                            min_price = '';
-                            max_price = '';
-                            ftype = ' ';
-                            bedroom = ' ';
-                            bathroom = ' ';
-                            property_type = ' ';
-                            purpose = 'Rent'; // default
+                            _resetAllFilters();
+                            showResult(forceRefresh: true);
                           });
-
-                          // Reload page
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              transitionDuration: Duration.zero,
-                              pageBuilder: (_, __, ___) => FliterList(filterModel: filterModel),
-                            ),
-                          );
                         },
+
                         child: Padding(
                           padding: const EdgeInsets.only(top: 3, bottom: 3, right: 10, left: 0),
                           child: Container(
@@ -1665,18 +1736,25 @@ class _FliterListDemoState extends State<FliterListDemo> {
                     ),
                   )
               ),
-              filterModel.data == null || filterModel.data!.isEmpty
+              _isLoading
+                  ? ListView.builder(
+                padding: const EdgeInsets.all(8.0),
+                itemCount: 5,
+                shrinkWrap: true,
+                itemBuilder: (context, index) => const ShimmerCard(),
+              )
+                  : (filterModel.data == null || filterModel.data!.isEmpty)
                   ? Padding(
                 padding: const EdgeInsets.symmetric(vertical: 50),
                 child: Center(
                   child: Text(
                     "Property Not Found",
-                    style: TextStyle(fontSize: 18, color: Colors.red, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 18, color: Colors.red, fontWeight: FontWeight.bold),
                   ),
                 ),
               )
-                  :
-              ListView.builder(
+                  : ListView.builder(
                 controller: _scrollController,
                 padding: const EdgeInsets.all(0),
                 scrollDirection: Axis.vertical,
@@ -1684,7 +1762,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                 itemCount: filterModel.data?.length ?? 0,
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
-                  bool isFavorited = favoriteProperties.contains(filterModel.data![index].id);
+                  bool isFavorited =
+                  favoriteProperties.contains(filterModel.data![index].id);
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Card(
@@ -1692,122 +1771,76 @@ class _FliterListDemoState extends State<FliterListDemo> {
                       shadowColor: Colors.white,
                       color: Colors.white,
                       child: GestureDetector(
-                        onTap: () async{
+                        onTap: () async {
                           String id = filterModel.data![index].id.toString();
-                          Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                              Product_Detail(data: id)));
-                          //Navigator.push(context, MaterialPageRoute(builder: (context) => Blog_Detail(data:blogModel!.data![index].id.toString())));
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Product_Detail(data: id)));
                         },
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 5.0,top: 1,right: 5),
+                          padding: const EdgeInsets.only(left: 5.0, top: 1, right: 5),
                           child: Column(
-                            // spacing: 5,// this is the coloumn
                             children: [
                               ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Stack(
-                                      children: [
-                                        AspectRatio(
-                                          aspectRatio: 1.5,
-                                          // this is the ratio
-                                          child: CachedNetworkImage(
-                                            imageUrl: filterModel.data![index].media!.isNotEmpty
-                                                ? filterModel.data![index].media![0].originalUrl.toString()
-                                                : 'https://via.placeholder.com/300x200?text=No+Image',
-
-
-                                            fit: BoxFit.cover,
-                                            height: 100,
-                                            placeholder: (context, url) => const CircularProgressIndicator(), // Placeholder while loading
-                                            errorWidget: (context, url, error) => const Icon(Icons.error, size: 100), // Error icon if the image fails to load
-                                          ),
-
-                                        ),
-                                        // Positioned(
-                                        //   top: 5,
-                                        //   right: 10,
-                                        //   child: Container(
-                                        //     margin: const EdgeInsets.only(left: 320,top: 10,bottom: 0),
-                                        //     height: 35,
-                                        //     width: 35,
-                                        //     padding: const EdgeInsets.only(top: 0,left: 0,right: 5,bottom: 5),
-                                        //     decoration: BoxDecoration(
-                                        //       borderRadius: BorderRadiusDirectional.circular(20.0),
-                                        //       boxShadow: [
-                                        //         BoxShadow(
-                                        //           color: Colors.grey,
-                                        //           offset: const Offset(
-                                        //             0.3,
-                                        //             0.3,
-                                        //           ),
-                                        //           blurRadius: 0.3,
-                                        //           spreadRadius: 0.3,
-                                        //         ), //BoxShadow
-                                        //         BoxShadow(
-                                        //           color: Colors.white,
-                                        //           offset: const Offset(0.0, 0.0),
-                                        //           blurRadius: 0.0,
-                                        //           spreadRadius: 0.0,
-                                        //         ), //BoxShadow
-                                        //       ],
-                                        //     ),
-                                        //     // child: Positioned(
-                                        //     // child: Icon(Icons.favorite_border,color: Colors.red,),)
-                                        //     child: IconButton(
-                                        //       padding: EdgeInsets.only(left: 5,top: 7),
-                                        //       alignment: Alignment.center,
-                                        //       icon: Icon(
-                                        //         isFavorited ? Icons.favorite : Icons.favorite_border,
-                                        //         color: isFavorited ? Colors.red : Colors.red,
-                                        //       ),
-                                        //       onPressed: () {
-                                        //         setState(() {
-                                        //           property_id=filterModel.data![index].id;
-                                        //           if(token == ''){
-                                        //             Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                                        //           }
-                                        //           else{
-                                        //             toggleFavorite(property_id!);
-                                        //             toggledApi(token,property_id);
-                                        //           }
-                                        //           isFavorited = !isFavorited;
-                                        //         });
-                                        //       },
-                                        //     ),
-                                        //     //)
-                                        //   ),
-                                        // ),
-                                      ]
-                                  )
+                                borderRadius: BorderRadius.circular(12),
+                                child: Stack(children: [
+                                  AspectRatio(
+                                    aspectRatio: 1.5,
+                                    child: CachedNetworkImage(
+                                      imageUrl: filterModel.data![index].media!
+                                          .isNotEmpty
+                                          ? filterModel.data![index].media![0]
+                                          .originalUrl
+                                          .toString()
+                                          : 'https://via.placeholder.com/300x200?text=No+Image',
+                                      fit: BoxFit.cover,
+                                      height: 100,
+                                      placeholder: (context, url) =>
+                                      const CircularProgressIndicator(),
+                                      errorWidget: (context, url, error) =>
+                                      const Icon(Icons.error, size: 100),
+                                    ),
+                                  ),
+                                ]),
                               ),
-
                               Padding(
                                 padding: const EdgeInsets.only(top: 5),
                                 child: ListTile(
-                                  title: Text(filterModel.data![index].title.toString(),
-                                    style: TextStyle(
-                                        fontSize: 16,height: 1.4
-                                    ),),
+                                  title: Text(
+                                    filterModel.data![index].title.toString(),
+                                    style: TextStyle(fontSize: 16, height: 1.4),
+                                  ),
                                   subtitle: Padding(
                                     padding: const EdgeInsets.only(top: 8.0),
-                                    child: Text('${filterModel.data![index].price} AED',
+                                    child: Text(
+                                      '${filterModel.data![index].price} AED',
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
-                                      ),),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 22,
+                                          height: 1.4),
+                                    ),
                                   ),
                                 ),
                               ),
                               Row(
                                 children: [
-                                  Padding(padding: const EdgeInsets.only(left: 10,right: 5,top: 0),
-                                    child:  Image.asset("assets/images/map.png",height: 14,),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 10, right: 5, top: 0),
+                                    child:
+                                    Image.asset("assets/images/map.png", height: 14),
                                   ),
-                                  Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                    child: Text(filterModel.data![index].location.toString(),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 0, right: 0, top: 0),
+                                    child: Text(
+                                      filterModel.data![index].location.toString(),
                                       style: TextStyle(
-                                          fontSize: 13,height: 1.4,
-                                          overflow: TextOverflow.visible
-                                      ),),
+                                          fontSize: 13,
+                                          height: 1.4,
+                                          overflow: TextOverflow.visible),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -1824,7 +1857,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                     SizedBox(width: 5),
                                     Text(filterModel.data![index].bathrooms.toString()),
                                     SizedBox(width: 10),
-                                    Image.asset("assets/images/messure.png", height: 13),
+                                    Image.asset("assets/images/messure.png",
+                                        height: 13),
                                     SizedBox(width: 5),
                                     Text(filterModel.data![index].squareFeet.toString()),
                                   ],
@@ -1836,7 +1870,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                   Expanded(
                                     child: ElevatedButton.icon(
                                       onPressed: () async {
-                                        String phone = 'tel:${filterModel.data![index].phoneNumber}';
+                                        String phone =
+                                            'tel:${filterModel.data![index].phoneNumber}';
                                         try {
                                           final bool launched = await launchUrlString(
                                             phone,
@@ -1848,12 +1883,15 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                         }
                                       },
                                       icon: const Icon(Icons.call, color: Colors.red),
-                                      label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                      label: const Text("Call",
+                                          style: TextStyle(color: Colors.black)),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.grey[100],
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10)),
                                         elevation: 2,
-                                        padding: const EdgeInsets.symmetric(vertical: 10),
+                                        padding:
+                                        const EdgeInsets.symmetric(vertical: 10),
                                       ),
                                     ),
                                   ),
@@ -1862,11 +1900,14 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                     child: ElevatedButton.icon(
                                       onPressed: () async {
                                         final phone = filterModel.data![index].whatsapp;
-                                        final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+                                        final url = Uri.parse(
+                                            "https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
                                         if (await canLaunchUrl(url)) {
                                           try {
-                                            final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
-                                            if (!launched) print("❌ Could not launch WhatsApp");
+                                            final launched = await launchUrl(url,
+                                                mode: LaunchMode.externalApplication);
+                                            if (!launched)
+                                              print("❌ Could not launch WhatsApp");
                                           } catch (e) {
                                             print("❌ Exception: $e");
                                           }
@@ -1874,13 +1915,17 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                           print("❌ WhatsApp not available");
                                         }
                                       },
-                                      icon: Image.asset("assets/images/whats.png", height: 20),
-                                      label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                      icon: Image.asset("assets/images/whats.png",
+                                          height: 20),
+                                      label: const Text("WhatsApp",
+                                          style: TextStyle(color: Colors.black)),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.grey[100],
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10)),
                                         elevation: 2,
-                                        padding: const EdgeInsets.symmetric(vertical: 10),
+                                        padding:
+                                        const EdgeInsets.symmetric(vertical: 10),
                                       ),
                                     ),
                                   ),
@@ -1894,9 +1939,9 @@ class _FliterListDemoState extends State<FliterListDemo> {
                       ),
                     ),
                   );
-                  // return ProductCard(product: products[index]);
                 },
-              ),
+              )
+
             ]),
       ),
     );
@@ -1931,7 +1976,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
               onPressed: () {
                 setState(() {
                   if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   } else {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   }

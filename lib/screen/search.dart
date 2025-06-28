@@ -176,7 +176,7 @@ class _SearchState extends State<Search> {
     Data(x: 10000, y: 3000),
   ];*/
   String min_price = '';
-  String max_price = ' ';
+  String max_price = '';
   SearchModel? searchModel;
   ToggleModel? toggleModel;
   int? property_id ;
@@ -336,7 +336,7 @@ class _SearchState extends State<Search> {
 
   PropertyTypeModel? propertyTypeModel;
   int? selectedIndex;
-  String ftype = ' ';
+  String ftype = '';
   final List _ftype = [
     'All', 'Furnished','Semi furnished', 'Unfurnished'
   ];
@@ -344,7 +344,7 @@ class _SearchState extends State<Search> {
     'studio', '1', '2', '3','4','5','6','7','8','9+'
   ];
   int? selectedbedroom;
-  String bedroom = ' ';
+  String bedroom = '';
   final List _bathroom = [
     '1', '2', '3','4','5','6+'
   ];
@@ -384,24 +384,54 @@ class _SearchState extends State<Search> {
   }
   late FilterModel filterModel;
   Future<void> showResult() async {
-    // you can replace your api link with this link
-    final response = await http.get(Uri.parse('https://akarat.com/api/filters?'
-        'search=&amenities=&property_type=$property_type'
-        '&furnished_status=$ftype&bedrooms=$bedroom&min_price=$min_price'
-        '&max_price=$max_price&payment_period=$rent&min_square_feet='
-        '&max_square_feet=&bathrooms=$bathroom&purpose=$purpose'));
-    var data = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      FilterModel feature= FilterModel.fromJson(data);
+    try {
+      // Create base url
+      String baseUrl = 'https://akarat.com/api/filters?';
 
-      setState(() {
-        filterModel = feature ;
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> FliterList(filterModel: filterModel,)));
+      // Create a map for query parameters
+      Map<String, String> params = {
+        'search': '',
+        'amenities': '',
+      };
 
-      });
-    } else {
+      // Add only non-empty filters
+      if (property_type.trim().isNotEmpty) params['property_type'] = property_type.trim();
+      if (ftype.trim().isNotEmpty) params['furnished_status'] = ftype.trim();
+      if (bedroom.trim().isNotEmpty) params['bedrooms'] = bedroom.trim();
+      if (min_price.trim().isNotEmpty) params['min_price'] = min_price.trim();
+      if (max_price.trim().isNotEmpty) params['max_price'] = max_price.trim();
+      if (rent.trim().isNotEmpty) params['payment_period'] = rent.trim();
+      if (bathroom.trim().isNotEmpty) params['bathrooms'] = bathroom.trim();
+      if (purpose.trim().isNotEmpty) params['purpose'] = purpose.trim();
+
+      // Build the full URL with parameters
+      final url = baseUrl + Uri(queryParameters: params).query;
+
+      print("✅ API URL: $url"); // for debugging
+
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final FilterModel feature = FilterModel.fromJson(data);
+
+        setState(() {
+          filterModel = feature;
+        });
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => FliterList(filterModel: filterModel)),
+        );
+      } else {
+        print('❌ Error fetching filters: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Exception during showResult: $e');
     }
   }
+
+
   int pageIndex = 0;
   final pages = [
     const Page1(),
@@ -412,10 +442,10 @@ class _SearchState extends State<Search> {
 
   bool isFavorited = false;
   int? selectedtype;
-  String property_type= ' ';
+  String property_type= '';
   String selectedaction = " ";
-  String bathroom = ' ';
-  String purpose = ' ';
+  String bathroom = '';
+  String purpose = '';
   int? selectedproduct ;
   int? selectedrent ;
   String product='';
@@ -545,53 +575,61 @@ class _SearchState extends State<Search> {
                         ],
                       ),*/
                   //Searchbar
+                  // Responsive universal search bar
                   Padding(
-                    padding: const EdgeInsets.only(top: 10, left: 20, right: 15),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Container(
-                      width: 400,
-                      height: 70,
-                      padding: const EdgeInsets.only(left: 5),
+                      width: double.infinity,
+                      height: 55,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade300, // grey background
-                        borderRadius: BorderRadius.circular(25.0),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            offset: Offset(0.0, 0.0),
-                            blurRadius: 4.0,
-                            spreadRadius: 1.0,
-                          ),
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.8),
-                            offset: Offset(0.0, 0.0),
-                            blurRadius: 2.0,
-                            spreadRadius: 0.0,
+                            color: Colors.grey.withOpacity(0.2),
+                            blurRadius: 6,
+                            offset: Offset(0, 3),
                           ),
                         ],
                       ),
-                      child: Center(
-                        child: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: Icon(Icons.search, color: Colors.grey), // grey icon
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: Text(
-                                "Search (Coming Soon)", // updated text
-                                style: TextStyle(
-                                  color: Colors.black45,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.red.shade200),
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              height: 45,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.search, color: Colors.red),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _searchController,
+                                      decoration: InputDecoration(
+                                        hintText: "Search for a locality, area or city",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 14,
+                                        ),
+                                        border: InputBorder.none,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(Icons.mic, color: Colors.grey.shade600),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
+
 
                   //filter
                   Padding(
@@ -1848,7 +1886,7 @@ class _SearchState extends State<Search> {
             onPressed: () {
               setState(() {
                 if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
                 }
                 else{
                   Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
@@ -1873,7 +1911,7 @@ class _SearchState extends State<Search> {
             onPressed: () {
               setState(() {
                 if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
                 }
                 else{
                   Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));

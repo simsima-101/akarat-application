@@ -162,7 +162,7 @@ class _EmaiLoginState extends State<EmaiLogin> {
                         onTap: () {
                           setState(() => _showClose = false);
                           Navigator.push(context, MaterialPageRoute(
-                            builder: (_) => Profile_Login(),
+                            builder: (_) => My_Account(),
                           ));
                         },
                         child: AnimatedScale(

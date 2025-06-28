@@ -16,14 +16,11 @@ import '../model/language.dart';
 import '../model/nationality.dart';
 import '../utils/shared_preference_manager.dart';
 
-void main(){
-  runApp(const FindAgent());
-
+void main() {
+  runApp(MyApp());
 }
 
-class FindAgent extends StatelessWidget {
-  const FindAgent({Key ? key}) : super (key: key);
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -32,6 +29,9 @@ class FindAgent extends StatelessWidget {
     );
   }
 }
+
+
+
 class FindAgentDemo extends StatefulWidget {
   @override
   _FindAgentDemoState createState() => _FindAgentDemoState();
@@ -414,7 +414,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
             onPressed: () async {
               setState(() {
                 if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
                 } else {
                   Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
                 }
@@ -558,7 +558,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                buildSearchBarComingSoon(),
+                                // buildSearchBarComingSoon(),
 
                                 const SizedBox(height: 10),
 
@@ -884,7 +884,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                buildSearchBarComingSoon(),
+                                // buildSearchBarComingSoon(),
 
                                 const SizedBox(height: 10),
                                 DropdownButtonFormField<String>(
@@ -998,50 +998,67 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     );
 
   }
-  Widget buildSearchBarComingSoon() {
-    return Container(
-      width: 400,
-      height: 50,
-      padding: const EdgeInsets.only(left: 5),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade300, // grey background
-        borderRadius: BorderRadius.circular(10.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            offset: Offset(0.0, 0.0),
-            blurRadius: 4.0,
-            spreadRadius: 1.0,
-          ),
-          BoxShadow(
-            color: Colors.white.withOpacity(0.8),
-            offset: Offset(0.0, 0.0),
-            blurRadius: 2.0,
-            spreadRadius: 0.0,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 8.0),
-            child: Icon(Icons.search, color: Colors.grey), // grey icon
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              "Search (Coming Soon)",
-              style: TextStyle(
-                color: Colors.black45,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
+
+
+
+  // Widget buildSearchBarComingSoon() {
+  //   // return Container(
+  //   //   // Use full available width (or keep fixed 400 if you prefer)
+  //   //   width: double.infinity,
+  //   //   height: 50,
+  //   //   padding: const EdgeInsets.symmetric(horizontal: 12),
+  //   //   decoration: BoxDecoration(
+  //   //     color: Colors.white,                                // active background
+  //   //     borderRadius: BorderRadius.circular(10.0),
+  //   //     boxShadow: [
+  //   //       BoxShadow(
+  //   //         color: Colors.grey.withOpacity(0.5),
+  //   //         offset: Offset(0, 0),
+  //   //         blurRadius: 4.0,
+  //   //         spreadRadius: 1.0,
+  //   //       ),
+  //   //       BoxShadow(
+  //   //         color: Colors.white.withOpacity(0.8),
+  //   //         offset: Offset(0, 0),
+  //   //         blurRadius: 2.0,
+  //   //         spreadRadius: 0.0,
+  //   //       ),
+  //   //     ],
+  //   //   ),
+  //   //   child: Row(
+  //   //     children: [
+  //   //       const Icon(Icons.search, color: Colors.red),      // active icon color
+  //   //       const SizedBox(width: 8),
+  //   //       Expanded(
+  //   //         child: TextField(
+  //   //           controller: _searchController,
+  //   //           decoration: InputDecoration(
+  //   //             hintText: "Search for a locality, area or city",
+  //   //             hintStyle: TextStyle(
+  //   //               color: Colors.grey.shade600,
+  //   //               fontSize: 13,
+  //   //               fontWeight: FontWeight.w500,
+  //   //             ),
+  //   //             border: InputBorder.none,
+  //   //           ),
+  //   //           onChanged: (value) {
+  //   //             // TODO: your search logic here
+  //   //           },
+  //   //         ),
+  //   //       ),
+  //   //       const SizedBox(width: 8),
+  //   //       GestureDetector(
+  //   //         onTap: () {
+  //   //           // TODO: voice input logic
+  //   //         },
+  //   //
+  //   //       ),
+  //   //     ],
+  //   //   ),
+  //   // );
+  // }
+
 
   Container buildMyNavBar(BuildContext context) {
     return Container(
@@ -1073,7 +1090,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
               onPressed: () {
                 setState(() {
                   if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   } else {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   }

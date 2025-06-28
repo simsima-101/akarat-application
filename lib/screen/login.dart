@@ -167,49 +167,49 @@
               ListView(
                 padding: EdgeInsets.zero,
                 children: [
-                  Stack(
-                    children: [
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 0, right: 16),
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() => showClose = false);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const Profile_Login()),
-                              );
-                            },
-                            child: AnimatedScale(
-                              scale: showClose ? 1.0 : 0.0,
-                              duration: const Duration(milliseconds: 800),
-                              curve: Curves.easeInOut,
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Colors.black12,
-                                      blurRadius: 6,
-                                      offset: Offset(2, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Image.asset(
-                                  "assets/images/close1.png",
-                                  height: 18,
-                                  width: 18,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  // Stack(
+                  //   children: [
+                  //     Align(
+                  //       alignment: Alignment.topRight,
+                  //       child: Padding(
+                  //         padding: const EdgeInsets.only(top: 0, right: 16),
+                  //         child: GestureDetector(
+                  //           onTap: () {
+                  //             setState(() => showClose = false);
+                  //             Navigator.push(
+                  //               context,
+                  //               MaterialPageRoute(builder: (_) => const Profile_Login()),
+                  //             );
+                  //           },
+                  //           child: AnimatedScale(
+                  //             scale: showClose ? 1.0 : 0.0,
+                  //             duration: const Duration(milliseconds: 800),
+                  //             curve: Curves.easeInOut,
+                  //             child: Container(
+                  //               padding: const EdgeInsets.all(10),
+                  //               decoration: BoxDecoration(
+                  //                 color: Colors.white,
+                  //                 shape: BoxShape.circle,
+                  //                 boxShadow: const [
+                  //                   BoxShadow(
+                  //                     color: Colors.black12,
+                  //                     blurRadius: 6,
+                  //                     offset: Offset(2, 2),
+                  //                   ),
+                  //                 ],
+                  //               ),
+                  //               child: Image.asset(
+                  //                 "assets/images/close1.png",
+                  //                 height: 18,
+                  //                 width: 18,
+                  //               ),
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
 
                   const SizedBox(height: 140),
 
@@ -250,49 +250,49 @@
                           const Text("Welcome to Akarat!", style: TextStyle(fontSize: 20)),
                           const SizedBox(height: 15),
 
-                          Container(
-                            width: screenWidth * 0.8,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade300, // grey background
-                              borderRadius: BorderRadius.circular(10.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.3),
-                                  offset: const Offset(2, 2),
-                                  blurRadius: 4,
-                                  spreadRadius: 1,
-                                ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset(
-                                    "assets/images/gi.webp",
-                                    height: 24,
-                                    color: Colors.grey, // tint image grey (optional)
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    "Continue with Google(Coming Soon)", // mark disabled
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey.shade700,
-                                      fontSize: 8
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          // Container(
+                          //   width: screenWidth * 0.8,
+                          //   height: 50,
+                          //   decoration: BoxDecoration(
+                          //     color: Colors.grey.shade300, // grey background
+                          //     borderRadius: BorderRadius.circular(10.0),
+                          //     boxShadow: [
+                          //       BoxShadow(
+                          //         color: Colors.grey.withOpacity(0.3),
+                          //         offset: const Offset(2, 2),
+                          //         blurRadius: 4,
+                          //         spreadRadius: 1,
+                          //       ),
+                          //     ],
+                          //   ),
+                          //   child: Padding(
+                          //     padding: const EdgeInsets.symmetric(horizontal: 16),
+                          //     child: Row(
+                          //       mainAxisAlignment: MainAxisAlignment.center,
+                          //       children: [
+                          //         Image.asset(
+                          //           "assets/images/gi.webp",
+                          //           height: 24,
+                          //           color: Colors.grey, // tint image grey (optional)
+                          //         ),
+                          //         const SizedBox(width: 10),
+                          //         Text(
+                          //           "Continue with Google(Coming Soon)", // mark disabled
+                          //           style: TextStyle(
+                          //             fontWeight: FontWeight.bold,
+                          //             color: Colors.grey.shade700,
+                          //             fontSize: 8
+                          //           ),
+                          //         ),
+                          //       ],
+                          //     ),
+                          //   ),
+                          // ),
 
 
-                          const SizedBox(height: 10),
-                          const Text("or", style: TextStyle(color: Colors.grey)),
-                          const SizedBox(height: 10),
+                          // const SizedBox(height: 10),
+                          // const Text("or", style: TextStyle(color: Colors.grey)),
+                          // const SizedBox(height: 10),
 
                           Container(
                             width: screenWidth * 0.8,
@@ -442,24 +442,24 @@
                         BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(2, 2)),
                       ],
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            errorMessage!,
-                            style: const TextStyle(color: Colors.white, fontSize: 14),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white),
-                          onPressed: () {
-                            setState(() {
-                              errorMessage = null;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
+                    // child: Row(
+                    //   children: [
+                    //     Expanded(
+                    //       child: Text(
+                    //         errorMessage!,
+                    //         style: const TextStyle(color: Colors.white, fontSize: 14),
+                    //       ),
+                    //     ),
+                    //     IconButton(
+                    //       icon: const Icon(Icons.close, color: Colors.white),
+                    //       onPressed: () {
+                    //         setState(() {
+                    //           errorMessage = null;
+                    //         });
+                    //       },
+                    //     ),
+                    //   ],
+                    // ),
                   ),
                 ),
             ],

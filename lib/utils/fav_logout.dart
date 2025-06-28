@@ -1,480 +1,263 @@
-import 'package:Akarat/screen/profile_login.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+import 'package:Akarat/model/propertymodel.dart';
+import 'package:Akarat/secure_storage.dart';
+import 'package:Akarat/screen/product_detail.dart';
 
-import '../screen/home.dart';
-import '../screen/login.dart';
-import '../screen/login_page.dart';
 
 class Fav_Logout extends StatefulWidget {
-  Fav_Logout({super.key,});
+  const Fav_Logout({super.key});
 
   @override
-  State<Fav_Logout> createState() => new _Fav_LogoutState();
+  State<Fav_Logout> createState() => _Fav_LogoutState();
 }
+
 class _Fav_LogoutState extends State<Fav_Logout> {
-  int pageIndex = 0;
+  List<Property> savedProperties = [];
+  bool isLoading = true;
+  String? token;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSavedProperties();
+  }
+
+  Future<void> _fetchSavedProperties() async {
+    token = await SecureStorage.getToken();
+    if (token == null) return;
+    setState(() => isLoading = true);
+
+    final response = await http.get(
+      Uri.parse('https://akarat.com/api/saved-property-list'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final List<Property> props = (data['data']['data'] as List)
+          .map((e) => Property.fromJson(e))
+          .toList();
+      setState(() => savedProperties = props);
+    }
+    setState(() => isLoading = false);
+  }
+
+  Future<bool> _urlExists(String url) async {
+    try {
+      final resp = await http.head(Uri.parse(url));
+      return resp.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<String> resolveImageUrl(String? rawUrl) async {
+    if (rawUrl == null || rawUrl.isEmpty) {
+      return 'https://via.placeholder.com/400x300.png?text=No+Image';
+    }
+
+    if (await _urlExists(rawUrl)) return rawUrl;
+
+    if (!rawUrl.startsWith('http')) {
+      final full = 'https://akarat.com/$rawUrl';
+      if (await _urlExists(full)) return full;
+    }
+
+    return 'https://via.placeholder.com/400x300.png?text=No+Image';
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text("Favorites", style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
-        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
-        body: DefaultTabController(
-          length: 2,
-          child:  SingleChildScrollView(
-              child: Column(
-                  children: <Widget>[
-                    Container(
-                      height: screenSize.height*0.1,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadiusDirectional.circular(2.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: const Offset(
-                              0.3,
-                              0.3,
-                            ),
-                            blurRadius: 0.3,
-                            spreadRadius: 0.3,
-                          ), //BoxShadow
-                          BoxShadow(
-                            color: Colors.white,
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ), //BoxShadow
-                        ],),
-                      child:  Stack(
-                        // alignment: Alignment.topCenter,
-                        children: <Widget>[
-                          Padding(
-                            padding: EdgeInsets.only(top: 25),
-                            child: Container(
-                              height: screenSize.height*0.07,
-                              width: double.infinity,
-                              // color: Color(0xFFEEEEEE),
-                              child:   Row(
-                                children: [GestureDetector(
-                                  onTap: (){
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
-                                  },
-                                  child:   Container(
-                                    margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
-                                    height: 35,
-                                    width: 35,
-                                    padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadiusDirectional.circular(20.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          offset: const Offset(
-                                            0.3,
-                                            0.3,
-                                          ),
-                                          blurRadius: 0.3,
-                                          spreadRadius: 0.3,
-                                        ), //BoxShadow
-                                        BoxShadow(
-                                          color: Colors.white,
-                                          offset: const Offset(0.0, 0.0),
-                                          blurRadius: 0.0,
-                                          spreadRadius: 0.0,
-                                        ), //BoxShadow
-                                      ],
-                                    ),
-                                    child: Image.asset("assets/images/ar-left.png",
-                                      width: 15,
-                                      height: 15,
-                                      fit: BoxFit.contain,),
-                                  ),
-                                ),
-                                  SizedBox(
-                                    width: screenSize.width*0.28,
-                                  ),
-                                  Padding(padding: const EdgeInsets.all(8.0),
-                                    // child: Text(widget.token,style: TextStyle(
-                                    child: Text("Saved",style: TextStyle(
-                                        fontWeight: FontWeight.bold,fontSize: 20
-                                    ),),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.all(15.0),
-                      height: screenSize.height*0.06,
-                      width: screenSize.width*0.9,
-                      // color: Colors.grey,
-                      child:  TabBar(
-                        padding:  EdgeInsets.only(top: 0,left: 10,right: 0),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 0,),
-                        splashFactory: NoSplash.splashFactory,
-                        indicatorWeight: 1.0,
-                        labelColor: Colors.lightBlueAccent,
-                        dividerColor: Colors.transparent,
-                        indicatorColor: Colors.transparent,
-                        tabAlignment: TabAlignment.center,
-                        // onTap: (int index) => setState(() =>  screens[about_tb()]),
-                        tabs: [
-                          Container(
-                            margin: const EdgeInsets.only(left: 0),
-                            width: screenSize.width*0.41,
-                            height: screenSize.height*0.045,
-                            padding: const EdgeInsets.only(top: 10,),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: Offset(4, 4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: Offset(-4, -4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text('Favorites',textAlign: TextAlign.center,style: TextStyle(
-                                fontWeight: FontWeight.bold,fontSize: 15
-                            ),
-                            ),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.only(left: 10),
-                            width: screenSize.width*0.41,
-                            height: screenSize.height*0.045,
-                            padding: const EdgeInsets.only(top: 10,),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: Offset(4, 4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: Offset(-4, -4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text('Searches',textAlign: TextAlign.center,style: TextStyle(
-                                fontWeight: FontWeight.bold,fontSize: 15
-                            ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                        height: screenSize.height*0.8,
-                        child: TabBarView(
-                            children: [
-                              Container(
-                                //color: Colors.grey,
-                                  margin: const EdgeInsets.only(left: 20,right: 15,top: 10),
-                                  height: screenSize.height*0.2,
-                                  child:  Column(
-                                    children: [
-                                      Container(
-                                        margin: const EdgeInsets.all(8.0),
-                                        height: screenSize.height*0.03,
-                                        width: screenSize.width*0.9,
-                                        //color: Colors.white,
-                                        child: Text("Want to keep track of all your searches?",textAlign: TextAlign.center
-                                          ,style: TextStyle(
-                                              fontSize: 16,fontWeight: FontWeight.bold,letterSpacing: 0.5
-                                          ),),
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.all(0.0),
-                                        height: screenSize.height*0.03,
-                                        width: screenSize.width*0.9,
-                                        //color: Colors.white,
-                                        child: Text("Save your searches at one place by signing up",textAlign: TextAlign.center
-                                          ,style: TextStyle(
-                                              fontSize: 13,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                                          ),),
-                                      ),
-                                      Container(
-                                        width: screenSize.width*0.9,
-                                        height: screenSize.height*0.08,
-                                        child: Padding(padding: const EdgeInsets.only(top: 20,left: 10,right: 20),
-                                          child: ElevatedButton(
-                                              onPressed: (){
-                                                Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginPage()));
-                                              },style:
-                                          ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.blue,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:  BorderRadius.all(
-                                                  Radius.circular(8)),),),
-                                              child: Text("Sign Up",
-                                                style: TextStyle(color: Colors.white,
-                                                    fontSize: 15),)),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 15.0, right: 15.0, top: 10, bottom: 0),
-                                        child:  Text("or",style: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 17,
-                                        ),textAlign: TextAlign.center,),
-                                      ),
-                                      //google button
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 15.0, right: 20.0, top: 10, bottom: 0),
-                                        child: Container(
-                                          width: screenSize.width * 0.9,
-                                          height: 50,
-                                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey.shade300, // grey background for disabled look
-                                            borderRadius: BorderRadius.circular(10.0),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey.withOpacity(0.3),
-                                                offset: const Offset(2, 2),
-                                                blurRadius: 4,
-                                                spreadRadius: 1,
-                                              ),
-                                            ],
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.center, // center the content
-                                            children: [
-                                              Image.asset(
-                                                "assets/images/gi.webp",
-                                                height: 25,
-                                                alignment: Alignment.center,
-                                                color: Colors.grey, // optional: tint the image to grey
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                "Continue with Google (Coming Soon)", // mark as disabled
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.grey.shade700,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-
-                                      ),
-                                      //facebook button
-                                      /*  Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 15.0, right: 20.0, top: 15, bottom: 0),
-                                        child: Container(
-                                          width: screenSize.width*0.9,
-                                          height: 50,
-                                          padding: const EdgeInsets.only(top: 5),
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadiusDirectional.circular(10.0),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey,
-                                                offset: const Offset(
-                                                  0.3,
-                                                  0.3,
-                                                ),
-                                                blurRadius: 0.3,
-                                                spreadRadius: 0.3,
-                                              ), //BoxShadow
-                                              BoxShadow(
-                                                color: Colors.white,
-                                                offset: const Offset(0.0, 0.0),
-                                                blurRadius: 0.0,
-                                                spreadRadius: 0.0,
-                                              ), //BoxShadow
-                                            ],
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Padding(padding: const EdgeInsets.only(left: 60,top: 0),
-                                                child:  Image.asset("assets/images/blog.png",height: 20,
-                                                  alignment: Alignment.center,) ,
-                                              ),
-                                              Padding(padding: const EdgeInsets.only(left: 5,top: 0),
-                                                child:  Text("Continue with Facebook",style: TextStyle(fontWeight: FontWeight.bold),) ,
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),*/
-                                      SizedBox(
-                                        height: screenSize.height*0.33,
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.all(8.0),
-                                        height: screenSize.height*0.04,
-                                        width: screenSize.width*0.8,
-                                        //color: Colors.white,
-                                        alignment: Alignment.bottomCenter,
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Text("Have an Account?",style: TextStyle(
-                                                fontSize: 15,letterSpacing: 0.5
-                                            ),),
-                                            GestureDetector(
-                                              onTap: ()async{
-                                                Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
-                                              },
-                                              child: Text("Log in",style: TextStyle(
-                                                  fontSize: 15,letterSpacing: 0.5,fontWeight: FontWeight.bold
-                                              ),),
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                    ],
-                                  )
-                              ),
-                              Container(
-                                height: screenSize.height*0.5,
-                                // color: Colors.grey,
-                                margin: const EdgeInsets.only(left: 15,right: 15,top: 20),
-                                child:  Column(
-                                  children: [
-                                    SizedBox(
-                                      height: screenSize.height*0.1,
-                                    ),
-                                    Container(
-
-                                      margin: const EdgeInsets.all(8.0),
-                                      height: screenSize.height*0.13,
-                                      width: screenSize.width*0.4,
-                                      // color: Colors.grey,
-                                      child: Image.asset("assets/images/no-property-search.png"),
-                                    ),
-                                    Container(
-                                      margin: const EdgeInsets.all(8.0),
-                                      height: screenSize.height*0.03,
-                                      width: screenSize.width*0.9,
-                                      color: Colors.white,
-                                      child: Text("Save your favourite properties now!",textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,fontSize: 20,color: Colors.blue
-                                        ),),
-                                    ),
-                                    Container(
-                                      margin: const EdgeInsets.all(8.0),
-                                      height: screenSize.height*0.1,
-                                      width: screenSize.width*0.9,
-                                      color: Colors.white,
-                                      child: Text("It looks like you haven’t added any favourite properties "
-                                          " just yet. You can add a property listing to your favourites by tapping "
-                                          "the icon at the top right corner of property details",textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            letterSpacing: 0.5,fontSize: 15
-                                        ),),
-                                    ),
-                                    SizedBox(
-                                      height: screenSize.height*0.13,
-                                    ),
-                                    Container(
-                                      width: screenSize.width * 0.9,
-                                      height: screenSize.height * 0.1,
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(top: 40, left: 10, right: 10),
-                                        child: ElevatedButton(
-                                          onPressed: null, // disabled button (Play Store safe)
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.grey.shade400, // grey disabled look
-                                            disabledBackgroundColor: Colors.grey.shade400, // ensure disabled color
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.all(Radius.circular(8)),
-                                            ),
-                                          ),
-                                          child: Text(
-                                            "Start a New Search (Coming Soon)",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-
-                                  ],
-                                ),
-                              ),
-                            ]
-                        )
-                    ),
-                  ]
-              )
-          ),
-
-        )
-
-    );
-  }
-  Container buildMyNavBar(BuildContext context) {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          GestureDetector(
-            onTap: () async {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Image.asset("assets/images/home.png", height: 25),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 20),
-            child: IconButton(
-              enableFeedback: false,
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
-              },
-              icon: pageIndex == 3
-                  ? const Icon(
-                Icons.dehaze,
-                color: Colors.red,
-                size: 35,
-              )
-                  : const Icon(
-                Icons.dehaze_outlined,
-                color: Colors.red,
-                size: 35,
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : savedProperties.isEmpty
+          ? const Center(child: Text("No favorite properties found."))
+          : ListView.builder(
+        itemCount: savedProperties.length,
+        itemBuilder: (context, index) {
+          final item = savedProperties[index];
+
+          print('🏷️ Property ${item.id} using URL → "${item.image}"');
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Card(
+              elevation: 5,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Product_Detail(data: item.id),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 5.0, top: 1, right: 5),
+                  child: Column(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: AspectRatio(
+                          aspectRatio: 1.5,
+                          child: FutureBuilder<String>(
+                            future: resolveImageUrl(item.image),
+                            builder: (ctx, snap) {
+                              if (snap.connectionState == ConnectionState.waiting) {
+                                return const Center(child: CircularProgressIndicator());
+                              }
+                              final url = snap.data!;
+                              return CachedNetworkImage(
+                                imageUrl: url,
+                                fit: BoxFit.cover,
+                                placeholder: (c, u) => const Center(child: CircularProgressIndicator()),
+                                errorWidget: (c, u, e) => const Icon(Icons.broken_image),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+
+
+                      ListTile(
+                        title: Text(item.title, style: const TextStyle(fontSize: 16)),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            "AED ${item.price}",
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                          ),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          const SizedBox(width: 10),
+                          Image.asset("assets/images/map.png", height: 14),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              item.location,
+                              style: const TextStyle(fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Row(
+                          children: [
+                            Image.asset("assets/images/bed.png", height: 13),
+                            const SizedBox(width: 5),
+                            Text(item.bedrooms.toString()),
+                            const SizedBox(width: 10),
+                            Image.asset("assets/images/bath.png", height: 13),
+                            const SizedBox(width: 5),
+                            Text(item.bathrooms.toString()),
+                            const SizedBox(width: 10),
+                            Image.asset("assets/images/messure.png", height: 13),
+                            const SizedBox(width: 5),
+                            Text(item.squareFeet),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final phone = 'tel:${item.phoneNumber}';
+                                await launchUrlString(phone, mode: LaunchMode.externalApplication);
+                              },
+                              icon: const Icon(Icons.call, color: Colors.red),
+                              label: const Text("Call", style: TextStyle(color: Colors.black)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.grey[100],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final link = 'https://wa.me/${item.whatsapp}';
+                                await launchUrlString(link, mode: LaunchMode.externalApplication);
+                              },
+                              icon: Image.asset("assets/images/whats.png", height: 20),
+                              label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.grey[100],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 }
+
+Future<bool> _urlExists(String url) async {
+  try {
+    final resp = await http.head(Uri.parse(url));
+    return resp.statusCode == 200;
+  } catch (_) {
+    return false;
+  }
+}
+
+Future<String> resolveImageUrl(String? rawUrl) async {
+  if (rawUrl == null || rawUrl.isEmpty) {
+    return 'https://via.placeholder.com/400x300.png?text=No+Image';
+  }
+
+  // Prefer rawUrl if it exists
+  if (await _urlExists(rawUrl)) return rawUrl;
+
+  // Fallback: prepend domain if needed
+  if (!rawUrl.startsWith('http')) {
+    final full = 'https://akarat.com/$rawUrl';
+    if (await _urlExists(full)) return full;
+  }
+
+  // As last resort, placeholder
+  return 'https://via.placeholder.com/400x300.png?text=No+Image';
+}
+
+
+
+
+

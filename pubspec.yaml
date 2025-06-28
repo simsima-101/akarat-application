@@ -2,7 +2,12 @@ name: Akarat
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.4+5
+version: 1.0.7+13
+
+
+
+
+
 
 
 environment:
@@ -42,6 +47,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_secure_storage: ^8.0.0
   auto_size_text: ^3.0.0
+  flutter_typeahead: ^4.3.0
+
 
 
 

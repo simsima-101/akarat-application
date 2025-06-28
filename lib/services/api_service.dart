@@ -198,8 +198,16 @@ class ApiService {
       token,
       {"property_id": propertyId},
     );
+
+    print('✅ toggleSavedProperty status: ${response.statusCode}');
+    print('✅ toggleSavedProperty body: ${response.body}');
+
     return response.statusCode == 200;
   }
+
+
+
+
 
   // Get agent list (with pagination)
   static Future<List<dynamic>> getAgents({int page = 1}) async {

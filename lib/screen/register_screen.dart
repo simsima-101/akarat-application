@@ -1,6 +1,8 @@
 import 'package:Akarat/screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:Akarat/services/api_service.dart';
+
+import 'login.dart';
 // import 'package:Akarat/screen/login.dart'; // Uncomment and update as needed
 
 class RegisterScreen extends StatefulWidget {
@@ -270,7 +272,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => LoginPageDemo(),
+                                builder: (_) => LoginDemo(),
                               ),
                             );
                           },

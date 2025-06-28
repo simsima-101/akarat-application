@@ -148,7 +148,7 @@ class MetaLink {
 
   MetaLink.fromJson(Map<String, dynamic> json) {
     url = json['url'];
-    label = json['label'];
+    label = json['label']?.toString();
     active = json['active'];
   }
 }

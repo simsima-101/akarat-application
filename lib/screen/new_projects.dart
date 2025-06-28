@@ -54,6 +54,8 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
   bool isFavorited = false;
 
 
+  final TextEditingController _projectSearchController = TextEditingController();
+
 
 
 
@@ -384,55 +386,64 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                 child: Text("Find off-plan development and everything you need to "
                     "know to invest in UAE's real estate market",style: TextStyle(letterSpacing: 0.5,),),
               ),
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20,left: 20,right: 15),
-                    child: Container(
-                      width: screenSize.width * 0.9,
-                      height: 50,
-                      padding: const EdgeInsets.only(left: 10), // add left padding
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300, // grey background
-                        borderRadius: BorderRadiusDirectional.circular(10.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            offset: const Offset(0.5, 0.5),
-                            blurRadius: 1.0,
-                            spreadRadius: 0.5,
-                          ),
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.8),
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 0.0,
-                            spreadRadius: 0.0,
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.location_on, color: Colors.grey), // grey icon
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              "Search new projects (Coming Soon)",
-                              style: TextStyle(
-                                color: Colors.black45,
-                                fontSize: 15,
-                                letterSpacing: 0.5,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
 
-                  ),
-                ],
-              ),
-              Row(
+
+    // Row(
+    // children: [
+    // Padding(
+    // padding: const EdgeInsets.only(top: 20, left: 20, right: 15),
+    // child: Container(
+    // width: screenSize.width * 0.9,
+    // height: 50,
+    // padding: const EdgeInsets.symmetric(horizontal: 12),
+    // decoration: BoxDecoration(
+    // color: Colors.white,                              // active background
+    // borderRadius: BorderRadius.circular(10.0),
+    // boxShadow: [
+    // BoxShadow(
+    // color: Colors.grey.withOpacity(0.5),
+    // offset: const Offset(0.5, 0.5),
+    // blurRadius: 1.0,
+    // spreadRadius: 0.5,
+    // ),
+    // BoxShadow(
+    // color: Colors.white.withOpacity(0.8),
+    // offset: const Offset(0, 0),
+    // blurRadius: 0,
+    // spreadRadius: 0,
+    // ),
+    // ],
+    // ),
+    // child: Row(
+    // children: [
+    // Icon(Icons.location_on, color: Colors.red),      // active icon color
+    // const SizedBox(width: 8),
+    // Expanded(
+    // child: TextField(
+    // controller: _projectSearchController,
+    // decoration: InputDecoration(
+    // hintText: "Search new projects",
+    // hintStyle: TextStyle(
+    // color: Colors.grey.shade600,
+    // fontSize: 15,
+    // letterSpacing: 0.5,
+    // fontWeight: FontWeight.w500,
+    // ),
+    // border: InputBorder.none,
+    // ),
+    // onChanged: (value) {
+    // // TODO: your filter/search logic here
+    // },
+    // ),
+    // ),
+    // ],
+    // ),
+    // ),
+    // ),
+    // ],
+    // ),
+
+    Row(
                 children: [
                   Padding(padding: const EdgeInsets.only(top: 20,left: 20,right: 0),
                     child: Text("Latest Projects in Dubai",textAlign: TextAlign.left,
@@ -843,7 +854,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
             onPressed: () {
               setState(() {
                 if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Profile_Login()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
                 }
                 else{
                   Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));

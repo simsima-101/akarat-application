@@ -1,37 +1,159 @@
-  class Property {
-    final String id;
-    final String title;
-    final String description;
-    final String image;
-    final String price;
+import 'projectmodel.dart' as projectDetail;
+import 'productmodel.dart' as productModel;
+import 'searchmodel.dart' as search;
 
-    Property({
-      required this.id,
-      required this.title,
-      required this.description,
-      required this.image,
-      required this.price,
-    });
 
-    factory Property.fromData(Data data) {
-      return Property(
-        id: data.id?.toString() ?? '',
-        title: data.title ?? '',
-        description: data.description ?? '',
-        image: data.media != null && data.media!.isNotEmpty
-            ? data.media!.first.originalUrl ?? ''
-            : '',
-        price: data.price ?? '',
-      );
-    }
+String getFullImageUrl(String? url) {
+  if (url == null || url.isEmpty) {
+    return 'https://via.placeholder.com/400x300.png?text=No+Image';
   }
 
+  if (url.startsWith('http')) {
+    return url;
+  }
+
+  return 'https://akarat.com/$url';
+}
 
 
 
 
+class Property {
+  final String id;
+  final String title;
+  final String description;
+  final String image;
+  final String price;
+  final String location;
+  final List<Media>? media;
+  final int bedrooms;
+  final int bathrooms;
+  final String squareFeet;
+  final String? phoneNumber;
+  final String? whatsapp;
 
-class ProjectDetailModel {
+  Property({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.image,
+    required this.price,
+    required this.location,
+    required this.media,
+    required this.bedrooms,
+    required this.bathrooms,
+    required this.squareFeet,
+    required this.phoneNumber,
+    required this.whatsapp,
+  });
+
+  // 🔧 1️⃣ For project detail data
+  factory Property.fromProjectDetail(projectDetail.Data data) {
+    return Property(
+      id: data.id?.toString() ?? '',
+      title: data.title ?? '',
+      description: data.description ?? '',
+      image: getFullImageUrl(
+          (data.media != null && data.media!.isNotEmpty)
+              ? data.media!.first.originalUrl
+              : null
+      ),
+
+      price: data.price ?? '',
+      location: data.location ?? '',
+      media: data.media?.map((m) => Media(originalUrl: m.originalUrl)).toList(),
+      bedrooms: data.bedrooms ?? 0,
+      bathrooms: data.bathrooms ?? 0,
+      squareFeet: data.squareFeet ?? '',
+      phoneNumber: data.phoneNumber ?? '',
+      whatsapp: data.whatsapp ?? '',
+    );
+  }
+
+  // 🔧 2️⃣ For product detail data
+  factory Property.fromProductModel(productModel.Data data) {
+    return Property(
+      id: data.id?.toString() ?? '',
+      title: data.title ?? '',
+      description: data.description ?? '',
+      image: (data.media != null && data.media!.isNotEmpty &&
+          data.media!.first.originalUrl != null &&
+          data.media!.first.originalUrl!.isNotEmpty)
+          ? data.media!.first.originalUrl!
+          : 'https://akarat.com/default-image.jpg',
+      price: data.price ?? '',
+      location: data.location ?? '',
+      media: data.media?.map((m) => Media(originalUrl: m.originalUrl)).toList(),
+      bedrooms: data.bedrooms ?? 0,
+      bathrooms: data.bathrooms ?? 0,
+      squareFeet: data.squareFeet ?? '',
+      phoneNumber: data.phoneNumber ?? '',
+      whatsapp: data.whatsapp ?? '',
+    );
+  }
+
+  // 🔧 3️⃣ For search model data
+  factory Property.fromSearchModel(search.Data data) {
+    return Property(
+      id: data.id?.toString() ?? '',
+      title: data.title ?? '',
+      description: '',
+      image: data.image != null && data.image!.isNotEmpty
+          ? data.image!
+          : 'https://akarat.com/default-image.jpg',
+      price: data.price ?? '',
+      location: data.location ?? data.address ?? '',
+      media: [],
+      bedrooms: data.bedrooms ?? 0,
+      bathrooms: data.bathrooms ?? 0,
+      squareFeet: data.squareFeet ?? '',
+      phoneNumber: data.phone ?? '',
+      whatsapp: data.whatsapp ?? '',
+    );
+  }
+
+  factory Property.fromJson(Map<String, dynamic> json) {
+    String? rawImage;
+    final mediaField = json['media'];
+
+    if (mediaField is List && mediaField.isNotEmpty) {
+      final orig = mediaField[0]['original_url']?.toString();
+      if (orig != null && orig.isNotEmpty) {
+        rawImage = orig; // ✅ Prefer original
+      }
+    }
+
+    rawImage ??= json['image']?.toString(); // fallback if media is not available
+
+
+
+    final fullImageUrl = getFullImageUrl(rawImage);
+
+    int parseInt(dynamic val) {
+      if (val is int) return val;
+      return int.tryParse(val?.toString() ?? '') ?? 0;
+    }
+
+    return Property(
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      image: fullImageUrl,
+      price: json['price']?.toString() ?? '',
+      location: json['location']?.toString() ?? '',
+      media: mediaField is List
+          ? mediaField.map((m) => Media.fromJson(m)).toList()
+          : [],
+      bedrooms: parseInt(json['bedrooms']),
+      bathrooms: parseInt(json['bathrooms']),
+      squareFeet: json['square_feet']?.toString() ?? '',
+      phoneNumber: json['phone_number']?.toString(),
+      whatsapp: json['whatsapp']?.toString(),
+    );
+  }
+}
+
+  class ProjectDetailModel {
   Data? data;
 
   ProjectDetailModel({this.data});
@@ -73,31 +195,38 @@ class Data {
   String? constructionStarted;
   String? expectedCompletion;
   List<Media>? media;
+  String? location;
+  String? squareFeet;
+  bool? saved;
 
-  Data(
-      {this.id,
-        this.title,
-        this.price,
-        this.phoneNumber,
-        this.whatsapp,
-        this.description,
-        this.paymentPeriod,
-        this.bedrooms,
-        this.bathrooms,
-        this.propertyType,
-        this.agent,
-        this.agentId,
-        this.agentImage,
-        this.deliveryDate,
-        this.paymentPlan,
-        this.governmentFee,
-        this.downPayment,
-        this.duringConstruction,
-        this.onHandover,
-        this.projectAnnouncement,
-        this.constructionStarted,
-        this.expectedCompletion,
-        this.media});
+  Data({
+    this.id,
+    this.title,
+    this.price,
+    this.phoneNumber,
+    this.whatsapp,
+    this.description,
+    this.paymentPeriod,
+    this.bedrooms,
+    this.bathrooms,
+    this.propertyType,
+    this.agent,
+    this.agentId,
+    this.agentImage,
+    this.deliveryDate,
+    this.paymentPlan,
+    this.governmentFee,
+    this.downPayment,
+    this.duringConstruction,
+    this.onHandover,
+    this.projectAnnouncement,
+    this.constructionStarted,
+    this.expectedCompletion,
+    this.media,
+    this.location,
+    this.squareFeet,
+    this.saved,
+  });
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -122,6 +251,9 @@ class Data {
     projectAnnouncement = json['project_announcement'];
     constructionStarted = json['construction_started'];
     expectedCompletion = json['expected_completion'];
+    location = json['location'];
+    squareFeet = json['square_feet'];
+    saved = json['saved'];
     if (json['media'] != null) {
       media = <Media>[];
       json['media'].forEach((v) {
@@ -154,6 +286,8 @@ class Data {
     data['project_announcement'] = this.projectAnnouncement;
     data['construction_started'] = this.constructionStarted;
     data['expected_completion'] = this.expectedCompletion;
+    data['location'] = this.location;
+    data['square_feet'] = this.squareFeet;
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
     }
@@ -171,8 +305,17 @@ class Media {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = {};
     data['original_url'] = this.originalUrl;
     return data;
   }
+}
+
+
+String sanitizeImageUrl(String? url) {
+  if (url == null || url.isEmpty) {
+    return 'https://via.placeholder.com/400x300.png?text=No+Image';
+  }
+
+  return url; // Just return the URL as-is (even if it's a .webp or thumbnail)
 }

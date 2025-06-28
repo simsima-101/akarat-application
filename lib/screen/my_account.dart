@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:Akarat/screen/about_us.dart';
 import 'package:Akarat/screen/advertising.dart';
 import 'package:Akarat/screen/blog.dart';
@@ -8,6 +7,7 @@ import 'package:Akarat/screen/findagent.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/privacy.dart';
 import 'package:Akarat/screen/profile_login.dart';
+import 'package:Akarat/screen/register_screen.dart';
 import 'package:Akarat/screen/settingstile.dart';
 import 'package:Akarat/screen/support.dart';
 import 'package:Akarat/screen/terms_condition.dart';
@@ -15,27 +15,23 @@ import 'package:Akarat/utils/fav_login.dart';
 import 'package:Akarat/utils/fav_logout.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import '../model/agencypropertiesmodel.dart';
 import '../secure_storage.dart';
 import '../services/api_service.dart';
 import '../utils/shared_preference_manager.dart';
 import 'favorite.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'login.dart';
 import 'login_page.dart';
 
-
-
-
 class My_Account extends StatefulWidget {
-  My_Account({super.key,}) ;
-  // LoginModel arguments;
+  My_Account({super.key});
 
-
-  // RegisterModel arguments;
   @override
   State<My_Account> createState() => _My_AccountState();
 }
+
 class _My_AccountState extends State<My_Account> {
   int pageIndex = 0;
   String token = '';
@@ -43,7 +39,6 @@ class _My_AccountState extends State<My_Account> {
   String result = '';
   bool isDataRead = false;
   bool isDataSaved = true;
-  // Create an object of SharedPreferencesManager class
   final SharedPreferencesManager prefManager = SharedPreferencesManager();
 
   Future<void> saveToken(String token) async {
@@ -51,19 +46,16 @@ class _My_AccountState extends State<My_Account> {
     await prefs.setString('token', token);
   }
 
-  // ✅ Get token
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
 
-  // Optional: Clear token
   Future<void> clearToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
   }
 
-  // Method to read data from shared preferences
   void readData() async {
     token = await prefManager.readStringFromPref() ?? '';
     email = await prefManager.readStringFromPrefemail() ?? '';
@@ -78,6 +70,7 @@ class _My_AccountState extends State<My_Account> {
     readData();
     super.initState();
   }
+
   Future<List<Property>> fetchSavedProperties() async {
     try {
       final response = await http.get(
@@ -90,224 +83,134 @@ class _My_AccountState extends State<My_Account> {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseJson = json.decode(response.body);
-
-        // ✅ Safely navigate to responseJson['data']['data']
         final List<dynamic> propertiesJsonList = responseJson['data']?['data'] ?? [];
-
         print('Fetched ${propertiesJsonList.length} properties');
-
-        // ✅ Map the list to your Property model
         List<Property> properties = propertiesJsonList
             .map((item) => Property.fromJson(item))
             .toList();
-
         return properties;
       } else {
         throw Exception('Failed to fetch properties: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching saved properties: $e');
-      return []; // ✅ Return empty list instead of rethrowing to avoid crash
+      return [];
     }
   }
 
+  // New method for account deletion
+  Future<void> deleteAccount() async {
+    try {
+      String? token = await SecureStorage.getToken();
+      if (token == null) {
+        throw Exception("No token found.");
+      }
 
+      final response = await http.delete(
+        Uri.parse('https://akarat.com/api/delete'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
 
-
-
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        await SecureStorage.deleteToken();
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => RegisterScreen()),
+              (route) => false,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Account deleted successfully")),
+        );
+      } else {
+        throw Exception("Failed to delete account: ${response.statusCode}");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Account deletion failed: $e")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
-        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
-        backgroundColor: Colors.white,
-        body: SingleChildScrollView(
-            child: Column(
-                children: <Widget>[
-                  const SizedBox(height: 35,),
-                  Container(
-                    height: screenSize.height*0.22,
-                    // color: Colors.grey,
-                    color: Color(0xFFF5F5F5),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(left: 30, top: 8, bottom: 0),
-                              height: screenSize.height * 0.11,
-                              width: screenSize.width * 0.25,
-                              padding: const EdgeInsets.all(0),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade300, // grey background for Play Store safe
-                                borderRadius: BorderRadius.circular(60.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey,
-                                    offset: const Offset(0.0, 0.0),
-                                    blurRadius: 0.1,
-                                    spreadRadius: 0.1,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white,
-                                    offset: const Offset(0.0, 0.0),
-                                    blurRadius: 0.0,
-                                    spreadRadius: 0.0,
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset(
-                                    "assets/images/avatar.png",
-                                    fit: BoxFit.cover,
-                                    height: screenSize.height * 0.06,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  const Text(
-                                    "Coming Soon",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.black54,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+      bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            const SizedBox(height: 200),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => FindAgentDemo()));
+                  }),
+                  _settingsTile("Favorites", "assets/images/favourites.png", () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Favorite()));
+                  }),
+                  _settingsTile("About Us", "assets/images/about.png", () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => About_Us()));
+                  }),
+                  // _settingsTile("Advertising", "assets/images/advertise.png", () {
+                  //   Navigator.push(context, MaterialPageRoute(builder: (context) => Advertising()));
+                  // }),
+                  _settingsTile("Support", "assets/images/support.png", () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Support()));
+                  }),
+                  _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Privacy()));
+                  }),
+                  _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => TermsCondition()));
+                  }),
+                  _settingsTile("Logout", "", () {
+                    SecureStorage.deleteToken();
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => RegisterScreen()),
+                          (route) => false,
+                    );
+                  }),
+                  _settingsTile("Delete your Account", "", () async {
+                    // Show confirmation dialog before deleting
+                    bool? confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text("Delete Account"),
+                        content: Text("Are you sure you want to delete your account? This action cannot be undone."),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: Text("Cancel"),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: Text("Delete", style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    );
 
-                            Container(
-                                margin: const EdgeInsets.only(left: 15,top: 5),
-                                height: screenSize.height*0.13,
-                                width: screenSize.width*0.4,
-                                //color: Colors.grey,
-                                padding: const EdgeInsets.only(left: 15,top: 10),
-                                child:   Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Padding(padding: const EdgeInsets.only(top: 0,left: 0,right: 0),
-                                          child: Text(result,style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 0.5,
-                                          ),textAlign: TextAlign.left,),
-                                        ),
-                                        Text("")
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Padding(padding: const EdgeInsets.only(top: 0,left: 0,right: 0),
-                                          child: Text(email,style: TextStyle(
-                                            fontSize: 12,
-                                            // fontWeight: FontWeight.bold,
-                                            letterSpacing: 0.5,
-                                          ),textAlign: TextAlign.left,),
-                                        ),
-                                        Text("")
-
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: SizedBox(
-                                            height: 28, // ⬅️ Reduced height for the Logout button
-                                            child: ElevatedButton(
-                                              onPressed: () async {
-                                                try {
-                                                  String? token = await SecureStorage.getToken();
-                                                  if (token != null) {
-                                                    await ApiService.logoutUser(token);
-                                                    await SecureStorage.deleteToken();
-                                                    Navigator.pushAndRemoveUntil(
-                                                      context,
-                                                      MaterialPageRoute(builder: (_) => const LoginPage()),
-                                                          (route) => false,
-                                                    );
-                                                  } else {
-                                                    throw Exception("No token found.");
-                                                  }
-                                                } catch (e) {
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text("Logout failed: $e")),
-                                                  );
-                                                }
-                                              },
-
-
-
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.blue,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.all(Radius.circular(8)),
-                                                ),
-                                                padding: EdgeInsets.zero, // Removes extra padding
-                                              ),
-                                              child: Text(
-                                                "Logout",
-                                                style: TextStyle(color: Colors.white, fontSize: 12),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-
-
-                                  ],
-                                )
-                            ),
-
-                          ],
-                        ),
-                      ],
-                    ),
-
-                  ),
-                  const SizedBox(height: 20,),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      children: [
-                        _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => FindAgent()));
-                        }),
-                        _settingsTile("Favorites", "assets/images/favourites.png", () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => Favorite()));
-                        }),
-                        _settingsTile("About Us", "assets/images/about.png", () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => About_Us()));
-                        }),
-                        _settingsTile("Blogs", "assets/images/blog.png", () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => Blog()));
-                        }),
-                        _settingsTile("Advertising", "assets/images/advertise.png", () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => Advertising()));
-                        }),
-                        _settingsTile("Support", "assets/images/support.png", () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => Support()));
-                        }),
-                        _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => Privacy()));
-                        }),
-                        _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => TermsCondition()));
-                        }),
-                        _settingsTile("Cookies", "assets/images/cookies.png", () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => Cookies()));
-                        }),
-                      ],
-                    ),
-                  ),
-                ]
-            )
-        )
+                    if (confirm == true) {
+                      await deleteAccount();
+                    }
+                  }),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
+
   Container buildMyNavBar(BuildContext context) {
     return Container(
       height: 50,
@@ -319,7 +222,7 @@ class _My_AccountState extends State<My_Account> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
@@ -331,14 +234,93 @@ class _My_AccountState extends State<My_Account> {
               child: Image.asset("assets/images/home.png", height: 25),
             ),
           ),
+
+
+          IconButton(
+            enableFeedback: false,
+            onPressed: () async {
+              final token = await SecureStorage.getToken();
+
+              if (token == null || token.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // white container
+                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
+                        },
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              else {
+                // ✅ Logged in – go to favorites
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Fav_Logout()),
+                );
+              }
+            },
+            icon: pageIndex == 2
+                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+          ),
+
+          IconButton(
+            tooltip: "Email",
+            icon: const Icon(Icons.email, color: Colors.red),
+            onPressed: () async {
+              final Uri emailUri = Uri.parse(
+                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+              );
+
+              if (await canLaunchUrl(emailUri)) {
+                await launchUrl(emailUri);
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Email not available'),
+                    content: const Text('No email app is configured on this device. Please add a mail account first.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
           Padding(
-            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            padding: const EdgeInsets.only(right: 20.0),
             child: IconButton(
               enableFeedback: false,
               onPressed: () {
                 setState(() {
                   if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   } else {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
                   }
@@ -351,19 +333,21 @@ class _My_AccountState extends State<My_Account> {
           ),
         ],
       ),
-
     );
   }
 
   logoutAPI(String token) {}
 }
+
 Widget _settingsTile(String title, String iconPath, VoidCallback onTap) {
   return Column(
     children: [
       GestureDetector(
         onTap: onTap,
         child: ListTile(
-          leading: Image.asset(iconPath, width: 28),
+          leading: iconPath.isNotEmpty
+              ? Image.asset(iconPath, width: 28)
+              : null,
           title: Text(title, style: const TextStyle(fontSize: 16)),
           trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         ),

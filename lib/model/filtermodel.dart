@@ -60,11 +60,13 @@ class Data {
   String? location;
   String? phoneNumber;
   String? whatsapp;
+  String? email;
   String? paymentPeriod;
   int? bedrooms;
   int? bathrooms;
   String? squareFeet;
   List<Media>? media;
+  bool? saved;
 
   Data(
       {this.id,
@@ -74,11 +76,13 @@ class Data {
         this.location,
         this.phoneNumber,
         this.whatsapp,
+        this.email,
         this.paymentPeriod,
         this.bedrooms,
         this.bathrooms,
         this.squareFeet,
-        this.media});
+        this.media,
+        this.saved});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -92,6 +96,8 @@ class Data {
     bedrooms = json['bedrooms'];
     bathrooms = json['bathrooms'];
     squareFeet = json['square_feet'];
+    saved = json['saved'];
+
     media = json['media'] != null
         ? List<Media>.from(json['media'].map((v) => Media.fromJson(v)))
         : [];
@@ -216,7 +222,7 @@ class MetaLinks {
 
   MetaLinks.fromJson(Map<String, dynamic> json) {
     url = json['url'];
-    label = json['label'];
+    label = json['label']?.toString();
     active = json['active'];
   }
 
