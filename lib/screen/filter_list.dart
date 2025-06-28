@@ -76,6 +76,29 @@ class _FliterListDemoState extends State<FliterListDemo> {
   String? selectedLocation;
 
 
+// WhatsApp sanitizer: always outputs 971XXXXXXXXX (no plus)
+  String whatsAppNumber(String input) {
+    // Remove all non-digit characters
+    input = input.replaceAll(RegExp(r'[^\d]'), '');
+
+    // Remove leading zeros
+    if (input.startsWith('0')) {
+      input = input.substring(1);
+    }
+
+    // Remove duplicated country code if already present
+    if (input.startsWith('971971')) {
+      input = input.replaceFirst('971971', '971');
+    }
+
+    // Ensure starts with UAE code
+    if (input.startsWith('971')) {
+      return input;
+    }
+
+    // Add UAE prefix if missing
+    return '971$input';
+  }
 
 
   // Create an object of SharedPreferencesManager class
@@ -532,15 +555,14 @@ class _FliterListDemoState extends State<FliterListDemo> {
                             decoration: _iconBoxDecoration(),
                             child: GestureDetector(
                               onTap: () {
-                                if (Navigator.canPop(context)) {
-                                  Navigator.pop(context);
-                                } else {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => Filter(data: "Rent")),
-                                  );
-                                }
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const Filter(data: "Rent"),
+                                  ),
+                                );
                               },
+
                               child: Image.asset(
                                 "assets/images/ar-left.png",
                                 width: 15,
@@ -548,7 +570,9 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                 fit: BoxFit.contain,
                               ),
                             ),
-                          ),
+                          )
+
+
 
                           // Like Button (optional)
                           // Container(
@@ -1899,36 +1923,46 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                   Expanded(
                                     child: ElevatedButton.icon(
                                       onPressed: () async {
-                                        final phone = filterModel.data![index].whatsapp;
-                                        final url = Uri.parse(
-                                            "https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
+                                        final property = filterModel.data![index];
+
+                                        final rawNumber = property.whatsapp ?? property.phoneNumber ?? '';
+                                        final phone = whatsAppNumber(rawNumber);
+
+                                        if (phone.isEmpty) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text("No WhatsApp number available")),
+                                          );
+                                          return;
+                                        }
+
+                                        final message = Uri.encodeComponent("Hello");
+                                        final url = Uri.parse("https://wa.me/$phone?text=$message");
+
                                         if (await canLaunchUrl(url)) {
                                           try {
-                                            final launched = await launchUrl(url,
-                                                mode: LaunchMode.externalApplication);
-                                            if (!launched)
-                                              print("❌ Could not launch WhatsApp");
+                                            await launchUrl(url, mode: LaunchMode.externalApplication);
                                           } catch (e) {
                                             print("❌ Exception: $e");
                                           }
                                         } else {
-                                          print("❌ WhatsApp not available");
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text("Cannot open WhatsApp")),
+                                          );
                                         }
                                       },
-                                      icon: Image.asset("assets/images/whats.png",
-                                          height: 20),
-                                      label: const Text("WhatsApp",
-                                          style: TextStyle(color: Colors.black)),
+                                      icon: Image.asset("assets/images/whats.png", height: 20),
+                                      label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.grey[100],
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10)),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                         elevation: 2,
-                                        padding:
-                                        const EdgeInsets.symmetric(vertical: 10),
+                                        padding: const EdgeInsets.symmetric(vertical: 10),
                                       ),
                                     ),
                                   ),
+
+
+
                                   const SizedBox(width: 10),
                                 ],
                               ),
@@ -2060,3 +2094,16 @@ class Data {
   final double x, y;
   Data(this.x, this.y);
 }
+
+
+String whatsAppNumber(String number) {
+  number = number.replaceAll(RegExp(r'\D'), '');
+  if (number.startsWith('0')) {
+    number = number.substring(1);
+  }
+  if (!number.startsWith('971')) {
+    number = '971$number';
+  }
+  return number;
+}
+

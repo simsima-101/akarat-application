@@ -2,6 +2,7 @@ import 'package:Akarat/screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:Akarat/services/api_service.dart';
 
+import 'home.dart';
 import 'login.dart';
 // import 'package:Akarat/screen/login.dart'; // Uncomment and update as needed
 
@@ -93,7 +94,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+
+
+
             const SizedBox(height: 30),
+
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20, right: 20),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => Home()), // 🏠 Go to home screen
+                    );
+                  },
+                  child: const Icon(Icons.close, size: 28, color: Colors.black),
+                ),
+              ),
+            ),
             // You can add a close button or profile navigation here if needed
             Padding(
               padding: const EdgeInsets.only(top: 100.0),

@@ -119,15 +119,28 @@ class _MyHomePageState extends State<HomeDemo> {
 
 // WhatsApp sanitizer: always outputs 971XXXXXXXXX (no plus)
   String whatsAppNumber(String input) {
+    // Remove all non-digit characters
     input = input.replaceAll(RegExp(r'[^\d]'), '');
-    if (input.startsWith('971')) return input;
-    if (input.startsWith('00971')) return input.substring(2);
-    if (input.startsWith('+971')) return input.substring(1);
-    if (input.startsWith('0') && input.length == 10)
-      return '971${input.substring(1)}';
-    if (input.length == 9) return '971$input';
-    return input; // fallback
+
+    // Remove leading zeros
+    if (input.startsWith('0')) {
+      input = input.substring(1);
+    }
+
+    // Remove duplicated country code if already present
+    if (input.startsWith('971971')) {
+      input = input.replaceFirst('971971', '971');
+    }
+
+    // Ensure starts with UAE code
+    if (input.startsWith('971')) {
+      return input;
+    }
+
+    // Add UAE prefix if missing
+    return '971$input';
   }
+
 
   Future<void> fetchLocationSuggestions(String query) async {
     String url = query.isEmpty

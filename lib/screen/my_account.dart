@@ -34,12 +34,12 @@ class My_Account extends StatefulWidget {
 
 class _My_AccountState extends State<My_Account> {
   int pageIndex = 0;
-  String token = '';
-  String email = '';
-  String result = '';
-  bool isDataRead = false;
-  bool isDataSaved = true;
-  final SharedPreferencesManager prefManager = SharedPreferencesManager();
+  // String token = '';
+  // String email = '';
+  // String result = '';
+  // bool isDataRead = false;
+  // bool isDataSaved = true;
+  // final SharedPreferencesManager prefManager = SharedPreferencesManager();
 
   Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -56,23 +56,24 @@ class _My_AccountState extends State<My_Account> {
     await prefs.remove('token');
   }
 
-  void readData() async {
-    token = await prefManager.readStringFromPref() ?? '';
-    email = await prefManager.readStringFromPrefemail() ?? '';
-    result = await prefManager.readStringFromPrefresult() ?? '';
-    setState(() {
-      isDataRead = true;
-    });
-  }
+  // void readData() async {
+  //   token = await prefManager.readStringFromPref() ?? '';
+  //   email = await prefManager.readStringFromPrefemail() ?? '';
+  //   result = await prefManager.readStringFromPrefresult() ?? '';
+  //   setState(() {
+  //     isDataRead = true;
+  //   });
+  // }
 
   @override
   void initState() {
-    readData();
+    // readData();
     super.initState();
   }
 
   Future<List<Property>> fetchSavedProperties() async {
     try {
+      final token = await SecureStorage.getToken();
       final response = await http.get(
         Uri.parse('https://akarat.com/api/saved-property-list?page=1'),
         headers: {
@@ -135,81 +136,93 @@ class _My_AccountState extends State<My_Account> {
   }
 
   @override
+  @override
+  @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
       bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            const SizedBox(height: 200),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => FindAgentDemo()));
-                  }),
-                  _settingsTile("Favorites", "assets/images/favourites.png", () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Favorite()));
-                  }),
-                  _settingsTile("About Us", "assets/images/about.png", () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => About_Us()));
-                  }),
-                  // _settingsTile("Advertising", "assets/images/advertise.png", () {
-                  //   Navigator.push(context, MaterialPageRoute(builder: (context) => Advertising()));
-                  // }),
-                  _settingsTile("Support", "assets/images/support.png", () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Support()));
-                  }),
-                  _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Privacy()));
-                  }),
-                  _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => TermsCondition()));
-                  }),
-                  _settingsTile("Logout", "", () {
-                    SecureStorage.deleteToken();
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (_) => RegisterScreen()),
-                          (route) => false,
-                    );
-                  }),
-                  _settingsTile("Delete your Account", "", () async {
-                    // Show confirmation dialog before deleting
-                    bool? confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text("Delete Account"),
-                        content: Text("Are you sure you want to delete your account? This action cannot be undone."),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: Text("Cancel"),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: Text("Delete", style: TextStyle(color: Colors.red)),
-                          ),
-                        ],
-                      ),
-                    );
+      body: FutureBuilder<String?>(
+        future: SecureStorage.getToken(), // ✅ get token from secure storage
+        builder: (context, snapshot) {
+          final token = snapshot.data ?? '';
+          final isLoggedIn = token.isNotEmpty;
 
-                    if (confirm == true) {
-                      await deleteAccount();
-                    }
-                  }),
-                ],
-              ),
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 200),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => FindAgentDemo()));
+                      }),
+                      _settingsTile("Favorites", "assets/images/favourites.png", () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => Favorite()));
+                      }),
+                      _settingsTile("About Us", "assets/images/about.png", () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => About_Us()));
+                      }),
+                      _settingsTile("Support", "assets/images/support.png", () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => Support()));
+                      }),
+                      _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => Privacy()));
+                      }),
+                      _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => TermsCondition()));
+                      }),
+
+                      if (isLoggedIn) ...[
+                        _settingsTile("Logout", "", () async {
+                          await SecureStorage.deleteToken();
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => RegisterScreen()),
+                                (route) => false,
+                          );
+                        }),
+                        _settingsTile("Delete your Account", "", () async {
+                          bool? confirm = await showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text("Delete Account"),
+                              content: Text("Are you sure you want to delete your account?"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, false),
+                                  child: Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: Text("Delete", style: TextStyle(color: Colors.red)),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirm == true) {
+                            await deleteAccount();
+                          }
+                        }),
+                      ] else ...[
+                        _settingsTile("Login", "", () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
+                        }),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
+
+
 
   Container buildMyNavBar(BuildContext context) {
     return Container(
@@ -318,14 +331,9 @@ class _My_AccountState extends State<My_Account> {
             child: IconButton(
               enableFeedback: false,
               onPressed: () {
-                setState(() {
-                  if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  } else {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  }
-                });
+                Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
               },
+
               icon: pageIndex == 3
                   ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
                   : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),

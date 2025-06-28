@@ -448,9 +448,11 @@ class _FilterDemoState extends State<FilterDemo> {
                       SizedBox(height: 20),
                       Text('No Property Found', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       SizedBox(height: 10),
-                      Text('Please select other filters to get results.',
-                          style: TextStyle(fontSize: 16, color: Colors.black54),
-                          textAlign: TextAlign.center),
+                      Text(
+                        'Please select other filters to get results.',
+                        style: TextStyle(fontSize: 16, color: Colors.black54),
+                        textAlign: TextAlign.center,
+                      ),
                       SizedBox(height: 30),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -467,15 +469,17 @@ class _FilterDemoState extends State<FilterDemo> {
           ),
         );
       } else {
-        // ✅ Correct Navigation when data exists
-        Navigator.push(
+        // ✅ Push Replacement with route name to avoid duplicate FliterList
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
+            settings: RouteSettings(name: 'FliterList'),
             builder: (context) => FliterList(filterModel: filterModel),
           ),
         );
       }
     }
+
 
 
     if (mounted) {
@@ -662,9 +666,14 @@ class _FilterDemoState extends State<FilterDemo> {
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.red),
           onPressed: () {
-            Navigator.pop(context); // ✅ Correct back behavior
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeDemo()),
+                  (route) => false,
+            );
           },
         ),
+
 
         actions: [
           TextButton(
