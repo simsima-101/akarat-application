@@ -70,6 +70,9 @@ class Data {
   String? paymentPeriod;
   String? image;
 
+  List<Media>? media;
+
+
   Data(
       {this.id,
         this.title,
@@ -83,7 +86,10 @@ class Data {
         this.createdAt,
         this.price,
         this.paymentPeriod,
-        this.image});
+        this.image,
+        this.media,
+      });
+
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -99,6 +105,12 @@ class Data {
     price = json['price'];
     paymentPeriod = json['payment_period'];
     image = json['image'];
+    if (json['media'] != null) {
+      media = (json['media'] as List)
+          .map((item) => Media.fromJson(item))
+          .toList();
+    }
+
   }
 
   Map<String, dynamic> toJson() {
@@ -116,6 +128,10 @@ class Data {
     data['price'] = this.price;
     data['payment_period'] = this.paymentPeriod;
     data['image'] = this.image;
+    if (media != null) {
+      data['media'] = media!.map((item) => item.toJson()).toList();
+    }
+
     return data;
   }
 }
@@ -215,6 +231,23 @@ class MetaLinks {
     data['url'] = this.url;
     data['label'] = this.label;
     data['active'] = this.active;
+    return data;
+  }
+}
+
+
+class Media {
+  String? originalUrl;
+
+  Media({this.originalUrl});
+
+  Media.fromJson(Map<String, dynamic> json) {
+    originalUrl = json['original_url'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {};
+    data['original_url'] = this.originalUrl;
     return data;
   }
 }

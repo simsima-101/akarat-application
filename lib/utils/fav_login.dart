@@ -14,6 +14,7 @@ import '../model/togglemodel.dart';
 import '../screen/home.dart';
 import '../screen/login.dart';
 import '../screen/product_detail.dart';
+import '../services/favorite_service.dart';
 
 class Fav_Login extends StatefulWidget {
   Fav_Login({super.key});
@@ -32,6 +33,10 @@ class _Fav_LoginState extends State<Fav_Login> {
   ToggleModel? toggleModel;
 
   SharedPreferencesManager prefManager = SharedPreferencesManager();
+
+  final PageController _pageController = PageController();
+  int _currentImageIndex = 0;
+
 
   // For phone calls: Always output in +971... format
   // Phone sanitizer: always outputs +971XXXXXXXXX
@@ -63,6 +68,12 @@ class _Fav_LoginState extends State<Fav_Login> {
     token = await prefManager.readStringFromPref();
     email = await prefManager.readStringFromPrefemail();
     result = await prefManager.readStringFromPrefresult();
+
+
+    if (token.isNotEmpty) {
+      FavoriteService.loggedInFavorites = await FavoriteService.fetchApiFavorites(token);
+    }
+
     setState(() {
       isDataRead = true;
       getFilesApi(token);
@@ -243,8 +254,9 @@ class _Fav_LoginState extends State<Fav_Login> {
   @override
   Widget build(BuildContext context) {
     List<favModel.Data> allFavorites = favoriteModel
-        .where((item) => favoriteProperties.contains(item.id))
+        .where((item) => FavoriteService.loggedInFavorites.contains(item.id))
         .toList();
+
 
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
@@ -400,7 +412,8 @@ class _Fav_LoginState extends State<Fav_Login> {
                     String id = item.id.toString();
 
                     print('🏷️ Property ${item.id} using URL → "${item.image}"');
-                    bool isFavorited = favoriteProperties.contains(item.id);
+                    bool isFavorited = FavoriteService.loggedInFavorites.contains(item.id);
+
                     return SingleChildScrollView(
                         child: GestureDetector(
                           onTap: () {
@@ -426,15 +439,70 @@ class _Fav_LoginState extends State<Fav_Login> {
                                         child: Stack(children: [
                                           AspectRatio(
                                             aspectRatio: 1.5,
-                                            child: CachedNetworkImage(
-                                              imageUrl: item.image ?? getFullImageUrl(null),
-                                              fit: BoxFit.cover,
-                                              placeholder: (c, u) => const Center(child: CircularProgressIndicator()),
-                                              errorWidget: (c, u, e) => const Icon(Icons.broken_image),
+                                            child: Stack(
+                                              children: [
+                                                PageView.builder(
+                                                  controller: _pageController,
+                                                  itemCount: (item.media != null && item.media!.isNotEmpty)
+                                                      ? item.media!.length
+                                                      : 1, // fallback if no media
+                                                  onPageChanged: (index) {
+                                                    setState(() {
+                                                      _currentImageIndex = index;
+                                                    });
+                                                  },
+                                                  itemBuilder: (context, index) {
+                                                    String imageUrl;
+                                                    if (item.media != null && item.media!.isNotEmpty) {
+                                                      imageUrl = item.media![index].originalUrl ?? '';
+                                                    } else {
+                                                      imageUrl = item.image ??
+                                                          'https://via.placeholder.com/400x300.png?text=No+Image';
+                                                    }
+
+                                                    if (!imageUrl.startsWith('http')) {
+                                                      imageUrl = 'https://akarat.com/$imageUrl';
+                                                    }
+
+                                                    return ClipRRect(
+                                                      borderRadius: BorderRadius.circular(12),
+                                                      child: CachedNetworkImage(
+                                                        imageUrl: imageUrl,
+                                                        fit: BoxFit.cover,
+                                                        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                                        errorWidget: (context, url, error) => const Icon(Icons.broken_image),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+
+                                                // Optional: Dot indicator
+                                                if (item.media != null && item.media!.length > 1)
+                                                  Positioned(
+                                                    bottom: 8,
+                                                    right: 8,
+                                                    child: Row(
+                                                      children: List.generate(
+                                                        item.media!.length,
+                                                            (dotIndex) => Container(
+                                                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                                                          width: 6,
+                                                          height: 6,
+                                                          decoration: BoxDecoration(
+                                                            shape: BoxShape.circle,
+                                                            color: _currentImageIndex == dotIndex
+                                                                ? Colors.white
+                                                                : Colors.white38,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
                                             ),
-
-
                                           ),
+
+
                                           Positioned(
                                             top: 10,
                                             right: 10,
@@ -454,26 +522,53 @@ class _Fav_LoginState extends State<Fav_Login> {
                                               ),
                                               child: Center(
                                                 child: IconButton(
-                                                  icon: Icon(
-                                                    favoriteProperties.contains(item.id)
-                                                        ? Icons.favorite
-                                                        : Icons.favorite_border,
-                                                    color: Colors.red,
-                                                    size: 18,
-                                                  ),
-                                                  onPressed: () async {
-                                                    if (token.isEmpty) {
-                                                      Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
-                                                      return;
+                                                    icon: Icon(
+                                                      (token.isNotEmpty && FavoriteService.loggedInFavorites.contains(item.id))
+                                                          ? Icons.favorite
+                                                          : Icons.favorite_border,
+                                                      color: (token.isNotEmpty && FavoriteService.loggedInFavorites.contains(item.id))
+                                                          ? Colors.red
+                                                          : Colors.grey,
+                                                      size: 20,
+                                                    ),
+
+
+
+                                                    onPressed: () async {
+                                                      if (token.isEmpty) {
+                                                        Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+                                                        return;
+                                                      }
+
+                                                      final isNowSaved = !FavoriteService.loggedInFavorites.contains(item.id!);
+
+                                                      // 🔄 Immediate UI update
+                                                      setState(() {
+                                                        if (isNowSaved) {
+                                                          FavoriteService.loggedInFavorites.add(item.id!);
+                                                        } else {
+                                                          FavoriteService.loggedInFavorites.remove(item.id!);
+                                                        }
+                                                      });
+
+                                                      // 🔌 Call API
+                                                      final success = await toggledApi(token, item.id!);
+
+                                                      // ✅ If failed, revert the UI
+                                                      if (!success) {
+                                                        setState(() {
+                                                          if (isNowSaved) {
+                                                            FavoriteService.loggedInFavorites.remove(item.id!);
+                                                          } else {
+                                                            FavoriteService.loggedInFavorites.add(item.id!);
+                                                          }
+                                                        });
+                                                      } else {
+                                                        // Optional if you want updated list: await getFilesApi(token);
+                                                      }
                                                     }
 
-                                                    final success = await toggledApi(token, item.id!);
-                                                    if (success) {
-                                                      toggleFavorite(item.id!); // ✅ update list
-                                                    } else {
-                                                      debugPrint("❌ API toggle failed");
-                                                    }
-                                                  },
+
                                                 ),
                                               ),
                                             ),

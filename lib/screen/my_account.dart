@@ -25,6 +25,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart';
 import 'login_page.dart';
 
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+
 class My_Account extends StatefulWidget {
   My_Account({super.key});
 
@@ -34,6 +40,9 @@ class My_Account extends StatefulWidget {
 
 class _My_AccountState extends State<My_Account> {
   int pageIndex = 0;
+
+  String? userName;
+
   // String token = '';
   // String email = '';
   // String result = '';
@@ -65,11 +74,86 @@ class _My_AccountState extends State<My_Account> {
   //   });
   // }
 
+
+  File? _selectedImage;
+
+  final ImagePicker _picker = ImagePicker();
+
+
+
+
   @override
   void initState() {
     // readData();
     super.initState();
+    _loadSavedProfileImage();
+    _loadUserName();
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadSavedProfileImage(); // ← Ensures image reloads every time screen rebuilds
+  }
+
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+
+    final directory = await getApplicationDocumentsDirectory();
+    final savedImage = await File(image.path).copy('${directory.path}/profile_image.png');
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('profile_image_path', savedImage.path);
+
+    setState(() {
+      _selectedImage = savedImage;
+    });
+  }
+
+  Future<void> _loadSavedProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final path = prefs.getString('profile_image_path');
+
+    if (path != null && File(path).existsSync()) {
+      setState(() {
+        _selectedImage = File(path);
+      });
+    } else {
+      setState(() {
+        _selectedImage = null;
+      });
+    }
+  }
+
+
+
+  Future<void> _deleteProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final path = prefs.getString('profile_image_path');
+
+    if (path != null) {
+      final file = File(path);
+      if (await file.exists()) {
+        await file.delete();
+      }
+      await prefs.remove('profile_image_path');
+    }
+
+    setState(() {
+      _selectedImage = null;
+    });
+  }
+
+
+  Future<void> _loadUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('user_name') ?? '';
+    });
+  }
+
 
   Future<List<Property>> fetchSavedProperties() async {
     try {
@@ -149,74 +233,319 @@ class _My_AccountState extends State<My_Account> {
           final isLoggedIn = token.isNotEmpty;
 
           return SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: 200),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => FindAgentDemo()));
-                      }),
-                      _settingsTile("Favorites", "assets/images/favourites.png", () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => Favorite()));
-                      }),
-                      _settingsTile("About Us", "assets/images/about.png", () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => About_Us()));
-                      }),
-                      _settingsTile("Support", "assets/images/support.png", () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => Support()));
-                      }),
-                      _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => Privacy()));
-                      }),
-                      _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => TermsCondition()));
-                      }),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
 
-                      if (isLoggedIn) ...[
-                        _settingsTile("Logout", "", () async {
-                          await SecureStorage.deleteToken();
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (_) => RegisterScreen()),
-                                (route) => false,
-                          );
-                        }),
-                        _settingsTile("Delete your Account", "", () async {
-                          bool? confirm = await showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              title: Text("Delete Account"),
-                              content: Text("Are you sure you want to delete your account?"),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, false),
-                                  child: Text("Cancel"),
+                  const SizedBox(height: 70), // Adjusts vertical spacing from top (you can fine-tune this)
+                  const Text(
+                    'My Account',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+
+
+                  // ✅ Place the profile container at the top
+                  Padding(
+                    padding: const EdgeInsets.only(top: 40.0, bottom: 16),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
+                      ),
+                      child: Row(
+                        children: [
+                          Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: 30,
+                                backgroundColor: Colors.grey[200],
+                                child: ClipOval(
+                                  child: (isLoggedIn && _selectedImage != null)
+                                      ? Image.file(
+                                    _selectedImage!,
+                                    width: 48,
+                                    height: 48,
+                                    fit: BoxFit.cover,
+                                  )
+                                      : Padding(
+                                    padding: const EdgeInsets.all(6),
+                                    child: Image.asset(
+                                      'assets/images/app_icon.png',
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
                                 ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: Text("Delete", style: TextStyle(color: Colors.red)),
+
+                              ),
+                              Positioned(
+                                bottom: -12,
+                                right: -9,
+                                child: PopupMenuButton<String>(
+                                  color: Colors.white,
+                                  icon: CircleAvatar(
+                                    radius: 10,
+                                    backgroundColor: Colors.white,
+                                    child: Icon(Icons.edit, size: 14, color: Colors.grey),
+                                  ),
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: 'upload',
+                                      child: Text('Upload Image'),
+                                    ),
+                                    if (_selectedImage != null)
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text('Remove Image'),
+                                      ),
+                                  ],
+                                  onSelected: (value) async {
+                                    final token = await SecureStorage.getToken();
+
+                                    if (value == 'upload') {
+                                      if (token == null || token.isEmpty) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => Dialog(
+                                            backgroundColor: Colors.transparent,
+                                            insetPadding: EdgeInsets.zero,
+                                            child: Container(
+                                              height: 70,
+                                              margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+                                              decoration: BoxDecoration(
+                                                color: Colors.red,
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: Stack(
+                                                clipBehavior: Clip.none,
+                                                children: [
+                                                  Positioned(
+                                                    top: -14,
+                                                    right: -10,
+                                                    child: IconButton(
+                                                      icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                      onPressed: () => Navigator.of(ctx).pop(),
+                                                      padding: EdgeInsets.zero,
+                                                      constraints: const BoxConstraints(),
+                                                    ),
+                                                  ),
+                                                  Positioned(
+                                                    left: 16,
+                                                    right: 16,
+                                                    bottom: 12,
+                                                    child: Row(
+                                                      children: [
+                                                        const Expanded(
+                                                          child: Text(
+                                                            'Login required to upload profile image.',
+                                                            style: TextStyle(color: Colors.white, fontSize: 13),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 12),
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            Navigator.of(ctx).pop();
+                                                            Navigator.of(ctx).pushNamed('/login');
+                                                          },
+                                                          child: const Text(
+                                                            'Login',
+                                                            style: TextStyle(
+                                                              color: Colors.white,
+                                                              fontWeight: FontWeight.bold,
+                                                              decoration: TextDecoration.underline,
+                                                              decorationColor: Colors.white,
+                                                              decorationThickness: 1.5,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      } else {
+                                        _pickImage();
+                                      }
+                                    } else if (value == 'delete') {
+                                      _deleteProfileImage();
+                                    }
+                                  },
+
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: isLoggedIn
+                                ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  userName ?? '',
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  "Registered User",
+                                  style: TextStyle(fontSize: 13, color: Colors.grey),
                                 ),
                               ],
+                            )
+                                : GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
+                              },
+                              child: const Text(
+                                "Login / Sign up",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: Colors.red,
+                                ),
+                              ),
                             ),
-                          );
-                          if (confirm == true) {
-                            await deleteAccount();
-                          }
-                        }),
-                      ] else ...[
-                        _settingsTile("Login", "", () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
-                        }),
-                      ],
-                    ],
+                          )
+
+
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ],
+
+
+
+                  SizedBox(height: 20,),
+
+                  // ✅ Remove the extra SizedBox(height: 200),
+                  // const SizedBox(height: 200),
+
+                  Column(
+                    children: [
+                      // Main settings tiles in one container
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 6,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => FindAgentDemo()));
+                              }),
+                              _settingsTile("Favorites", "assets/images/favourites.png", () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => Favorite()));
+                              }),
+                              _settingsTile("About Us", "assets/images/about.png", () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => About_Us()));
+                              }),
+                              _settingsTile("Support", "assets/images/support.png", () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => Support()));
+                              }),
+                              _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => Privacy()));
+                              }),
+                              _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => TermsCondition()));
+                              }),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Conditional container based on login state
+                      Padding(
+                        padding: const EdgeInsets.only(top: 3, bottom: 3),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 6,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: isLoggedIn
+                                ? [
+                              _settingsTile("Logout", "", () async {
+                                await SecureStorage.deleteToken();
+                                final prefs = await SharedPreferences.getInstance();
+                                await prefs.remove('user_name'); // ✅ clear username
+
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => RegisterScreen()),
+                                      (route) => false,
+                                );
+                              }),
+
+                              _settingsTile("Delete your Account", "", () async {
+                                bool? confirm = await showDialog(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                    title: const Text("Delete Account"),
+                                    content: const Text("Are you sure you want to delete your account?"),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, false),
+                                        child: const Text("Cancel"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, true),
+                                        child: const Text("Delete", style: TextStyle(color: Colors.red)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (confirm == true) {
+                                  await deleteAccount();
+                                }
+                              }),
+                            ]
+                                : [
+                              _settingsTile("Login", "", () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
+                              }),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+
+                ],
+              ),
             ),
           );
+
         },
       ),
     );
@@ -301,7 +630,7 @@ class _My_AccountState extends State<My_Account> {
 
           IconButton(
             tooltip: "Email",
-            icon: const Icon(Icons.email, color: Colors.red),
+            icon: const Icon(Icons.email_outlined, color: Colors.red),
             onPressed: () async {
               final Uri emailUri = Uri.parse(
                 'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
@@ -328,17 +657,13 @@ class _My_AccountState extends State<My_Account> {
           ),
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
-            child: IconButton(
-              enableFeedback: false,
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-              },
-
-              icon: pageIndex == 3
-                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+            child: Icon(
+              Icons.dehaze,
+              color: Colors.red,
+              size: 35,
             ),
           ),
+
         ],
       ),
     );
@@ -360,7 +685,7 @@ Widget _settingsTile(String title, String iconPath, VoidCallback onTap) {
           trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         ),
       ),
-      const Divider(height: 1),
+      // const Divider(height: 1),
     ],
   );
 }

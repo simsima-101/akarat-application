@@ -18,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../model/featuredmodel.dart';
+import '../services/favorite_service.dart';
 import '../utils/shared_preference_manager.dart';
 import 'about_agent.dart';
 import 'agent_detail.dart';
@@ -25,8 +26,10 @@ import 'htmlEpandableText.dart';
 import 'package:Akarat/utils/whatsapp_button.dart';
 
 class Featured_Detail extends StatefulWidget {
+
   const Featured_Detail({super.key, required this.data});
   final String data;
+
   @override
   State<Featured_Detail> createState() => _Featured_DetailState();
 }
@@ -55,7 +58,29 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
 
 
+  Future<bool> toggledApi(String token, int id) async {
+    final url = Uri.parse('https://akarat.com/api/toggle-saved-property');
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: {'property_id': id.toString()},
+      );
 
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        debugPrint('Toggle API failed: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Toggle API exception: $e');
+      return false;
+    }
+  }
 
 
 
@@ -1434,11 +1459,166 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                           child: const Center(child: Icon(Icons.image_not_supported)),
                                         ),
                                       ),
-                                      const Positioned(
-                                        top: 8,
-                                        right: 8,
-                                        child: Icon(Icons.favorite_border, color: Colors.red),
-                                      ),
+                                      // Positioned(
+                                      //   top: 10,
+                                      //   right: 10,
+                                      //   child: Material(
+                                      //     color: Colors.white,
+                                      //     shape: const CircleBorder(),
+                                      //     elevation: 4,
+                                      //     child: IconButton(
+                                      //         icon: Icon(
+                                      //           (token.isNotEmpty &&
+                                      //               FavoriteService.loggedInFavorites
+                                      //                   .contains(property.id))
+                                      //               ? Icons.favorite
+                                      //               : Icons.favorite_border,
+                                      //           color: (token.isNotEmpty &&
+                                      //               FavoriteService.loggedInFavorites
+                                      //                   .contains(property.id))
+                                      //               ? Colors.red
+                                      //               : Colors.grey,
+                                      //           size: 20,
+                                      //         ),
+                                      //
+                                      //
+                                      //         onPressed: () async {
+                                      //           if (token.isEmpty) {
+                                      //             // 🔒 Show login prompt
+                                      //             showDialog(
+                                      //               context: context,
+                                      //               builder: (ctx) =>
+                                      //                   Dialog(
+                                      //                     backgroundColor: Colors
+                                      //                         .transparent,
+                                      //                     insetPadding: EdgeInsets
+                                      //                         .zero,
+                                      //                     child: Container(
+                                      //                       height: 70,
+                                      //                       margin: const EdgeInsets
+                                      //                           .only(bottom: 80,
+                                      //                           left: 20,
+                                      //                           right: 20),
+                                      //                       decoration: BoxDecoration(
+                                      //                         color: Colors.red,
+                                      //                         borderRadius: BorderRadius
+                                      //                             .circular(10),
+                                      //                       ),
+                                      //                       child: Stack(
+                                      //                         clipBehavior: Clip.none,
+                                      //                         children: [
+                                      //                           Positioned(
+                                      //                             top: -14,
+                                      //                             right: -10,
+                                      //                             child: Material(
+                                      //                               color: Colors
+                                      //                                   .transparent,
+                                      //                               child: IconButton(
+                                      //                                 icon: const Icon(
+                                      //                                     Icons.close,
+                                      //                                     color: Colors
+                                      //                                         .white,
+                                      //                                     size: 20),
+                                      //                                 onPressed: () =>
+                                      //                                     Navigator
+                                      //                                         .of(ctx)
+                                      //                                         .pop(),
+                                      //                                 padding: EdgeInsets
+                                      //                                     .zero,
+                                      //                                 constraints: const BoxConstraints(),
+                                      //                               ),
+                                      //                             ),
+                                      //                           ),
+                                      //                           Positioned(
+                                      //                             left: 16,
+                                      //                             right: 16,
+                                      //                             bottom: 12,
+                                      //                             child: Row(
+                                      //                               children: [
+                                      //                                 const Expanded(
+                                      //                                   child: Text(
+                                      //                                     'Login required to add favorites.',
+                                      //                                     style: TextStyle(
+                                      //                                         color: Colors
+                                      //                                             .white,
+                                      //                                         fontSize: 13),
+                                      //                                   ),
+                                      //                                 ),
+                                      //                                 const SizedBox(
+                                      //                                     width: 12),
+                                      //                                 GestureDetector(
+                                      //                                   onTap: () {
+                                      //                                     Navigator
+                                      //                                         .of(ctx)
+                                      //                                         .pop();
+                                      //                                     Navigator
+                                      //                                         .of(ctx)
+                                      //                                         .pushNamed(
+                                      //                                         '/login');
+                                      //                                   },
+                                      //                                   child: const Text(
+                                      //                                     'Login',
+                                      //                                     style: TextStyle(
+                                      //                                       color: Colors
+                                      //                                           .white,
+                                      //                                       fontWeight: FontWeight
+                                      //                                           .bold,
+                                      //                                       decoration: TextDecoration
+                                      //                                           .underline,
+                                      //                                       decorationColor: Colors
+                                      //                                           .white,
+                                      //                                       decorationThickness: 1.5,
+                                      //                                     ),
+                                      //                                   ),
+                                      //                                 ),
+                                      //                               ],
+                                      //                             ),
+                                      //                           ),
+                                      //                         ],
+                                      //                       ),
+                                      //                     ),
+                                      //                   ),
+                                      //             );
+                                      //             return;
+                                      //           }
+                                      //
+                                      //           // ❤️ Optimistic UI update
+                                      //           final isNowSaved = !FavoriteService
+                                      //               .loggedInFavorites.contains(
+                                      //               property.id!);
+                                      //
+                                      //           setState(() {
+                                      //             if (isNowSaved) {
+                                      //               FavoriteService.loggedInFavorites
+                                      //                   .add(property.id!);
+                                      //             } else {
+                                      //               FavoriteService.loggedInFavorites
+                                      //                   .remove(property.id!);
+                                      //             }
+                                      //           });
+                                      //
+                                      //           final success = await toggledApi(
+                                      //               token, property.id!);
+                                      //
+                                      //           if (!success) {
+                                      //             // ❌ Revert on failure
+                                      //             setState(() {
+                                      //               if (isNowSaved) {
+                                      //                 FavoriteService
+                                      //                     .loggedInFavorites.remove(
+                                      //                     property.id!);
+                                      //               } else {
+                                      //                 FavoriteService
+                                      //                     .loggedInFavorites.add(
+                                      //                     property.id!);
+                                      //               }
+                                      //             });
+                                      //           }
+                                      //         }
+                                      //
+                                      //     ),
+                                      //   ),
+                                      // ),
                                     ],
                                   ),
                                   Padding(

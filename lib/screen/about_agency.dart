@@ -15,7 +15,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../model/togglemodel.dart';
+import '../secure_storage.dart';
+import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
+import 'findagent.dart';
 import 'htmlEpandableText.dart';
 import 'login.dart';
 import 'package:Akarat/utils/whatsapp_button.dart';
@@ -324,12 +327,26 @@ class _About_AgencyState extends State<About_Agency> {
     }
     return Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.red),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => FindAgentDemo()),
+              );
+            },
+          ),
+        ),
+        bottomNavigationBar: SafeArea(child: buildMyNavBar(context),),
         body: DefaultTabController(
+
         length: 4,
             child: Column(
                 children: <Widget>[
-                  const SizedBox(height: 20,),
+                  const SizedBox(height: 10,),
                   Container(
                     height: screenSize.height * 0.22,
                     color: Color(0xFFF5F5F5),
@@ -379,87 +396,97 @@ class _About_AgencyState extends State<About_Agency> {
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          child: Container(
-                            height: screenSize.height * 0.12,
-                            width: screenSize.width * 0.91,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: Offset(4, 4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: Offset(-4, -4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: screenSize.width * 0.29,
-                                  height: screenSize.height * 0.1,
-                                  child: CachedNetworkImage(
-                                    imageUrl: (agencyDetailmodel!.image.toString()),
-                                    fit: BoxFit.contain,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 30, bottom: 4),
+                            child: Container(
+                              height: screenSize.height * 0.12,
+                              width: screenSize.width * 0.91,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.5),
+                                    offset: Offset(4, 4),
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
                                   ),
-                                ),
-                                SizedBox(width: 8), // ✅ Add spacing
-                                Expanded(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center, // ✅ Center vertically
-                                    crossAxisAlignment: CrossAxisAlignment.start, // ✅ Align text left
-                                    children: [
-                                      Text(
-                                        agencyDetailmodel!.name.toString(),
-                                        style: TextStyle(
-                                          fontSize: 17,
-                                          letterSpacing: 0.5,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        overflow: TextOverflow.ellipsis, // ✅ To prevent overflow
-                                        maxLines: 1,
-                                      ),
-                                      SizedBox(height: 5),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withOpacity(0.5),
-                                              offset: Offset(4, 4),
-                                              blurRadius: 8,
-                                              spreadRadius: 2,
-                                            ),
-                                            BoxShadow(
-                                              color: Colors.white.withOpacity(0.8),
-                                              offset: Offset(-4, -4),
-                                              blurRadius: 8,
-                                              spreadRadius: 2,
-                                            ),
-                                          ],
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          "${agencyDetailmodel!.propertiesCount} Properties",
-                                          textAlign: TextAlign.center,
+                                  BoxShadow(
+                                    color: Colors.white.withOpacity(0.8),
+                                    offset: Offset(-4, -4),
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                              /// ✅ Logo pushed down using Align inside SizedBox
+                              SizedBox(
+                              width: screenSize.width * 0.29,
+                                height: screenSize.height * 0.12,
+                                  child: Align(
+                                    alignment: Alignment.bottomCenter, // Push logo downward
+                                    child: CachedNetworkImage(
+                                      imageUrl: agencyDetailmodel!.image.toString(),
+                                      height: screenSize.height * 0.08, // Size of logo
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                              ),
+
+                                  SizedBox(width: 8), // ✅ Add spacing
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center, // ✅ Center vertically
+                                      crossAxisAlignment: CrossAxisAlignment.start, // ✅ Align text left
+                                      children: [
+                                        Text(
+                                          agencyDetailmodel!.name.toString(),
                                           style: TextStyle(
+                                            fontSize: 17,
                                             letterSpacing: 0.5,
-                                            color: Colors.blueAccent,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          overflow: TextOverflow.ellipsis, // ✅ To prevent overflow
+                                          maxLines: 1,
+                                        ),
+                                        SizedBox(height: 5),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey.withOpacity(0.5),
+                                                offset: Offset(4, 4),
+                                                blurRadius: 8,
+                                                spreadRadius: 2,
+                                              ),
+                                              BoxShadow(
+                                                color: Colors.white.withOpacity(0.8),
+                                                offset: Offset(-4, -4),
+                                                blurRadius: 8,
+                                                spreadRadius: 2,
+                                              ),
+                                            ],
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            "${agencyDetailmodel!.propertiesCount} Properties",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              letterSpacing: 0.5,
+                                              color: Colors.blueAccent,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -1438,6 +1465,85 @@ class _About_AgencyState extends State<About_Agency> {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Image.asset("assets/images/home.png", height: 25),
             ),
+          ),
+
+
+          IconButton(
+            enableFeedback: false,
+            onPressed: () async {
+              final token = await SecureStorage.getToken();
+
+              if (token == null || token.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // white container
+                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
+                        },
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              else {
+                // ✅ Logged in – go to favorites
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Fav_Logout()),
+                );
+              }
+            },
+            icon: pageIndex == 2
+                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+          ),
+
+          IconButton(
+            tooltip: "Email",
+            icon: const Icon(Icons.email_outlined, color: Colors.red),
+            onPressed: () async {
+              final Uri emailUri = Uri.parse(
+                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+              );
+
+              if (await canLaunchUrl(emailUri)) {
+                await launchUrl(emailUri);
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Email not available'),
+                    content: const Text('No email app is configured on this device. Please add a mail account first.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
           ),
           Padding(
             padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge

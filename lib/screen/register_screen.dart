@@ -1,7 +1,9 @@
 import 'package:Akarat/screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:Akarat/services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../secure_storage.dart';
 import 'home.dart';
 import 'login.dart';
 // import 'package:Akarat/screen/login.dart'; // Uncomment and update as needed
@@ -51,6 +53,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
+      // Step 1: Register the user
       final responseJson = await ApiService.registerUser(
         name: nameController.text.trim(),
         email: emailController.text.trim(),
@@ -58,15 +61,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
         passwordConfirmation: confirmPasswordController.text.trim(),
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Registration successful!')),
+      // Step 2: Login automatically using the same credentials
+      final loginResult = await ApiService.loginUser(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
       );
 
-      // Uncomment and update navigation as per your app flow
-      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Login()));
+      if (loginResult is Map<String, dynamic> &&
+          loginResult.containsKey('token') &&
+          loginResult.containsKey('email')) {
+        final token = loginResult['token'];
+        final name = loginResult['name'] ?? '';
+
+        // Step 3: Save token and user name
+        await SecureStorage.writeToken(token);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_name', name);
+
+        print("✅ Saved user name: $name");
+
+        // Step 4: Navigate to Home
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration & Login successful!')),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const Home()),
+              (route) => false,
+        );
+      } else {
+        // Fallback for unexpected login structure
+        debugPrint("⚠️ Unexpected login response: $loginResult");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login completed, but response was unexpected.')),
+        );
+      }
     } catch (e) {
       debugPrint('RegisterUser error: $e');
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Registration failed: $e')),
       );
@@ -76,6 +108,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
     }
   }
+
+
 
   @override
   void dispose() {

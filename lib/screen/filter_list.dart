@@ -23,7 +23,11 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../model/propertytypemodel.dart';
 import '../model/searchmodel.dart';
 import '../model/togglemodel.dart';
+import '../secure_storage.dart';
+import '../services/favorite_service.dart';
+import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
+import 'featured_detail.dart';
 import 'filter.dart';
 import 'login.dart';
 import 'my_account.dart';
@@ -63,6 +67,9 @@ class _FliterListDemoState extends State<FliterListDemo> {
   bool isDataRead = false;
   bool isFavorited = false;
 
+  bool get isLoggedIn => token.isNotEmpty;
+
+
 
 
   bool isPurposeLoading = false;
@@ -101,10 +108,30 @@ class _FliterListDemoState extends State<FliterListDemo> {
   }
 
 
+  void toggleSavedAtIndex(int index) {
+    final property = filterModel.data![index];
+
+    // Default null to false before toggling
+    final currentSaved = property.saved ?? false;
+    final newSaved = !currentSaved;
+
+    setState(() {
+      property.saved = newSaved;
+
+      if (newSaved) {
+        FavoriteService.loggedInFavorites.add(property.id!);
+      } else {
+        FavoriteService.loggedInFavorites.remove(property.id!);
+      }
+    });
+  }
+
+
+
   // Create an object of SharedPreferencesManager class
   SharedPreferencesManager prefManager = SharedPreferencesManager();
   // Method to read data from shared preferences
-  void readData() async {
+  Future<void> readData() async {
     token = await prefManager.readStringFromPref();
     email = await prefManager.readStringFromPrefemail();
     result = await prefManager.readStringFromPrefresult();
@@ -112,6 +139,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
       isDataRead = true;
     });
   }
+
 
   void _resetAllFilters() {
     selectedproduct = 0;
@@ -131,21 +159,40 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
 
   String buildApiUrl() {
-    Map<String, String> params = {
-      if ((selectedLocation ?? '').isNotEmpty) 'location': selectedLocation!,
-      if (purpose.isNotEmpty) 'purpose': purpose,
-      if (property_type.trim().isNotEmpty) 'property_type': property_type.trim(),
-      if (ftype.trim().isNotEmpty && ftype != 'All') 'furnished_status': ftype.trim(),
-      if (bedroom.trim().isNotEmpty) 'bedrooms': bedroom.trim(),
-      if (bathroom.trim().isNotEmpty) 'bathrooms': bathroom.trim(),
-      if (min_price.isNotEmpty) 'min_price': min_price,
-      if (max_price.isNotEmpty) 'max_price': max_price,
-      if (rent.isNotEmpty) 'payment_period': rent,
-    };
+    // Helper to map UI input to API-compatible purpose
+    String mapPurpose(String purpose) {
+      switch (purpose.trim().toLowerCase()) {
+        case 'rent':
+          return 'to-rent';
+        case 'sale':
+          return 'for-sale';
+        default:
+          return '';
+      }
+    }
 
-    final queryString = params.entries.map((e) => "${e.key}=${Uri.encodeComponent(e.value)}").join('&');
-    return 'https://akarat.com/api/filters?$queryString';
+    final params = FilterParams(
+      location: selectedLocation,
+      purpose: mapPurpose(purpose),
+      propertyType: property_type.trim(),
+      bedroom: (bedroom.trim().toLowerCase() != 'all') ? bedroom.trim() : '',
+      bathroom: (bathroom.trim().toLowerCase() != 'all') ? bathroom.trim() : '',
+      minPrice: min_price.trim(),
+      maxPrice: max_price.trim(),
+      paymentPeriod: (rent.trim().toLowerCase() != 'all') ? rent.trim() : '',
+    );
+
+    final queryString = params.toQueryMap().entries
+        .map((e) => "${e.key}=${Uri.encodeComponent(e.value)}")
+        .join('&');
+
+    final fullUrl = 'https://akarat.com/api/filters?$queryString';
+    debugPrint("🔍 Final API URL: $fullUrl");
+    return fullUrl;
   }
+
+
+
 
 
   @override
@@ -153,34 +200,67 @@ class _FliterListDemoState extends State<FliterListDemo> {
     super.initState();
 
     _rangeController = RangeController(start: start.toString(), end: end.toString());
-    _loadFavorites();
-    readData();
-    filterModel = widget.filterModel ?? FilterModel();
 
-    selectedproduct = 0;
-    purpose = "Rent";
-    selectedtype = 0;
-    selectedLocation = widget.location?.toString();
+    _loadLoginToken();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadFavorites(); // ✅ Re-load favorites to keep UI in sync
+  }
 
 
-    fetchLocations();
-    chartData = List.generate(
-      96,
-          (index) => Data(500 + index * 100.0, yValues[index % yValues.length].toDouble()),
-    );
+  Future<void> _loadLoginToken() async {
+    try {
+      // 🔐 Load login token and user info
+      token = await SecureStorage.getToken() ?? '';
+      email = await prefManager.readStringFromPrefemail();
+      result = await prefManager.readStringFromPrefresult();
 
-    Future.delayed(Duration.zero, () async {
-      // 1️⃣ Load filter results first (faster search result shown to user)
-      await showResult();  // ⚠️ Don't use forceRefresh on initial load
+      // ❤️ Load saved favorites
+      await _loadFavorites();
 
-      // 2️⃣ After result, load property types (for filters UI)
-      await propertyApi(purpose, location: selectedLocation);
+      // 🌐 Initialize filter model & default UI selections
+      filterModel = widget.filterModel ?? FilterModel();
+      selectedproduct = 0;
+      purpose = "Rent";
+      selectedtype = 0;
+      selectedLocation = widget.location?.toString();
 
-      if (propertyTypeModel != null && propertyTypeModel!.data!.isNotEmpty) {
-        property_type = propertyTypeModel!.data!.first.name ?? '';
-      }
-    });
+      // 📍 Load locations
+      fetchLocations();
 
+      // 📊 Dummy chart data
+      chartData = List.generate(
+        96,
+            (index) => Data(500 + index * 100.0, yValues[index % yValues.length].toDouble()),
+      );
+
+      // ⏳ Defer heavy network logic until next frame
+      Future.delayed(Duration.zero, () async {
+        try {
+          // 🔍 Step 1: Load filter result
+          await showResult();
+
+          // 🏠 Step 2: Load property type data for filters
+          await propertyApi(purpose, location: selectedLocation);
+
+          if (propertyTypeModel != null && propertyTypeModel!.data!.isNotEmpty) {
+            property_type = propertyTypeModel!.data!.first.name ?? '';
+          }
+
+          // ✅ Allow UI to render now
+          setState(() {
+            isDataRead = true;
+          });
+        } catch (inner) {
+          debugPrint("🚨 Error during delayed API load: $inner");
+        }
+      });
+    } catch (e) {
+      debugPrint("🚨 Error in _loadLoginToken(): $e");
+    }
   }
 
 
@@ -399,11 +479,33 @@ class _FliterListDemoState extends State<FliterListDemo> {
         }
 
         setState(() {
-          filterModel = feature!;
-          _isLoading = false;   // ✅ Stop loading after success
+          _isLoading = false;
+
+          // Ensure filterModel is always reset, even if empty
+          if (feature != null && feature.data != null) {
+            filterModel = feature;
+
+            // Safely clear and assign favorites
+            for (var prop in filterModel.data!) {
+              prop.saved = favoriteProperties.contains(prop.id);
+            }
+          } else {
+            // Assign empty data to trigger "Property Not Found"
+            filterModel = FilterModel(data: []);
+          }
         });
 
-        _scrollController.animateTo(0, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+
+
+// ✅ Prevent crash if ListView hasn't built yet
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            0,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+
         debugPrint("✅ Fetched and updated filter result (${filterModel.data?.length ?? 0} items)");
 
         await prefs.setString(cacheKey, response.body);
@@ -428,8 +530,9 @@ class _FliterListDemoState extends State<FliterListDemo> {
         final List<dynamic> jsonData = jsonDecode(response.body);
 
         setState(() {
-          locationList = List<String>.from(jsonData);
+          locationList = jsonData.map<String>((item) => item['name'].toString()).toList();
         });
+
 
         debugPrint("✅ Locations loaded: ${locationList.length}");
       } else {
@@ -499,25 +602,39 @@ class _FliterListDemoState extends State<FliterListDemo> {
   }
 
   // Load saved favorites from SharedPreferences
+  // ✅ Load favorites and update FavoriteService
   Future<void> _loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
     final savedFavorites = prefs.getStringList('favorite_properties') ?? [];
     setState(() {
       favoriteProperties = savedFavorites.map(int.parse).toSet();
+      FavoriteService.loggedInFavorites = favoriteProperties;
     });
   }
 
-  // Save favorites to SharedPreferences
+
+// ✅ Save favorites to SharedPreferences
   Future<void> _saveFavorites() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
-        'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
+      'favorite_properties',
+      favoriteProperties.map((id) => id.toString()).toList(),
+    );
   }
+
 
 
   @override
   Widget build(BuildContext context) {
 
+    // ⏳ Wait for shared pref login token before rendering UI
+    if (!isDataRead) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    // Still allow shimmer if loading API after login read
     if (_isLoading) {
       return Scaffold(
         body: ListView.builder(
@@ -539,7 +656,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
               Stack(
                 children: <Widget>[
                   Padding(
-                    padding: const EdgeInsets.only(top: 20),
+                    padding: const EdgeInsets.only(top: 30),
                     child: SizedBox(
                       height: 50,
                       width: double.infinity,
@@ -547,53 +664,44 @@ class _FliterListDemoState extends State<FliterListDemo> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           // Back Button
-                          Container(
-                            margin: const EdgeInsets.only(left: 20),
-                            height: 35,
-                            width: 35,
-                            padding: const EdgeInsets.all(7),
-                            decoration: _iconBoxDecoration(),
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const Filter(data: "Rent"),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 20), // ✅ Move margin outside
+                            child: Material(
+                              color: Colors.transparent,
+                              shape: const CircleBorder(),
+                              clipBehavior: Clip.hardEdge, // ✅ Needed for proper tap area
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const Filter(data: "Rent"),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  height: 35,
+                                  width: 35,
+                                  decoration: _iconBoxDecoration(),
+                                  alignment: Alignment.center,
+                                  child: Image.asset(
+                                    "assets/images/ar-left.png",
+                                    width: 15,
+                                    height: 15,
+                                    fit: BoxFit.contain,
                                   ),
-                                );
-                              },
-
-                              child: Image.asset(
-                                "assets/images/ar-left.png",
-                                width: 15,
-                                height: 15,
-                                fit: BoxFit.contain,
+                                ),
                               ),
                             ),
-                          )
-
-
-
-                          // Like Button (optional)
-                          // Container(
-                          //   margin: const EdgeInsets.only(right: 10),
-                          //   height: 35,
-                          //   width: 35,
-                          //   padding: const EdgeInsets.all(7),
-                          //   decoration: _iconBoxDecoration(),
-                          //   child: Image.asset(
-                          //     "assets/images/lov.png",
-                          //     width: 15,
-                          //     height: 15,
-                          //     fit: BoxFit.contain,
-                          //   ),
-                          // ),
+                          ),
                         ],
                       ),
                     ),
                   ),
                 ],
               ),
+
 
               //Searchbar
               // Responsive universal search bar
@@ -723,6 +831,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                             scrollDirection: Axis.horizontal,
                                             itemCount: _product.length,
                                             itemBuilder: (context, index) {
+
                                               bool isSelected = selectedproduct == index;
                                               return GestureDetector(
                                                 onTap: () async {
@@ -1786,6 +1895,9 @@ class _FliterListDemoState extends State<FliterListDemo> {
                 itemCount: filterModel.data?.length ?? 0,
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
+
+                  final property = filterModel.data![index];
+
                   bool isFavorited =
                   favoriteProperties.contains(filterModel.data![index].id);
                   return Padding(
@@ -1795,39 +1907,157 @@ class _FliterListDemoState extends State<FliterListDemo> {
                       shadowColor: Colors.white,
                       color: Colors.white,
                       child: GestureDetector(
-                        onTap: () async {
-                          String id = filterModel.data![index].id.toString();
-                          Navigator.push(
+                          onTap: () {
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => Product_Detail(data: id)));
-                        },
+                                builder: (context) => Featured_Detail(data: property.id.toString()),
+                              ),
+                            );
+                          },
                         child: Padding(
                           padding: const EdgeInsets.only(left: 5.0, top: 1, right: 5),
                           child: Column(
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
-                                child: Stack(children: [
-                                  AspectRatio(
-                                    aspectRatio: 1.5,
-                                    child: CachedNetworkImage(
-                                      imageUrl: filterModel.data![index].media!
-                                          .isNotEmpty
-                                          ? filterModel.data![index].media![0]
-                                          .originalUrl
-                                          .toString()
-                                          : 'https://via.placeholder.com/300x200?text=No+Image',
-                                      fit: BoxFit.cover,
-                                      height: 100,
-                                      placeholder: (context, url) =>
-                                      const CircularProgressIndicator(),
-                                      errorWidget: (context, url, error) =>
-                                      const Icon(Icons.error, size: 100),
+                                child: Stack(
+                                  children: [
+                                    AspectRatio(
+                                      aspectRatio: 1.5,
+                                      child: CachedNetworkImage(
+                                        imageUrl: filterModel.data![index].media!.isNotEmpty
+                                            ? filterModel.data![index].media![0].originalUrl.toString()
+                                            : 'https://via.placeholder.com/300x200?text=No+Image',
+                                        fit: BoxFit.cover,
+                                        height: 100,
+                                        placeholder: (context, url) => const CircularProgressIndicator(),
+                                        errorWidget: (context, url, error) => const Icon(Icons.error, size: 100),
+                                      ),
                                     ),
-                                  ),
-                                ]),
+
+                                    /// ❤️ Positioned Favorite Icon
+                                    Positioned(
+                                      top: 10,
+                                      right: 10,
+                                      child: Material(
+                                        color: Colors.white,
+                                        shape: const CircleBorder(),
+                                        elevation: 4,
+                                        child: IconButton(
+                                            icon: Icon(
+                                              property.saved == true || FavoriteService.loggedInFavorites.contains(property.id)
+                                                  ? Icons.favorite
+                                                  : Icons.favorite_border,
+                                              color: property.saved == true || FavoriteService.loggedInFavorites.contains(property.id)
+                                                  ? Colors.red
+                                                  : Colors.grey,
+                                            ),
+
+                                            onPressed: () async {
+                                              final token = await SecureStorage.getToken();
+
+                                              if (token == null || token.isEmpty) {
+                                                // 🔒 Show login-required dialog
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (ctx) => Dialog(
+                                                    backgroundColor: Colors.transparent,
+                                                    insetPadding: EdgeInsets.zero,
+                                                    child: Container(
+                                                      height: 70,
+                                                      margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.red,
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                      child: Stack(
+                                                        clipBehavior: Clip.none,
+                                                        children: [
+                                                          Positioned(
+                                                            top: -14,
+                                                            right: -10,
+                                                            child: IconButton(
+                                                              icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                              onPressed: () => Navigator.of(ctx).pop(),
+                                                              padding: EdgeInsets.zero,
+                                                              constraints: const BoxConstraints(),
+                                                            ),
+                                                          ),
+                                                          Positioned(
+                                                            left: 16,
+                                                            right: 16,
+                                                            bottom: 12,
+                                                            child: Row(
+                                                              children: [
+                                                                const Expanded(
+                                                                  child: Text(
+                                                                    'Login required to add favorites.',
+                                                                    style: TextStyle(color: Colors.white, fontSize: 13),
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(width: 12),
+                                                                GestureDetector(
+                                                                  onTap: () {
+                                                                    Navigator.of(ctx).pop();
+                                                                    Navigator.of(ctx).pushNamed('/login');
+                                                                  },
+                                                                  child: const Text(
+                                                                    'Login',
+                                                                    style: TextStyle(
+                                                                      color: Colors.white,
+                                                                      fontWeight: FontWeight.bold,
+                                                                      decoration: TextDecoration.underline,
+                                                                      decorationColor: Colors.white,
+                                                                      decorationThickness: 1.5,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                                return;
+                                              }
+
+                                              setState(() {
+                                                property.saved = !(property.saved ?? false);
+                                                if (property.saved == true) {
+                                                  favoriteProperties.add(property.id!);
+                                                  FavoriteService.loggedInFavorites.add(property.id!);
+                                                } else {
+                                                  favoriteProperties.remove(property.id!);
+                                                  FavoriteService.loggedInFavorites.remove(property.id!);
+                                                }
+                                              });
+
+                                              await _saveFavorites(); // Save to local
+                                              final success = await toggledApi(token, property.id!);
+
+                                              if (!success) {
+                                                setState(() {
+                                                  property.saved = !(property.saved ?? false); // revert
+                                                });
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text("Failed to update favorite.")),
+                                                );
+                                              }
+                                            }
+
+
+
+
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
+
                               Padding(
                                 padding: const EdgeInsets.only(top: 5),
                                 child: ListTile(
@@ -2003,19 +2233,102 @@ class _FliterListDemoState extends State<FliterListDemo> {
               child: Image.asset("assets/images/home.png", height: 25),
             ),
           ),
+
+          IconButton(
+            enableFeedback: false,
+            onPressed: () async {
+              final token = await SecureStorage.getToken();
+
+              if (token == null || token.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white,
+                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
+                        },
+                        child: const Text("Login", style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                // ✅ Updated version using cleaner logic
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const Fav_Logout()),
+                );
+
+                // 🔁 Reload favorite properties
+                await _loadFavorites();
+
+                setState(() {
+                  for (var p in filterModel.data!) {
+                    p.saved = favoriteProperties.contains(p.id);
+                  }
+                });
+              }
+            },
+            icon: pageIndex == 2
+                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+          ),
+
+
+
+
+
+          IconButton(
+            tooltip: "Email",
+            icon: const Icon(Icons.email_outlined, color: Colors.red),
+            onPressed: () async {
+              final Uri emailUri = Uri.parse(
+                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+              );
+
+              if (await canLaunchUrl(emailUri)) {
+                await launchUrl(emailUri);
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Email not available'),
+                    content: const Text('No email app is configured on this device. Please add a mail account first.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
             child: IconButton(
               enableFeedback: false,
               onPressed: () {
-                setState(() {
-                  if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  } else {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  }
-                });
+                if (!isLoggedIn) {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                } else {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                }
               },
+
               icon: pageIndex == 3
                   ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
                   : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),

@@ -13,6 +13,14 @@ import 'package:Akarat/model/agencypropertiesmodel.dart' as agencyModel;
 
 import 'package:Akarat/model/togglemodel.dart' as toggleModel;
 
+import 'package:Akarat/model/filtermodel.dart' as filterModel;
+import 'package:Akarat/model/featuredmodel.dart' as featured;
+
+import 'package:http/http.dart' as http;
+
+
+
+
 import 'package:Akarat/services/api_service.dart';
 import 'package:Akarat/secure_storage.dart';
 import 'package:Akarat/utils/shared_preference_manager.dart';
@@ -28,6 +36,9 @@ import 'package:Akarat/screen/searchexample.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:Akarat/screen/new_projects.dart';
 
+
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -39,6 +50,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import '../model/filtermodel.dart' as filterModel;
 import '../model/filtermodel.dart' as filter;
+import '../services/favorite_service.dart';
 import 'filter_list.dart';
 
 
@@ -79,16 +91,30 @@ class Home extends StatelessWidget {
   }
 }
 class HomeDemo extends StatefulWidget {
+
   const HomeDemo({Key? key}) : super(key: key);
+
+
 
   @override
   State<HomeDemo> createState() => _MyHomePageState();
+
+
 }
 
+String selectedSort = "Featured";
 
 class _MyHomePageState extends State<HomeDemo> {
 
+  final ScrollController _scrollController = ScrollController();
 
+
+  final Map<String, String> sortMap = {
+    "Featured": "featured",
+    "Newest": "newest",
+    "Price (low)": "price_asc",
+    "Price (high)": "price_desc",
+  };
 
 
 
@@ -98,6 +124,12 @@ class _MyHomePageState extends State<HomeDemo> {
   List<String> locationSuggestions = [];
 
   bool isSearching = false;
+
+  String? nextPageUrl;
+
+  String? selectedSortKey; // holds current sort_by value
+
+
 
 
 
@@ -117,30 +149,17 @@ class _MyHomePageState extends State<HomeDemo> {
     return input; // fallback
   }
 
-// WhatsApp sanitizer: always outputs 971XXXXXXXXX (no plus)
+  // WhatsApp sanitizer: always outputs 971XXXXXXXXX (no plus)
   String whatsAppNumber(String input) {
-    // Remove all non-digit characters
     input = input.replaceAll(RegExp(r'[^\d]'), '');
-
-    // Remove leading zeros
-    if (input.startsWith('0')) {
-      input = input.substring(1);
-    }
-
-    // Remove duplicated country code if already present
-    if (input.startsWith('971971')) {
-      input = input.replaceFirst('971971', '971');
-    }
-
-    // Ensure starts with UAE code
-    if (input.startsWith('971')) {
-      return input;
-    }
-
-    // Add UAE prefix if missing
-    return '971$input';
+    if (input.startsWith('971')) return input;
+    if (input.startsWith('00971')) return input.substring(2);
+    if (input.startsWith('+971')) return input.substring(1);
+    if (input.startsWith('0') && input.length == 10)
+      return '971${input.substring(1)}';
+    if (input.length == 9) return '971$input';
+    return input; // fallback
   }
-
 
   Future<void> fetchLocationSuggestions(String query) async {
     String url = query.isEmpty
@@ -167,6 +186,19 @@ class _MyHomePageState extends State<HomeDemo> {
     }
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh favorites when coming back from Fav_Logout
+    _refreshFavoritesIfNeeded();
+  }
+
+  void _refreshFavoritesIfNeeded() async {
+    final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
+    setState(() {
+      FavoriteService.loggedInFavorites = updatedFavorites;
+    });
+  }
 
 
 
@@ -198,12 +230,34 @@ class _MyHomePageState extends State<HomeDemo> {
     }
   }
 
+  void fetchProperties(String sortBy) async {
+    final url = Uri.parse('https://akarat.com/api/properties?sort_by=$sortBy');
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        // Parse and update your property list model here
+        setState(() {
+          // update your property list model from API
+        });
+      } else {
+        print('Failed to load properties');
+      }
+    } catch (e) {
+      print('Error fetching properties: $e');
+    }
+  }
+
+
 
   @override
 
 
   Future<void> _fetchSavedProperties() async {
-    final savedToken = await SecureStorage.getToken();
+    final savedToken = await SecureStorage.getToken(); // ✅ Correct
+
+
 
     if (savedToken == null) {
       print('User not logged in. Skipping saved properties fetch.');
@@ -245,7 +299,7 @@ class _MyHomePageState extends State<HomeDemo> {
   List<Property> searchResults = [];
   String location ='';
 
-  ScrollController _scrollController = ScrollController();
+  // ScrollController _scrollController = ScrollController();
   int currentPage = 1;
   bool isLoading = false;
   bool hasMore = true;
@@ -269,38 +323,35 @@ class _MyHomePageState extends State<HomeDemo> {
   }
   final FocusNode _focusNode = FocusNode();
   @override
-  @override
+
   @override
   void initState() {
     super.initState();
 
-    // 1️⃣ Load featured properties
-    getFeaturedProperties(forceRefresh: true);
-
-    // 2️⃣ Load token and fetch saved properties only if logged in
     SecureStorage.getToken().then((value) {
-      token = value ?? '';
+      setState(() => token = value ?? '');
       if (token.isNotEmpty) {
-        _fetchSavedProperties(); // only for logged-in users
+        _fetchSavedProperties();
       }
-
-      // 3️⃣ setState to trigger UI updates for favorites
-      setState(() {});
     });
 
-    // 4️⃣ Setup scroll listener for pagination
-    _scrollController = ScrollController()
-      ..addListener(() {
-        if (_scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 200 &&
-            !isLoading &&
-            hasMore) {
+    getFeaturedProperties(forceRefresh: true); // Initial call
+
+    _scrollController.addListener(() {
+      final threshold = 200.0;
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - threshold) {
+        if (!isLoading && nextPageUrl != null && nextPageUrl!.isNotEmpty) {
+          print("🟢 Triggering loadMore: $nextPageUrl");
           getFeaturedProperties(loadMore: true);
         }
-      });
-
-    // 5️⃣ Optionally add focus to your search bar if needed
+      }
+    });
   }
+
+
+
+
 
 
 
@@ -348,7 +399,6 @@ class _MyHomePageState extends State<HomeDemo> {
   @override
   void dispose() {
     _scrollController.dispose();
-    _pageController.dispose();
     super.dispose();
   }
 
@@ -402,111 +452,182 @@ class _MyHomePageState extends State<HomeDemo> {
 
 
 
+  Future<void> getFeaturedProperties({
+    bool loadMore = false,
+    bool forceRefresh = false,
+    String? sortBy,
+  }) async {
+    if (isLoading) return;
 
-
-  Future<void> getFeaturedProperties({bool loadMore = false, bool forceRefresh = false}) async {
-    if (isLoading || !hasMore) return;
+    // Stop if no more pages available on loadMore
+    if (loadMore && (nextPageUrl == null || nextPageUrl!.isEmpty)) {
+      print("🔴 No more pages to load.");
+      return;
+    }
 
     setState(() => isLoading = true);
 
-    final uri = Uri.parse("https://akarat.com/api/featured-properties?page=$currentPage");
-    final cacheKey = 'featured_cache_page_$currentPage';
-    final cacheTimeKey = 'featured_cache_time_page_$currentPage';
-
-    final prefs = await SharedPreferences.getInstance();
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final cacheValidityDuration = const Duration(hours: 6).inMilliseconds; // 6 hours cache
-
-    // If forceRefresh = true → clear cache first
-    if (forceRefresh) {
-      await prefs.remove(cacheKey);
-      await prefs.remove(cacheTimeKey);
-      debugPrint("🔄 Forced cache cleared for page $currentPage");
-    }
-
-    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
-    final cachedData = prefs.getString(cacheKey);
-
-    // 👉 Use cache if still fresh AND not forcing refresh
-    if (cachedData != null && (now - lastFetched) < cacheValidityDuration && !forceRefresh) {
-      final jsonData = jsonDecode(cachedData);
-      final model = featured.FeaturedResponseModel.fromJson(jsonData);
-
-      setState(() {
-        if (loadMore && featuredModel != null) {
-          featuredModel!.data!.addAll(model.data?.data ?? []);
-        } else {
-          featuredModel = model.data;
-        }
-        currentPage = model.data?.meta?.currentPage ?? 1;
-        hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
-      });
-
-      setState(() => isLoading = false);
-      return; // ✅ Done using cache
-    }
-
-    // Else → Call fresh API
-    int retryCount = 0;
-    const maxRetries = 3;
-
-    while (retryCount < maxRetries) {
-      try {
-        final response = await http
-            .get(uri)
-            .timeout(const Duration(seconds: 10)); // Timeout for faster failure
-
-        if (response.statusCode == 200) {
-          final jsonData = jsonDecode(response.body);
-          final model = featured.FeaturedResponseModel.fromJson(jsonData);
-
-          setState(() {
-            if (loadMore && featuredModel != null) {
-              featuredModel!.data!.addAll(model.data?.data ?? []);
-            } else {
-              featuredModel = model.data;
-            }
-            currentPage = model.data?.meta?.currentPage ?? 1;
-            hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
-          });
-
-          // 👉 Save to cache
-          prefs.setString(cacheKey, response.body);
-          prefs.setInt(cacheTimeKey, now);
-
-          debugPrint("✅ Fresh API data loaded and cached for page $currentPage");
-
-          break; // ✅ Success, break retry loop
-        }  else {
-          debugPrint("❌ API Error: ${response.statusCode}");
-          featuredModel = null; // Clear to avoid stuck UI
-          break; // stop retry loop
-        }
-
-      } on SocketException catch (_) {
-        retryCount++;
-        debugPrint('⚠️ SocketException, retrying... ($retryCount/$maxRetries)');
-        if (retryCount >= maxRetries) {
-          debugPrint('❌ Failed after retries.');
-        }
-        await Future.delayed(const Duration(seconds: 1));
-      } on TimeoutException catch (_) {
-        retryCount++;
-        debugPrint('⚠️ Timeout, retrying... ($retryCount/$maxRetries)');
-        if (retryCount >= maxRetries) {
-          debugPrint('❌ Failed after retries.');
-        }
-        await Future.delayed(const Duration(seconds: 1));
-      }  catch (e) {
-        debugPrint("❌ Unexpected Exception: $e");
-        featuredModel = null; // Reset model
-        break;
+    String url;
+    if (forceRefresh || (!loadMore && featuredModel == null)) {
+      // Initial load or refresh
+      url = "https://akarat.com/api/properties?page=1";
+      if (sortBy != null) {
+        url += "&sort_by=$sortBy";
       }
-
+      nextPageUrl = null; // reset pagination
+    } else {
+      // Load next page from API
+      url = nextPageUrl!;
     }
 
-    setState(() => isLoading = false);
+    try {
+      print("📡 Fetching URL: $url");
+      final response = await http.get(Uri.parse(url)).timeout(Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final model = featured.FeaturedResponseModel.fromJson(jsonData);
+
+        setState(() {
+          if (loadMore) {
+            final List<featured.Data> currentList = featuredModel?.data ?? [];
+            final List<featured.Data> newItems = model.data?.data ?? [];
+
+            featuredModel = featured.FeaturedModel(
+              data: [...currentList, ...newItems],
+              links: model.data?.links,
+              meta: model.data?.meta,
+              totalProperties: model.data?.totalProperties,
+            );
+          } else {
+            featuredModel = model.data;
+          }
+
+          nextPageUrl = model.data?.links?.next;
+          print("✅ Next Page URL: $nextPageUrl");
+          print("📦 Total loaded: ${featuredModel?.data?.length}");
+        });
+      } else {
+        debugPrint("❌ API Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("❌ Fetch error: $e");
+    } finally {
+      setState(() => isLoading = false);
+    }
   }
+
+
+
+
+
+
+
+
+
+  // Future<void> getFeaturedProperties({bool loadMore = false, bool forceRefresh = false}) async {
+  //   if (isLoading || !hasMore) return;
+  //
+  //   setState(() => isLoading = true);
+  //
+  //   final uri = Uri.parse("https://akarat.com/api/featured-properties?page=$currentPage");
+  //   final cacheKey = 'featured_cache_page_$currentPage';
+  //   final cacheTimeKey = 'featured_cache_time_page_$currentPage';
+  //
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final now = DateTime.now().millisecondsSinceEpoch;
+  //   final cacheValidityDuration = const Duration(hours: 6).inMilliseconds; // 6 hours cache
+  //
+  //   // If forceRefresh = true → clear cache first
+  //   if (forceRefresh) {
+  //     await prefs.remove(cacheKey);
+  //     await prefs.remove(cacheTimeKey);
+  //     debugPrint("🔄 Forced cache cleared for page $currentPage");
+  //   }
+  //
+  //   final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+  //   final cachedData = prefs.getString(cacheKey);
+  //
+  //   // 👉 Use cache if still fresh AND not forcing refresh
+  //   if (cachedData != null && (now - lastFetched) < cacheValidityDuration && !forceRefresh) {
+  //     final jsonData = jsonDecode(cachedData);
+  //     final model = featured.FeaturedResponseModel.fromJson(jsonData);
+  //
+  //     setState(() {
+  //       if (loadMore && featuredModel != null) {
+  //         featuredModel!.data!.addAll(model.data?.data ?? []);
+  //       } else {
+  //         featuredModel = model.data;
+  //       }
+  //       currentPage = model.data?.meta?.currentPage ?? 1;
+  //       hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
+  //     });
+  //
+  //     setState(() => isLoading = false);
+  //     return; // ✅ Done using cache
+  //   }
+  //
+  //   // Else → Call fresh API
+  //   int retryCount = 0;
+  //   const maxRetries = 3;
+  //
+  //   while (retryCount < maxRetries) {
+  //     try {
+  //       final response = await http
+  //           .get(uri)
+  //           .timeout(const Duration(seconds: 10)); // Timeout for faster failure
+  //
+  //       if (response.statusCode == 200) {
+  //         final jsonData = jsonDecode(response.body);
+  //         final model = featured.FeaturedResponseModel.fromJson(jsonData);
+  //
+  //         setState(() {
+  //           if (loadMore && featuredModel != null) {
+  //             featuredModel!.data!.addAll(model.data?.data ?? []);
+  //           } else {
+  //             featuredModel = model.data;
+  //           }
+  //           currentPage = model.data?.meta?.currentPage ?? 1;
+  //           hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
+  //         });
+  //
+  //         // 👉 Save to cache
+  //         prefs.setString(cacheKey, response.body);
+  //         prefs.setInt(cacheTimeKey, now);
+  //
+  //         debugPrint("✅ Fresh API data loaded and cached for page $currentPage");
+  //
+  //         break; // ✅ Success, break retry loop
+  //       }  else {
+  //         debugPrint("❌ API Error: ${response.statusCode}");
+  //         featuredModel = null; // Clear to avoid stuck UI
+  //         break; // stop retry loop
+  //       }
+  //
+  //     } on SocketException catch (_) {
+  //       retryCount++;
+  //       debugPrint('⚠️ SocketException, retrying... ($retryCount/$maxRetries)');
+  //       if (retryCount >= maxRetries) {
+  //         debugPrint('❌ Failed after retries.');
+  //       }
+  //       await Future.delayed(const Duration(seconds: 1));
+  //     } on TimeoutException catch (_) {
+  //       retryCount++;
+  //       debugPrint('⚠️ Timeout, retrying... ($retryCount/$maxRetries)');
+  //       if (retryCount >= maxRetries) {
+  //         debugPrint('❌ Failed after retries.');
+  //       }
+  //       await Future.delayed(const Duration(seconds: 1));
+  //     }  catch (e) {
+  //       debugPrint("❌ Unexpected Exception: $e");
+  //       featuredModel = null; // Reset model
+  //       break;
+  //     }
+  //
+  //   }
+  //
+  //   setState(() => isLoading = false);
+  // }
 
 
 
@@ -677,7 +798,7 @@ class _MyHomePageState extends State<HomeDemo> {
                               ),
 
 
-                              const SizedBox(width: 10),
+                              // const SizedBox(width: 5),
 
                               Expanded(
                                 child: TextField(
@@ -823,22 +944,23 @@ class _MyHomePageState extends State<HomeDemo> {
               //   Expanded(
               // child: SingleChildScrollView(
               //  child:
-                Expanded(
-                    child: RefreshIndicator(
-                      onRefresh: () async {
-                        await getFeaturedProperties(forceRefresh: true);
-                      },
-                      child: SingleChildScrollView(
-                        physics: AlwaysScrollableScrollPhysics(), // important for pull-to-refresh
-                        child: Column(
-
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 10.0),
-                                child: Row(
-                                  children: [
-                                    //logo 1
-                                    GestureDetector(
+    Expanded(
+    child: RefreshIndicator(
+    onRefresh: () async {
+    await getFeaturedProperties(forceRefresh: true);
+    },
+    child: ListView(
+    controller: _scrollController,
+    physics: const AlwaysScrollableScrollPhysics(),
+    padding: EdgeInsets.zero,
+    children: [
+    // 🔽 ALL YOUR CATEGORY UI HERE
+    Padding(
+    padding: const EdgeInsets.only(top: 10.0),
+    child: Row(
+    children: [
+    // Rent
+    GestureDetector(
                                       onTap: (){
                                         purpose= "Rent";
                                         Navigator.push(context, MaterialPageRoute(builder: (context)=> filter.Filter(data:purpose)));
@@ -846,8 +968,8 @@ class _MyHomePageState extends State<HomeDemo> {
                                       child:  Padding(
                                         padding: const EdgeInsets.all(8),
                                         /*padding: const EdgeInsets.only(
-                                      left: 17.0, right: 10.0, top: 10, bottom: 0),
-                                                */
+                                        left: 17.0, right: 10.0, top: 10, bottom: 0),
+                                                  */
                                         child: Container(
                                             width: screenSize.width * 0.29,
                                             height: screenSize.height*0.11,
@@ -898,7 +1020,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                       Padding(
                                         padding: const EdgeInsets.all(8),
                                         /* padding: const EdgeInsets.only(
-                                      left: 5.0, right: 10.0, top: 10.0, bottom: 0),*/
+                                        left: 5.0, right: 10.0, top: 10.0, bottom: 0),*/
                                         child: Container(
                                             width: screenSize.width * 0.29,
                                             height: screenSize.height*0.11,
@@ -947,7 +1069,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                       Padding(
                                         padding: const EdgeInsets.all(5),
                                         /*padding: const EdgeInsets.only(
-                                      left: 5.0, right: 10.0, top: 10.0, bottom: 0),*/
+                                        left: 5.0, right: 10.0, top: 10.0, bottom: 0),*/
                                         child: Container(
                                             width: screenSize.width * 0.3,
                                             height: screenSize.height*0.11,
@@ -1006,7 +1128,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                       Padding(
                                         padding: const EdgeInsets.all(8),
                                         /* padding: const EdgeInsets.only(
-                                      left: 17.0, right: 10.0, top: 8, bottom: 0),*/
+                                        left: 17.0, right: 10.0, top: 8, bottom: 0),*/
                                         child: Container(
                                             width: screenSize.width * 0.29,
                                             height: screenSize.height*0.11,
@@ -1059,7 +1181,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                       Padding(
                                         padding: const EdgeInsets.all(8),
                                         /*padding: const EdgeInsets.only(
-                                      left: 5.0, right: 10.0, top: 8, bottom: 0),*/
+                                        left: 5.0, right: 10.0, top: 8, bottom: 0),*/
                                         child: Container(
                                             width: screenSize.width * 0.29,
                                             height: screenSize.height*0.11,
@@ -1112,7 +1234,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                       Padding(
                                         padding: const EdgeInsets.all(5),
                                         /*padding: const EdgeInsets.only(
-                                      left: 5.0, right: 5.0, top: 8, bottom: 0),*/
+                                        left: 5.0, right: 5.0, top: 8, bottom: 0),*/
                                         child: Container(
                                             width: screenSize.width * 0.3,
                                             height: screenSize.height*0.11,
@@ -1191,7 +1313,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                     ),
                                     child: Row(
                                       /* mainAxisAlignment: MainAxisAlignment.start,
-                                                                crossAxisAlignment: CrossAxisAlignment.center,*/
+                                                                  crossAxisAlignment: CrossAxisAlignment.center,*/
                                       children: [
                                         Padding(
                                             padding: const EdgeInsets.only(
@@ -1235,249 +1357,457 @@ class _MyHomePageState extends State<HomeDemo> {
                                       ],
                                     ),),
                                 ),),
+
+
+
                               //  Text
-                              Container(
-                                margin: const EdgeInsets.only(top: 20,left: 5,),
-                                height: screenSize.height*0.03,
-                                // color: Colors.grey,
-                                child:   Row(
-                                  spacing: screenSize.width*0.3,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                                      child: Text(
-                                        "${featuredModel?.totalFeaturedProperties ?? 0} Projects",
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 17,
-                                        ),
-                                        textAlign: TextAlign.left,
+      Container(
+        margin: const EdgeInsets.only(top: 20, left: 5, right: 15),
+        height: screenSize.height * 0.05,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Left: Property count
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                "${featuredModel?.totalProperties ?? 0} Properties",
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+
+
+
+            // Right: Dropdown (Featured)
+            PopupMenuButton<String>(
+              elevation: 0,
+              onSelected: (value) {
+                setState(() {
+                  selectedSort = value;
+                  // 🔁 Call your sorting/filter logic here
+                });
+              },
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              offset: const Offset(0, 35),
+              color: Colors.white, // Needed to style the container inside
+              itemBuilder: (context) {
+                final List<String> sortOptions = [
+                  "Featured",
+                  "Newest",
+                  "Price (low)",
+                  "Price (high)",
+                ];
+
+                return [
+                  PopupMenuItem<String>(
+                    enabled: false,
+                    padding: EdgeInsets.zero,
+                    child: Container(
+                      width: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.white, // 👈 Your dropdown background
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: sortOptions.map((option) {
+                          return InkWell(
+                            onTap: () {
+                              Navigator.pop(context);
+                              final selectedKey = sortMap[option]!;
+                              setState(() {
+                                selectedSort = option;
+                                selectedSortKey = selectedKey; // ✅ Store selected sort key
+                                featuredModel = null;
+                                nextPageUrl = null;
+                              });
+                              getFeaturedProperties(sortBy: selectedKey); // ✅ Sorted API call
+                              _scrollController.jumpTo(0); // ✅ Reset scroll
+                            },
+
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        option,
+                                        style: const TextStyle(color: Colors.black), // 👈 Black text
                                       ),
-                                    ),
 
-                                    // Row(
-                                    //   children: [
-                                    //     Padding(
-                                    //         padding: const EdgeInsets.only(
-                                    //             left: 0.0, right: 10.0, top: 0, bottom: 0),
-                                    //         child:  Image.asset("assets/images/filter.png",height: 20,)
-                                    //     ),
-                                    //
-                                    //     Padding(
-                                    //       padding: const EdgeInsets.only(
-                                    //           left: 2.0, right: 10.0, top: 0, bottom: 0),
-                                    //       // child:  Text(result,style: TextStyle(
-                                    //       child:  Text("Featured",style: TextStyle(
-                                    //         color: Colors.black,fontWeight: FontWeight.bold,
-                                    //         fontSize: 15,
-                                    //       ),textAlign: TextAlign.right,),
-                                    //     ),
-                                    //   ],
-                                    // )
-
-                                  ],
+                                      if (selectedSort == option)
+                                        const Icon(Icons.check, color: Colors.green, size: 18),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              featuredModel == null
-                                  ? Center(child: const ShimmerCard())
-                                  :
-                              //Expanded(
+                                if (option != sortOptions.last)
+                                  const Divider(height: 1, thickness: 0.5, color: Colors.grey),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ];
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.red),
+                ),
+                child: Row(
+                  children: [
+                    Image.asset(
+                      "assets/images/filter.png",
+                      height: 16,
+                      width: 16,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(selectedSort), // 👉 No TextStyle here
+                    const Icon(Icons.arrow_drop_down, size: 18),
+                  ],
+                ),
+              ),
+            ),
+
+
+          ],
+        ),
+      ),
+      featuredModel == null
+          ? const Center(child: ShimmerCard())
+          :
+
+
+      //Expanded(
                               // child:
                               /*Expanded(
-                                        child:*/
+                                          child:*/
                               ListView.builder(
-                                controller: _scrollController, // ✅ Attach the controller here
-                                padding: EdgeInsets.zero,
-                                physics: NeverScrollableScrollPhysics(), // 👈 disable inner scroll
-                                shrinkWrap: true,
-                                itemCount: (featuredModel?.data?.length ?? 0) + (hasMore ? 1 : 0),
-                                itemBuilder: (context, index) {
-                                  if (index == featuredModel?.data?.length) {
-                                    return Center(child: CircularProgressIndicator());
-                                  }
-                                  final item = featuredModel!.data![index];
-                                  final projectId = item.id;
-                                  bool isFavorited = favoriteProperties.contains(item.id);
 
-                                  return GestureDetector(
-                                    onTap: () {
-                                      String id = item.id.toString();
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => Featured_Detail(data: id),
-                                        ),
-                                      );
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                      child: Card(
-                                        color: Colors.white,
-                                        shadowColor: Colors.white,
-                                        elevation: 10,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(10),
-                                          child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
+                                  shrinkWrap: true,
+                                  padding: EdgeInsets.zero,
+                                  physics: NeverScrollableScrollPhysics(),
 
-                                                Column(
-                                                  children: [
-                                                    Stack(
-                                                      clipBehavior: Clip.none, // ✅ Allows the overlap outside the Stack
-                                                      children: [
-                                                        // 🖼️ Property Image Carousel with Rounded Corners
-                                                        ClipRRect(
-                                                          borderRadius: BorderRadius.circular(12),
-                                                          child: AspectRatio(
-                                                            aspectRatio: 1.4,
-                                                            child: PageView.builder(
-                                                              controller: _pageController,
-                                                              scrollDirection: Axis.horizontal,
-                                                              itemCount: item.media?.length ?? 0,
-                                                              onPageChanged: (index) {
-                                                                setState(() {
-                                                                  _currentImageIndex = index;
-                                                                });
-                                                              },
-                                                              itemBuilder: (context, imgIndex) {
-                                                                return CachedNetworkImage(
-                                                                  imageUrl: item.media![imgIndex].originalUrl.toString(),
-                                                                  fit: BoxFit.cover,
-                                                                );
-                                                              },
-                                                            ),
-                                                          ),
-                                                        ),
+                                  // 👈 only if inside a parent scrollable view
+                                  itemCount: (featuredModel?.data?.length ?? 0) + (nextPageUrl != null ? 1 : 0),
+                                  itemBuilder: (context, index) {
+                                    final properties = featuredModel?.data ?? [];
 
-                                                        // ⚪ Image Indicator Dots
-                                                        Positioned(
-                                                          bottom: 12,
-                                                          left: 0,
-                                                          right: 0,
-                                                          child: Row(
-                                                            mainAxisAlignment: MainAxisAlignment.center,
-                                                            children: List.generate(
-                                                              item.media?.length ?? 0,
-                                                                  (index) {
-                                                                final distance = (index - _currentImageIndex).abs();
-                                                                double scale;
-                                                                double opacity;
-
-                                                                if (distance == 0) {
-                                                                  scale = 1.2;
-                                                                  opacity = 1.0;
-                                                                } else if (distance == 1) {
-                                                                  scale = 1.0;
-                                                                  opacity = 0.7;
-                                                                } else if (distance == 2) {
-                                                                  scale = 0.8;
-                                                                  opacity = 0.5;
-                                                                } else {
-                                                                  scale = 0.5;
-                                                                  opacity = 0.0;
-                                                                }
-
-                                                                return AnimatedOpacity(
-                                                                  duration: Duration(milliseconds: 300),
-                                                                  opacity: opacity,
-                                                                  child: SizedBox(
-                                                                    width: 12, // fixed size for layout stability
-                                                                    height: 12,
-                                                                    child: Center(
-                                                                      child: Container(
-                                                                        width: 8 * scale,
-                                                                        height: 8 * scale,
-                                                                        decoration: BoxDecoration(
-                                                                          color: Colors.white,
-                                                                          shape: BoxShape.circle,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                );
-                                                              },
-                                                            ),
-                                                          ),
-                                                        ),
+                                    // 🔄 Show loader at end if next page exists
+                                    if (index == properties.length && nextPageUrl != null) {
+                                      return const CircularProgressIndicator();
+                                    } else if (index == properties.length && nextPageUrl == null) {
+                                      return const SizedBox.shrink(); // Nothing more to show
+                                    }
 
 
-                                                        // ❤️ Favorite Icon
-                                                        // ❤️ Favorite Icon
-                                                        Positioned(
-                                                          top: 10,
-                                                          right: 10,
-                                                          child: Builder(
-                                                            builder: (BuildContext scaffoldContext) => GestureDetector(
-                                                              behavior: HitTestBehavior.translucent,
-                                                              onTap: () async {
-                                                                final id = item.id;
-                                                                if (id == null) return;
+                                    // 🔐 Safety check (extra)
+                                    if (index >= properties.length) return const SizedBox.shrink();
 
-                                                                if (token.isNotEmpty) {
-                                                                  final success = await toggledApi(token, id);
-                                                                  if (success) {
-                                                                    setState(() {
-                                                                      item.saved = !(item.saved ?? false);
-                                                                    });
-                                                                  }
-                                                                } else {
-                                                                  // ✅ Correct context used here
-                                                                  ScaffoldMessenger.of(scaffoldContext).showSnackBar(
-                                                                    SnackBar(
-                                                                      content: Text('Login required to add favorites.'),
-                                                                      backgroundColor: Colors.red,
-                                                                      behavior: SnackBarBehavior.floating,
-                                                                      duration: Duration(seconds: 2),
-                                                                    ),
+                                    final item = properties[index];
+
+
+
+
+                                    return GestureDetector(
+                                      onTap: () {
+                                        String id = item.id.toString();
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => Featured_Detail(data: id),
+                                          ),
+                                        );
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                        child: Card(
+                                          color: Colors.white,
+                                          shadowColor: Colors.white,
+                                          elevation: 10,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+
+                                                  Column(
+                                                    children: [
+                                                      Stack(
+                                                        clipBehavior: Clip.none,
+                                                        // ✅ Allows the overlap outside the Stack
+                                                        children: [
+                                                          // 🖼️ Property Image Carousel with Rounded Corners
+                                                          ClipRRect(
+                                                            borderRadius: BorderRadius.circular(12),
+                                                            child: AspectRatio(
+                                                              aspectRatio: 1.4,
+                                                              child: PageView.builder(
+                                                                controller: _pageController,
+                                                                scrollDirection: Axis.horizontal,
+                                                                itemCount: item.media?.length ?? 0,
+                                                                onPageChanged: (index) {
+                                                                  setState(() {
+                                                                    _currentImageIndex = index;
+                                                                  });
+                                                                },
+                                                                itemBuilder: (context, imgIndex) {
+                                                                  return CachedNetworkImage(
+                                                                    imageUrl: item.media![imgIndex]
+                                                                        .originalUrl.toString(),
+                                                                    fit: BoxFit.cover,
                                                                   );
-
-                                                                  await Future.delayed(Duration(seconds: 2));
-                                                                  Navigator.pushNamed(scaffoldContext, '/login');
-                                                                }
-                                                              },
-                                                              child: Container(
-                                                                padding: const EdgeInsets.all(8),
-                                                                decoration: BoxDecoration(
-                                                                  color: Colors.white,
-                                                                  shape: BoxShape.circle,
-                                                                  boxShadow: [
-                                                                    BoxShadow(
-                                                                      color: Colors.black26,
-                                                                      blurRadius: 4,
-                                                                      offset: Offset(2, 2),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                child: Icon(
-                                                                  item.saved == true ? Icons.favorite : Icons.favorite_border,
-                                                                  color: item.saved == true ? Colors.red : Colors.grey,
-                                                                  size: 20,
-                                                                ),
+                                                                },
                                                               ),
                                                             ),
                                                           ),
-                                                        ),
 
-                                                        // 👈 returns an empty widget when not logged in
+                                                          // ⚪ Image Indicator Dots
+                                                          Positioned(
+                                                            bottom: 12,
+                                                            left: 0,
+                                                            right: 0,
+                                                            child: Row(
+                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                              children: List.generate(
+                                                                item.media?.length ?? 0,
+                                                                    (index) {
+                                                                  final distance = (index -
+                                                                      _currentImageIndex).abs();
+                                                                  double scale;
+                                                                  double opacity;
+
+                                                                  if (distance == 0) {
+                                                                    scale = 1.2;
+                                                                    opacity = 1.0;
+                                                                  } else if (distance == 1) {
+                                                                    scale = 1.0;
+                                                                    opacity = 0.7;
+                                                                  } else if (distance == 2) {
+                                                                    scale = 0.8;
+                                                                    opacity = 0.5;
+                                                                  } else {
+                                                                    scale = 0.5;
+                                                                    opacity = 0.0;
+                                                                  }
+
+                                                                  return AnimatedOpacity(
+                                                                    duration: Duration(milliseconds: 300),
+                                                                    opacity: opacity,
+                                                                    child: SizedBox(
+                                                                      width: 12,
+                                                                      // fixed size for layout stability
+                                                                      height: 12,
+                                                                      child: Center(
+                                                                        child: Container(
+                                                                          width: 8 * scale,
+                                                                          height: 8 * scale,
+                                                                          decoration: BoxDecoration(
+                                                                            color: Colors.white,
+                                                                            shape: BoxShape.circle,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                },
+                                                              ),
+                                                            ),
+                                                          ),
 
 
-                                                        // 👈 Return nothing if not logged in
+                                                          // ❤️ Favorite Icon
+                                                          // ❤️ Favorite Icon
+                                                          Positioned(
+                                                            top: 10,
+                                                            right: 10,
+                                                            child: Material(
+                                                              color: Colors.white,
+                                                              shape: const CircleBorder(),
+                                                              elevation: 4,
+                                                              child: IconButton(
+                                                                  icon: Icon(
+                                                                    (token.isNotEmpty &&
+                                                                        FavoriteService.loggedInFavorites
+                                                                            .contains(item.id))
+                                                                        ? Icons.favorite
+                                                                        : Icons.favorite_border,
+                                                                    color: (token.isNotEmpty &&
+                                                                        FavoriteService.loggedInFavorites
+                                                                            .contains(item.id))
+                                                                        ? Colors.red
+                                                                        : Colors.grey,
+                                                                    size: 20,
+                                                                  ),
 
 
+                                                                  onPressed: () async {
+                                                                    if (token.isEmpty) {
+                                                                      // 🔒 Show login prompt
+                                                                      showDialog(
+                                                                        context: context,
+                                                                        builder: (ctx) =>
+                                                                            Dialog(
+                                                                              backgroundColor: Colors
+                                                                                  .transparent,
+                                                                              insetPadding: EdgeInsets
+                                                                                  .zero,
+                                                                              child: Container(
+                                                                                height: 70,
+                                                                                margin: const EdgeInsets
+                                                                                    .only(bottom: 80,
+                                                                                    left: 20,
+                                                                                    right: 20),
+                                                                                decoration: BoxDecoration(
+                                                                                  color: Colors.red,
+                                                                                  borderRadius: BorderRadius
+                                                                                      .circular(10),
+                                                                                ),
+                                                                                child: Stack(
+                                                                                  clipBehavior: Clip.none,
+                                                                                  children: [
+                                                                                    Positioned(
+                                                                                      top: -14,
+                                                                                      right: -10,
+                                                                                      child: Material(
+                                                                                        color: Colors
+                                                                                            .transparent,
+                                                                                        child: IconButton(
+                                                                                          icon: const Icon(
+                                                                                              Icons.close,
+                                                                                              color: Colors
+                                                                                                  .white,
+                                                                                              size: 20),
+                                                                                          onPressed: () =>
+                                                                                              Navigator
+                                                                                                  .of(ctx)
+                                                                                                  .pop(),
+                                                                                          padding: EdgeInsets
+                                                                                              .zero,
+                                                                                          constraints: const BoxConstraints(),
+                                                                                        ),
+                                                                                      ),
+                                                                                    ),
+                                                                                    Positioned(
+                                                                                      left: 16,
+                                                                                      right: 16,
+                                                                                      bottom: 12,
+                                                                                      child: Row(
+                                                                                        children: [
+                                                                                          const Expanded(
+                                                                                            child: Text(
+                                                                                              'Login required to add favorites.',
+                                                                                              style: TextStyle(
+                                                                                                  color: Colors
+                                                                                                      .white,
+                                                                                                  fontSize: 13),
+                                                                                            ),
+                                                                                          ),
+                                                                                          const SizedBox(
+                                                                                              width: 12),
+                                                                                          GestureDetector(
+                                                                                            onTap: () {
+                                                                                              Navigator
+                                                                                                  .of(ctx)
+                                                                                                  .pop();
+                                                                                              Navigator
+                                                                                                  .of(ctx)
+                                                                                                  .pushNamed(
+                                                                                                  '/login');
+                                                                                            },
+                                                                                            child: const Text(
+                                                                                              'Login',
+                                                                                              style: TextStyle(
+                                                                                                color: Colors
+                                                                                                    .white,
+                                                                                                fontWeight: FontWeight
+                                                                                                    .bold,
+                                                                                                decoration: TextDecoration
+                                                                                                    .underline,
+                                                                                                decorationColor: Colors
+                                                                                                    .white,
+                                                                                                decorationThickness: 1.5,
+                                                                                              ),
+                                                                                            ),
+                                                                                          ),
+                                                                                        ],
+                                                                                      ),
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                      );
+                                                                      return;
+                                                                    }
 
-                                                        // 🧑‍💼 Overlapping Agent Profile Image
-                                                        // 🧑‍💼 Overlapping Agent Profile Image
-                                                        // 🧑‍💼 Agent Profile with Navigation to Featured_Detail
-                                                        Positioned(
-                                                          bottom: -50, // Ensures the image appears above content, not overlapping
-                                                          left: 10,
-                                                          child: Builder( // Ensures context is valid for Navigator
-                                                            builder: (context) => GestureDetector(
+                                                                    // ❤️ Optimistic UI update
+                                                                    final isNowSaved = !FavoriteService
+                                                                        .loggedInFavorites.contains(
+                                                                        item.id!);
+
+                                                                    setState(() {
+                                                                      if (isNowSaved) {
+                                                                        FavoriteService.loggedInFavorites
+                                                                            .add(item.id!);
+                                                                      } else {
+                                                                        FavoriteService.loggedInFavorites
+                                                                            .remove(item.id!);
+                                                                      }
+                                                                    });
+
+                                                                    final success = await toggledApi(
+                                                                        token, item.id!);
+
+                                                                    if (!success) {
+                                                                      // ❌ Revert on failure
+                                                                      setState(() {
+                                                                        if (isNowSaved) {
+                                                                          FavoriteService
+                                                                              .loggedInFavorites.remove(
+                                                                              item.id!);
+                                                                        } else {
+                                                                          FavoriteService
+                                                                              .loggedInFavorites.add(
+                                                                              item.id!);
+                                                                        }
+                                                                      });
+                                                                    }
+                                                                  }
+
+                                                              ),
+                                                            ),
+                                                          ),
+
+
+                                                          // 👈 returns an empty widget when not logged in
+
+
+                                                          // 👈 Return nothing if not logged in
+
+
+                                                          // 🧑‍💼 Overlapping Agent Profile Image
+                                                          // 🧑‍💼 Overlapping Agent Profile Image
+                                                          // 🧑‍💼 Agent Profile with Navigation to Featured_Detail
+                                                          // 🟢 Positioned Circle Avatar (left: 10)
+                                                          Positioned(
+                                                            bottom: -30,
+                                                            left: 10,
+                                                            child: GestureDetector(
                                                               onTap: () {
                                                                 Navigator.push(
                                                                   context,
@@ -1487,34 +1817,24 @@ class _MyHomePageState extends State<HomeDemo> {
                                                                 );
                                                               },
                                                               child: Column(
-                                                                mainAxisSize: MainAxisSize.min,
-                                                                crossAxisAlignment: CrossAxisAlignment.start, // Align text to left
+                                                                crossAxisAlignment: CrossAxisAlignment.center,
                                                                 children: [
                                                                   CircleAvatar(
                                                                     radius: 28,
-                                                                    backgroundImage: AssetImage("assets/images/agent44.png"),
+                                                                    backgroundImage: (item.agentImage != null && item.agentImage!.isNotEmpty)
+                                                                        ? CachedNetworkImageProvider(item.agentImage!)
+                                                                        : const AssetImage("assets/images/dummy.jpg") as ImageProvider,
                                                                   ),
-                                                                  SizedBox(height: 25),
-                                                                  Padding(
-                                                                    padding: const EdgeInsets.only(left: 1), // Same as map.png padding
+                                                                  const SizedBox(height: 6),
+                                                                  Transform.translate(
+                                                                    offset: const Offset(-5, 0), // shift 4 pixels to the left
                                                                     child: Text(
-                                                                      "Agent",
-                                                                      style: TextStyle(fontSize: 10, color: Colors.black),
-                                                                    ),
-                                                                  ),
-                                                                  SizedBox(height: 2),
-                                                                  Padding(
-                                                                    padding: const EdgeInsets.only(left: 1),
-                                                                    // Consistent padding
-                                                                    child: Padding(
-                                                                      padding: const EdgeInsets.only(bottom: 6,),
-                                                                      child: Text(
-                                                                        "John David",
-                                                                        style: TextStyle(
-                                                                          fontSize: 10,
-                                                                          fontWeight: FontWeight.w500,
-                                                                          color: Colors.black,
-                                                                        ),
+                                                                      "AGENT",
+                                                                      style: TextStyle(
+                                                                        fontSize: 12,
+                                                                        fontWeight: FontWeight.w500,
+                                                                        color: Color(0xFF1A73E9),
+                                                                        letterSpacing: 0.5,
                                                                       ),
                                                                     ),
                                                                   ),
@@ -1522,159 +1842,244 @@ class _MyHomePageState extends State<HomeDemo> {
                                                               ),
                                                             ),
                                                           ),
+
+
+
+
+
+                                                        ],
+                                                      ),
+
+                                                      // 🔽 Spacer so that the overlapping image is not clipped
+                                                      const SizedBox(height: 15),
+
+                                                      Padding(
+                                                        padding: const EdgeInsets.only(left: 0, right: 0, top: 4, bottom: 4),
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                                          children: [
+                                                            // Agent Name
+                                                            Expanded(
+                                                              child: Padding(
+                                                                padding: const EdgeInsets.only(left: 10),
+                                                                child: Text(
+                                                                  item.agentName ?? 'Agent',
+                                                                  style: const TextStyle(
+                                                                    fontSize: 15,
+                                                                    fontWeight: FontWeight.w600,
+                                                                    color: Colors.black,
+                                                                  ),
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                ),
+                                                              ),
+                                                            ),
+
+                                                            // Listed text + agency logo
+                                                            Row(
+                                                              children: [
+                                                                if (item.postedOn != null && item.postedOn!.isNotEmpty)
+                                                                  Text(
+                                                                    'Listed ${item.postedOn}',
+                                                                    style: const TextStyle(
+                                                                      fontSize: 13,
+                                                                      color: Colors.grey,
+                                                                    ),
+                                                                  ),
+                                                                const SizedBox(width: 4),
+                                                                if (item.agencyLogo != null && item.agencyLogo!.isNotEmpty)
+                                                                  Padding(
+                                                                    padding: const EdgeInsets.all(8.0),
+                                                                    child: Container(
+                                                                      height: 30,
+                                                                      width: 60,
+                                                                      decoration: BoxDecoration(
+                                                                        borderRadius: BorderRadius.circular(4),
+                                                                        image: DecorationImage(
+                                                                          image: CachedNetworkImageProvider(item.agencyLogo!),
+                                                                          fit: BoxFit.contain,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                              ],
+                                                            ),
+                                                          ],
                                                         ),
+                                                      ),
+
+SizedBox(height: 5,),
+
+// 👇 Divider line here
+                                                      const Divider(
+                                                        thickness: 0.3,
+                                                        color: Colors.grey,
+                                                        height: 6,
+                                                      ),
 
 
 
-                                                      ],
-                                                    ),
 
-                                                    // 🔽 Spacer so that the overlapping image is not clipped
-                                                    const SizedBox(height: 20),
-
-                                                    SizedBox(height: 25),
-                                                  ],
-                                                ),
-
-                                                Text(
-                                                  item.title.toString(),
-                                                  style: TextStyle(fontSize: 16, height: 1.4),overflow: TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                ),
-                                                SizedBox(height: 5),
-                                                Text(
-                                                  '${item.price} AED',
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 22,
-                                                    height: 1.4,
+                                                    ],
                                                   ),
-                                                ),
-                                                SizedBox(height: 5),
-                                                Row(
-                                                  children: [
-                                                    Image.asset("assets/images/map.png", height: 14),
-                                                    SizedBox(width: 5),
-                                                    Expanded(
-                                                      child: Text(
-                                                        item.location.toString(),
-                                                        style: TextStyle(fontSize: 13),
-                                                        overflow: TextOverflow.ellipsis,
-                                                        maxLines: 1,
-                                                      ),
+
+                                                  SizedBox(height: 8,),
+
+                                                  Text(
+                                                    item.title.toString(),
+                                                    style: TextStyle(fontSize: 16, height: 1.4),
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                                  SizedBox(height: 5),
+                                                  Text(
+                                                    '${item.price} AED',
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 22,
+                                                      height: 1.4,
                                                     ),
-                                                  ],
-                                                ),
-                                                SizedBox(height: 8),
-                                                Row(
-                                                  children: [
-                                                    Image.asset("assets/images/bed.png", height: 14),
-                                                    SizedBox(width: 5),
-                                                    Text(item.bedrooms.toString()),
-                                                    SizedBox(width: 10),
-                                                    Image.asset("assets/images/bath.png", height: 14),
-                                                    SizedBox(width: 5),
-                                                    Text(item.bathrooms.toString()),
-                                                    SizedBox(width: 10),
-                                                    Image.asset("assets/images/messure.png", height: 14),
-                                                    SizedBox(width: 5),
-                                                    Text(item.squareFeet.toString()),
-                                                  ],
-                                                ),
-                                                /* SizedBox(height: 15),
-                                                              Row(
-                                                                children: [
-                                                                  Image.asset("assets/images/Flooring.png", height: 20),
-                                                                  SizedBox(width: 5),
-                                                                  Text(item.bedrooms.toString()),
-                                                                  SizedBox(width: 10),
-                                                                  Image.asset("assets/images/
-                                                                  Central_Heating.png", height: 20),
-                                                                  SizedBox(width: 5),
-                                                                  Text(item.bathrooms.toString()),
-                                                                  SizedBox(width: 10),
-                                                                  Image.asset("assets/images/Barbeque_Area.png", height: 20),
-                                                                  SizedBox(width: 5),
-                                                                  Text(item.squareFeet.toString()),
-                                                                ],
-                                                              ),*/
-                                                SizedBox(height: 15,),
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: ElevatedButton.icon(
-                                                        onPressed: () async {
-                                                          // Use the correct sanitizer for call (international format with +)
-                                                          String phone = 'tel:${phoneCallNumber(item.phoneNumber ?? '')}';
-                                                          try {
-                                                            final bool launched = await launchUrlString(
-                                                              phone,
-                                                              mode: LaunchMode.externalApplication,
-                                                            );
-                                                            if (!launched) print("❌ Could not launch dialer");
-                                                          } catch (e) {
-                                                            print("❌ Exception: $e");
-                                                          }
-                                                        },
-                                                        icon: const Icon(Icons.call, color: Colors.red),
-                                                        label: const Text("Call", style: TextStyle(color: Colors.black)),
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor: Colors.grey[100],
-                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                          elevation: 2,
-                                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                                  ),
+                                                  SizedBox(height: 5),
+                                                  Row(
+                                                    children: [
+                                                      Image.asset("assets/images/map.png", height: 14),
+                                                      SizedBox(width: 5),
+                                                      Expanded(
+                                                        child: Text(
+                                                          item.location.toString(),
+                                                          style: TextStyle(fontSize: 13),
+                                                          overflow: TextOverflow.ellipsis,
+                                                          maxLines: 1,
                                                         ),
                                                       ),
-                                                    ),
-                                                    const SizedBox(width: 10),
-                                                    Expanded(
-                                                      child: ElevatedButton.icon(
-                                                        onPressed: () async {
-                                                          final phone = whatsAppNumber(item.whatsapp ?? '');
-                                                          final message = Uri.encodeComponent("Hello"); // you can change message
-                                                          final url = Uri.parse("https://wa.me/$phone?text=$message");
-                                                          if (await canLaunchUrl(url)) {
+                                                    ],
+                                                  ),
+                                                  SizedBox(height: 8),
+                                                  Row(
+                                                    children: [
+                                                      Image.asset("assets/images/bed.png", height: 14),
+                                                      SizedBox(width: 5),
+                                                      Text(item.bedrooms.toString()),
+                                                      SizedBox(width: 10),
+                                                      Image.asset("assets/images/bath.png", height: 14),
+                                                      SizedBox(width: 5),
+                                                      Text(item.bathrooms.toString()),
+                                                      SizedBox(width: 10),
+                                                      Image.asset(
+                                                          "assets/images/messure.png", height: 14),
+                                                      SizedBox(width: 5),
+                                                      Text(item.squareFeet.toString()),
+                                                    ],
+                                                  ),
+                                                  /* SizedBox(height: 15),
+                                                                                              Row(
+                                                                                                children: [
+                                                                                                  Image.asset("assets/images/Flooring.png", height: 20),
+                                                                                                  SizedBox(width: 5),
+                                                                                                  Text(item.bedrooms.toString()),
+                                                                                                  SizedBox(width: 10),
+                                                                                                  Image.asset("assets/images/
+                                                                                                  Central_Heating.png", height: 20),
+                                                                                                  SizedBox(width: 5),
+                                                                                                  Text(item.bathrooms.toString()),
+                                                                                                  SizedBox(width: 10),
+                                                                                                  Image.asset("assets/images/Barbeque_Area.png", height: 20),
+                                                                                                  SizedBox(width: 5),
+                                                                                                  Text(item.squareFeet.toString()),
+                                                                                                ],
+                                                                                              ),*/
+                                                  SizedBox(height: 15,),
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: ElevatedButton.icon(
+                                                          onPressed: () async {
+                                                            // Use the correct sanitizer for call (international format with +)
+                                                            String phone = 'tel:${phoneCallNumber(
+                                                                item.phoneNumber ?? '')}';
                                                             try {
-                                                              final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
-                                                              if (!launched) print("❌ Could not launch WhatsApp");
+                                                              final bool launched = await launchUrlString(
+                                                                phone,
+                                                                mode: LaunchMode.externalApplication,
+                                                              );
+                                                              if (!launched) print(
+                                                                  "❌ Could not launch dialer");
                                                             } catch (e) {
                                                               print("❌ Exception: $e");
                                                             }
-                                                          } else {
-                                                            print("❌ WhatsApp not available");
-                                                          }
-                                                        },
-                                                        icon: Image.asset("assets/images/whats.png", height: 20),
-                                                        label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor: Colors.grey[100],
-                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                          elevation: 2,
-                                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                                          },
+                                                          icon: const Icon(Icons.call, color: Colors.red),
+                                                          label: const Text(
+                                                              "Call", style: TextStyle(color: Colors
+                                                              .black)),
+                                                          style: ElevatedButton.styleFrom(
+                                                            backgroundColor: Colors.grey[100],
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius: BorderRadius.circular(10)),
+                                                            elevation: 2,
+                                                            padding: const EdgeInsets.symmetric(
+                                                                vertical: 10),
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
-                                                  ],
-                                                ),
+                                                      const SizedBox(width: 10),
+                                                      Expanded(
+                                                        child: ElevatedButton.icon(
+                                                          onPressed: () async {
+                                                            final phone = whatsAppNumber(item.whatsapp ??
+                                                                '');
+                                                            final message = Uri.encodeComponent(
+                                                                "Hello"); // you can change message
+                                                            final url = Uri.parse(
+                                                                "https://wa.me/$phone?text=$message");
+                                                            if (await canLaunchUrl(url)) {
+                                                              try {
+                                                                final launched = await launchUrl(url,
+                                                                    mode: LaunchMode.externalApplication);
+                                                                if (!launched) print(
+                                                                    "❌ Could not launch WhatsApp");
+                                                              } catch (e) {
+                                                                print("❌ Exception: $e");
+                                                              }
+                                                            } else {
+                                                              print("❌ WhatsApp not available");
+                                                            }
+                                                          },
+                                                          icon: Image.asset(
+                                                              "assets/images/whats.png", height: 20),
+                                                          label: const Text(
+                                                              "WhatsApp", style: TextStyle(color: Colors
+                                                              .black)),
+                                                          style: ElevatedButton.styleFrom(
+                                                            backgroundColor: Colors.grey[100],
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius: BorderRadius.circular(10)),
+                                                            elevation: 2,
+                                                            padding: const EdgeInsets.symmetric(
+                                                                vertical: 10),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
 
-                                              ]),
+                                                ]),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  );
-                                },
+                                    );
+                                  }
                               ),
-                              //),
-                              //  ),
+
                             ]
                         ),
                       ),
                     )
 
-                  //  ),
-                  // ),
 
-                ),],
+
+                ],
           ),
           //),
         )
@@ -1746,8 +2151,15 @@ class _MyHomePageState extends State<HomeDemo> {
                 // ✅ Logged in – go to favorites
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Fav_Logout()),
-                );
+                  MaterialPageRoute(builder: (_) => const Fav_Logout()),
+                ).then((_) async {
+                  // 🔁 Re-sync when coming back
+                  final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
+                  setState(() {
+                    FavoriteService.loggedInFavorites = updatedFavorites;
+                  });
+                });
+
               }
             },
             icon: pageIndex == 2
@@ -1759,7 +2171,7 @@ class _MyHomePageState extends State<HomeDemo> {
 
           IconButton(
             tooltip: "Email",
-            icon: const Icon(Icons.email, color: Colors.red),
+            icon: const Icon(Icons.email_outlined, color: Colors.red),
             onPressed: () async {
               final Uri emailUri = Uri.parse(
                 'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',

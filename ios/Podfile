@@ -1,7 +1,5 @@
-# Uncomment this line to define a global platform for your project
- platform :ios, '14.0'
+platform :ios, '14.0'  # ✅ Good, modern and accepted by App Store
 
-# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 project 'Runner', {
@@ -28,9 +26,10 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks!
+  use_frameworks!  # ✅ Required for App.framework
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+
   target 'RunnerTests' do
     inherit! :search_paths
   end
@@ -39,5 +38,16 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+  end
+
+  # ✅ Fix App.framework Info.plist for App Store validation
+  app_framework_dir = File.join(__dir__, 'Flutter', 'App.framework')
+  app_framework_info_plist = File.join(__dir__, 'Flutter', 'AppFrameworkInfo.plist')
+
+  if File.exist?(app_framework_dir) && File.exist?(app_framework_info_plist)
+    FileUtils.cp(app_framework_info_plist, File.join(app_framework_dir, 'Info.plist'))
+    puts "✅ Copied AppFrameworkInfo.plist into App.framework"
+  else
+    puts "⚠️ AppFrameworkInfo.plist or App.framework not found!"
   end
 end

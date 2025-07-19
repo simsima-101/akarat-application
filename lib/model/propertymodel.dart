@@ -31,6 +31,13 @@ class Property {
   final String squareFeet;
   final String? phoneNumber;
   final String? whatsapp;
+  final String? agent;
+  final String? agentImage;
+  final String? agencyLogo;
+  final String? postedOn;
+
+
+  bool saved;
 
   Property({
     required this.id,
@@ -45,7 +52,36 @@ class Property {
     required this.squareFeet,
     required this.phoneNumber,
     required this.whatsapp,
+    this.agent,
+    this.agentImage,
+    this.agencyLogo,
+    this.postedOn,
+    this.saved = false,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'image': image,
+      'price': price,
+      'location': location,
+      'media': media?.map((m) => m.toJson()).toList(),
+      'bedrooms': bedrooms,
+      'bathrooms': bathrooms,
+      'square_feet': squareFeet,
+      'phone_number': phoneNumber,
+      'whatsapp': whatsapp,
+      'agent': agent,
+      'agent_image': agentImage,
+      'agency_logo': agencyLogo,
+      'posted_on': postedOn,
+
+      'saved': saved,
+    };
+  }
+
 
   // 🔧 1️⃣ For project detail data
   factory Property.fromProjectDetail(projectDetail.Data data) {
@@ -76,11 +112,12 @@ class Property {
       id: data.id?.toString() ?? '',
       title: data.title ?? '',
       description: data.description ?? '',
-      image: (data.media != null && data.media!.isNotEmpty &&
-          data.media!.first.originalUrl != null &&
-          data.media!.first.originalUrl!.isNotEmpty)
-          ? data.media!.first.originalUrl!
-          : 'https://akarat.com/default-image.jpg',
+      image: getFullImageUrl(
+        (data.media != null && data.media!.isNotEmpty)
+            ? data.media!.first.originalUrl
+            : null,
+      ),
+
       price: data.price ?? '',
       location: data.location ?? '',
       media: data.media?.map((m) => Media(originalUrl: m.originalUrl)).toList(),
@@ -98,9 +135,8 @@ class Property {
       id: data.id?.toString() ?? '',
       title: data.title ?? '',
       description: '',
-      image: data.image != null && data.image!.isNotEmpty
-          ? data.image!
-          : 'https://akarat.com/default-image.jpg',
+      image: getFullImageUrl(data.image),
+
       price: data.price ?? '',
       location: data.location ?? data.address ?? '',
       media: [],
@@ -149,11 +185,16 @@ class Property {
       squareFeet: json['square_feet']?.toString() ?? '',
       phoneNumber: json['phone_number']?.toString(),
       whatsapp: json['whatsapp']?.toString(),
+      agent: json['agent']?.toString(),
+      agentImage: json['agent_image']?.toString(),
+      agencyLogo: json['agency_logo']?.toString(),
+      postedOn: json['posted_on']?.toString(),
+
     );
   }
 }
 
-  class ProjectDetailModel {
+class ProjectDetailModel {
   Data? data;
 
   ProjectDetailModel({this.data});
@@ -254,12 +295,12 @@ class Data {
     location = json['location'];
     squareFeet = json['square_feet'];
     saved = json['saved'];
-    if (json['media'] != null) {
-      media = <Media>[];
-      json['media'].forEach((v) {
-        media!.add(new Media.fromJson(v));
-      });
+    if (json['media'] != null && json['media'] is List) {
+      media = (json['media'] as List)
+          .map((v) => Media.fromJson(v))
+          .toList();
     }
+
   }
 
   Map<String, dynamic> toJson() {
@@ -295,6 +336,7 @@ class Data {
   }
 }
 
+
 class Media {
   String? originalUrl;
 
@@ -319,3 +361,5 @@ String sanitizeImageUrl(String? url) {
 
   return url; // Just return the URL as-is (even if it's a .webp or thumbnail)
 }
+
+

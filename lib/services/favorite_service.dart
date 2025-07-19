@@ -1,7 +1,13 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FavoriteService {
   static const String _favoriteKey = 'favorite_properties';
+
+
+  static Set<int> loggedInFavorites = {};
 
   static Future<Set<int>> loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
@@ -22,4 +28,23 @@ class FavoriteService {
     }
     await saveFavorites(currentFavorites);
   }
+
+
+  // ✅ Add this method to fetch logged-in favorites from API
+  static Future<Set<int>> fetchApiFavorites(String token) async {
+    final response = await http.get(
+      Uri.parse('https://akarat.com/api/saved-property-list'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final ids = (data['data']['data'] as List)
+          .map<int>((e) => int.parse(e['id'].toString())) // ✅ force int
+          .toSet();
+      return ids;
+    } else {
+      return {};
+    }
+  }
+
 }

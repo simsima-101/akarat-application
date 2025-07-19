@@ -67,6 +67,11 @@ class Data {
   List<Media>? media;
   String? email;
   String? description;
+  bool saved;
+  String? agentImage;
+  String? agentName;
+  String? agencyLogo;
+  String? postedOn;
 
   Data({
     this.id,
@@ -83,52 +88,72 @@ class Data {
     this.media,
     this.email,
     this.description,
+    this.saved = false,
+    this.agentImage,
+    this.agentName,
+    this.agencyLogo,
+    this.postedOn,
   });
 
-  Data.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    title = json['title'];
-    price = json['price'];
-    address = json['address'];
-    phoneNumber = json['phone_number'];
-    whatsapp = json['whatsapp'];
-    location = json['location'];
-    paymentPeriod = json['payment_period'];
-    bedrooms = json['bedrooms'];
-    bathrooms = json['bathrooms'];
-    squareFeet = json['square_feet'];
-    email = json['email'];
-    description = json['description'];
+  Data.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        title = json['title']?.toString(),
+        price = json['price']?.toString(),
+        address = json['address']?.toString(),
+        phoneNumber = json['phone_number']?.toString(),
+        whatsapp = json['whatsapp']?.toString(),
+        location = json['location']?.toString(),
+        paymentPeriod = json['payment_period']?.toString(),
+        bedrooms = json['bedrooms'] is int ? json['bedrooms'] : int.tryParse(json['bedrooms']?.toString() ?? ''),
+        bathrooms = json['bathrooms'] is int ? json['bathrooms'] : int.tryParse(json['bathrooms']?.toString() ?? ''),
+        squareFeet = json['square_feet']?.toString(),
+        email = json['email']?.toString(),
+        description = json['description']?.toString(),
+        agentImage = json['agent_image']?.toString(),
+        agentName = json['agent']?.toString(),
+        agencyLogo = json['agency_logo']?.toString(),
+        postedOn = json['posted_on']?.toString(),
+        saved = json['saved'] == true || json['saved'] == 1 ? true : false
 
-    if (json['media'] != null) {
+  {
+    if (json['media'] != null && json['media'] is List) {
       media = <Media>[];
-      json['media'].forEach((v) {
+      for (var v in json['media']) {
         media!.add(Media.fromJson(v));
-      });
+      }
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-    data['id'] = id;
-    data['title'] = title;
-    data['price'] = price;
-    data['address'] = address;
-    data['phone_number'] = phoneNumber;
-    data['whatsapp'] = whatsapp;
-    data['location'] = location;
-    data['payment_period'] = paymentPeriod;
-    data['bedrooms'] = bedrooms;
-    data['bathrooms'] = bathrooms;
-    data['square_feet'] = squareFeet;
-    data['email'] = email;
-    data['description'] = description;
+    final Map<String, dynamic> data = {
+      'id': id,
+      'title': title,
+      'price': price,
+      'address': address,
+      'phone_number': phoneNumber,
+      'whatsapp': whatsapp,
+      'location': location,
+      'payment_period': paymentPeriod,
+      'bedrooms': bedrooms,
+      'bathrooms': bathrooms,
+      'square_feet': squareFeet,
+      'email': email,
+      'description': description,
+      'saved': saved,
+      'agent_image': agentImage,
+      'agent': agentName,
+      'agency_logo': agencyLogo,
+      'posted_on': postedOn,
+    };
+
     if (media != null) {
       data['media'] = media!.map((v) => v.toJson()).toList();
     }
+
     return data;
   }
 }
+
 
 class Media {
   String? originalUrl;
@@ -140,9 +165,9 @@ class Media {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-    data['original_url'] = originalUrl;
-    return data;
+    return {
+      'original_url': originalUrl,
+    };
   }
 }
 
@@ -162,12 +187,12 @@ class Links {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-    data['first'] = first;
-    data['last'] = last;
-    data['prev'] = prev;
-    data['next'] = next;
-    return data;
+    return {
+      'first': first,
+      'last' : last,
+      'prev' : prev,
+      'next' : next,
+    };
   }
 }
 
@@ -194,30 +219,31 @@ class Meta {
 
   Meta.fromJson(Map<String, dynamic> json) {
     currentPage = json['current_page'];
-    from = json['from'];
-    lastPage = json['last_page'];
-    path = json['path'];
-    perPage = json['per_page'];
-    to = json['to'];
-    total = json['total'];
+    from        = json['from'];
+    lastPage    = json['last_page'];
+    path        = json['path'];
+    perPage     = json['per_page'];
+    to          = json['to'];
+    total       = json['total'];
 
-    if (json['links'] != null) {
-      links = <MetaLinks>[];
-      json['links'].forEach((v) {
+    if (json['links'] != null && json['links'] is List) {
+      links = [];
+      for (var v in json['links']) {
         links!.add(MetaLinks.fromJson(v));
-      });
+      }
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-    data['current_page'] = currentPage;
-    data['from'] = from;
-    data['last_page'] = lastPage;
-    data['path'] = path;
-    data['per_page'] = perPage;
-    data['to'] = to;
-    data['total'] = total;
+    final data = {
+      'current_page': currentPage,
+      'from'        : from,
+      'last_page'   : lastPage,
+      'path'        : path,
+      'per_page'    : perPage,
+      'to'          : to,
+      'total'       : total,
+    };
     if (links != null) {
       data['links'] = links!.map((v) => v.toJson()).toList();
     }
@@ -233,16 +259,16 @@ class MetaLinks {
   MetaLinks({this.url, this.label, this.active});
 
   MetaLinks.fromJson(Map<String, dynamic> json) {
-    url = json['url'];
-    label = json['label']?.toString();  // ✅ The important fix!
+    url    = json['url'];
+    label  = json['label']?.toString();
     active = json['active'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-    data['url'] = url;
-    data['label'] = label;
-    data['active'] = active;
-    return data;
+    return {
+      'url'   : url,
+      'label' : label,
+      'active': active,
+    };
   }
 }

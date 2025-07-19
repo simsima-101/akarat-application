@@ -1,4 +1,4 @@
-class AgencyPropertiesResponseModel {
+  class AgencyPropertiesResponseModel {
   bool? success;
   String? message;
   AgentProperties? data;
@@ -65,6 +65,10 @@ class Data {
   String? phoneNumber;
   String? whatsapp;
   List<Media>? media;
+  String? agentName;
+  String? agentImage;
+  String? agencyLogo;
+  String? postedOn;
 
   Data(
       {this.id,
@@ -75,24 +79,38 @@ class Data {
         this.location,
         this.phoneNumber,
         this.whatsapp,
-        this.media});
+        this.media,
+        this.agentName,
+        this.agentImage,
+        this.agencyLogo,
+        this.postedOn,
+      });
+
+
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    title = json['title'];
-    price = json['price'];
-    paymentPeriod = json['payment_period'];
-    address = json['address'];
-    location = json['location'];
-    phoneNumber = json['phone_number'];
-    whatsapp = json['whatsapp'];
+    title = json['title']?.toString();
+    price = json['price']?.toString();
+    paymentPeriod = json['payment_period']?.toString();
+    address = json['address']?.toString();
+    location = json['location']?.toString();
+    phoneNumber = json['phone_number']?.toString();
+    whatsapp = json['whatsapp']?.toString();
+    agentName = json['agent_name']?.toString();
+    agentImage = json['agent_image']?.toString();
+    agencyLogo = json['agency_logo']?.toString();
+    postedOn = json['posted_on']?.toString();
+
     if (json['media'] != null) {
       media = <Media>[];
       json['media'].forEach((v) {
-        media!.add(new Media.fromJson(v));
+        media!.add(Media.fromJson(v));
       });
     }
   }
+
+
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
@@ -104,6 +122,11 @@ class Data {
     data['location'] = this.location;
     data['phone_number'] = this.phoneNumber;
     data['whatsapp'] = this.whatsapp;
+    data['agent_name'] = agentName;
+    data['agent_image'] = agentImage;
+    data['agency_logo'] = agencyLogo;
+    data['posted_on'] = postedOn;
+
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
     }
@@ -211,6 +234,7 @@ class MetaPaginationLink {
     label = json['label']?.toString();
     active = json['active'];
   }
+
 
   Map<String, dynamic> toJson() {
     return {

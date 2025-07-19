@@ -68,6 +68,10 @@ class Data {
   List<Media>? media;
   bool? saved;
 
+  String? agentName;
+  String? agentImage;
+
+
   Data(
       {this.id,
         this.title,
@@ -82,7 +86,12 @@ class Data {
         this.bathrooms,
         this.squareFeet,
         this.media,
-        this.saved});
+        this.saved,
+        this.agentName,
+        this.agentImage,
+
+
+      });
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -97,6 +106,8 @@ class Data {
     bathrooms = json['bathrooms'];
     squareFeet = json['square_feet'];
     saved = json['saved'];
+    agentName = json['agent_name'];       // ✅ map from JSON
+    agentImage = json['agent_image'];
 
     media = json['media'] != null
         ? List<Media>.from(json['media'].map((v) => Media.fromJson(v)))
@@ -116,6 +127,8 @@ class Data {
     data['bedrooms'] = this.bedrooms;
     data['bathrooms'] = this.bathrooms;
     data['square_feet'] = this.squareFeet;
+    data['agent_name'] = this.agentName;         // ✅ include in JSON
+    data['agent_image'] = this.agentImage;
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
     }
@@ -233,4 +246,45 @@ class MetaLinks {
     data['active'] = this.active;
     return data;
   }
+
+
 }
+
+class FilterParams {
+  final String? location;
+  final String purpose;
+  final String propertyType;
+  final String bedroom;
+  final String bathroom;
+  final String minPrice;
+  final String maxPrice;
+  final String paymentPeriod;
+
+  FilterParams({
+    this.location,
+    required this.purpose,
+    required this.propertyType,
+    required this.bedroom,
+    required this.bathroom,
+    required this.minPrice,
+    required this.maxPrice,
+    required this.paymentPeriod,
+  });
+
+  Map<String, String> toQueryMap() {
+    return {
+      if (location != null && location!.isNotEmpty) 'location': location!,
+      if (purpose.isNotEmpty) 'purpose': purpose,
+      if (propertyType.isNotEmpty) 'property_type': propertyType,
+      if (bedroom.isNotEmpty) 'bedrooms': bedroom,
+      if (bathroom.isNotEmpty) 'bathrooms': bathroom,
+      if (minPrice.isNotEmpty) 'min_price': minPrice,
+      if (maxPrice.isNotEmpty) 'max_price': maxPrice,
+      if (paymentPeriod.isNotEmpty) 'payment_period': paymentPeriod,
+    };
+  }
+}
+
+
+
+

@@ -14,7 +14,11 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../model/togglemodel.dart';
+import '../model/projectmodel.dart';
+import '../secure_storage.dart';
+import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
+import 'featured_detail.dart';
 import 'login.dart';
 import 'my_account.dart';
 import 'package:Akarat/services/favorite_service.dart';
@@ -106,13 +110,12 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
   // Method to read data from shared preferences
   void readData() async {
-    token = await prefManager.readStringFromPref();
-    email = await prefManager.readStringFromPrefemail();
-    result = await prefManager.readStringFromPrefresult();
+    token = await SecureStorage.getToken() ?? '';
     setState(() {
       isDataRead = true;
     });
   }
+
   Timer? _debounce;
   @override
   void initState() {
@@ -124,11 +127,14 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
     _searchController.addListener(_onSearchChanged);
 
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 100 &&
-          !isLoading && hasMore) {
-        getFilesApi(); // call your API method here
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 100 &&
+          !isLoading &&
+          hasMore) {
+        getFilesApi(loadMore: true); // explicitly pass loadMore = true
       }
     });
+
 
     // Start a timer for 5 minutes
     Future.delayed(const Duration(minutes: 2), () {
@@ -214,15 +220,47 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
 
 
-  Future<void> getFilesApi() async {
-    if (isLoading || !hasMore) return;
+  Future<void> getFilesApi({bool loadMore = false}) async {
+    if (isLoading || (!hasMore && loadMore)) return;
 
     setState(() => isLoading = true);
 
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'new_projects_cache';
+    final cacheTimeKey = 'new_projects_cache_time';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
+
+    final uri = Uri.parse("https://akarat.com/api/new-projects?page=$currentPage");
+
+    // ✅ Load from cache if not loading more and cache is valid
+    if (!loadMore && now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        try {
+          final jsonData = jsonDecode(cachedData);
+          final ProjectResponseModel responseModel = ProjectResponseModel.fromJson(jsonData);
+          final ProjectModel cachedModel = responseModel.data!;
+          final newItems = cachedModel.data ?? [];
+
+          setState(() {
+            projectModel = newItems;
+            hasMore = cachedModel.meta?.currentPage != cachedModel.meta?.lastPage;
+            currentPage = (cachedModel.meta?.currentPage ?? 1) + 1;
+            isLoading = false;
+          });
+
+          debugPrint("📦 Loaded new projects from cache");
+          return;
+        } catch (e) {
+          debugPrint("⚠️ Cache parsing failed: $e");
+        }
+      }
+    }
+
+    // ✅ Make API call
     try {
-      final response = await http.get(Uri.parse(
-        "https://akarat.com/api/new-projects?page=$currentPage",
-      ));
+      final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
@@ -231,17 +269,29 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
         final newItems = fetchedModel.data ?? [];
 
         setState(() {
-          currentPage++;
-          isLoading = false;
-          projectModel.addAll(newItems);
+          if (loadMore) {
+            projectModel.addAll(newItems);
+          } else {
+            projectModel = newItems;
+          }
+
+          currentPage = (fetchedModel.meta?.currentPage ?? 1) + 1;
           hasMore = fetchedModel.meta?.currentPage != fetchedModel.meta?.lastPage;
+          isLoading = false;
         });
+
+        // ✅ Save to cache if it's the first page
+        if (!loadMore && currentPage == 2) {
+          await prefs.setString(cacheKey, jsonEncode(jsonData));
+          await prefs.setInt(cacheTimeKey, now);
+          debugPrint("✅ Cached new projects");
+        }
       } else {
         debugPrint("❌ API Error: ${response.statusCode}");
         setState(() => isLoading = false);
       }
     } catch (e) {
-      debugPrint("🚨 fetchProjects Exception: $e");
+      debugPrint("🚨 Exception in getFilesApi: $e");
       setState(() => isLoading = false);
     }
   }
@@ -249,33 +299,31 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
 
 
-  Future<void> toggledApi(token,property_id) async {
+  /// Returns true if the toggle call succeeded, false otherwise.
+  Future<bool> toggledApi(String token, int propertyId) async {
     try {
       final response = await http.post(
         Uri.parse('https://akarat.com/api/toggle-saved-property'),
-        headers: <String, String>{'Authorization':'Bearer $token',
+        headers: {
+          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode(<String, dynamic>{
-          "property_id": property_id,
-          // Add any other data you want to send in the body
-        }),
+        body: jsonEncode({ "property_id": propertyId }),
       );
-      if (response.statusCode == 200) {
-        Map<String, dynamic> jsonData = json.decode(response.body);
-        toggleModel = ToggleModel.fromJson(jsonData);
-        print(" Succesfully");
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
-      } else {
-        throw Exception(" failed");
 
+      if (response.statusCode == 200) {
+        // Optionally parse the response JSON here if you need the new `saved` state
+        return true;
+      } else {
+        debugPrint("❌ toggle failed: ${response.statusCode}");
+        return false;
       }
     } catch (e) {
-      setState(() {
-        print('Error: $e');
-      });
+      debugPrint("🚨 toggle exception: $e");
+      return false;
     }
   }
+
 
 
 
@@ -388,62 +436,62 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
               ),
 
 
-    // Row(
-    // children: [
-    // Padding(
-    // padding: const EdgeInsets.only(top: 20, left: 20, right: 15),
-    // child: Container(
-    // width: screenSize.width * 0.9,
-    // height: 50,
-    // padding: const EdgeInsets.symmetric(horizontal: 12),
-    // decoration: BoxDecoration(
-    // color: Colors.white,                              // active background
-    // borderRadius: BorderRadius.circular(10.0),
-    // boxShadow: [
-    // BoxShadow(
-    // color: Colors.grey.withOpacity(0.5),
-    // offset: const Offset(0.5, 0.5),
-    // blurRadius: 1.0,
-    // spreadRadius: 0.5,
-    // ),
-    // BoxShadow(
-    // color: Colors.white.withOpacity(0.8),
-    // offset: const Offset(0, 0),
-    // blurRadius: 0,
-    // spreadRadius: 0,
-    // ),
-    // ],
-    // ),
-    // child: Row(
-    // children: [
-    // Icon(Icons.location_on, color: Colors.red),      // active icon color
-    // const SizedBox(width: 8),
-    // Expanded(
-    // child: TextField(
-    // controller: _projectSearchController,
-    // decoration: InputDecoration(
-    // hintText: "Search new projects",
-    // hintStyle: TextStyle(
-    // color: Colors.grey.shade600,
-    // fontSize: 15,
-    // letterSpacing: 0.5,
-    // fontWeight: FontWeight.w500,
-    // ),
-    // border: InputBorder.none,
-    // ),
-    // onChanged: (value) {
-    // // TODO: your filter/search logic here
-    // },
-    // ),
-    // ),
-    // ],
-    // ),
-    // ),
-    // ),
-    // ],
-    // ),
+              // Row(
+              // children: [
+              // Padding(
+              // padding: const EdgeInsets.only(top: 20, left: 20, right: 15),
+              // child: Container(
+              // width: screenSize.width * 0.9,
+              // height: 50,
+              // padding: const EdgeInsets.symmetric(horizontal: 12),
+              // decoration: BoxDecoration(
+              // color: Colors.white,                              // active background
+              // borderRadius: BorderRadius.circular(10.0),
+              // boxShadow: [
+              // BoxShadow(
+              // color: Colors.grey.withOpacity(0.5),
+              // offset: const Offset(0.5, 0.5),
+              // blurRadius: 1.0,
+              // spreadRadius: 0.5,
+              // ),
+              // BoxShadow(
+              // color: Colors.white.withOpacity(0.8),
+              // offset: const Offset(0, 0),
+              // blurRadius: 0,
+              // spreadRadius: 0,
+              // ),
+              // ],
+              // ),
+              // child: Row(
+              // children: [
+              // Icon(Icons.location_on, color: Colors.red),      // active icon color
+              // const SizedBox(width: 8),
+              // Expanded(
+              // child: TextField(
+              // controller: _projectSearchController,
+              // decoration: InputDecoration(
+              // hintText: "Search new projects",
+              // hintStyle: TextStyle(
+              // color: Colors.grey.shade600,
+              // fontSize: 15,
+              // letterSpacing: 0.5,
+              // fontWeight: FontWeight.w500,
+              // ),
+              // border: InputBorder.none,
+              // ),
+              // onChanged: (value) {
+              // // TODO: your filter/search logic here
+              // },
+              // ),
+              // ),
+              // ],
+              // ),
+              // ),
+              // ),
+              // ],
+              // ),
 
-    Row(
+              Row(
                 children: [
                   Padding(padding: const EdgeInsets.only(top: 20,left: 20,right: 0),
                     child: Text("Latest Projects in Dubai",textAlign: TextAlign.left,
@@ -473,10 +521,11 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                     return GestureDetector(
                       onTap: () {
                         String id = item.id.toString();
+
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Property_Detail(data: id),
+                            builder: (context) => Featured_Detail(data: id),
                           ),
                         );
                       },
@@ -494,85 +543,265 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Stack(
-                                    children: [
-                                      AspectRatio(
-                                        aspectRatio: 1.4,
-                                        child: PageView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: item.media?.length ?? 0,
-                                          itemBuilder: (context, imgIndex) {
+                                Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: AspectRatio(
+                                        aspectRatio: 1.5,
+                                        child: FutureBuilder<String>(
+                                          future: resolveImageUrl(
+                                            item.media != null && item.media!.isNotEmpty
+                                                ? item.media!.first.originalUrl
+                                                : null,
+                                          ),
+                                          builder: (ctx, snap) {
+                                            if (snap.connectionState == ConnectionState.waiting) {
+                                              return const Center(child: CircularProgressIndicator());
+                                            }
+                                            final url = snap.data!;
                                             return CachedNetworkImage(
-                                              imageUrl: item.media![imgIndex].originalUrl.toString(),
+                                              imageUrl: url,
                                               fit: BoxFit.cover,
+                                              placeholder: (c, u) =>
+                                              const Center(child: CircularProgressIndicator()),
+                                              errorWidget: (c, u, e) => const Icon(Icons.broken_image),
                                             );
                                           },
                                         ),
                                       ),
-                                      // ❤️ Favorite Icon (corrected)
-                                      // Positioned(
-                                      //   top: 10,
-                                      //   right: 10,
-                                      //   child: Container(
-                                      //     height: MediaQuery.of(context).size.height * 0.04,
-                                      //     width: MediaQuery.of(context).size.height * 0.04,
-                                      //     decoration: BoxDecoration(
-                                      //       color: Colors.white,
-                                      //       shape: BoxShape.circle,
-                                      //       boxShadow: [
-                                      //         BoxShadow(
-                                      //           color: Colors.grey.withOpacity(0.5),
-                                      //           blurRadius: 4,
-                                      //           offset: Offset(2, 2),
-                                      //         ),
-                                      //       ],
-                                      //     ),
-                                      //     child: Center(
-                                      //       child: IconButton(
-                                      //         icon: AnimatedSwitcher(
-                                      //           duration: Duration(milliseconds: 300),
-                                      //           transitionBuilder: (child, animation) =>
-                                      //               ScaleTransition(scale: animation, child: child),
-                                      //           child: Icon(
-                                      //             favoriteProperties.contains(item.id!) ? Icons.favorite : Icons.favorite_border,
-                                      //             key: ValueKey(favoriteProperties.contains(item.id!)),
-                                      //             color: Colors.red,
-                                      //             size: 18,
-                                      //           ),
-                                      //         ),
-                                      //         onPressed: () async {
-                                      //           property_id = item.id;
-                                      //
-                                      //           if (token.isEmpty) {
-                                      //             print("🚫 No token - please login.");
-                                      //             toggleFavorite(item); // Local save
-                                      //           } else {
-                                      //             print("✅ Token exists, calling toggle API...");
-                                      //             await toggledApi(token, item.id!);
-                                      //             toggleFavorite(item);
-                                      //           }
-                                      //
-                                      //
-                                      //           setState(() {}); // Update UI
-                                      //         },
-                                      //
-                                      //
-                                      //       ),
-                                      //     ),
-                                      //   ),
-                                      // ),
+                                    ),
 
+                                    // ❤️ Favorite icon (top right)
+                                    Positioned(
+                                      top: 10,
+                                      right: 10,
+                                      child: Material(
+                                        color: Colors.white,
+                                        shape: const CircleBorder(),
+                                        elevation: 4,
+                                        child: IconButton(
+                                          icon: Icon(
+                                            (token.isNotEmpty && (item.saved == true || FavoriteService.loggedInFavorites.contains(item.id)))
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                            color: (token.isNotEmpty && (item.saved == true || FavoriteService.loggedInFavorites.contains(item.id)))
+                                                ? Colors.red
+                                                : Colors.grey,
+                                            size: 20,
+                                          ),
+                                          onPressed: () {
+                                            print("❤️ Favorite button pressed!");
+                                            if (token.isEmpty) {
+                                              showDialog(
+                                                context: context,
+                                                builder: (ctx) => Dialog(
+                                                  backgroundColor: Colors.transparent,
+                                                  insetPadding: EdgeInsets.zero,
+                                                  child: Container(
+                                                    height: 70,
+                                                    margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.red,
+                                                      borderRadius: BorderRadius.circular(10),
+                                                    ),
+                                                    child: Stack(
+                                                      clipBehavior: Clip.none,
+                                                      children: [
+                                                        Positioned(
+                                                          top: -14,
+                                                          right: -10,
+                                                          child: IconButton(
+                                                            icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                            onPressed: () => Navigator.of(ctx).pop(),
+                                                            padding: EdgeInsets.zero,
+                                                            constraints: const BoxConstraints(),
+                                                          ),
+                                                        ),
+                                                        Positioned(
+                                                          left: 16,
+                                                          right: 16,
+                                                          bottom: 12,
+                                                          child: Row(
+                                                            children: [
+                                                              const Expanded(
+                                                                child: Text(
+                                                                  'Login required to add favorites.',
+                                                                  style: TextStyle(color: Colors.white, fontSize: 13),
+                                                                ),
+                                                              ),
+                                                              const SizedBox(width: 12),
+                                                              GestureDetector(
+                                                                onTap: () {
+                                                                  Navigator.of(ctx).pop();
+                                                                  Navigator.of(ctx).pushNamed('/login');
+                                                                },
+                                                                child: const Text(
+                                                                  'Login',
+                                                                  style: TextStyle(
+                                                                    color: Colors.white,
+                                                                    fontWeight: FontWeight.bold,
+                                                                    decoration: TextDecoration.underline,
+                                                                    decorationColor: Colors.white,
+                                                                    decorationThickness: 1.5,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                              return;
+                                            }
+
+                                            // 🔄 Toggle favorite for logged-in users
+                                            toggledApi(token, item.id!).then((success) {
+                                              if (success) {
+                                                setState(() {
+                                                  item.saved = !item.saved;
+
+                                                  if (item.saved) {
+                                                    FavoriteService.loggedInFavorites.add(item.id!);
+                                                  } else {
+                                                    FavoriteService.loggedInFavorites.remove(item.id!);
+                                                  }
+                                                });
+                                              } else {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text("Failed to update favorite.")),
+                                                );
+                                              }
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ),
+
+                                    // 👤 Agent photo, title, name with tap
+                                    Positioned(
+                                      bottom: -30,
+                                      left: 10,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          String id = item.id.toString();
+
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => Featured_Detail(data: id),
+                                            ),
+                                          );
+                                        },
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 28,
+                                              backgroundImage: (item.agentImage != null && item.agentImage!.isNotEmpty)
+                                                  ? CachedNetworkImageProvider(item.agentImage!)
+                                                  : const AssetImage("assets/images/dummy.jpg") as ImageProvider,
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Transform.translate(
+                                              offset: const Offset(-5, 0), // shift 4 pixels to the left
+                                              child: Text(
+                                                "AGENT",
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Color(0xFF1A73E9),
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+
+
+
+
+
+                                  ],
+                                ),
+
+                                // 🔽 Spacer so that the overlapping image is not clipped
+                                const SizedBox(height: 15),
+
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 0, right: 0, top: 4, bottom: 4),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      // Agent Name
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(left: 10),
+                                          child: Text(
+                                            item.agentName ?? 'Agent',
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.black,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Listed text + agency logo
+                                      Row(
+                                        children: [
+                                          if (item.postedOn != null && item.postedOn!.isNotEmpty)
+                                            Text(
+                                              'Listed ${item.postedOn}',
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          const SizedBox(width: 4),
+                                          if (item.agencyLogo != null && item.agencyLogo!.isNotEmpty)
+                                            Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Container(
+                                                height: 30,
+                                                width: 60,
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(4),
+                                                  image: DecorationImage(
+                                                    image: CachedNetworkImageProvider(item.agencyLogo!),
+                                                    fit: BoxFit.contain,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
                                     ],
                                   ),
                                 ),
 
+                                SizedBox(height: 5,),
+
+                                const Divider(
+                                  color: Colors.grey,
+                                  thickness: 0.3,
+                                  height: 6,
+                                ),
 
 
 
+SizedBox(height: 8,),
 
-                                SizedBox(height: 10),
+
                                 Text(
                                   item.title.toString(),
                                   style: TextStyle(fontSize: 16, height: 1.4),overflow: TextOverflow.ellipsis,
@@ -619,6 +848,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                   ],
                                 ),
                                 SizedBox(height: 15),
+
                                 Row(
                                   children: [
                                     const SizedBox(width: 10),
@@ -675,11 +905,10 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
                                   ],
                                 ),
-                              ],
-                            ),
+
+                              ]),
                           ),
                         ),
                       ),

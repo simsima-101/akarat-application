@@ -13,8 +13,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../model/togglemodel.dart';
+import '../secure_storage.dart';
+import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'agent_detail.dart';
+import 'featured_detail.dart';
 import 'findagent.dart';
 import 'htmlEpandableText.dart';
 import 'login.dart';
@@ -68,6 +71,14 @@ class _AboutAgentState extends State<AboutAgent> {
   }
 
 
+  Future<void> clearAgentPropertiesCache(String user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('agent_properties_$user');
+    await prefs.remove('agent_properties_time_$user');
+    debugPrint("🧹 Cleared old agent_properties cache");
+  }
+
+
   // Method to read data from shared preferences
   void readData() async {
     token = await prefManager.readStringFromPref();
@@ -86,6 +97,14 @@ class _AboutAgentState extends State<AboutAgent> {
   @override
   void initState() {
     super.initState();
+
+    final String agentId = widget.data;
+
+    // 🧹 Clear old corrupted cache first
+    clearAgentPropertiesCache(agentId).then((_) {
+      // ⏬ Load agent properties after cache is cleared
+      getFilesApi(agentId, loadMore: false);
+    });
     fetchProducts(widget.data);        // Initial data fetch
     getFilesApi(widget.data, loadMore: false);  // Load first page of agent properties
     readData();                        // Other setups
@@ -238,55 +257,66 @@ class _AboutAgentState extends State<AboutAgent> {
 
     final uri = Uri.parse("https://akarat.com/api/agent/properties/$user?page=$currentPage");
 
-    // Use cache if not loading more and cache is valid
+    // ✅ Load from cache if valid and not loading more
     if (!loadMore && now - lastFetched < Duration(hours: 6).inMilliseconds) {
       final cachedData = prefs.getString(cacheKey);
       if (cachedData != null) {
-        final jsonData = jsonDecode(cachedData);
-        final model = AgentProperties.fromJson(jsonData); // only 'data' saved in cache
-        setState(() {
-          agentProperties = model;
-          hasMore = (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
-          if (hasMore) {
-            currentPage = (model.meta?.currentPage ?? 1) + 1;
-          }
-        });
-        debugPrint("📦 Loaded agent properties from cache");
-        isLoading = false;
-        return;
+        try {
+          final jsonData = jsonDecode(cachedData);
+          final model = AgentProperties.fromJson(jsonData);
+          setState(() {
+            agentProperties = model;
+            hasMore = (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
+            if (hasMore) {
+              currentPage = (model.meta?.currentPage ?? 1) + 1;
+            }
+          });
+          debugPrint("📦 Loaded agent properties from cache");
+          isLoading = false;
+          return;
+        } catch (e) {
+          debugPrint("⚠️ Cache parsing failed: $e");
+        }
       }
     }
 
+    // ✅ Make HTTP call
     try {
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        final model = AgentProperties.fromJson(jsonData['data']);
 
-        setState(() {
-          if (loadMore) {
-            final oldData = agentProperties?.data ?? [];
-            final newData = model.data ?? [];
-            agentProperties = AgentProperties(
-              data: [...oldData, ...newData],
-              links: model.links,
-              meta: model.meta,
-            );
-          } else {
-            agentProperties = model;
+        if (jsonData['data'] != null) {
+          final model = AgentProperties.fromJson(jsonData['data']);
+
+          setState(() {
+            if (loadMore) {
+              final oldData = agentProperties?.data ?? [];
+              final newData = model.data ?? [];
+              agentProperties = AgentProperties(
+                data: [...oldData, ...newData],
+                links: model.links,
+                meta: model.meta,
+              );
+            } else {
+              agentProperties = model;
+            }
+
+            hasMore = (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
+            if (hasMore) {
+              currentPage = (model.meta?.currentPage ?? 1) + 1;
+            }
+          });
+
+          // ✅ Save to cache
+          if (!loadMore) {
+            await prefs.setString(cacheKey, jsonEncode(jsonData['data']));
+            await prefs.setInt(cacheTimeKey, now);
+            debugPrint("✅ Cached agent properties");
           }
-
-          hasMore = (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
-          if (hasMore) {
-            currentPage = (model.meta?.currentPage ?? 1) + 1;
-          }
-        });
-
-        if (!loadMore) {
-          await prefs.setString(cacheKey, jsonEncode(jsonData['data']));
-          await prefs.setInt(cacheTimeKey, now);
-          debugPrint("✅ Cached agent properties");
+        } else {
+          debugPrint("❌ Missing 'data' field in response");
         }
       } else {
         debugPrint("❌ API Error: ${response.statusCode}");
@@ -297,6 +327,7 @@ class _AboutAgentState extends State<AboutAgent> {
 
     isLoading = false;
   }
+
 
 
   ToggleModel? toggleModel;
@@ -401,6 +432,35 @@ class _AboutAgentState extends State<AboutAgent> {
                   color: const Color(0xFFEEEEEE),
                 ),
 
+                // 🔙 Clean Back Button (no circle container)
+                Positioned(
+                  top: 35,
+                  left: 8,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.red, size: 26),
+                    padding: const EdgeInsets.all(12), // Ensures large tap area
+                    constraints: const BoxConstraints(), // Removes default 48x48 min size if needed
+                    onPressed: () async {
+                      setState(() {
+                        if (token == '') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => FindAgentDemo()),
+                          );
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => FindAgentDemo()),
+                          );
+                        }
+                      });
+                    },
+                  ),
+                ),
+
+
+
+
                 // Big Avatar
                 Positioned(
                   left: 20,
@@ -434,50 +494,9 @@ class _AboutAgentState extends State<AboutAgent> {
                     ),
                   ),
                 ),
-
-                // Back button — ✅ WORKING AFTER FIX
-                // Positioned(
-                //   left: 20,
-                //   top: 20,
-                //   child: GestureDetector(
-                //     onTap: () {
-                //       Navigator.push(
-                //         context,
-                //         MaterialPageRoute(builder: (context) => FindAgentDemo()),
-                //       );
-                //     },
-                //     child: Container(
-                //       height: 28,
-                //       width: 28,
-                //       padding: const EdgeInsets.all(7),
-                //       decoration: BoxDecoration(
-                //         borderRadius: BorderRadius.circular(20.0),
-                //         boxShadow: [
-                //           BoxShadow(
-                //             color: Colors.grey,
-                //             offset: Offset(0.0, 0.0),
-                //             blurRadius: 0.1,
-                //             spreadRadius: 0.1,
-                //           ),
-                //           BoxShadow(
-                //             color: Colors.white,
-                //             offset: Offset(0.0, 0.0),
-                //             blurRadius: 0.0,
-                //             spreadRadius: 0.0,
-                //           ),
-                //         ],
-                //       ),
-                //       child: Image.asset(
-                //         "assets/images/ar-left.png",
-                //         width: 12,
-                //         height: 12,
-                //         fit: BoxFit.contain,
-                //       ),
-                //     ),
-                //   ),
-                // ),
               ],
             ),
+
 
 
 
@@ -984,216 +1003,219 @@ class _AboutAgentState extends State<AboutAgent> {
                                 }
                                 final property = agentProperties!.data![index];
                                 bool isFavorited = favoriteProperties.contains(property.id);
-                                return SingleChildScrollView(
-                                    child: GestureDetector(
-                                      // onTap: (){
-                                      //   String id = property.id.toString();
-                                      //   Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                                      //       Agent_Detail(data: id)));
-                                      // },
-                                      child : Padding(
-                                        padding: const EdgeInsets.only(top: 5.0,left: 2,right: 2,bottom: 5),
-                                        child: Card(
-                                          color: Colors.white,
-                                          borderOnForeground: true,
-                                          shadowColor: Colors.white,
-                                          elevation: 10,
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(left: 5.0,top: 0,right: 5),
-                                            child: Column(
-                                              // spacing: 5,// this is the coloumn
+                                return GestureDetector(
+                                  onTap: () {
+                                    String id = property.id.toString();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Featured_Detail(data: id),
+                                      ),
+                                    );
+                                  },
+                                  child : Padding(
+                                    padding: const EdgeInsets.only(top: 5.0,left: 2,right: 2,bottom: 5),
+                                    child: Card(
+                                      color: Colors.white,
+                                      borderOnForeground: true,
+                                      shadowColor: Colors.white,
+                                      elevation: 10,
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 5.0,top: 0,right: 5),
+                                        child: Column(
+                                          // spacing: 5,// this is the coloumn
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 0.0),
+                                              child:ClipRRect(
+                                                borderRadius: BorderRadius.circular(12),
+                                                child: Stack(
+                                                  children: [
+                                                    AspectRatio(
+                                                      aspectRatio: 1.4,
+                                                      child: PageView.builder(
+                                                        scrollDirection: Axis.horizontal,
+                                                        itemCount: property.media?.length ?? 0, // ✅ use 'property'
+                                                        itemBuilder: (context, imgIndex) {
+                                                          return CachedNetworkImage(
+                                                            imageUrl: property.media![imgIndex].originalUrl.toString(), // ✅ use 'property'
+                                                            fit: BoxFit.cover,
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
+
+                                                    // ❤️ Favorite Icon (corrected)
+                                                    // Positioned(
+                                                    //   top: 10,
+                                                    //   right: 10,
+                                                    //   child: Container(
+                                                    //     height: MediaQuery.of(context).size.height * 0.04,
+                                                    //     width: MediaQuery.of(context).size.height * 0.04,
+                                                    //     decoration: BoxDecoration(
+                                                    //       color: Colors.white,
+                                                    //       shape: BoxShape.circle,
+                                                    //       boxShadow: [
+                                                    //         BoxShadow(
+                                                    //           color: Colors.grey.withOpacity(0.5),
+                                                    //           blurRadius: 4,
+                                                    //           offset: Offset(2, 2),
+                                                    //         ),
+                                                    //       ],
+                                                    //     ),
+                                                    //     child: Center(
+                                                    //       // child: IconButton(
+                                                    //       //   icon: AnimatedSwitcher(
+                                                    //       //     duration: Duration(milliseconds: 300),
+                                                    //       //     transitionBuilder: (child, animation) =>
+                                                    //       //         ScaleTransition(scale: animation, child: child),
+                                                    //       //     // child: Icon(
+                                                    //       //     //   favoriteProperties.contains(property.id!) ? Icons.favorite : Icons.favorite_border,
+                                                    //       //     //
+                                                    //       //     //   key: ValueKey(favoriteProperties.contains(property.id!)),
+                                                    //       //     //   color: Colors.red,
+                                                    //       //     //   size: 18,
+                                                    //       //     // ),
+                                                    //       //   ),
+                                                    //       //   onPressed: () async {
+                                                    //       //     property_id = property.id;
+                                                    //       //
+                                                    //       //     if (token.isEmpty) {
+                                                    //       //       print("🚫 No token - please login.");
+                                                    //       //       toggleFavorite(property.id!); // Local save
+                                                    //       //     } else {
+                                                    //       //       print("✅ Token exists, calling toggle API...");
+                                                    //       //       await toggledApi(token, property.id!);
+                                                    //       //       toggleFavorite(property.id!);
+                                                    //       //     }
+                                                    //       //
+                                                    //       //
+                                                    //       //
+                                                    //       //     setState(() {}); // Update UI
+                                                    //       //   },
+                                                    //       //
+                                                    //       //
+                                                    //       // ),
+                                                    //     ),
+                                                    //   ),
+                                                    // ),
+
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+
+                                            Padding(padding: const EdgeInsets.only(top: 5),
+                                              child: ListTile(
+                                                title: Padding(
+                                                  padding: const EdgeInsets.only(top: 5.0,bottom: 5),
+                                                  child: Text(property.title.toString(),
+                                                    style: TextStyle(
+                                                        fontSize: 16,height: 1.4
+                                                    ),),
+                                                ),
+                                                subtitle: Text('${property.price} AED',
+                                                  style: TextStyle(
+                                                      fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
+                                                  ),),
+                                              ),
+                                            ),
+                                            Row(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisAlignment: MainAxisAlignment.start,
                                               children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 0.0),
-                                                  child:ClipRRect(
-                                                    borderRadius: BorderRadius.circular(12),
-                                                    child: Stack(
-                                                      children: [
-                                                        AspectRatio(
-                                                          aspectRatio: 1.4,
-                                                          child: PageView.builder(
-                                                            scrollDirection: Axis.horizontal,
-                                                            itemCount: property.media?.length ?? 0, // ✅ use 'property'
-                                                            itemBuilder: (context, imgIndex) {
-                                                              return CachedNetworkImage(
-                                                                imageUrl: property.media![imgIndex].originalUrl.toString(), // ✅ use 'property'
-                                                                fit: BoxFit.cover,
-                                                              );
-                                                            },
-                                                          ),
-                                                        ),
-
-                                                        // ❤️ Favorite Icon (corrected)
-                                                        // Positioned(
-                                                        //   top: 10,
-                                                        //   right: 10,
-                                                        //   child: Container(
-                                                        //     height: MediaQuery.of(context).size.height * 0.04,
-                                                        //     width: MediaQuery.of(context).size.height * 0.04,
-                                                        //     decoration: BoxDecoration(
-                                                        //       color: Colors.white,
-                                                        //       shape: BoxShape.circle,
-                                                        //       boxShadow: [
-                                                        //         BoxShadow(
-                                                        //           color: Colors.grey.withOpacity(0.5),
-                                                        //           blurRadius: 4,
-                                                        //           offset: Offset(2, 2),
-                                                        //         ),
-                                                        //       ],
-                                                        //     ),
-                                                        //     child: Center(
-                                                        //       // child: IconButton(
-                                                        //       //   icon: AnimatedSwitcher(
-                                                        //       //     duration: Duration(milliseconds: 300),
-                                                        //       //     transitionBuilder: (child, animation) =>
-                                                        //       //         ScaleTransition(scale: animation, child: child),
-                                                        //       //     // child: Icon(
-                                                        //       //     //   favoriteProperties.contains(property.id!) ? Icons.favorite : Icons.favorite_border,
-                                                        //       //     //
-                                                        //       //     //   key: ValueKey(favoriteProperties.contains(property.id!)),
-                                                        //       //     //   color: Colors.red,
-                                                        //       //     //   size: 18,
-                                                        //       //     // ),
-                                                        //       //   ),
-                                                        //       //   onPressed: () async {
-                                                        //       //     property_id = property.id;
-                                                        //       //
-                                                        //       //     if (token.isEmpty) {
-                                                        //       //       print("🚫 No token - please login.");
-                                                        //       //       toggleFavorite(property.id!); // Local save
-                                                        //       //     } else {
-                                                        //       //       print("✅ Token exists, calling toggle API...");
-                                                        //       //       await toggledApi(token, property.id!);
-                                                        //       //       toggleFavorite(property.id!);
-                                                        //       //     }
-                                                        //       //
-                                                        //       //
-                                                        //       //
-                                                        //       //     setState(() {}); // Update UI
-                                                        //       //   },
-                                                        //       //
-                                                        //       //
-                                                        //       // ),
-                                                        //     ),
-                                                        //   ),
-                                                        // ),
-
-                                                      ],
-                                                    ),
-                                                  ),
+                                                Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 0,bottom: 10),
+                                                  child:  Image.asset("assets/images/map.png",height: 14,),
                                                 ),
-
-                                                Padding(padding: const EdgeInsets.only(top: 5),
-                                                  child: ListTile(
-                                                    title: Padding(
-                                                      padding: const EdgeInsets.only(top: 5.0,bottom: 5),
-                                                      child: Text(property.title.toString(),
-                                                        style: TextStyle(
-                                                            fontSize: 16,height: 1.4
-                                                        ),),
-                                                    ),
-                                                    subtitle: Text('${property.price} AED',
-                                                      style: TextStyle(
-                                                          fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
-                                                      ),),
-                                                  ),
+                                                Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
+                                                  child: Text(property.location.toString(),style: TextStyle(
+                                                      fontSize: 13,height: 1.4,
+                                                      overflow: TextOverflow.visible
+                                                  ),),
                                                 ),
-                                                Row(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisAlignment: MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 0,bottom: 10),
-                                                      child:  Image.asset("assets/images/map.png",height: 14,),
-                                                    ),
-                                                    Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                                      child: Text(property.location.toString(),style: TextStyle(
-                                                          fontSize: 13,height: 1.4,
-                                                          overflow: TextOverflow.visible
-                                                      ),),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    const SizedBox(width: 10),
-                                                    Expanded(
-                                                      child: ElevatedButton.icon(
-                                                        onPressed: () async {
-                                                          String phone = 'tel:${phoneCallNumber(agentDetail!.phone ?? '')}';
-                                                          try {
-                                                            final bool launched = await launchUrlString(
-                                                              phone,
-                                                              mode: LaunchMode.externalApplication,
-                                                            );
-                                                            if (!launched) {
-                                                              print("❌ Could not launch dialer");
-                                                            }
-                                                          } catch (e) {
-                                                            print("❌ Exception: $e");
-                                                          }
-
-                                                        },
-                                                        icon: const Icon(Icons.call, color: Colors.red),
-                                                        label: const Text("Call", style: TextStyle(color: Colors.black)),
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor: Colors.grey[100],
-                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                          elevation: 3,
-                                                          padding: const EdgeInsets.symmetric(vertical: 10),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 10),
-                                                    Expanded(
-                                                      child: ElevatedButton.icon(
-                                                        onPressed: () async {
-                                                          final phone = whatsAppNumber(agentDetail!.phone ?? '');
-                                                          final message = Uri.encodeComponent("Hello");
-                                                          final url = Uri.parse("https://wa.me/$phone?text=$message");
-
-                                                          if (await canLaunchUrl(url)) {
-                                                            try {
-                                                              final launched = await launchUrl(
-                                                                url,
-                                                                mode: LaunchMode.externalApplication,
-                                                              );
-                                                              if (!launched) {
-                                                                print("❌ Could not launch WhatsApp");
-                                                              }
-                                                            } catch (e) {
-                                                              print("❌ Exception: $e");
-                                                            }
-                                                          } else {
-                                                            print("❌ WhatsApp not available or URL not supported");
-                                                          }
-
-                                                        },
-                                                        icon: Image.asset("assets/images/whats.png", height: 20),
-                                                        label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor: Colors.grey[100],
-                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                          elevation: 1,
-                                                          padding: const EdgeInsets.symmetric(vertical: 10),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 10),
-                                                  ],
-                                                ),
-
-                                                const SizedBox(height: 10),
-
                                               ],
                                             ),
-                                          ),
+                                            Row(
+                                              children: [
+                                                const SizedBox(width: 10),
+                                                Expanded(
+                                                  child: ElevatedButton.icon(
+                                                    onPressed: () async {
+                                                      String phone = 'tel:${phoneCallNumber(agentDetail!.phone ?? '')}';
+                                                      try {
+                                                        final bool launched = await launchUrlString(
+                                                          phone,
+                                                          mode: LaunchMode.externalApplication,
+                                                        );
+                                                        if (!launched) {
+                                                          print("❌ Could not launch dialer");
+                                                        }
+                                                      } catch (e) {
+                                                        print("❌ Exception: $e");
+                                                      }
 
+                                                    },
+                                                    icon: const Icon(Icons.call, color: Colors.red),
+                                                    label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.grey[100],
+                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                      elevation: 3,
+                                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                Expanded(
+                                                  child: ElevatedButton.icon(
+                                                    onPressed: () async {
+                                                      final phone = whatsAppNumber(agentDetail!.phone ?? '');
+                                                      final message = Uri.encodeComponent("Hello");
+                                                      final url = Uri.parse("https://wa.me/$phone?text=$message");
+
+                                                      if (await canLaunchUrl(url)) {
+                                                        try {
+                                                          final launched = await launchUrl(
+                                                            url,
+                                                            mode: LaunchMode.externalApplication,
+                                                          );
+                                                          if (!launched) {
+                                                            print("❌ Could not launch WhatsApp");
+                                                          }
+                                                        } catch (e) {
+                                                          print("❌ Exception: $e");
+                                                        }
+                                                      } else {
+                                                        print("❌ WhatsApp not available or URL not supported");
+                                                      }
+
+                                                    },
+                                                    icon: Image.asset("assets/images/whats.png", height: 20),
+                                                    label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.grey[100],
+                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                      elevation: 1,
+                                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10),
+                                              ],
+                                            ),
+
+                                            const SizedBox(height: 10),
+
+                                          ],
                                         ),
                                       ),
 
-                                    )
+                                    ),
+                                  ),
 
                                 );
+
+
                               },
                             ),
                           ),
@@ -1340,6 +1362,84 @@ class _AboutAgentState extends State<AboutAgent> {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Image.asset("assets/images/home.png", height: 25),
             ),
+          ),
+
+          IconButton(
+            enableFeedback: false,
+            onPressed: () async {
+              final token = await SecureStorage.getToken();
+
+              if (token == null || token.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // white container
+                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
+                        },
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              else {
+                // ✅ Logged in – go to favorites
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Fav_Logout()),
+                );
+              }
+            },
+            icon: pageIndex == 2
+                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+          ),
+
+          IconButton(
+            tooltip: "Email",
+            icon: const Icon(Icons.email_outlined, color: Colors.red),
+            onPressed: () async {
+              final Uri emailUri = Uri.parse(
+                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+              );
+
+              if (await canLaunchUrl(emailUri)) {
+                await launchUrl(emailUri);
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Email not available'),
+                    content: const Text('No email app is configured on this device. Please add a mail account first.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
           ),
           Padding(
             padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge

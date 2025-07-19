@@ -1,3 +1,9 @@
+
+
+import '../screen/locationsearch.dart' hide Property;
+import '../model/propertymodel.dart';
+
+
 class AgentDetail {
   int? id;
   int? userId;
@@ -17,6 +23,7 @@ class AgentDetail {
 
   String? phone;
   String? whatsapp;
+  List<Property>? properties;
 
   AgentDetail({
     this.id,
@@ -35,7 +42,8 @@ class AgentDetail {
     this.rent,
     this.image,
     this.phone,       // ✅ ADD HERE
-    this.whatsapp,    // ✅ ADD HERE
+    this.whatsapp,
+    this.properties,// ✅ ADD HERE
   });
 
   factory AgentDetail.fromJson(Map<String, dynamic> json) {
@@ -57,6 +65,9 @@ class AgentDetail {
       image: json['image'],
       phone: json['phone'], // CORRECT ✅
       whatsapp: json['whatsapp'],
+      properties: (json['properties'] as List?)
+          ?.map((p) => Property.fromJson(p))
+          .toList(),
 
     );
   }
@@ -80,6 +91,7 @@ class AgentDetail {
       'image': image,
       'phone': phone,
       'whatsapp': whatsapp,
+      'properties': properties?.map((p) => p.toJson()).toList(),
 
     };
   }
