@@ -9,29 +9,32 @@ import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/forgot_password.dart';
 import 'package:Akarat/screen/otp_verification.dart';
 import 'package:Akarat/screen/reset_password.dart';
+import 'package:Akarat/screen/new_projects.dart'; // ✅ Include this if New_Projects screen is used
 
-// Providers & Utils
+// Providers
 import 'package:Akarat/providers/favorite_provider.dart';
-import 'package:Akarat/secure_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => FavoriteProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FavoriteProvider()..loadFavorites()),
+      ],
       child: const MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const Home(), // ✅ Always show Home screen on launch
+      home: const Home(), // 👈 Initial screen (you can change to New_Projects() if needed)
       routes: {
         '/login': (context) => const Login(),
         '/register': (context) => RegisterScreen(),
@@ -49,6 +52,7 @@ class MyApp extends StatelessWidget {
             token: args['token'] ?? '',
           );
         },
+        '/new-projects': (context) => const New_Projects(), // ✅ Optional: add named route
       },
     );
   }

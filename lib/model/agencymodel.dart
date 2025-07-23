@@ -46,6 +46,10 @@ class Agency {
   String? ded;
   String? rera;
   String? image;
+  String? agencyLogo;
+  String? postedOn;
+  String? agentName;
+  String? agentImage;
   int? propertiesCount;
 
   Agency({
@@ -63,6 +67,10 @@ class Agency {
     this.ded,
     this.rera,
     this.image,
+    this.postedOn,
+    this.agencyLogo,
+    this.agentImage,
+    this.agentName,
     this.propertiesCount,
   });
 
@@ -82,6 +90,12 @@ class Agency {
     rera = json['rera'];
     image = json['image'];
     propertiesCount = json['properties_count'];
+    postedOn = json['posted_on'];
+    agencyLogo = json['agency_logo'];
+    agentImage = json['agent_image'];
+    agentName = json['agent'];
+
+
   }
 }
 

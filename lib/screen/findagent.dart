@@ -56,6 +56,9 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
   // Create an object of SharedPreferencesManager class
   SharedPreferencesManager prefManager = SharedPreferencesManager();
+
+
+
   // Method to read data from shared preferences
   void readData() async {
     token = await prefManager.readStringFromPref();
@@ -91,7 +94,20 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   ];// final List<String> agencyservices = ["Residential For Sale", "Residential For Rent", "Commercial For Sale","Commercial For Rent"];
   // final List<String> languages = ["English", "Arabic", "Hindi"];
   // final List<String> nationalities = ["Indian", "Emirati", "Pakistani"];
+
+
+  final Map<String, String> serviceValueToId = {
+    'residential-for-sale': '1',
+    'residential-for-rent': '2',
+    'commercial-for-sale': '3',
+    'commercial-for-rent': '4',
+  };
+
+
   late Future<Language> languageFuture;
+
+
+
 
   ScrollController _scrollController = ScrollController();
 
@@ -133,10 +149,18 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
     final queryParams = {
       'search': locationController.text,
-      'service_needed': selectedService ?? '',
       'language': selectedLanguage ?? '',
       'page': currentPage.toString(),
     };
+
+    if (selectedService != null && serviceValueToId[selectedService!] != null) {
+      queryParams['service_needed'] = serviceValueToId[selectedService!]!;
+    }
+
+    if (selectedNationality?.isNotEmpty == true) {
+      queryParams['nationality'] = selectedNationality!;
+    }
+
 
     if (selectedNationality?.isNotEmpty == true) {
       queryParams['nationality'] = selectedNationality!;
@@ -146,25 +170,10 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     final cacheKey = 'agent_cache_${uri.query}';
     final cacheTimeKey = 'agent_cache_time_${uri.query}';
 
-    final prefs = await SharedPreferences.getInstance();
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    if (!loadMore && now - lastFetched < Duration(hours: 6).inMilliseconds) {
-      final cachedData = prefs.getString(cacheKey);
-      if (cachedData != null) {
-        final jsonData = json.decode(cachedData);
-        final model = PaginatedAgentsModel.fromJson(jsonData);
-        final agentData = model.data;
-        setState(() {
-          agentsmodel = agentData?.data ?? [];
-          hasMore = (agentData?.meta?.currentPage ?? 1) < (agentData?.meta?.lastPage ?? 1);
-        });
-        debugPrint("✅ Loaded agents from cache");
-        isLoading = false;
-        return;
-      }
-    }
+
+
+
 
     try {
       final response = await http.get(uri);
@@ -172,6 +181,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
         final jsonData = json.decode(response.body);
         final model = PaginatedAgentsModel.fromJson(jsonData);
         final agentData = model.data;
+
 
         setState(() {
           if (loadMore) {
@@ -183,11 +193,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
           hasMore = (agentData?.meta?.currentPage ?? 1) < (agentData?.meta?.lastPage ?? 1);
         });
 
-        if (!loadMore) {
-          await prefs.setString(cacheKey, json.encode(jsonData));
-          await prefs.setInt(cacheTimeKey, now);
-          debugPrint("📦 Cached new agent data");
-        }
+
       } else {
         debugPrint("❌ Agent API Error: ${response.statusCode}");
       }
@@ -199,6 +205,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   }
 
 
+
   bool isAgencyLoading = false;
 
   Future<void> agencyfetch({bool loadMore = false}) async {
@@ -208,66 +215,56 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
     final queryParams = {
       'search': locationController.text,
-      'service_needed': selectedAgencyService ?? '',
       'page': currentPage.toString(),
     };
 
-    final uri = Uri.https('akarat.com', '/api/companies', queryParams);
-    final cacheKey = 'agency_cache_${uri.query}';
-    final cacheTimeKey = 'agency_cache_time_${uri.query}';
-
-    final prefs = await SharedPreferences.getInstance();
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
-
-    debugPrint("📢 agencyfetch called with loadMore: $loadMore");
-    debugPrint("🔍 API URI: $uri");
-
-    if (!loadMore && now - lastFetched < Duration(hours: 6).inMilliseconds) {
-      final cachedData = prefs.getString(cacheKey);
-      if (cachedData != null) {
-        final jsonData = json.decode(cachedData);
-        final model = PaginatedAgencyModel.fromJson(jsonData);
-        final fetchedAgencies = model.data;
-
-        setState(() {
-          agencyList = fetchedAgencies?.data ?? [];
-          hasMore = (fetchedAgencies?.meta?.currentPage ?? 1) <
-              (fetchedAgencies?.meta?.lastPage ?? 1);
-        });
-
-        debugPrint("✅ Loaded agencies from cache");
-        isAgencyLoading = false;
-        return;
-      }
+    if (selectedAgencyService != null &&
+        serviceValueToId[selectedAgencyService!] != null) {
+      queryParams['service_needed'] = serviceValueToId[selectedAgencyService!]!;
     }
 
+    final uri = Uri.https('akarat.com', '/api/companies', queryParams);
+
+
+    // ✅ Fetch from API
     try {
       final response = await http.get(uri);
       debugPrint("📨 Response: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        final model = PaginatedAgencyModel.fromJson(jsonData);
-        final fetchedAgencies = model.data;
 
-        setState(() {
-          if (loadMore) {
-            agencyList.addAll(fetchedAgencies?.data ?? []);
-          } else {
-            agencyList = fetchedAgencies?.data ?? [];
-          }
+        if (jsonData['data'] is List) {
+          final List<dynamic> agencyJsonList = jsonData['data'];
+          setState(() {
+            if (loadMore) {
+              agencyList.addAll(
+                  agencyJsonList.map((e) => Agency.fromJson(e)).toList());
+            } else {
+              agencyList =
+                  agencyJsonList.map((e) => Agency.fromJson(e)).toList();
+            }
+            hasMore = false;
+          });
+        } else {
+          final model = PaginatedAgencyModel.fromJson(jsonData);
+          final fetchedAgencies = model.data;
 
-          currentPage++;
-          hasMore = (fetchedAgencies?.meta?.currentPage ?? 1) <
-              (fetchedAgencies?.meta?.lastPage ?? 1);
-        });
+          setState(() {
+            if (loadMore) {
+              agencyList.addAll(fetchedAgencies?.data ?? []);
+            } else {
+              agencyList = fetchedAgencies?.data ?? [];
+            }
 
-        if (!loadMore) {
-          await prefs.setString(cacheKey, json.encode(jsonData));
-          await prefs.setInt(cacheTimeKey, now);
-          debugPrint("📦 Cached new agency data");
+            currentPage++;
+            hasMore = (fetchedAgencies?.meta?.currentPage ?? 1) <
+                (fetchedAgencies?.meta?.lastPage ?? 1);
+          });
         }
+
+        // ✅ Cache if not loadMore
+
       } else {
         debugPrint("❌ Agency API Error: ${response.statusCode}");
       }
@@ -332,19 +329,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
 
   Future<Nationality> fetchNationalities() async {
-    final prefs = await SharedPreferences.getInstance();
-    final cacheKey = 'cached_nationalities';
-    final cacheTimeKey = 'cached_nationalities_time';
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    // If cached within 6 hours, use it
-    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
-      final cachedData = prefs.getString(cacheKey);
-      if (cachedData != null) {
-        return Nationality.fromJson(json.decode(cachedData));
-      }
-    }
 
     // If no cache or cache is expired, fetch from API
     final response = await http.get(Uri.parse('https://akarat.com/api/agents/nationalities'));
@@ -353,8 +338,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
       final responseBody = response.body;
 
       // Save to cache
-      await prefs.setString(cacheKey, responseBody);
-      await prefs.setInt(cacheTimeKey, now);
+
 
       return Nationality.fromJson(json.decode(responseBody));
     } else {
@@ -363,19 +347,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   }
 
   Future<Language> fetchLanguageData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final cacheKey = 'cached_languages';
-    final cacheTimeKey = 'cached_languages_time';
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    // Use cached data if it's less than 6 hours old
-    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
-      final cachedData = prefs.getString(cacheKey);
-      if (cachedData != null) {
-        return Language.fromJson(json.decode(cachedData));
-      }
-    }
 
     // Otherwise, fetch from API
     final response = await http.get(Uri.parse('https://akarat.com/api/agents/languages'));
@@ -383,9 +355,8 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     if (response.statusCode == 200) {
       final responseBody = response.body;
 
-      // Cache the new data
-      await prefs.setString(cacheKey, responseBody);
-      await prefs.setInt(cacheTimeKey, now);
+
+
 
       return Language.fromJson(json.decode(responseBody));
     } else {
@@ -571,42 +542,49 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                   child: Column(
                                     children: [
                                       DropdownButtonFormField<String>(
-                                        isExpanded: true,
-                                        decoration: _dropdownDecoration("Services needed"), // just hint
-                                        dropdownColor: Colors.white,
-                                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.black,
-                                        ),
-                                        value: selectedService,
-                                        items: [
-                                          // Add grey header item
-                                          const DropdownMenuItem<String>(
-                                            value: null,
-                                            enabled: false,
-                                            child: Text(
-                                              "Services needed", // this is the header inside dropdown
-                                              style: TextStyle(
-                                                color: Colors.grey,
-                                                fontWeight: FontWeight.bold,
+                                          isExpanded: true,
+                                          decoration: _dropdownDecoration("Services needed"), // just hint
+                                          dropdownColor: Colors.white,
+                                          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.black,
+                                          ),
+                                          value: selectedService,
+                                          items: [
+                                            // Add grey header item
+                                            const DropdownMenuItem<String>(
+                                              value: null,
+                                              enabled: false,
+                                              child: Text(
+                                                "Services needed", // this is the header inside dropdown
+                                                style: TextStyle(
+                                                  color: Colors.grey,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          // Now your real options
-                                          ...serviceOptions.map((option) {
-                                            return DropdownMenuItem<String>(
-                                              value: option['value'],
-                                              child: Text(option['label']!),
-                                            );
-                                          }).toList(),
-                                        ],
-                                        onChanged: (value) {
-                                          if (value != null) {
-                                            setState(() => selectedService = value);
+                                            // Now your real options
+                                            ...serviceOptions.map((option) {
+                                              return DropdownMenuItem<String>(
+                                                value: option['value'],
+                                                child: Text(option['label']!),
+                                              );
+                                            }).toList(),
+                                          ],
+                                          onChanged: (value) {
+                                            if (value != null) {
+                                              setState(() {
+                                                selectedService = value;
+                                                currentPage = 1;
+                                                agentsmodel.clear();
+                                                hasMore = true;
+                                              });
+                                              agentfetch();
+                                            }
                                           }
-                                        },
+
                                       ),
                                     ],
                                   ),
@@ -746,6 +724,14 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 // Search Button
                                 ElevatedButton(
                                   onPressed: () {
+
+
+
+                                    setState(() {
+                                      currentPage = 1;
+                                      agentsmodel.clear();
+                                      hasMore = true;
+                                    });
                                     // Your search logic here
                                     print("Searching with:");
                                     print("Location: ${locationController.text}");
@@ -830,6 +816,8 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+
+
                                 // ... your widgets above the list (like search bar, filters, titles, etc.) ...
 
                                 // Example header widgets:
@@ -838,6 +826,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 //   child: Text("Explore agents with a proven track record of high response rates and authentic listings."),
                                 // ),
                                 const SizedBox(height: 10),
+
 
                                 // The agent list - this is the important part!
                                 ListView.builder(
@@ -871,6 +860,10 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+
+
+
+
                           Container(
                             padding: const EdgeInsets.all(15),
                             margin: const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
@@ -892,27 +885,38 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
                                 const SizedBox(height: 10),
                                 DropdownButtonFormField<String>(
-                                  isExpanded: true,
-                                  decoration: _dropdownDecoration("Services needed"),
-                                  dropdownColor: Colors.white,
-                                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black,
-                                  ),
-                                  value: selectedAgencyService,
-                                  items: serviceOptions.map((option) {
-                                    return DropdownMenuItem<String>(
-                                      alignment: Alignment.bottomLeft,
-                                      value: option['value'],
-                                      child: Text(
-                                        option['label']!,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) => setState(() => selectedAgencyService = value!),
+                                    isExpanded: true,
+                                    decoration: _dropdownDecoration("Services needed"),
+                                    dropdownColor: Colors.white,
+                                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black,
+                                    ),
+                                    value: selectedAgencyService,
+                                    items: serviceOptions.map((option) {
+                                      return DropdownMenuItem<String>(
+                                        alignment: Alignment.bottomLeft,
+                                        value: option['value'],
+                                        child: Text(
+                                          option['label']!,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      if (value != null) {
+                                        setState(() {
+                                          selectedAgencyService = value;
+                                          currentPage = 1;
+                                          agencyList.clear();
+                                          hasMore = true;
+                                        });
+                                        agencyfetch();
+                                      }
+                                    }
+
                                 ),
                                 const SizedBox(height: 20),
                                 ElevatedButton(

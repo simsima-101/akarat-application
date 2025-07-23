@@ -54,6 +54,10 @@ import '../services/favorite_service.dart';
 import 'filter_list.dart';
 
 
+import 'package:provider/provider.dart';
+import '../providers/favorite_provider.dart';
+
+
 // Save full project for guest (fav_logout)
 Future<void> _saveProjectFavoriteLocally(Map<String, dynamic> project) async {
   final prefs = await SharedPreferences.getInstance();
@@ -631,34 +635,12 @@ class _MyHomePageState extends State<HomeDemo> {
 
 
 
-  Set<int> favoriteProperties = {}; // Stores favorite property IDs
 
-  Future<void> toggleFavorite(int propertyId) async {
-    if (favoriteProperties.contains(propertyId)) {
-      favoriteProperties.remove(propertyId);
-    } else {
-      favoriteProperties.add(propertyId);
-    }
 
-    await _saveFavorites();
-    setState(() {}); // Refresh UI
-  }
 
-  // Load saved favorites from SharedPreferences
-  Future<void> _loadFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedFavorites = prefs.getStringList('favorite_properties') ?? [];
-    setState(() {
-      favoriteProperties = savedFavorites.map(int.parse).toSet();
-    });
-  }
 
-  // Save favorites to SharedPreferences
-  Future<void> _saveFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-        'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
-  }
+
+
 
 
   Future<void> fetchLocations() async {
@@ -1639,159 +1621,101 @@ class _MyHomePageState extends State<HomeDemo> {
                                                               color: Colors.white,
                                                               shape: const CircleBorder(),
                                                               elevation: 4,
-                                                              child: IconButton(
-                                                                  icon: Icon(
-                                                                    (token.isNotEmpty &&
-                                                                        FavoriteService.loggedInFavorites
-                                                                            .contains(item.id))
-                                                                        ? Icons.favorite
-                                                                        : Icons.favorite_border,
-                                                                    color: (token.isNotEmpty &&
-                                                                        FavoriteService.loggedInFavorites
-                                                                            .contains(item.id))
-                                                                        ? Colors.red
-                                                                        : Colors.grey,
-                                                                    size: 20,
-                                                                  ),
-
-
-                                                                  onPressed: () async {
-                                                                    if (token.isEmpty) {
-                                                                      // 🔒 Show login prompt
-                                                                      showDialog(
-                                                                        context: context,
-                                                                        builder: (ctx) =>
-                                                                            Dialog(
-                                                                              backgroundColor: Colors
-                                                                                  .transparent,
-                                                                              insetPadding: EdgeInsets
-                                                                                  .zero,
-                                                                              child: Container(
-                                                                                height: 70,
-                                                                                margin: const EdgeInsets
-                                                                                    .only(bottom: 80,
-                                                                                    left: 20,
-                                                                                    right: 20),
-                                                                                decoration: BoxDecoration(
-                                                                                  color: Colors.red,
-                                                                                  borderRadius: BorderRadius
-                                                                                      .circular(10),
-                                                                                ),
-                                                                                child: Stack(
-                                                                                  clipBehavior: Clip.none,
-                                                                                  children: [
-                                                                                    Positioned(
-                                                                                      top: -14,
-                                                                                      right: -10,
-                                                                                      child: Material(
-                                                                                        color: Colors
-                                                                                            .transparent,
-                                                                                        child: IconButton(
-                                                                                          icon: const Icon(
-                                                                                              Icons.close,
-                                                                                              color: Colors
-                                                                                                  .white,
-                                                                                              size: 20),
-                                                                                          onPressed: () =>
-                                                                                              Navigator
-                                                                                                  .of(ctx)
-                                                                                                  .pop(),
-                                                                                          padding: EdgeInsets
-                                                                                              .zero,
-                                                                                          constraints: const BoxConstraints(),
+                                                              child: Consumer<FavoriteProvider>(
+                                                                builder: (context, favProvider, _) {
+                                                                  final isFav = favProvider.isFavorite(item.id!);
+                                                                  return IconButton(
+                                                                    icon: Icon(
+                                                                      isFav ? Icons.favorite : Icons.favorite_border,
+                                                                      color: isFav ? Colors.red : Colors.grey,
+                                                                      size: 20,
+                                                                    ),
+                                                                    onPressed: () async {
+                                                                      if (token.isEmpty) {
+                                                                        // 🔒 Show login prompt
+                                                                        showDialog(
+                                                                          context: context,
+                                                                          builder: (ctx) => Dialog(
+                                                                            backgroundColor: Colors.transparent,
+                                                                            insetPadding: EdgeInsets.zero,
+                                                                            child: Container(
+                                                                              height: 70,
+                                                                              margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+                                                                              decoration: BoxDecoration(
+                                                                                color: Colors.red,
+                                                                                borderRadius: BorderRadius.circular(10),
+                                                                              ),
+                                                                              child: Stack(
+                                                                                clipBehavior: Clip.none,
+                                                                                children: [
+                                                                                  Positioned(
+                                                                                    top: -14,
+                                                                                    right: -10,
+                                                                                    child: Material(
+                                                                                      color: Colors.transparent,
+                                                                                      child: IconButton(
+                                                                                        icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                                                        onPressed: () => Navigator.of(ctx).pop(),
+                                                                                        padding: EdgeInsets.zero,
+                                                                                        constraints: const BoxConstraints(),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                  Positioned(
+                                                                                    left: 16,
+                                                                                    right: 16,
+                                                                                    bottom: 12,
+                                                                                    child: Row(
+                                                                                      children: [
+                                                                                        const Expanded(
+                                                                                          child: Text(
+                                                                                            'Login required to add favorites.',
+                                                                                            style: TextStyle(color: Colors.white, fontSize: 13),
+                                                                                          ),
                                                                                         ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Positioned(
-                                                                                      left: 16,
-                                                                                      right: 16,
-                                                                                      bottom: 12,
-                                                                                      child: Row(
-                                                                                        children: [
-                                                                                          const Expanded(
-                                                                                            child: Text(
-                                                                                              'Login required to add favorites.',
-                                                                                              style: TextStyle(
-                                                                                                  color: Colors
-                                                                                                      .white,
-                                                                                                  fontSize: 13),
+                                                                                        const SizedBox(width: 12),
+                                                                                        GestureDetector(
+                                                                                          onTap: () {
+                                                                                            Navigator.of(ctx).pop();
+                                                                                            Navigator.of(ctx).pushNamed('/login');
+                                                                                          },
+                                                                                          child: const Text(
+                                                                                            'Login',
+                                                                                            style: TextStyle(
+                                                                                              color: Colors.white,
+                                                                                              fontWeight: FontWeight.bold,
+                                                                                              decoration: TextDecoration.underline,
+                                                                                              decorationColor: Colors.white,
+                                                                                              decorationThickness: 1.5,
                                                                                             ),
                                                                                           ),
-                                                                                          const SizedBox(
-                                                                                              width: 12),
-                                                                                          GestureDetector(
-                                                                                            onTap: () {
-                                                                                              Navigator
-                                                                                                  .of(ctx)
-                                                                                                  .pop();
-                                                                                              Navigator
-                                                                                                  .of(ctx)
-                                                                                                  .pushNamed(
-                                                                                                  '/login');
-                                                                                            },
-                                                                                            child: const Text(
-                                                                                              'Login',
-                                                                                              style: TextStyle(
-                                                                                                color: Colors
-                                                                                                    .white,
-                                                                                                fontWeight: FontWeight
-                                                                                                    .bold,
-                                                                                                decoration: TextDecoration
-                                                                                                    .underline,
-                                                                                                decorationColor: Colors
-                                                                                                    .white,
-                                                                                                decorationThickness: 1.5,
-                                                                                              ),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ],
-                                                                                      ),
+                                                                                        ),
+                                                                                      ],
                                                                                     ),
-                                                                                  ],
-                                                                                ),
+                                                                                  ),
+                                                                                ],
                                                                               ),
                                                                             ),
-                                                                      );
-                                                                      return;
-                                                                    }
-
-                                                                    // ❤️ Optimistic UI update
-                                                                    final isNowSaved = !FavoriteService
-                                                                        .loggedInFavorites.contains(
-                                                                        item.id!);
-
-                                                                    setState(() {
-                                                                      if (isNowSaved) {
-                                                                        FavoriteService.loggedInFavorites
-                                                                            .add(item.id!);
-                                                                      } else {
-                                                                        FavoriteService.loggedInFavorites
-                                                                            .remove(item.id!);
+                                                                          ),
+                                                                        );
+                                                                        return;
                                                                       }
-                                                                    });
 
-                                                                    final success = await toggledApi(
-                                                                        token, item.id!);
-
-                                                                    if (!success) {
-                                                                      // ❌ Revert on failure
-                                                                      setState(() {
-                                                                        if (isNowSaved) {
-                                                                          FavoriteService
-                                                                              .loggedInFavorites.remove(
-                                                                              item.id!);
-                                                                        } else {
-                                                                          FavoriteService
-                                                                              .loggedInFavorites.add(
-                                                                              item.id!);
-                                                                        }
-                                                                      });
-                                                                    }
-                                                                  }
-
+                                                                      // ✅ Use Provider's API-integrated method
+                                                                      final success = await favProvider.toggleFavoriteWithApi(item.id!, token);
+                                                                      if (!success) {
+                                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                                          const SnackBar(content: Text("Failed to update favorite.")),
+                                                                        );
+                                                                      }
+                                                                    },
+                                                                  );
+                                                                },
                                                               ),
                                                             ),
                                                           ),
+
+
 
 
                                                           // 👈 returns an empty widget when not logged in

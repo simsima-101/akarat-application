@@ -55,6 +55,8 @@ class AgentsModel {
   final String? bio;
   final String? phoneNumber;  // this maps to "phone_number"
   final String? whatsapp;     // this maps to "whatsapp"
+  final String? agencyLogo;
+  final int propertiesCount;
 
 
   AgentsModel({
@@ -70,6 +72,8 @@ class AgentsModel {
     this.bio,
     this.phoneNumber,   // ✅ add here
     this.whatsapp,      // ✅ add here
+    this.agencyLogo,
+    required this.propertiesCount,
   });
 
   factory AgentsModel.fromJson(Map<String, dynamic> json) {
@@ -82,7 +86,11 @@ class AgentsModel {
       agency: json['agency'] ?? 'N/A',
       sale: json['sale'] ?? 0,
       rent: json['rent'] ?? 0,
-      image: json['image'] ?? 'https://akarat.com/default-image.jpg',
+      agencyLogo: json['agency_logo'] ?? '',
+      propertiesCount: json['properties_count'] ?? 0,
+      image: json['image'] ?? '',
+
+
     );
   }
 
@@ -97,7 +105,10 @@ class AgentsModel {
       'sale': sale,
       'rent': rent,
       'image': image,
+      'agency_logo' : agencyLogo,
+      'properties_count': propertiesCount,
     };
+
   }
 }
 

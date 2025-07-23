@@ -1427,9 +1427,12 @@ class _Featured_DetailState extends State<Featured_Detail> {
                             : "";
 
                         return Container(
+
+
                           width: 200,
                           margin: const EdgeInsets.symmetric(horizontal: 8),
                           child: Card(
+                            color: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                             elevation: 4,
                             child: GestureDetector(

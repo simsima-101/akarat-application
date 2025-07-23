@@ -52,6 +52,13 @@ class Property {
   String? location;
   String? phoneNumber;
   String? whatsapp;
+  String? agentImage;
+  String? agentName;
+  String? postedOn;
+  String? agencyLogo;
+  String? bedrooms;
+  String? bathrooms;
+  String? squareFeet;
   List<Media>? media;
 
   Property({
@@ -64,22 +71,38 @@ class Property {
     this.phoneNumber,
     this.whatsapp,
     this.media,
+    this.agentImage,
+    this.postedOn,
+    this.agencyLogo,
+    this.agentName,
+    this.bathrooms,
+    this.bedrooms,
+    this.squareFeet,
   });
 
   Property.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    title = json['title'];
-    price = json['price'];
-    paymentPeriod = json['payment_period'];
-    address = json['address'];
-    location = json['location'];
-    phoneNumber = json['phone_number'];
-    whatsapp = json['whatsapp'];
+    title = json['title']?.toString();
+    price = json['price']?.toString();
+    paymentPeriod = json['payment_period']?.toString();
+    address = json['address']?.toString();
+    location = json['location']?.toString();
+    phoneNumber = json['phone_number']?.toString();
+    whatsapp = json['whatsapp']?.toString();
+    agentName = json['agent']?.toString();
+    postedOn = json['posted_on']?.toString();
+    agencyLogo = json['agency_logo']?.toString();
+    agentImage = json['agent_image']?.toString();
+    bathrooms = json['bathrooms']?.toString();
+    bedrooms = json['bedrooms']?.toString();
+    squareFeet = json['square_feet']?.toString(); // 🔧 was wrong key before!
+
     if (json['media'] != null) {
       media = <Media>[];
       json['media'].forEach((v) => media!.add(Media.fromJson(v)));
     }
   }
+
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -90,6 +113,14 @@ class Property {
     'location': location,
     'phone_number': phoneNumber,
     'whatsapp': whatsapp,
+    'agent': agentName,
+    'posted_on': postedOn,
+    'agent_image': agentImage,
+    'agency_logo': agencyLogo,
+    'bedrooms': bedrooms,
+    'bathrooms': bathrooms,
+    '': squareFeet,
+
     'media': media?.map((v) => v.toJson()).toList(),
   };
 }

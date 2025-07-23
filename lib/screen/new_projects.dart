@@ -16,13 +16,16 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../model/togglemodel.dart';
 import '../model/projectmodel.dart';
 import '../secure_storage.dart';
-import '../utils/fav_logout.dart';
+
 import '../utils/shared_preference_manager.dart';
 import 'featured_detail.dart';
 import 'login.dart';
 import 'my_account.dart';
-import 'package:Akarat/services/favorite_service.dart';
 import 'package:Akarat/utils/whatsapp_button.dart';
+
+import 'package:provider/provider.dart';
+import '../providers/favorite_provider.dart';
+
 
 
 
@@ -50,7 +53,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
   final TextEditingController _searchController = TextEditingController();
 
 
-  Set<int> favoriteProperties = {};
+
 
   int pageIndex = 0;
 
@@ -122,7 +125,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
     super.initState();
     getFilesApi();
     readData();
-    _loadFavoritesFromService();
+
 
     _searchController.addListener(_onSearchChanged);
 
@@ -149,12 +152,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
   }
 
 
-  Future<void> _loadFavoritesFromService() async {
-    final favorites = await FavoriteService.loadFavorites();
-    setState(() {
-      favoriteProperties = favorites;
-    });
-  }
+
 
 
   @override
@@ -325,53 +323,18 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
   }
 
 
-
-
-  void toggleFavorite(Data project) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    // Load existing favorites
-    final existingFavoritesString = prefs.getString('favorite_projects_data');
-    List<Map<String, dynamic>> existingFavorites = [];
-
-    if (existingFavoritesString != null) {
-      existingFavorites = List<Map<String, dynamic>>.from(jsonDecode(existingFavoritesString));
+  Future<String> resolveImageUrl(String? url) async {
+    if (url == null || url.isEmpty) {
+      return "https://akarat.com/default-image.jpg"; // fallback image
     }
-
-    // Check if this project is already in favorites
-    final isAlreadyFavorite = existingFavorites.any((item) => item['id'] == project.id);
-
-    if (isAlreadyFavorite) {
-      // Remove from favorites
-      existingFavorites.removeWhere((item) => item['id'] == project.id);
-      favoriteProperties.remove(project.id!);
-      print('❌ Removed project ${project.id}');
-    } else {
-      // Add to favorites
-      existingFavorites.add({
-        'id': project.id,
-        'title': project.title,
-        'price': project.price,
-        'location': project.location,
-        'bedrooms': project.bedrooms,
-        'bathrooms': project.bathrooms,
-        'squareFeet': project.squareFeet,
-        'image': project.media != null && project.media!.isNotEmpty
-            ? project.media![0].originalUrl.toString()
-            : '',
-      });
-      favoriteProperties.add(project.id!);
-      print('✅ Added project ${project.id}');
+    if (!url.startsWith('http')) {
+      return 'https://akarat.com$url';
     }
-
-    // Save updated list
-    await prefs.setString('favorite_projects_data', jsonEncode(existingFavorites));
-
-    // If you are also syncing ids in FavoriteService (optional):
-    await FavoriteService.saveFavorites(favoriteProperties);
-
-    setState(() {}); // Refresh UI
+    return url;
   }
+
+
+
 
 
   // Load saved favorites from SharedPreferences
@@ -516,7 +479,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                   itemCount: projectModel.length,
                   itemBuilder: (context, index) {
                     final item = projectModel[index];
-                    bool isFavorited = favoriteProperties.contains(item.id);
+
 
                     return GestureDetector(
                       onTap: () {
@@ -581,106 +544,102 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                         color: Colors.white,
                                         shape: const CircleBorder(),
                                         elevation: 4,
-                                        child: IconButton(
-                                          icon: Icon(
-                                            (token.isNotEmpty && (item.saved == true || FavoriteService.loggedInFavorites.contains(item.id)))
-                                                ? Icons.favorite
-                                                : Icons.favorite_border,
-                                            color: (token.isNotEmpty && (item.saved == true || FavoriteService.loggedInFavorites.contains(item.id)))
-                                                ? Colors.red
-                                                : Colors.grey,
-                                            size: 20,
-                                          ),
-                                          onPressed: () {
-                                            print("❤️ Favorite button pressed!");
-                                            if (token.isEmpty) {
-                                              showDialog(
-                                                context: context,
-                                                builder: (ctx) => Dialog(
-                                                  backgroundColor: Colors.transparent,
-                                                  insetPadding: EdgeInsets.zero,
-                                                  child: Container(
-                                                    height: 70,
-                                                    margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.red,
-                                                      borderRadius: BorderRadius.circular(10),
-                                                    ),
-                                                    child: Stack(
-                                                      clipBehavior: Clip.none,
-                                                      children: [
-                                                        Positioned(
-                                                          top: -14,
-                                                          right: -10,
-                                                          child: IconButton(
-                                                            icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                                                            onPressed: () => Navigator.of(ctx).pop(),
-                                                            padding: EdgeInsets.zero,
-                                                            constraints: const BoxConstraints(),
-                                                          ),
+                                        child: Consumer<FavoriteProvider>(
+                                          builder: (context, favProvider, _) {
+                                            final propertyId = item.id!;
+                                            final isFav = favProvider.isFavorite(propertyId);
+
+                                            return IconButton(
+                                              icon: Icon(
+                                                isFav ? Icons.favorite : Icons.favorite_border,
+                                                color: isFav ? Colors.red : Colors.grey,
+                                                size: 20,
+                                              ),
+                                              onPressed: () async {
+                                                final token = await SecureStorage.getToken();
+
+                                                if (token == null || token.isEmpty) {
+                                                  // 🔒 Show login dialog
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (ctx) => Dialog(
+                                                      backgroundColor: Colors.transparent,
+                                                      insetPadding: EdgeInsets.zero,
+                                                      child: Container(
+                                                        height: 70,
+                                                        margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.red,
+                                                          borderRadius: BorderRadius.circular(10),
                                                         ),
-                                                        Positioned(
-                                                          left: 16,
-                                                          right: 16,
-                                                          bottom: 12,
-                                                          child: Row(
-                                                            children: [
-                                                              const Expanded(
-                                                                child: Text(
-                                                                  'Login required to add favorites.',
-                                                                  style: TextStyle(color: Colors.white, fontSize: 13),
-                                                                ),
+                                                        child: Stack(
+                                                          clipBehavior: Clip.none,
+                                                          children: [
+                                                            Positioned(
+                                                              top: -14,
+                                                              right: -10,
+                                                              child: IconButton(
+                                                                icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                                onPressed: () => Navigator.of(ctx).pop(),
+                                                                padding: EdgeInsets.zero,
+                                                                constraints: const BoxConstraints(),
                                                               ),
-                                                              const SizedBox(width: 12),
-                                                              GestureDetector(
-                                                                onTap: () {
-                                                                  Navigator.of(ctx).pop();
-                                                                  Navigator.of(ctx).pushNamed('/login');
-                                                                },
-                                                                child: const Text(
-                                                                  'Login',
-                                                                  style: TextStyle(
-                                                                    color: Colors.white,
-                                                                    fontWeight: FontWeight.bold,
-                                                                    decoration: TextDecoration.underline,
-                                                                    decorationColor: Colors.white,
-                                                                    decorationThickness: 1.5,
+                                                            ),
+                                                            Positioned(
+                                                              left: 16,
+                                                              right: 16,
+                                                              bottom: 12,
+                                                              child: Row(
+                                                                children: [
+                                                                  const Expanded(
+                                                                    child: Text(
+                                                                      'Login required to add favorites.',
+                                                                      style: TextStyle(color: Colors.white, fontSize: 13),
+                                                                    ),
                                                                   ),
-                                                                ),
+                                                                  const SizedBox(width: 12),
+                                                                  GestureDetector(
+                                                                    onTap: () {
+                                                                      Navigator.of(ctx).pop();
+                                                                      Navigator.of(ctx).pushNamed('/login');
+                                                                    },
+                                                                    child: const Text(
+                                                                      'Login',
+                                                                      style: TextStyle(
+                                                                        color: Colors.white,
+                                                                        fontWeight: FontWeight.bold,
+                                                                        decoration: TextDecoration.underline,
+                                                                        decorationColor: Colors.white,
+                                                                        decorationThickness: 1.5,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
                                                               ),
-                                                            ],
-                                                          ),
+                                                            ),
+                                                          ],
                                                         ),
-                                                      ],
+                                                      ),
                                                     ),
-                                                  ),
-                                                ),
-                                              );
-                                              return;
-                                            }
+                                                  );
+                                                  return;
+                                                }
 
-                                            // 🔄 Toggle favorite for logged-in users
-                                            toggledApi(token, item.id!).then((success) {
-                                              if (success) {
-                                                setState(() {
-                                                  item.saved = !item.saved;
-
-                                                  if (item.saved) {
-                                                    FavoriteService.loggedInFavorites.add(item.id!);
-                                                  } else {
-                                                    FavoriteService.loggedInFavorites.remove(item.id!);
-                                                  }
-                                                });
-                                              } else {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  const SnackBar(content: Text("Failed to update favorite.")),
-                                                );
-                                              }
-                                            });
+                                                // ✅ Toggle with API + Provider
+                                                final success = await favProvider.toggleFavoriteWithApi(propertyId, token);
+                                                if (!success) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(content: Text("Failed to update favorite.")),
+                                                  );
+                                                }
+                                              },
+                                            );
                                           },
                                         ),
                                       ),
                                     ),
+
+
 
                                     // 👤 Agent photo, title, name with tap
                                     Positioned(

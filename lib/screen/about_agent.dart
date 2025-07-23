@@ -10,10 +10,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../model/togglemodel.dart';
 import '../secure_storage.dart';
+import '../services/favorite_service.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'agent_detail.dart';
@@ -21,6 +23,8 @@ import 'featured_detail.dart';
 import 'findagent.dart';
 import 'htmlEpandableText.dart';
 import 'login.dart';
+import 'package:provider/provider.dart';
+import 'package:Akarat/providers/favorite_provider.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:Akarat/utils/whatsapp_button.dart';
 
@@ -34,6 +38,8 @@ class AboutAgent extends StatefulWidget {
 class _AboutAgentState extends State<AboutAgent> {
   AgentDetail? agentDetail;
   int pageIndex = 0;
+  int _currentImageIndex = 0;
+
   bool isFavorited = false;
   int? property_id;
 
@@ -44,6 +50,26 @@ class _AboutAgentState extends State<AboutAgent> {
 
   // Create an object of SharedPreferencesManager class
   SharedPreferencesManager prefManager = SharedPreferencesManager();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncFavoritesFromService(); // ✅ New method
+  }
+
+  Future<void> _syncFavoritesFromService() async {
+    final token = await SecureStorage.getToken();
+
+    if (token != null && token.isNotEmpty) {
+      final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
+      setState(() {
+        FavoriteService.loggedInFavorites = updatedFavorites;
+      });
+    }
+
+  }
+
+
 
 
   // lib/utils/phone_utils.dart
@@ -332,32 +358,34 @@ class _AboutAgentState extends State<AboutAgent> {
 
   ToggleModel? toggleModel;
 
-  Future<void> toggledApi(token, property_id) async {
+  Future<bool> toggledApi(String token, int propertyId) async {
     try {
       final response = await http.post(
         Uri.parse('https://akarat.com/api/toggle-saved-property'),
-        headers: <String, String>{'Authorization': 'Bearer $token',
+        headers: <String, String>{
+          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, dynamic>{
-          "property_id": property_id,
-          // Add any other data you want to send in the body
+          "property_id": propertyId,
         }),
       );
+
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = json.decode(response.body);
         toggleModel = ToggleModel.fromJson(jsonData);
-        print(" Succesfully");
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => Profile_Login()));
+        print("✅ Toggle favorite successful");
+        return true; // ✅ success
       } else {
-        throw Exception(" failed");
+        print("❌ Toggle failed with status ${response.statusCode}");
+        return false;
       }
     } catch (e) {
-      setState(() {
-        print('Error: $e');
-      });
+      print('❌ Exception during toggle: $e');
+      return false;
     }
   }
+
 
   Set<int> favoriteProperties = {}; // Stores favorite property IDs
 
@@ -389,6 +417,9 @@ class _AboutAgentState extends State<AboutAgent> {
         favoriteProperties.map((id) => id.toString()).toList());
   }
   final TextEditingController _searchController = TextEditingController();
+
+  final PageController _pageController = PageController();
+
 
   @override
   Widget build(BuildContext context) {
@@ -848,161 +879,30 @@ class _AboutAgentState extends State<AboutAgent> {
                           padding: const EdgeInsets.only(top: 5, left: 5),
                           child: Row(
                             children: [
-                              // Padding(
-                              //   padding: const EdgeInsets.only(top: 5, left: 5, right: 15),
-                              //   child: Container(
-                              //     width: screenSize.width * 0.85,
-                              //     height: 40,
-                              //     padding: const EdgeInsets.only(top: 5),
-                              //     decoration: BoxDecoration(
-                              //       color: Colors.white,                           // active background
-                              //       borderRadius: BorderRadiusDirectional.circular(10.0),
-                              //       border: Border.all(color: Colors.grey.shade400, width: 1), // optional border
-                              //     ),
-                              //     child: Padding(
-                              //       padding: const EdgeInsets.only(top: 1, bottom: 3),
-                              //       child: TextField(
-                              //         textAlign: TextAlign.left,
-                              //         controller: _searchController,
-                              //         decoration: InputDecoration(
-                              //           border: InputBorder.none,
-                              //           hintText: 'Select Location',               // removed “(Coming Soon)”
-                              //           hintStyle: TextStyle(
-                              //             color: Colors.grey.shade600,
-                              //             fontSize: 15,
-                              //             letterSpacing: 0.5,
-                              //           ),
-                              //           prefixIcon: Padding(
-                              //             padding: const EdgeInsets.only(top: 1, bottom: 2),
-                              //             child: Icon(Icons.location_on, color: Colors.red), // active icon color
-                              //           ),
-                              //         ),
-                              //         onTap: () {
-                              //           // TODO: open location selector
-                              //         },
-                              //       ),
-                              //     ),
-                              //   ),
-                              // ),
-                              /* Uncomment and style these if you need filter buttons again:
-      Padding(
-        padding: const EdgeInsets.only(top: 15, left: 15, right: 0),
-        child: Image.asset("assets/images/filter.png", width: 20, height: 30),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(top: 15, left: 5, right: 10),
-        child: Text(
-          "Filters",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
-      */
+
                             ],
                           ),
                         ),
 
-                        // Padding(
-                        //   padding: const EdgeInsets.only(top: 10, left: 2),
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment.start,
-                        //     children: [
-                        //       Padding(
-                        //         padding: const EdgeInsets.only(left: 10.0, right: 2.0, top: 20, bottom: 0),
-                        //         child: Container(
-                        //           width: 80,
-                        //           height: 35,
-                        //           padding: const EdgeInsets.only(top: 10, left: 5, right: 0),
-                        //           decoration: BoxDecoration(
-                        //             color: Colors.grey.shade300, // grey background
-                        //             borderRadius: BorderRadius.circular(8),
-                        //           ),
-                        //           child: Padding(
-                        //             padding: const EdgeInsets.only(left: 1, right: 3),
-                        //             child: Text(
-                        //               "All\n(Coming Soon)", // updated text
-                        //               style: TextStyle(
-                        //                 letterSpacing: 0.5,
-                        //                 color: Colors.grey.shade700, // grey text
-                        //                 fontSize: 8,
-                        //                 height: 1.2,
-                        //               ),
-                        //               textAlign: TextAlign.center,
-                        //             ),
-                        //           ),
-                        //         ),
-                        //       ),
-                        //       Padding(
-                        //         padding: const EdgeInsets.only(left: 10.0, right: 2.0, top: 20, bottom: 0),
-                        //         child: Container(
-                        //           width: 80,
-                        //           height: 35,
-                        //           padding: const EdgeInsets.only(top: 10, left: 5, right: 0),
-                        //           decoration: BoxDecoration(
-                        //             color: Colors.grey.shade300, // grey background
-                        //             borderRadius: BorderRadius.circular(8),
-                        //           ),
-                        //           child: Padding(
-                        //             padding: const EdgeInsets.only(left: 1, right: 3),
-                        //             child: Text(
-                        //               "Ready\n(Coming Soon)",
-                        //               style: TextStyle(
-                        //                 letterSpacing: 0.5,
-                        //                 color: Colors.grey.shade700, // grey text
-                        //                 fontSize: 8,
-                        //                 height: 1.2,
-                        //               ),
-                        //               textAlign: TextAlign.center,
-                        //             ),
-                        //           ),
-                        //         ),
-                        //       ),
-                        //       Padding(
-                        //         padding: const EdgeInsets.only(left: 10.0, right: 5.0, top: 20, bottom: 0),
-                        //         child: Container(
-                        //           width: 80,
-                        //           height: 35,
-                        //           padding: const EdgeInsets.only(top: 10, left: 5, right: 0),
-                        //           decoration: BoxDecoration(
-                        //             color: Colors.grey.shade300, // grey background
-                        //             borderRadius: BorderRadius.circular(8),
-                        //           ),
-                        //           child: Padding(
-                        //             padding: const EdgeInsets.only(left: 1, right: 3),
-                        //             child: Text(
-                        //               "Off-Plan\n(Coming Soon)",
-                        //               style: TextStyle(
-                        //                 letterSpacing: 0.5,
-                        //                 color: Colors.grey.shade700, // grey text
-                        //                 fontSize: 8,
-                        //                 height: 1.2,
-                        //               ),
-                        //               textAlign: TextAlign.center,
-                        //             ),
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
+
 
                         Expanded(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 10.0),
-                            child: ListView.builder(
+                            child: agentProperties == null
+                                ? const Center(child: CircularProgressIndicator()) // Show loading once, not per item
+                                : ListView.builder(
                               padding: const EdgeInsets.all(0),
                               controller: _scrollController,
                               scrollDirection: Axis.vertical,
                               physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount: agentProperties?.data?.length ?? 0,
+                              itemCount: agentProperties!.data!.length,
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
-                                if(agentProperties== null){
-                                  return Scaffold(
-                                    body: Center(child: CircularProgressIndicator()), // Show loading state
-                                  );
-                                }
+                                final item = agentProperties!.data![index];
                                 final property = agentProperties!.data![index];
                                 bool isFavorited = favoriteProperties.contains(property.id);
+
                                 return GestureDetector(
                                   onTap: () {
                                     String id = property.id.toString();
@@ -1013,207 +913,480 @@ class _AboutAgentState extends State<AboutAgent> {
                                       ),
                                     );
                                   },
-                                  child : Padding(
-                                    padding: const EdgeInsets.only(top: 5.0,left: 2,right: 2,bottom: 5),
-                                    child: Card(
-                                      color: Colors.white,
-                                      borderOnForeground: true,
-                                      shadowColor: Colors.white,
-                                      elevation: 10,
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(left: 5.0,top: 0,right: 5),
-                                        child: Column(
-                                          // spacing: 5,// this is the coloumn
+                                child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                child: Card(
+                                color: Colors.white,
+                                shadowColor: Colors.white,
+                                elevation: 10,
+                                shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+
+                                Column(
+                                children: [
+                                Stack(
+                                          clipBehavior: Clip.none,
                                           children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 0.0),
-                                              child:ClipRRect(
-                                                borderRadius: BorderRadius.circular(12),
-                                                child: Stack(
+                                            // 🖼️ Image Carousel
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(12),
+                                              child: AspectRatio(
+                                                aspectRatio: 1.5,
+                                                child: PageView.builder(
+                                                  itemCount: property.media?.length ?? 0,
+                                                  scrollDirection: Axis.horizontal,
+                                                  controller: _pageController,
+                                                  onPageChanged: (_) {},
+
+                                                  itemBuilder: (context, imgIndex) {
+                                                    final imageUrl = property.media![imgIndex].originalUrl ?? '';
+                                                    return CachedNetworkImage(
+                                                      imageUrl: imageUrl,
+                                                      fit: BoxFit.cover,
+                                                      placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                                                      errorWidget: (context, url, error) => Icon(Icons.error),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+
+                                            // 🔘 Dot Indicator
+                                            Positioned(
+                                              bottom: 12,
+                                              left: 0,
+                                              right: 0,
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: List.generate(
+                                                  item.media?.length ?? 0,
+                                                      (index) {
+                                                    final distance = (index -
+                                                        _currentImageIndex).abs();
+                                                    double scale;
+                                                    double opacity;
+
+                                                    if (distance == 0) {
+                                                      scale = 1.2;
+                                                      opacity = 1.0;
+                                                    } else if (distance == 1) {
+                                                      scale = 1.0;
+                                                      opacity = 0.7;
+                                                    } else if (distance == 2) {
+                                                      scale = 0.8;
+                                                      opacity = 0.5;
+                                                    } else {
+                                                      scale = 0.5;
+                                                      opacity = 0.0;
+                                                    }
+
+                                                    return AnimatedOpacity(
+                                                      duration: Duration(milliseconds: 300),
+                                                      opacity: opacity,
+                                                      child: SizedBox(
+                                                        width: 12,
+                                                        // fixed size for layout stability
+                                                        height: 12,
+                                                        child: Center(
+                                                          child: Container(
+                                                            width: 8 * scale,
+                                                            height: 8 * scale,
+                                                            decoration: BoxDecoration(
+                                                              color: Colors.white,
+                                                              shape: BoxShape.circle,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+
+                                            // ❤️ Favorite Icon
+
+
+                                Positioned(
+                                  top: 10,
+                                  right: 10,
+                                  child: Consumer<FavoriteProvider>(
+                                    builder: (context, favProvider, _) {
+                                      final propertyId = int.tryParse(property.id?.toString() ?? '') ?? 0;
+
+                                      final isSaved = favProvider.isFavorite(propertyId);
+
+                                      return Material(
+                                        color: Colors.white,
+                                        shape: const CircleBorder(),
+                                        elevation: 4,
+                                        child: IconButton(
+                                          icon: Icon(
+                                            isSaved ? Icons.favorite : Icons.favorite_border,
+                                            color: isSaved ? Colors.red : Colors.grey,
+                                          ),
+                                          onPressed: () async {
+                                            final token = await SecureStorage.getToken();
+
+                                            if (token == null || token.isEmpty) {
+                                              // 🔒 Show login-required dialog
+                                              showDialog(
+                                                context: context,
+                                                builder: (ctx) => Dialog(
+                                                  backgroundColor: Colors.transparent,
+                                                  insetPadding: EdgeInsets.zero,
+                                                  child: Container(
+                                                    height: 70,
+                                                    margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.red,
+                                                      borderRadius: BorderRadius.circular(10),
+                                                    ),
+                                                    child: Stack(
+                                                      clipBehavior: Clip.none,
+                                                      children: [
+                                                        Positioned(
+                                                          top: -14,
+                                                          right: -10,
+                                                          child: IconButton(
+                                                            icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                            onPressed: () => Navigator.of(ctx).pop(),
+                                                            padding: EdgeInsets.zero,
+                                                            constraints: const BoxConstraints(),
+                                                          ),
+                                                        ),
+                                                        Positioned(
+                                                          left: 16,
+                                                          right: 16,
+                                                          bottom: 12,
+                                                          child: Row(
+                                                            children: [
+                                                              const Expanded(
+                                                                child: Text(
+                                                                  'Login required to add favorites.',
+                                                                  style: TextStyle(color: Colors.white, fontSize: 13),
+                                                                ),
+                                                              ),
+                                                              const SizedBox(width: 12),
+                                                              GestureDetector(
+                                                                onTap: () {
+                                                                  Navigator.of(ctx).pop();
+                                                                  Navigator.of(ctx).pushNamed('/login');
+                                                                },
+                                                                child: const Text(
+                                                                  'Login',
+                                                                  style: TextStyle(
+                                                                    color: Colors.white,
+                                                                    fontWeight: FontWeight.bold,
+                                                                    decoration: TextDecoration.underline,
+                                                                    decorationColor: Colors.white,
+                                                                    decorationThickness: 1.5,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                              return;
+                                            }
+
+                                            // 🌀 Toggle via API + Provider
+                                            favProvider.toggleFavorite(propertyId);
+                                            property.saved = !isSaved;
+
+                                            final success = await toggledApi(token, property.id!);
+
+                                            if (!success) {
+                                              // ❌ Revert toggle on failure
+                                              favProvider.toggleFavorite(propertyId);
+                                              property.saved = isSaved;
+
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text("Failed to update favorite.")),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+
+
+                                  // 👤 Agent Badge
+                                            Positioned(
+                                              bottom: -30,
+                                              left: 10,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  String id = property.id.toString();
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) => Featured_Detail(data: id),
+                                                    ),
+                                                  );
+                                                },
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.center,
                                                   children: [
-                                                    AspectRatio(
-                                                      aspectRatio: 1.4,
-                                                      child: PageView.builder(
-                                                        scrollDirection: Axis.horizontal,
-                                                        itemCount: property.media?.length ?? 0, // ✅ use 'property'
-                                                        itemBuilder: (context, imgIndex) {
-                                                          return CachedNetworkImage(
-                                                            imageUrl: property.media![imgIndex].originalUrl.toString(), // ✅ use 'property'
-                                                            fit: BoxFit.cover,
-                                                          );
-                                                        },
+                                                    CircleAvatar(
+                                                      radius: 28,
+                                                      backgroundImage: (property.agentImage != null && property.agentImage!.isNotEmpty)
+                                                          ? CachedNetworkImageProvider(property.agentImage!)
+                                                          : const AssetImage("assets/images/dummy.jpg") as ImageProvider,
+                                                    ),
+                                                    const SizedBox(height: 6),
+                                                    Transform.translate(
+                                                      offset: const Offset(-5, 0),
+                                                      child: Text(
+                                                        "AGENT",
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: Color(0xFF1A73E9),
+                                                          letterSpacing: 0.5,
+                                                        ),
                                                       ),
                                                     ),
-
-                                                    // ❤️ Favorite Icon (corrected)
-                                                    // Positioned(
-                                                    //   top: 10,
-                                                    //   right: 10,
-                                                    //   child: Container(
-                                                    //     height: MediaQuery.of(context).size.height * 0.04,
-                                                    //     width: MediaQuery.of(context).size.height * 0.04,
-                                                    //     decoration: BoxDecoration(
-                                                    //       color: Colors.white,
-                                                    //       shape: BoxShape.circle,
-                                                    //       boxShadow: [
-                                                    //         BoxShadow(
-                                                    //           color: Colors.grey.withOpacity(0.5),
-                                                    //           blurRadius: 4,
-                                                    //           offset: Offset(2, 2),
-                                                    //         ),
-                                                    //       ],
-                                                    //     ),
-                                                    //     child: Center(
-                                                    //       // child: IconButton(
-                                                    //       //   icon: AnimatedSwitcher(
-                                                    //       //     duration: Duration(milliseconds: 300),
-                                                    //       //     transitionBuilder: (child, animation) =>
-                                                    //       //         ScaleTransition(scale: animation, child: child),
-                                                    //       //     // child: Icon(
-                                                    //       //     //   favoriteProperties.contains(property.id!) ? Icons.favorite : Icons.favorite_border,
-                                                    //       //     //
-                                                    //       //     //   key: ValueKey(favoriteProperties.contains(property.id!)),
-                                                    //       //     //   color: Colors.red,
-                                                    //       //     //   size: 18,
-                                                    //       //     // ),
-                                                    //       //   ),
-                                                    //       //   onPressed: () async {
-                                                    //       //     property_id = property.id;
-                                                    //       //
-                                                    //       //     if (token.isEmpty) {
-                                                    //       //       print("🚫 No token - please login.");
-                                                    //       //       toggleFavorite(property.id!); // Local save
-                                                    //       //     } else {
-                                                    //       //       print("✅ Token exists, calling toggle API...");
-                                                    //       //       await toggledApi(token, property.id!);
-                                                    //       //       toggleFavorite(property.id!);
-                                                    //       //     }
-                                                    //       //
-                                                    //       //
-                                                    //       //
-                                                    //       //     setState(() {}); // Update UI
-                                                    //       //   },
-                                                    //       //
-                                                    //       //
-                                                    //       // ),
-                                                    //     ),
-                                                    //   ),
-                                                    // ),
-
                                                   ],
                                                 ),
                                               ),
                                             ),
-
-                                            Padding(padding: const EdgeInsets.only(top: 5),
-                                              child: ListTile(
-                                                title: Padding(
-                                                  padding: const EdgeInsets.only(top: 5.0,bottom: 5),
-                                                  child: Text(property.title.toString(),
-                                                    style: TextStyle(
-                                                        fontSize: 16,height: 1.4
-                                                    ),),
-                                                ),
-                                                subtitle: Text('${property.price} AED',
-                                                  style: TextStyle(
-                                                      fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
-                                                  ),),
-                                              ),
-                                            ),
-                                            Row(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              children: [
-                                                Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 0,bottom: 10),
-                                                  child:  Image.asset("assets/images/map.png",height: 14,),
-                                                ),
-                                                Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                                  child: Text(property.location.toString(),style: TextStyle(
-                                                      fontSize: 13,height: 1.4,
-                                                      overflow: TextOverflow.visible
-                                                  ),),
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              children: [
-                                                const SizedBox(width: 10),
-                                                Expanded(
-                                                  child: ElevatedButton.icon(
-                                                    onPressed: () async {
-                                                      String phone = 'tel:${phoneCallNumber(agentDetail!.phone ?? '')}';
-                                                      try {
-                                                        final bool launched = await launchUrlString(
-                                                          phone,
-                                                          mode: LaunchMode.externalApplication,
-                                                        );
-                                                        if (!launched) {
-                                                          print("❌ Could not launch dialer");
-                                                        }
-                                                      } catch (e) {
-                                                        print("❌ Exception: $e");
-                                                      }
-
-                                                    },
-                                                    icon: const Icon(Icons.call, color: Colors.red),
-                                                    label: const Text("Call", style: TextStyle(color: Colors.black)),
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.grey[100],
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                      elevation: 3,
-                                                      padding: const EdgeInsets.symmetric(vertical: 10),
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 10),
-                                                Expanded(
-                                                  child: ElevatedButton.icon(
-                                                    onPressed: () async {
-                                                      final phone = whatsAppNumber(agentDetail!.phone ?? '');
-                                                      final message = Uri.encodeComponent("Hello");
-                                                      final url = Uri.parse("https://wa.me/$phone?text=$message");
-
-                                                      if (await canLaunchUrl(url)) {
-                                                        try {
-                                                          final launched = await launchUrl(
-                                                            url,
-                                                            mode: LaunchMode.externalApplication,
-                                                          );
-                                                          if (!launched) {
-                                                            print("❌ Could not launch WhatsApp");
-                                                          }
-                                                        } catch (e) {
-                                                          print("❌ Exception: $e");
-                                                        }
-                                                      } else {
-                                                        print("❌ WhatsApp not available or URL not supported");
-                                                      }
-
-                                                    },
-                                                    icon: Image.asset("assets/images/whats.png", height: 20),
-                                                    label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.grey[100],
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                      elevation: 1,
-                                                      padding: const EdgeInsets.symmetric(vertical: 10),
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 10),
-                                              ],
-                                            ),
-
-                                            const SizedBox(height: 10),
-
                                           ],
                                         ),
-                                      ),
 
+
+                                        // 🔽 Spacer so that the overlapping image is not clipped
+                                        const SizedBox(height: 15),
+
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 0, right: 0, top: 4, bottom: 4),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                              // Agent Name
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.only(left: 10),
+                                                  child: Text(
+                                                    property.agentName ?? 'Agent',
+                                                    style: const TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: Colors.black,
+                                                    ),
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ),
+
+                                              // Listed text + agency logo
+                                              Row(
+                                                children: [
+                                                  if (property.postedOn != null && property.postedOn!.isNotEmpty)
+                                                    Text(
+                                                      'Listed ${property.postedOn}',
+                                                      style: const TextStyle(
+                                                        fontSize: 13,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
+                                                  const SizedBox(width: 4),
+                                                  if (property.agencyLogo != null && property.agencyLogo!.isNotEmpty)
+                                                    Padding(
+                                                      padding: const EdgeInsets.all(8.0),
+                                                      child: Container(
+                                                        height: 30,
+                                                        width: 60,
+                                                        decoration: BoxDecoration(
+                                                          borderRadius: BorderRadius.circular(4),
+                                                          image: DecorationImage(
+                                                            image: CachedNetworkImageProvider(property.agencyLogo!),
+                                                            fit: BoxFit.contain,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        SizedBox(height: 5,),
+
+                                        const Divider(
+                                          color: Colors.grey,
+                                          thickness: 0.3,
+                                          height: 6,
+                                        ),
+
+
+
+
+                                        SizedBox(height: 8,),
+
+
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 5),
+                                          child: ListTile(
+                                            title: Text(
+                                              property.title.toString(),
+                                              style: TextStyle(fontSize: 16, height: 1.4),
+                                            ),
+                                            subtitle: Padding(
+                                              padding: const EdgeInsets.only(top: 8.0),
+                                              child: Text(
+                                                '${property.price} AED',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 22,
+                                                    height: 1.4),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Row(
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 10, right: 5, top: 0),
+                                              child:
+                                              Image.asset("assets/images/map.png", height: 14),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 0, right: 0, top: 0),
+                                              child: Text(
+                                                property.location.toString(),
+                                                style: TextStyle(
+                                                    fontSize: 13,
+                                                    height: 1.4,
+                                                    overflow: TextOverflow.visible),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 8),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                          child: Row(
+                                            children: [
+                                              Image.asset("assets/images/bed.png", height: 13),
+                                              SizedBox(width: 5),
+                                              Text(property.bedrooms.toString()),
+                                              SizedBox(width: 10),
+                                              Image.asset("assets/images/bath.png", height: 13),
+                                              SizedBox(width: 5),
+                                              Text(property.bathrooms.toString()),
+                                              SizedBox(width: 10),
+                                              Image.asset("assets/images/messure.png",
+                                                  height: 13),
+                                              SizedBox(width: 5),
+                                              Text(property.squareFeet.toString()),
+                                            ],
+                                          ),
+                                        ),
+
+                                        SizedBox(height: 15),
+                                        Row(
+                                          children: [
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: ElevatedButton.icon(
+                                                onPressed: () async {
+                                                  String phone =
+                                                      'tel:${item.phoneNumber}';
+                                                  try {
+                                                    final bool launched = await launchUrlString(
+                                                      phone,
+                                                      mode: LaunchMode.externalApplication,
+                                                    );
+                                                    if (!launched) print("❌ Could not launch dialer");
+                                                  } catch (e) {
+                                                    print("❌ Exception: $e");
+                                                  }
+                                                },
+                                                icon: const Icon(Icons.call, color: Colors.red),
+                                                label: const Text("Call",
+                                                    style: TextStyle(color: Colors.black)),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.grey[100],
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(10)),
+                                                  elevation: 2,
+                                                  padding:
+                                                  const EdgeInsets.symmetric(vertical: 10),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: ElevatedButton.icon(
+                                                onPressed: () async {
+                                                  //final property = agentProperties.data![index];
+
+                                                  final rawNumber = property.whatsapp ?? property.phoneNumber ?? '';
+                                                  final phone = whatsAppNumber(rawNumber);
+
+                                                  if (phone.isEmpty) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(content: Text("No WhatsApp number available")),
+                                                    );
+                                                    return;
+                                                  }
+
+                                                  final message = Uri.encodeComponent("Hello");
+                                                  final url = Uri.parse("https://wa.me/$phone?text=$message");
+
+                                                  if (await canLaunchUrl(url)) {
+                                                    try {
+                                                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                    } catch (e) {
+                                                      print("❌ Exception: $e");
+                                                    }
+                                                  } else {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(content: Text("Cannot open WhatsApp")),
+                                                    );
+                                                  }
+                                                },
+                                                icon: Image.asset("assets/images/whats.png", height: 20),
+                                                label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.grey[100],
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                  elevation: 2,
+                                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                                ),
+                                              ),
+                                            ),
+
+
+
+                                            const SizedBox(width: 10),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                      ],
                                     ),
-                                  ),
+                                ],  ),
+                                    ),),), );
 
-                                );
+
 
 
                               },

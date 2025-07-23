@@ -69,6 +69,13 @@ class Data {
   String? agentImage;
   String? agencyLogo;
   String? postedOn;
+  String? image;
+
+  bool? saved;
+
+  int? bedrooms;
+  int? bathrooms;
+  int? squareFeet;
 
   Data(
       {this.id,
@@ -84,6 +91,13 @@ class Data {
         this.agentImage,
         this.agencyLogo,
         this.postedOn,
+        this.image,
+        this.saved,
+
+
+        this.bedrooms,   // ✅
+        this.bathrooms,  // ✅
+        this.squareFeet,
       });
 
 
@@ -97,10 +111,20 @@ class Data {
     location = json['location']?.toString();
     phoneNumber = json['phone_number']?.toString();
     whatsapp = json['whatsapp']?.toString();
-    agentName = json['agent_name']?.toString();
+    agentName = json['agent']?.toString();
     agentImage = json['agent_image']?.toString();
     agencyLogo = json['agency_logo']?.toString();
     postedOn = json['posted_on']?.toString();
+
+
+
+
+    saved = json['saved'];
+
+    bedrooms = int.tryParse(json['bedrooms']?.toString() ?? '');
+    bathrooms = int.tryParse(json['bathrooms']?.toString() ?? '');
+    squareFeet = int.tryParse(json['square_feet']?.toString() ?? '');
+
 
     if (json['media'] != null) {
       media = <Media>[];
@@ -122,10 +146,15 @@ class Data {
     data['location'] = this.location;
     data['phone_number'] = this.phoneNumber;
     data['whatsapp'] = this.whatsapp;
-    data['agent_name'] = agentName;
+    data['agent'] = agentName;
     data['agent_image'] = agentImage;
     data['agency_logo'] = agencyLogo;
     data['posted_on'] = postedOn;
+    data['saved'] = saved;
+    data['bedrooms'] = bedrooms;
+    data['bathrooms'] = bathrooms;
+    data['square_feet'] = squareFeet;
+
 
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();

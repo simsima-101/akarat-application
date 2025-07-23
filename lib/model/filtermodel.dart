@@ -65,6 +65,8 @@ class Data {
   int? bedrooms;
   int? bathrooms;
   String? squareFeet;
+  String? postedOn;
+  String? agencyLogo;
   List<Media>? media;
   bool? saved;
 
@@ -89,6 +91,8 @@ class Data {
         this.saved,
         this.agentName,
         this.agentImage,
+        this.postedOn,
+        this.agencyLogo,
 
 
       });
@@ -106,9 +110,10 @@ class Data {
     bathrooms = json['bathrooms'];
     squareFeet = json['square_feet'];
     saved = json['saved'];
-    agentName = json['agent_name'];       // ✅ map from JSON
+    agentName = json['agent'];       // ✅ map from JSON
     agentImage = json['agent_image'];
-
+    postedOn = json['posted_on'];
+    agencyLogo = json['agency_logo'];
     media = json['media'] != null
         ? List<Media>.from(json['media'].map((v) => Media.fromJson(v)))
         : [];
@@ -127,8 +132,10 @@ class Data {
     data['bedrooms'] = this.bedrooms;
     data['bathrooms'] = this.bathrooms;
     data['square_feet'] = this.squareFeet;
-    data['agent_name'] = this.agentName;         // ✅ include in JSON
+    data['agent'] = this.agentName;         // ✅ include in JSON
     data['agent_image'] = this.agentImage;
+    data['posted_on'] = this.postedOn;
+    data['agency_logo'] = this.agencyLogo;
     if (this.media != null) {
       data['media'] = this.media!.map((v) => v.toJson()).toList();
     }

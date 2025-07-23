@@ -10,6 +10,7 @@ import 'package:Akarat/screen/blog.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sliding_switch/sliding_switch.dart';
@@ -23,6 +24,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../model/propertytypemodel.dart';
 import '../model/searchmodel.dart';
 import '../model/togglemodel.dart';
+import '../providers/favorite_provider.dart';
 import '../secure_storage.dart';
 import '../services/favorite_service.dart';
 import '../utils/fav_logout.dart';
@@ -31,6 +33,8 @@ import 'featured_detail.dart';
 import 'filter.dart';
 import 'login.dart';
 import 'my_account.dart';
+import 'package:provider/provider.dart';
+
 
 
 class FliterList extends StatelessWidget {
@@ -420,105 +424,86 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
 
   Future<void> showResult({bool forceRefresh = false}) async {
-    setState(() { _isLoading = true; });   // Start loading
+    setState(() {
+      _isLoading = true; // Start loading
+    });
 
     final prefs = await SharedPreferences.getInstance();
-    final cacheKey = 'filters_result_${property_type}_$ftype$bedroom$min_price$max_price$rent$bathroom$purpose';
+    final cacheKey =
+        'filters_result_${property_type}_$ftype$bedroom$min_price$max_price$rent$bathroom$purpose';
     final cacheTimeKey = '${cacheKey}_time';
     final now = DateTime.now().millisecondsSinceEpoch;
-    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    String paymentPeriodParam = '';
-    if (purpose == 'Rent') {
-      paymentPeriodParam = rent;
-    } else {
-      paymentPeriodParam = '';
-    }
+    String paymentPeriodParam = purpose == 'Rent' ? rent : '';
 
-    if (purpose == 'Rent' && (property_type.trim().isEmpty || property_type == ' ')) {
-      if (propertyTypeModel != null && propertyTypeModel!.data != null && propertyTypeModel!.data!.isNotEmpty) {
-        property_type = propertyTypeModel!.data![0].name.toString();
+    // Ensure property_type is set for Rent
+    if (purpose == 'Rent' &&
+        (property_type.trim().isEmpty || property_type == ' ')) {
+      if (propertyTypeModel != null &&
+          propertyTypeModel!.data != null &&
+          propertyTypeModel!.data!.isNotEmpty) {
+        property_type = propertyTypeModel!.data!.first.name ?? '';
         debugPrint("ℹ️ Auto-selected property_type for Rent: $property_type");
       } else {
         debugPrint("❌ Cannot proceed — no property_type selected for Rent");
-        setState(() { _isLoading = false; });  // ✅ Stop loading if failure
+        setState(() {
+          _isLoading = false;
+        });
         return;
       }
     }
 
-    // if (!forceRefresh && now - lastFetched < Duration(hours: 2).inMilliseconds) {
-    //   final cachedData = prefs.getString(cacheKey);
-    //   if (cachedData != null) {
-    //     final cachedJson = jsonDecode(cachedData);
-    //     final cachedResponse = FilterResponseModel.fromJson(cachedJson);
-    //     final cachedFeature = cachedResponse.data;
-    //
-    //     setState(() {
-    //       filterModel = cachedFeature!;
-    //       _isLoading = false;  // ✅ Stop loading after loading cache
-    //     });
-    //
-    //     _scrollController.animateTo(0, duration: Duration(milliseconds: 100), curve: Curves.easeInOut);
-    //     debugPrint("✅ Loaded filter results from cache (${filterModel.data?.length ?? 0} items)");
-    //     return;
-    //   }
-    // }
-
     try {
       final apiUrl = buildApiUrl();
       final response = await http.get(Uri.parse(apiUrl));
-
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         final featureResponse = FilterResponseModel.fromJson(responseData);
         final feature = featureResponse.data;
 
-        if (selectedLocation != null && feature != null) {
+        final favProvider = context.read<FavoriteProvider>();
 
-        }
 
         setState(() {
-          _isLoading = false;
+          // Always reset model so UI updates (even if empty)
+          filterModel = feature ?? FilterModel(data: []);
 
-          // Ensure filterModel is always reset, even if empty
-          if (feature != null && feature.data != null) {
-            filterModel = feature;
-
-            // Safely clear and assign favorites
-            for (var prop in filterModel.data!) {
-              prop.saved = favoriteProperties.contains(prop.id);
-            }
-          } else {
-            // Assign empty data to trigger "Property Not Found"
-            filterModel = FilterModel(data: []);
+          // Sync favorites for each property
+          for (var prop in filterModel.data!) {
+            final intId = int.tryParse(prop.id?.toString() ?? '') ?? 0;
+            prop.saved = favProvider.isFavorite(intId);
           }
+
+          _isLoading = false; // Stop loading
         });
 
-
-
-// ✅ Prevent crash if ListView hasn't built yet
+        // Scroll to top when new results are loaded
         if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            0,
-            duration: Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
+          _scrollController.jumpTo(0);
         }
 
-        debugPrint("✅ Fetched and updated filter result (${filterModel.data?.length ?? 0} items)");
+        debugPrint(
+            "✅ Fetched and updated filter result (${filterModel.data?.length ?? 0} items)");
 
         await prefs.setString(cacheKey, response.body);
         await prefs.setInt(cacheTimeKey, now);
       } else {
         debugPrint("❌ Filter API failed: ${response.statusCode}");
-        setState(() { _isLoading = false; });
+        setState(() {
+          filterModel = FilterModel(data: []);
+          _isLoading = false;
+        });
       }
     } catch (e) {
       debugPrint("🚨 Filter API exception: $e");
-      setState(() { _isLoading = false; });
+      setState(() {
+        filterModel = FilterModel(data: []);
+        _isLoading = false;
+      });
     }
   }
+
 
 
 
@@ -561,7 +546,9 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
   final TextEditingController _searchController = TextEditingController();
 
-  Future<bool> toggledApi(String token, int propertyId) async {
+
+
+  Future<bool> toggledApi(BuildContext context, String token, int propertyId) async {
     final url = Uri.parse('https://akarat.com/api/toggle-saved-property');
     try {
       final response = await http.post(
@@ -574,7 +561,11 @@ class _FliterListDemoState extends State<FliterListDemo> {
       );
 
       if (response.statusCode == 200) {
-        print("✅ Favorite toggled successfully");
+        print("✅ Favorite toggled successfully (ID: $propertyId)");
+
+        // **Update global favorites in Provider**
+        context.read<FavoriteProvider>().toggleFavorite(propertyId);
+
         return true;
       } else {
         print("❌ Failed to toggle favorite: ${response.statusCode}");
@@ -1907,14 +1898,14 @@ class _FliterListDemoState extends State<FliterListDemo> {
                       shadowColor: Colors.white,
                       color: Colors.white,
                       child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Featured_Detail(data: property.id.toString()),
-                              ),
-                            );
-                          },
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Featured_Detail(data: property.id.toString()),
+                            ),
+                          );
+                        },
                         child: Padding(
                           padding: const EdgeInsets.only(left: 5.0, top: 1, right: 5),
                           child: Column(
@@ -1944,116 +1935,101 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                         color: Colors.white,
                                         shape: const CircleBorder(),
                                         elevation: 4,
-                                        child: IconButton(
-                                            icon: Icon(
-                                              property.saved == true || FavoriteService.loggedInFavorites.contains(property.id)
-                                                  ? Icons.favorite
-                                                  : Icons.favorite_border,
-                                              color: property.saved == true || FavoriteService.loggedInFavorites.contains(property.id)
-                                                  ? Colors.red
-                                                  : Colors.grey,
-                                            ),
+                                        child: Consumer<FavoriteProvider>(
+                                          builder: (context, favProvider, _) {
+                                            final propertyId = property.id!;
+                                            final isFavorited = favProvider.isFavorite(propertyId);
 
-                                            onPressed: () async {
-                                              final token = await SecureStorage.getToken();
+                                            return IconButton(
+                                              icon: Icon(
+                                                isFavorited ? Icons.favorite : Icons.favorite_border,
+                                                color: isFavorited ? Colors.red : Colors.grey,
+                                              ),
+                                              onPressed: () async {
+                                                final token = await SecureStorage.getToken();
 
-                                              if (token == null || token.isEmpty) {
-                                                // 🔒 Show login-required dialog
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (ctx) => Dialog(
-                                                    backgroundColor: Colors.transparent,
-                                                    insetPadding: EdgeInsets.zero,
-                                                    child: Container(
-                                                      height: 70,
-                                                      margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.red,
-                                                        borderRadius: BorderRadius.circular(10),
-                                                      ),
-                                                      child: Stack(
-                                                        clipBehavior: Clip.none,
-                                                        children: [
-                                                          Positioned(
-                                                            top: -14,
-                                                            right: -10,
-                                                            child: IconButton(
-                                                              icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                                                              onPressed: () => Navigator.of(ctx).pop(),
-                                                              padding: EdgeInsets.zero,
-                                                              constraints: const BoxConstraints(),
+                                                if (token == null || token.isEmpty) {
+                                                  // 🔒 Show login-required dialog
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (ctx) => Dialog(
+                                                      backgroundColor: Colors.transparent,
+                                                      insetPadding: EdgeInsets.zero,
+                                                      child: Container(
+                                                        height: 70,
+                                                        margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.red,
+                                                          borderRadius: BorderRadius.circular(10),
+                                                        ),
+                                                        child: Stack(
+                                                          clipBehavior: Clip.none,
+                                                          children: [
+                                                            Positioned(
+                                                              top: -14,
+                                                              right: -10,
+                                                              child: IconButton(
+                                                                icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                                onPressed: () => Navigator.of(ctx).pop(),
+                                                                padding: EdgeInsets.zero,
+                                                                constraints: const BoxConstraints(),
+                                                              ),
                                                             ),
-                                                          ),
-                                                          Positioned(
-                                                            left: 16,
-                                                            right: 16,
-                                                            bottom: 12,
-                                                            child: Row(
-                                                              children: [
-                                                                const Expanded(
-                                                                  child: Text(
-                                                                    'Login required to add favorites.',
-                                                                    style: TextStyle(color: Colors.white, fontSize: 13),
-                                                                  ),
-                                                                ),
-                                                                const SizedBox(width: 12),
-                                                                GestureDetector(
-                                                                  onTap: () {
-                                                                    Navigator.of(ctx).pop();
-                                                                    Navigator.of(ctx).pushNamed('/login');
-                                                                  },
-                                                                  child: const Text(
-                                                                    'Login',
-                                                                    style: TextStyle(
-                                                                      color: Colors.white,
-                                                                      fontWeight: FontWeight.bold,
-                                                                      decoration: TextDecoration.underline,
-                                                                      decorationColor: Colors.white,
-                                                                      decorationThickness: 1.5,
+                                                            Positioned(
+                                                              left: 16,
+                                                              right: 16,
+                                                              bottom: 12,
+                                                              child: Row(
+                                                                children: [
+                                                                  const Expanded(
+                                                                    child: Text(
+                                                                      'Login required to add favorites.',
+                                                                      style: TextStyle(color: Colors.white, fontSize: 13),
                                                                     ),
                                                                   ),
-                                                                ),
-                                                              ],
+                                                                  const SizedBox(width: 12),
+                                                                  GestureDetector(
+                                                                    onTap: () {
+                                                                      Navigator.of(ctx).pop();
+                                                                      Navigator.of(ctx).pushNamed('/login');
+                                                                    },
+                                                                    child: const Text(
+                                                                      'Login',
+                                                                      style: TextStyle(
+                                                                        color: Colors.white,
+                                                                        fontWeight: FontWeight.bold,
+                                                                        decoration: TextDecoration.underline,
+                                                                        decorationColor: Colors.white,
+                                                                        decorationThickness: 1.5,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
                                                             ),
-                                                          ),
-                                                        ],
+                                                          ],
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                );
-                                                return;
-                                              }
-
-                                              setState(() {
-                                                property.saved = !(property.saved ?? false);
-                                                if (property.saved == true) {
-                                                  favoriteProperties.add(property.id!);
-                                                  FavoriteService.loggedInFavorites.add(property.id!);
-                                                } else {
-                                                  favoriteProperties.remove(property.id!);
-                                                  FavoriteService.loggedInFavorites.remove(property.id!);
+                                                  );
+                                                  return;
                                                 }
-                                              });
 
-                                              await _saveFavorites(); // Save to local
-                                              final success = await toggledApi(token, property.id!);
-
-                                              if (!success) {
-                                                setState(() {
-                                                  property.saved = !(property.saved ?? false); // revert
-                                                });
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  const SnackBar(content: Text("Failed to update favorite.")),
-                                                );
-                                              }
-                                            }
-
-
-
-
+                                                // ✅ Use Provider’s API-integrated method
+                                                final success = await favProvider.toggleFavoriteWithApi(propertyId, token);
+                                                if (!success) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(content: Text("Failed to update favorite.")),
+                                                  );
+                                                }
+                                              },
+                                            );
+                                          },
                                         ),
                                       ),
                                     ),
+
+
                                   ],
                                 ),
                               ),
@@ -2419,4 +2395,3 @@ String whatsAppNumber(String number) {
   }
   return number;
 }
-
