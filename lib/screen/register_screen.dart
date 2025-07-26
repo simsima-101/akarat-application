@@ -68,15 +68,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (loginResult is Map<String, dynamic> &&
-          loginResult.containsKey('token') &&
-          loginResult.containsKey('email')) {
-        final token = loginResult['token'];
-        final name = loginResult['name'] ?? '';
+          loginResult.containsKey('token')) {
 
-        // Step 3: Save token and user name
+        final token = loginResult['token'];
+
+        // Extract name safely (either at root or inside "user")
+        final name = loginResult['name'] ??
+            (loginResult['user'] != null ? loginResult['user']['name'] : '') ??
+            '';
+
+        // Step 3: Save token and username securely
         await SecureStorage.writeToken(token);
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('user_name', name);
+        await SecureStorage.write('user_name', name); // <-- Save username securely
+
 
         print("✅ Saved user name: $name");
 
@@ -108,6 +112,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
     }
   }
+
 
 
 

@@ -546,8 +546,8 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                         elevation: 4,
                                         child: Consumer<FavoriteProvider>(
                                           builder: (context, favProvider, _) {
-                                            final propertyId = item.id!;
-                                            final isFav = favProvider.isFavorite(propertyId);
+                                            final isLoggedIn = token.isNotEmpty;
+                                            final isFav = isLoggedIn && favProvider.isFavorite(item.id!);
 
                                             return IconButton(
                                               icon: Icon(
@@ -556,10 +556,8 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                                 size: 20,
                                               ),
                                               onPressed: () async {
-                                                final token = await SecureStorage.getToken();
-
-                                                if (token == null || token.isEmpty) {
-                                                  // 🔒 Show login dialog
+                                                if (!isLoggedIn) {
+                                                  // 🔒 Show login prompt
                                                   showDialog(
                                                     context: context,
                                                     builder: (ctx) => Dialog(
@@ -578,11 +576,14 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                                             Positioned(
                                                               top: -14,
                                                               right: -10,
-                                                              child: IconButton(
-                                                                icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                                                                onPressed: () => Navigator.of(ctx).pop(),
-                                                                padding: EdgeInsets.zero,
-                                                                constraints: const BoxConstraints(),
+                                                              child: Material(
+                                                                color: Colors.transparent,
+                                                                child: IconButton(
+                                                                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                                  onPressed: () => Navigator.of(ctx).pop(),
+                                                                  padding: EdgeInsets.zero,
+                                                                  constraints: const BoxConstraints(),
+                                                                ),
                                                               ),
                                                             ),
                                                             Positioned(
@@ -625,8 +626,8 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                                   return;
                                                 }
 
-                                                // ✅ Toggle with API + Provider
-                                                final success = await favProvider.toggleFavoriteWithApi(propertyId, token);
+                                                // ✅ Toggle using API
+                                                final success = await favProvider.toggleFavoriteWithApi(item.id!, token);
                                                 if (!success) {
                                                   ScaffoldMessenger.of(context).showSnackBar(
                                                     const SnackBar(content: Text("Failed to update favorite.")),
@@ -638,6 +639,8 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                         ),
                                       ),
                                     ),
+
+
 
 
 

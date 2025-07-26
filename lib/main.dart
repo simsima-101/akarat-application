@@ -13,14 +13,20 @@ import 'package:Akarat/screen/new_projects.dart'; // ✅ Include this if New_Pro
 
 // Providers
 import 'package:Akarat/providers/favorite_provider.dart';
+import 'providers/profile_image_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final profileProvider = ProfileImageProvider();
+  await profileProvider.initialize();
+
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => FavoriteProvider()..loadFavorites()),
+        ChangeNotifierProvider(create: (_) => ProfileImageProvider()..refreshImage()), // <- important
       ],
       child: const MyApp(),
     ),

@@ -1937,19 +1937,18 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                         elevation: 4,
                                         child: Consumer<FavoriteProvider>(
                                           builder: (context, favProvider, _) {
-                                            final propertyId = property.id!;
-                                            final isFavorited = favProvider.isFavorite(propertyId);
+                                            final isLoggedIn = token.isNotEmpty;
+                                            final isFav = isLoggedIn && favProvider.isFavorite(property.id!); // ✅ Only true for logged-in users
 
                                             return IconButton(
                                               icon: Icon(
-                                                isFavorited ? Icons.favorite : Icons.favorite_border,
-                                                color: isFavorited ? Colors.red : Colors.grey,
+                                                isFav ? Icons.favorite : Icons.favorite_border,
+                                                color: isFav ? Colors.red : Colors.grey, // ✅ Grey for logged-out users
+                                                size: 20,
                                               ),
                                               onPressed: () async {
-                                                final token = await SecureStorage.getToken();
-
-                                                if (token == null || token.isEmpty) {
-                                                  // 🔒 Show login-required dialog
+                                                if (!isLoggedIn) {
+                                                  // 🔒 Show login prompt
                                                   showDialog(
                                                     context: context,
                                                     builder: (ctx) => Dialog(
@@ -1968,11 +1967,14 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                             Positioned(
                                                               top: -14,
                                                               right: -10,
-                                                              child: IconButton(
-                                                                icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                                                                onPressed: () => Navigator.of(ctx).pop(),
-                                                                padding: EdgeInsets.zero,
-                                                                constraints: const BoxConstraints(),
+                                                              child: Material(
+                                                                color: Colors.transparent,
+                                                                child: IconButton(
+                                                                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                                  onPressed: () => Navigator.of(ctx).pop(),
+                                                                  padding: EdgeInsets.zero,
+                                                                  constraints: const BoxConstraints(),
+                                                                ),
                                                               ),
                                                             ),
                                                             Positioned(
@@ -2015,8 +2017,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                   return;
                                                 }
 
-                                                // ✅ Use Provider’s API-integrated method
-                                                final success = await favProvider.toggleFavoriteWithApi(propertyId, token);
+                                                // ✅ Use Provider's API-integrated method
+                                                final success = await favProvider.toggleFavoriteWithApi(property.id!, token);
                                                 if (!success) {
                                                   ScaffoldMessenger.of(context).showSnackBar(
                                                     const SnackBar(content: Text("Failed to update favorite.")),
@@ -2028,6 +2030,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                         ),
                                       ),
                                     ),
+
 
 
                                   ],

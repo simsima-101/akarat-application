@@ -1537,83 +1537,155 @@ class _AboutAgentState extends State<AboutAgent> {
             ),
           ),
 
-          IconButton(
-            enableFeedback: false,
-            onPressed: () async {
-              final token = await SecureStorage.getToken();
 
-              if (token == null || token.isEmpty) {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white, // white container
-                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          "Cancel",
-                          style: TextStyle(color: Colors.red), // red text
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const LoginDemo()),
-                          );
-                        },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(color: Colors.red), // red text
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-              else {
-                // ✅ Logged in – go to favorites
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Fav_Logout()),
-                );
-              }
-            },
-            icon: pageIndex == 2
-                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+          // CALL BUTTON
+          Container(
+            margin: const EdgeInsets.only(left: 40),
+            height: 45, // bigger for better tap target
+            width: 45,
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(25.0),
+              boxShadow: [
+                BoxShadow(color: Colors.grey, offset: Offset(0.5, 0.5), blurRadius: 1.0),
+                const BoxShadow(color: Colors.white, offset: Offset(0.0, 0.0), blurRadius: 0.0),
+              ],
+            ),
+            child: GestureDetector(
+              onTap: () async {
+                final phone = agentDetail?.phone != null && agentDetail!.phone!.isNotEmpty
+                    ? phoneCallNumber(agentDetail!.phone!)
+                    : '';
+                if (phone.isNotEmpty) {
+                  final telUrl = 'tel:$phone';
+                  if (await canLaunchUrlString(telUrl)) {
+                    await launchUrlString(telUrl, mode: LaunchMode.externalApplication);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Unable to launch dialer")),
+                    );
+                  }
+                }
+              },
+              child: const Icon(Icons.call_outlined, color: Colors.red, size: 28),
+            ),
           ),
 
-          IconButton(
-            tooltip: "Email",
-            icon: const Icon(Icons.email_outlined, color: Colors.red),
-            onPressed: () async {
-              final Uri emailUri = Uri.parse(
-                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
-              );
-
-              if (await canLaunchUrl(emailUri)) {
-                await launchUrl(emailUri);
-              } else {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Email not available'),
-                    content: const Text('No email app is configured on this device. Please add a mail account first.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('OK'),
-                      ),
-                    ],
-                  ),
-                );
-              }
-            },
+// WHATSAPP BUTTON
+          Container(
+            margin: const EdgeInsets.only(left: 8),
+            height: 45,
+            width: 45,
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(25.0),
+              boxShadow: [
+                BoxShadow(color: Colors.grey, offset: Offset(0.5, 0.5), blurRadius: 1.0),
+                const BoxShadow(color: Colors.white, offset: Offset(0.0, 0.0), blurRadius: 0.0),
+              ],
+            ),
+            child: GestureDetector(
+              onTap: () async {
+                final phoneRaw = agentDetail?.whatsapp ?? '';
+                final phone = whatsAppNumber(phoneRaw);
+                if (phone.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("No WhatsApp number available")),
+                  );
+                  return;
+                }
+                final message = Uri.encodeComponent("Hello");
+                final waUrl = Uri.parse("https://wa.me/$phone?text=$message");
+                if (await canLaunchUrl(waUrl)) {
+                  await launchUrl(waUrl, mode: LaunchMode.externalApplication);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Unable to open WhatsApp")),
+                  );
+                }
+              },
+              child: Image.asset("assets/images/whats.png", height: 35, width: 35),
+            ),
           ),
+
+
+          // IconButton(
+          //   enableFeedback: false,
+          //   onPressed: () async {
+          //     final token = await SecureStorage.getToken();
+          //
+          //     if (token == null || token.isEmpty) {
+          //       showDialog(
+          //         context: context,
+          //         builder: (context) => AlertDialog(
+          //           backgroundColor: Colors.white, // white container
+          //           title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+          //           content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+          //           actions: [
+          //             TextButton(
+          //               onPressed: () => Navigator.pop(context),
+          //               child: const Text(
+          //                 "Cancel",
+          //                 style: TextStyle(color: Colors.red), // red text
+          //               ),
+          //             ),
+          //             TextButton(
+          //               onPressed: () {
+          //                 Navigator.pop(context);
+          //                 Navigator.push(
+          //                   context,
+          //                   MaterialPageRoute(builder: (_) => const LoginDemo()),
+          //                 );
+          //               },
+          //               child: const Text(
+          //                 "Login",
+          //                 style: TextStyle(color: Colors.red), // red text
+          //               ),
+          //             ),
+          //           ],
+          //         ),
+          //       );
+          //     }
+          //     else {
+          //       // ✅ Logged in – go to favorites
+          //       Navigator.push(
+          //         context,
+          //         MaterialPageRoute(builder: (context) => Fav_Logout()),
+          //       );
+          //     }
+          //   },
+          //   icon: pageIndex == 2
+          //       ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+          //       : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+          // ),
+
+          // IconButton(
+          //   tooltip: "Email",
+          //   icon: const Icon(Icons.email_outlined, color: Colors.red),
+          //   onPressed: () async {
+          //     final Uri emailUri = Uri.parse(
+          //       'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+          //     );
+          //
+          //     if (await canLaunchUrl(emailUri)) {
+          //       await launchUrl(emailUri);
+          //     } else {
+          //       showDialog(
+          //         context: context,
+          //         builder: (context) => AlertDialog(
+          //           title: const Text('Email not available'),
+          //           content: const Text('No email app is configured on this device. Please add a mail account first.'),
+          //           actions: [
+          //             TextButton(
+          //               onPressed: () => Navigator.pop(context),
+          //               child: const Text('OK'),
+          //             ),
+          //           ],
+          //         ),
+          //       );
+          //     }
+          //   },
+          // ),
           Padding(
             padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
             child: IconButton(

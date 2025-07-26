@@ -1982,42 +1982,42 @@ class _FilterDemoState extends State<FilterDemo> {
 
 
 
-    IconButton(
-    tooltip: "Email",
-    icon: const Icon(Icons.email_outlined, color: Colors.red),
-    onPressed: () async {
-    final Uri emailUri = Uri.parse(
-    'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
-    );
+          IconButton(
+            tooltip: "Email",
+            icon: const Icon(Icons.email_outlined, color: Colors.red),
+            onPressed: () async {
+              final Uri emailUri = Uri.parse(
+                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+              );
 
-    if (await canLaunchUrl(emailUri)) {
-    await launchUrl(emailUri);
-    } else {
-    showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-    title: const Text('Email not available'),
-    content: const Text('No email app is configured on this device. Please add a mail account first.'),
-    actions: [
-    TextButton(
-    onPressed: () => Navigator.pop(context),
-    child: const Text('OK'),
-    ),
-    ],
-    ),
-    );
-    }
-    },
-    ),
-
-
+              if (await canLaunchUrl(emailUri)) {
+                await launchUrl(emailUri);
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Email not available'),
+                    content: const Text('No email app is configured on this device. Please add a mail account first.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
 
 
 
 
 
 
-    IconButton(
+
+
+          IconButton(
             enableFeedback: false,
             onPressed: () {
               setState(() {

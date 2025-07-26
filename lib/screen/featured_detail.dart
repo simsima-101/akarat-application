@@ -22,6 +22,7 @@ import '../services/favorite_service.dart';
 import '../utils/shared_preference_manager.dart';
 import 'about_agent.dart';
 import 'agent_detail.dart';
+import 'filter_list.dart';
 import 'htmlEpandableText.dart';
 import 'package:Akarat/utils/whatsapp_button.dart';
 
@@ -35,6 +36,12 @@ class Featured_Detail extends StatefulWidget {
 }
 class _Featured_DetailState extends State<Featured_Detail> {
 
+  /// Cleans up phone numbers for tel: links
+  String phoneCallNumber(String rawNumber) {
+    // Remove everything except digits and "+"
+    String phone = rawNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+    return phone;
+  }
 
 
   String safeSubstring(String text, int maxLength) {
@@ -1429,7 +1436,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         return Container(
 
 
-                          width: 200,
+                          width: 210,
                           margin: const EdgeInsets.symmetric(horizontal: 8),
                           child: Card(
                             color: Colors.white,
@@ -1639,7 +1646,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                             const Icon(Icons.bed, size: 16, color: Colors.red),
                                             const SizedBox(width: 4),
                                             Text("${property.bedrooms} beds"),
-                                            const SizedBox(width: 8),
+                                            const SizedBox(width: 6),
                                             const Icon(Icons.square_foot, size: 16, color: Colors.red),
                                             const SizedBox(width: 4),
                                             Text("${property.squareFeet} sqft"),
@@ -1701,248 +1708,180 @@ class _Featured_DetailState extends State<Featured_Detail> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          // GestureDetector(
-          //   onTap: () async {
-          //     Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-          //   },
-          //   child: Row(
-          //     children: [
-          //       Stack(
-          //         clipBehavior: Clip.none,
-          //         children: [
-          //           Image.asset(
-          //             "assets/images/agent45.png",
-          //             width: 34.46,
-          //             height: 34.46,
-          //             fit: BoxFit.contain,
-          //           ),
-          //           Positioned(
-          //             top: -2,
-          //             right: -4,
-          //             child: Image.asset(
-          //               "assets/images/verified-green 1.png",
-          //               width: 6.63,
-          //               height: 8.11,
-          //             ),
-          //           ),
-          //         ],
-          //       ),
-          //       const SizedBox(width: 8), // Space between the two images
-          //       Column(
-          //         mainAxisSize: MainAxisSize.min,
-          //         crossAxisAlignment: CrossAxisAlignment.start,
-          //         children: [
-          //           Padding(
-          //             padding: const EdgeInsets.only(bottom: 0.5), // 🎯 perfect match for Figma gap
-          //             child: Image.asset(
-          //               "assets/images/Mahateer Abbasi.png",
-          //               width: 80,     // as per your latest size
-          //               height: 12,
-          //               fit: BoxFit.contain,
-          //             ),
-          //           ),
-          //           Row(
-          //             children: [
-          //               Image.asset(
-          //                 "assets/images/1star 1.png",
-          //                 width: 11.43,
-          //                 height: 10.85,
-          //                 fit: BoxFit.contain,
-          //               ),
-          //
-          //               SizedBox(width: 2,),
-          //
-          //               Image.asset(
-          //                 "assets/images/5.0.png",
-          //                 width: 12,
-          //                 height: 10,
-          //                 fit: BoxFit.contain,
-          //               )
-          //
-          //             ],
-          //
-          //
-          //           ),
-          //         ],
-          //       ),
-          //
-          //
-          //     ],
-          //   ),
-          // ),
-
-
+          GestureDetector(
+              onTap: () async {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Home()));
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: Image.asset("assets/images/home.png", height: 25,),
+              )),
 
           Container(
-              margin: const EdgeInsets.only(left: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(
-                      0.5,
-                      0.5,
-                    ),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ), //BoxShadow
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ), //BoxShadow
-                ],
-              ),
-              child:GestureDetector(
-                  onTap:  () async {
-                    String phone = 'tel:${featuredDetailModel!.data!.property!
-                        .phoneNumber}';
-                    try {
-                      final bool launched = await launchUrlString(
-                        phone,
-                        mode: LaunchMode.externalApplication, // ✅ Force external
-                      );
-                      if (!launched) {
-                        print("❌ Could not launch dialer");
-                      }
-                    } catch (e) {
-                      print("❌ Exception: $e");
-                    }
+            margin: const EdgeInsets.only(left: 18),
+            height: 35,
+            width: 35,
+            padding: const EdgeInsets.only(top: 2),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadiusDirectional.circular(20.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey,
+                  offset: const Offset(0.5, 0.5),
+                  blurRadius: 1.0,
+                  spreadRadius: 0.5,
+                ),
+                BoxShadow(
+                  color: Colors.white,
+                  offset: const Offset(0.0, 0.0),
+                  blurRadius: 0.0,
+                  spreadRadius: 0.0,
+                ),
+              ],
+            ),
+            child: GestureDetector(
+              onTap: () async {
+                // Example: use first project, or replace with desired number
+                final phone = phoneCallNumber(
+                    featuredDetailModel?.data?.property?.phoneNumber ?? ''
+                );
 
-                  },
-                  child: Icon(Icons.call_outlined,color: Colors.red,))
+                if (phone.isNotEmpty) {
+                  final telUrl = 'tel:$phone';
+                  if (await canLaunchUrlString(telUrl)) {
+                    await launchUrlString(
+                        telUrl, mode: LaunchMode.externalApplication);
+                  }
+                }
+              },
+              child: Icon(Icons.call_outlined, color: Colors.red),
+            ),
           ),
 
-    //       Container(
-    //         margin: const EdgeInsets.only(left: 1),
-    //         height: 35,
-    //         width: 35,
-    //         padding: const EdgeInsets.only(top: 2),
-    //         decoration: BoxDecoration(
-    //           borderRadius: BorderRadiusDirectional.circular(20.0),
-    //           boxShadow: [
-    //             BoxShadow(
-    //               color: Colors.grey,
-    //               offset: const Offset(0.5, 0.5),
-    //               blurRadius: 1.0,
-    //               spreadRadius: 0.5,
-    //             ),
-    //             BoxShadow(
-    //               color: Colors.white,
-    //               offset: const Offset(0.0, 0.0),
-    //               blurRadius: 0.0,
-    //               spreadRadius: 0.0,
-    //             ),
-    //           ],
-    //         ),
-    // child: GestureDetector(
-    // onTap: () async {
-    // String rawPhone = featuredDetailModel!.data!.property!.whatsapp ?? '';
-    //
-    // // Clean full number:
-    // String phone = rawPhone
-    //     .replaceAll(RegExp(r'[^\d+]'), '')  // Remove unwanted characters
-    //     .replaceFirst('+', '');             // Remove leading "+"
-    //
-    // final message = Uri.encodeComponent("Hello");
-    // final url = Uri.parse("https://wa.me/$phone?text=$message");
-    //
-    // print("WhatsApp link: $url");
-    //
-    // if (await canLaunchUrl(url)) {
-    // try {
-    // final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
-    // if (!launched) {
-    // print("❌ Could not launch WhatsApp");
-    // }
-    // } catch (e) {
-    // print("❌ Exception: $e");
-    // }
-    // } else {
-    // print("❌ WhatsApp not available or URL not supported");
-    // }
-    // },
-    // child: Image.asset("assets/images/whats.png", height: 20),
-    // ),
-    //
-    // ),
-    //
-    //       Container(
-    //           margin: const EdgeInsets.only(left: 1,right: 40),
-    //           height: 35,
-    //           width: 35,
-    //           padding: const EdgeInsets.only(top: 2),
-    //           decoration: BoxDecoration(
-    //             borderRadius: BorderRadiusDirectional.circular(20.0),
-    //             boxShadow: [
-    //               BoxShadow(
-    //                 color: Colors.grey,
-    //                 offset: const Offset(
-    //                   0.5,
-    //                   0.5,
-    //                 ),
-    //                 blurRadius: 1.0,
-    //                 spreadRadius: 0.5,
-    //               ), //BoxShadow
-    //               BoxShadow(
-    //                 color: Colors.white,
-    //                 offset: const Offset(0.0, 0.0),
-    //                 blurRadius: 0.0,
-    //                 spreadRadius: 0.0,
-    //               ), //BoxShadow
-    //             ],
-    //           ),
-    //           child:  GestureDetector(
-    //               onTap: () async {
-    //                 final Uri emailUri = Uri(
-    //                   scheme: 'mailto',
-    //                   path: '${featuredDetailModel!.data!.property!
-    //                       .email}', // Replace with actual email
-    //                   query: 'subject=Property Inquiry&body=Hi, I saw your property on Akarat.',
-    //                 );
-    //
-    //                 if (await canLaunchUrl(emailUri)) {
-    //                   await launchUrl(emailUri);
-    //                 } else {
-    //                   throw 'Could not launch $emailUri';
-    //                 }
-    //               },
-    //               child: Icon(Icons.mail,color: Colors.red,))
-    //
-    //       ),
-
-
-          SizedBox(
-            width: 40, // or any appropriate width
-            child: IconButton(
-              enableFeedback: false,
-              onPressed: () {
-                setState(() {
-                  if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  } else {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  }
-                });
-              },
-              icon: pageIndex == 3
-                  ? const Icon(
-                Icons.dehaze,
-                color: Colors.red,
-                size: 30, // reduce from 35 to 30
-              )
-                  : const Icon(
-                Icons.dehaze_outlined,
-                color: Colors.red,
-                size: 30, // reduce from 35 to 30
-              ),
+          Container(
+            margin: const EdgeInsets.only(left: 1),
+            height: 35,
+            width: 35,
+            padding: const EdgeInsets.only(top: 2),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadiusDirectional.circular(20.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey,
+                  offset: const Offset(0.5, 0.5),
+                  blurRadius: 1.0,
+                  spreadRadius: 0.5,
+                ),
+                BoxShadow(
+                  color: Colors.white,
+                  offset: const Offset(0.0, 0.0),
+                  blurRadius: 0.0,
+                  spreadRadius: 0.0,
+                ),
+              ],
             ),
-          )
+            child: GestureDetector(
+              onTap: () async {
+                // Sanitize phone number to 971XXXXXXXXX (no plus)
+                final phoneRaw = featuredDetailModel?.data?.property?.whatsapp ?? '';
+                final phone = whatsAppNumber(phoneRaw); // always in 971XXXXXXXXX
+
+                final message = Uri.encodeComponent("Hello");
+                final waUrl = Uri.parse("https://wa.me/$phone?text=$message");
+
+                if (await canLaunchUrl(waUrl)) {
+                  try {
+                    final launched = await launchUrl(
+                      waUrl,
+                      mode: LaunchMode.externalApplication,
+                    );
+                    if (!launched) {
+                      print("❌ Could not launch WhatsApp");
+                    }
+                  } catch (e) {
+                    print("❌ Exception: $e");
+                  }
+                } else {
+                  print("❌ WhatsApp not available or URL not supported");
+                }
+              },
+              child: Image.asset("assets/images/whats.png", height: 20),
+            ),
+          ),
+          // Container(
+          //   margin: const EdgeInsets.only(left: 1, right: 40),
+          //   height: 35,
+          //   width: 35,
+          //   padding: const EdgeInsets.only(top: 2),
+          //   decoration: BoxDecoration(
+          //     borderRadius: BorderRadiusDirectional.circular(20.0),
+          //     boxShadow: [
+          //       BoxShadow(
+          //         color: Colors.grey,
+          //         offset: const Offset(0.5, 0.5),
+          //         blurRadius: 1.0,
+          //         spreadRadius: 0.5,
+          //       ),
+          //       BoxShadow(
+          //         color: Colors.white,
+          //         offset: const Offset(0.0, 0.0),
+          //         blurRadius: 0.0,
+          //         spreadRadius: 0.0,
+          //       ),
+          //     ],
+          //   ),
+          //   child: GestureDetector(
+          //     onTap: () async {
+          //       // final String? email = projectDetailModel?.data?.email;
+          //       if (email == null || email.isEmpty) {
+          //         ScaffoldMessenger.of(context).showSnackBar(
+          //           const SnackBar(content: Text('No email available for this property.')),
+          //         );
+          //         return;
+          //       }
+          //       final Uri emailUri = Uri(
+          //         scheme: 'mailto',
+          //         path: email,
+          //         query: Uri.encodeFull('subject=Property Inquiry&body=Hi, I saw your property on Akarat.'),
+          //       );
+          //       if (await canLaunchUrl(emailUri)) {
+          //         await launchUrl(emailUri);
+          //       } else {
+          //         ScaffoldMessenger.of(context).showSnackBar(
+          //           SnackBar(content: Text('Could not launch $emailUri')),
+          //         );
+          //       }
+          //     },
+          //     child: const Icon(Icons.mail, color: Colors.red),
+          //   ),
+          // ),
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
+              setState(() {
+                if (token == '') {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => My_Account()));
+                }
+                else {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => My_Account()));
+                }
+              });
+            },
+            icon: pageIndex == 3
+                ? const Icon(
+              Icons.dehaze,
+              color: Colors.red,
+              size: 35,
+            )
+                : const Icon(
+              Icons.dehaze_outlined,
+              color: Colors.red,
+              size: 35,
+            ),
+          ),
         ],
       ),
     );

@@ -926,977 +926,979 @@ class _MyHomePageState extends State<HomeDemo> {
               //   Expanded(
               // child: SingleChildScrollView(
               //  child:
-    Expanded(
-    child: RefreshIndicator(
-    onRefresh: () async {
-    await getFeaturedProperties(forceRefresh: true);
-    },
-    child: ListView(
-    controller: _scrollController,
-    physics: const AlwaysScrollableScrollPhysics(),
-    padding: EdgeInsets.zero,
-    children: [
-    // 🔽 ALL YOUR CATEGORY UI HERE
-    Padding(
-    padding: const EdgeInsets.only(top: 10.0),
-    child: Row(
-    children: [
-    // Rent
-    GestureDetector(
-                                      onTap: (){
-                                        purpose= "Rent";
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> filter.Filter(data:purpose)));
-                                      },
-                                      child:  Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        /*padding: const EdgeInsets.only(
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      await getFeaturedProperties(forceRefresh: true);
+                    },
+                    child: ListView(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsets.zero,
+                        children: [
+                          // 🔽 ALL YOUR CATEGORY UI HERE
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10.0),
+                            child: Row(
+                              children: [
+                                // Rent
+                                GestureDetector(
+                                  onTap: (){
+                                    purpose= "Rent";
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> filter.Filter(data:purpose)));
+                                  },
+                                  child:  Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    /*padding: const EdgeInsets.only(
                                         left: 17.0, right: 10.0, top: 10, bottom: 0),
                                                   */
-                                        child: Container(
-                                            width: screenSize.width * 0.29,
-                                            height: screenSize.height*0.11,
-                                            padding: const EdgeInsets.only(top: 0),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.8),
-                                                  offset: Offset(7, 7),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                                BoxShadow(
-                                                  color: Colors.white.withOpacity(0.8),
-                                                  offset: Offset(-4, -4),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                              ],
-                                              borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                        width: screenSize.width * 0.29,
+                                        height: screenSize.height*0.11,
+                                        padding: const EdgeInsets.only(top: 0),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.8),
+                                              offset: Offset(7, 7),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
                                             ),
-                                            child:   Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Image.asset("assets/images/ak-rent-red.png"
-                                                  ,height: 35,),
-                                                Padding(
-                                                  padding: const EdgeInsets.all(4),
-                                                  child:  Text("Property For Rent",style:
-                                                  TextStyle(height: 1.2,
-                                                      letterSpacing: 0.5,
-                                                      fontSize: 11,fontWeight: FontWeight.bold
-                                                  ),),
-                                                )
-                                              ],
-                                            )
-                                        ),
-                                      ),
-                                    ),
-                                    //logo2
-                                    GestureDetector(
-                                      onTap: (){
-                                        purpose= "Buy";
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> filter.Filter(data: purpose,)));
-                                      },
-                                      child:
-                                      Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        /* padding: const EdgeInsets.only(
-                                        left: 5.0, right: 10.0, top: 10.0, bottom: 0),*/
-                                        child: Container(
-                                            width: screenSize.width * 0.29,
-                                            height: screenSize.height*0.11,
-                                            padding: const EdgeInsets.only(top: 0),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.8),
-                                                  offset: Offset(7, 7),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                                BoxShadow(
-                                                  color: Colors.white.withOpacity(0.8),
-                                                  offset: Offset(-4, -4),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                              ],
-                                              borderRadius: BorderRadius.circular(12),
+                                            BoxShadow(
+                                              color: Colors.white.withOpacity(0.8),
+                                              offset: Offset(-4, -4),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
                                             ),
-                                            child:   Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Image.asset("assets/images/ak-sale.png",height: 35,),
-                                                Padding(padding: const EdgeInsets.all(4),
-                                                  child:  Text("Property For Sale",style:
-                                                  TextStyle(height: 1.2,
-                                                      letterSpacing: 0.5,
-                                                      fontSize: 11,fontWeight: FontWeight.bold
-                                                  ),),
-                                                )
-                                              ],
+                                          ],
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child:   Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Image.asset("assets/images/ak-rent-red.png"
+                                              ,height: 35,),
+                                            Padding(
+                                              padding: const EdgeInsets.all(4),
+                                              child:  Text("Property For Rent",style:
+                                              TextStyle(height: 1.2,
+                                                  letterSpacing: 0.5,
+                                                  fontSize: 11,fontWeight: FontWeight.bold
+                                              ),),
                                             )
-                                        ),
-                                      ),
+                                          ],
+                                        )
                                     ),
-                                    //logo2
-                                    GestureDetector(
-                                      onTap: (){
-                                        // purpose=""
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> New_Projects()));
-                                      },
-                                      child:
-                                      Padding(
-                                        padding: const EdgeInsets.all(5),
-                                        /*padding: const EdgeInsets.only(
-                                        left: 5.0, right: 10.0, top: 10.0, bottom: 0),*/
-                                        child: Container(
-                                            width: screenSize.width * 0.3,
-                                            height: screenSize.height*0.11,
-                                            padding: const EdgeInsets.only(top: 0),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.8),
-                                                  offset: Offset(7, 7),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                                BoxShadow(
-                                                  color: Colors.white.withOpacity(0.8),
-                                                  offset: Offset(-4, -4),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                              ],
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                            child:   Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.only(bottom: 2.0),
-                                                  child: Image.asset("assets/images/ak-off-plan.png",height: 35,),
-                                                ),
-                                                Padding(padding: const EdgeInsets.only(top: 5),
-                                                  child:  Text("Off-Plan-Properties",style:
-                                                  TextStyle(height: 1.2,
-                                                      letterSpacing: 0.5,
-                                                      fontSize: 10,fontWeight: FontWeight.bold
-                                                  ),),
-                                                )
-                                              ],
-                                            )
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2.0),
-                                child: Row(
-                                  children: [
-                                    //logo 1
-                                    GestureDetector(
-                                      onTap: (){
-                                        purpose="Commercial";
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> filter.Filter(data: purpose,)));
-                                      },
-                                      child:
-                                      Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        /* padding: const EdgeInsets.only(
-                                        left: 17.0, right: 10.0, top: 8, bottom: 0),*/
-                                        child: Container(
-                                            width: screenSize.width * 0.29,
-                                            height: screenSize.height*0.11,
-                                            padding: const EdgeInsets.only(top: 0),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.8),
-                                                  offset: Offset(7, 7),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                                BoxShadow(
-                                                  color: Colors.white.withOpacity(0.8),
-                                                  offset: Offset(-4, -4),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                              ],
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                            child:   Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.only(bottom: 2.0),
-                                                  child: Image.asset("assets/images/commercial_new.png",height: 35,),
-                                                ),
-                                                Padding(padding: const EdgeInsets.all(4),
-                                                  child:  Text("Commercial",style:
-                                                  TextStyle(height: 1.2,
-                                                      letterSpacing: 0.5,
-                                                      fontSize: 11,fontWeight: FontWeight.bold
-                                                  ),),
-                                                )
-
-                                              ],
-                                            )
-                                        ),
-                                      ),
-                                    ),
-                                    //logo2
-                                    GestureDetector(
-                                      onTap: (){
-                                        purpose= "Rent";
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> filter.Filter(data: purpose,)));
-                                      },
-                                      child:
-                                      Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        /*padding: const EdgeInsets.only(
-                                        left: 5.0, right: 10.0, top: 8, bottom: 0),*/
-                                        child: Container(
-                                            width: screenSize.width * 0.29,
-                                            height: screenSize.height*0.11,
-                                            padding: const EdgeInsets.only(top: 0),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.8),
-                                                  offset: Offset(7, 7),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                                BoxShadow(
-                                                  color: Colors.white.withOpacity(0.8),
-                                                  offset: Offset(-4, -4),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                              ],
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                            child:   Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.only(bottom: 2.0),
-                                                  child: Image.asset("assets/images/city.png",height: 35,),
-                                                ),
-                                                Padding(padding: const EdgeInsets.all(5),
-                                                  child:  Text("Apartments",style:
-                                                  TextStyle(height: 1.2,
-                                                      letterSpacing: 0.5,
-                                                      fontSize: 11,fontWeight: FontWeight.bold
-                                                  ),),
-                                                )
-
-                                              ],
-                                            )
-                                        ),
-                                      ),
-                                    ),
-                                    //logo2
-                                    GestureDetector(
-                                      onTap: (){
-                                        purpose= "Rent";
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> filter.Filter(data: purpose,)));
-                                      },
-                                      child:
-                                      Padding(
-                                        padding: const EdgeInsets.all(5),
-                                        /*padding: const EdgeInsets.only(
-                                        left: 5.0, right: 5.0, top: 8, bottom: 0),*/
-                                        child: Container(
-                                            width: screenSize.width * 0.3,
-                                            height: screenSize.height*0.11,
-                                            padding: const EdgeInsets.only(top: 0),
-                                            decoration: BoxDecoration(
-
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.8),
-                                                  offset: Offset(7, 7),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                                BoxShadow(
-                                                  color: Colors.white.withOpacity(0.8),
-                                                  offset: Offset(-4, -4),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 2,
-                                                ),
-                                              ],
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                            child:   Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.only(bottom: 2.0),
-                                                  child: Image.asset("assets/images/villa-new.png",height: 35,),
-                                                ),
-                                                Padding(padding: const EdgeInsets.all(5),
-                                                  child:  Text("Villas",style:
-                                                  TextStyle(height: 1.2,
-                                                      letterSpacing: 0.5,
-                                                      fontSize: 11,fontWeight: FontWeight.bold
-                                                  ),),
-                                                )
-
-                                              ],
-                                            )
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              //banner
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 10.0, right: 10.0, top: 20.0, bottom: 0),
-                                child:
-                                GestureDetector(
-                                  onTap: ()async{
-                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> New_Projects()));
-                                  },
-                                  child: Container(
-                                    width: screenSize.width * 1.0,
-                                    height: 150,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey.withOpacity(0.5),
-                                          offset: Offset(4, 4),
-                                          blurRadius: 8,
-                                          spreadRadius: 2,
-                                        ),
-                                        BoxShadow(
-                                          color: Colors.white.withOpacity(0.8),
-                                          offset: Offset(-4, -4),
-                                          blurRadius: 8,
-                                          spreadRadius: 2,
-                                        ),
-                                      ],
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Row(
-                                      /* mainAxisAlignment: MainAxisAlignment.start,
-                                                                  crossAxisAlignment: CrossAxisAlignment.center,*/
-                                      children: [
-                                        Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 10,left: 00,right: 0),
-                                            child: Container(
-                                              width: screenSize.width*0.4,
-                                              height: 100,
-                                              // color: Colors.grey,
-                                              padding: const EdgeInsets.only(top: 10,left: 10,right: 5),
-                                              child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.start,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text("New Projects            ",style: TextStyle(
-                                                      color: Colors.black,
-                                                      fontSize: 18,fontWeight: FontWeight.bold
-                                                  ),textAlign: TextAlign.left,),
-                                                  Text("Discover more about the UAE "
-                                                      "real estate market",style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14,
-                                                  ),
-                                                    softWrap: true,)
-                                                ],
-                                              ),
-                                            )
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(left: 0.0,right: 0),
-                                          child: Container(
-                                              height: screenSize.height*0.15,
-                                              width: screenSize.width*0.5,
-                                              decoration: BoxDecoration(
-                                                  borderRadius: BorderRadius.circular(10)
-                                              ),
-                                              // color: Colors.grey,
-                                              child: Image.asset('assets/images/banner1.jpg',fit: BoxFit.contain,)
-                                          ),
-                                        ),
-
-                                      ],
-                                    ),),
-                                ),),
-
-
-
-                              //  Text
-      Container(
-        margin: const EdgeInsets.only(top: 20, left: 5, right: 15),
-        height: screenSize.height * 0.05,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Left: Property count
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                "${featuredModel?.totalProperties ?? 0} Properties",
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 15,
-                ),
-              ),
-            ),
-
-
-
-            // Right: Dropdown (Featured)
-            PopupMenuButton<String>(
-              elevation: 0,
-              onSelected: (value) {
-                setState(() {
-                  selectedSort = value;
-                  // 🔁 Call your sorting/filter logic here
-                });
-              },
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              offset: const Offset(0, 35),
-              color: Colors.white, // Needed to style the container inside
-              itemBuilder: (context) {
-                final List<String> sortOptions = [
-                  "Featured",
-                  "Newest",
-                  "Price (low)",
-                  "Price (high)",
-                ];
-
-                return [
-                  PopupMenuItem<String>(
-                    enabled: false,
-                    padding: EdgeInsets.zero,
-                    child: Container(
-                      width: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.white, // 👈 Your dropdown background
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: sortOptions.map((option) {
-                          return InkWell(
-                            onTap: () {
-                              Navigator.pop(context);
-                              final selectedKey = sortMap[option]!;
-                              setState(() {
-                                selectedSort = option;
-                                selectedSortKey = selectedKey; // ✅ Store selected sort key
-                                featuredModel = null;
-                                nextPageUrl = null;
-                              });
-                              getFeaturedProperties(sortBy: selectedKey); // ✅ Sorted API call
-                              _scrollController.jumpTo(0); // ✅ Reset scroll
-                            },
-
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        option,
-                                        style: const TextStyle(color: Colors.black), // 👈 Black text
-                                      ),
-
-                                      if (selectedSort == option)
-                                        const Icon(Icons.check, color: Colors.green, size: 18),
-                                    ],
                                   ),
                                 ),
-                                if (option != sortOptions.last)
-                                  const Divider(height: 1, thickness: 0.5, color: Colors.grey),
+                                //logo2
+                                GestureDetector(
+                                  onTap: (){
+                                    purpose= "Buy";
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> filter.Filter(data: purpose,)));
+                                  },
+                                  child:
+                                  Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    /* padding: const EdgeInsets.only(
+                                        left: 5.0, right: 10.0, top: 10.0, bottom: 0),*/
+                                    child: Container(
+                                        width: screenSize.width * 0.29,
+                                        height: screenSize.height*0.11,
+                                        padding: const EdgeInsets.only(top: 0),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.8),
+                                              offset: Offset(7, 7),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                            BoxShadow(
+                                              color: Colors.white.withOpacity(0.8),
+                                              offset: Offset(-4, -4),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                          ],
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child:   Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Image.asset("assets/images/ak-sale.png",height: 35,),
+                                            Padding(padding: const EdgeInsets.all(4),
+                                              child:  Text("Property For Sale",style:
+                                              TextStyle(height: 1.2,
+                                                  letterSpacing: 0.5,
+                                                  fontSize: 11,fontWeight: FontWeight.bold
+                                              ),),
+                                            )
+                                          ],
+                                        )
+                                    ),
+                                  ),
+                                ),
+                                //logo2
+                                GestureDetector(
+                                  onTap: (){
+                                    // purpose=""
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> New_Projects()));
+                                  },
+                                  child:
+                                  Padding(
+                                    padding: const EdgeInsets.all(5),
+                                    /*padding: const EdgeInsets.only(
+                                        left: 5.0, right: 10.0, top: 10.0, bottom: 0),*/
+                                    child: Container(
+                                        width: screenSize.width * 0.3,
+                                        height: screenSize.height*0.11,
+                                        padding: const EdgeInsets.only(top: 0),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.8),
+                                              offset: Offset(7, 7),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                            BoxShadow(
+                                              color: Colors.white.withOpacity(0.8),
+                                              offset: Offset(-4, -4),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                          ],
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child:   Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(bottom: 2.0),
+                                              child: Image.asset("assets/images/ak-off-plan.png",height: 35,),
+                                            ),
+                                            Padding(padding: const EdgeInsets.only(top: 5),
+                                              child:  Text("Off-Plan-Properties",style:
+                                              TextStyle(height: 1.2,
+                                                  letterSpacing: 0.5,
+                                                  fontSize: 10,fontWeight: FontWeight.bold
+                                              ),),
+                                            )
+                                          ],
+                                        )
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                ];
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.red),
-                ),
-                child: Row(
-                  children: [
-                    Image.asset(
-                      "assets/images/filter.png",
-                      height: 16,
-                      width: 16,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(selectedSort), // 👉 No TextStyle here
-                    const Icon(Icons.arrow_drop_down, size: 18),
-                  ],
-                ),
-              ),
-            ),
-
-
-          ],
-        ),
-      ),
-      featuredModel == null
-          ? const Center(child: ShimmerCard())
-          :
-
-
-      //Expanded(
-                              // child:
-                              /*Expanded(
-                                          child:*/
-                              ListView.builder(
-
-                                  shrinkWrap: true,
-                                  padding: EdgeInsets.zero,
-                                  physics: NeverScrollableScrollPhysics(),
-
-                                  // 👈 only if inside a parent scrollable view
-                                  itemCount: (featuredModel?.data?.length ?? 0) + (nextPageUrl != null ? 1 : 0),
-                                  itemBuilder: (context, index) {
-                                    final properties = featuredModel?.data ?? [];
-
-                                    // 🔄 Show loader at end if next page exists
-                                    if (index == properties.length && nextPageUrl != null) {
-                                      return const CircularProgressIndicator();
-                                    } else if (index == properties.length && nextPageUrl == null) {
-                                      return const SizedBox.shrink(); // Nothing more to show
-                                    }
-
-
-                                    // 🔐 Safety check (extra)
-                                    if (index >= properties.length) return const SizedBox.shrink();
-
-                                    final item = properties[index];
-
-
-
-
-                                    return GestureDetector(
-                                      onTap: () {
-                                        String id = item.id.toString();
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => Featured_Detail(data: id),
-                                          ),
-                                        );
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                        child: Card(
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2.0),
+                            child: Row(
+                              children: [
+                                //logo 1
+                                GestureDetector(
+                                  onTap: (){
+                                    purpose="Commercial";
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> filter.Filter(data: purpose,)));
+                                  },
+                                  child:
+                                  Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    /* padding: const EdgeInsets.only(
+                                        left: 17.0, right: 10.0, top: 8, bottom: 0),*/
+                                    child: Container(
+                                        width: screenSize.width * 0.29,
+                                        height: screenSize.height*0.11,
+                                        padding: const EdgeInsets.only(top: 0),
+                                        decoration: BoxDecoration(
                                           color: Colors.white,
-                                          shadowColor: Colors.white,
-                                          elevation: 10,
-                                          shape: RoundedRectangleBorder(
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.8),
+                                              offset: Offset(7, 7),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                            BoxShadow(
+                                              color: Colors.white.withOpacity(0.8),
+                                              offset: Offset(-4, -4),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                          ],
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child:   Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(bottom: 2.0),
+                                              child: Image.asset("assets/images/commercial_new.png",height: 35,),
+                                            ),
+                                            Padding(padding: const EdgeInsets.all(4),
+                                              child:  Text("Commercial",style:
+                                              TextStyle(height: 1.2,
+                                                  letterSpacing: 0.5,
+                                                  fontSize: 11,fontWeight: FontWeight.bold
+                                              ),),
+                                            )
+
+                                          ],
+                                        )
+                                    ),
+                                  ),
+                                ),
+                                //logo2
+                                GestureDetector(
+                                  onTap: (){
+                                    purpose= "Rent";
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> filter.Filter(data: purpose,)));
+                                  },
+                                  child:
+                                  Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    /*padding: const EdgeInsets.only(
+                                        left: 5.0, right: 10.0, top: 8, bottom: 0),*/
+                                    child: Container(
+                                        width: screenSize.width * 0.29,
+                                        height: screenSize.height*0.11,
+                                        padding: const EdgeInsets.only(top: 0),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.8),
+                                              offset: Offset(7, 7),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                            BoxShadow(
+                                              color: Colors.white.withOpacity(0.8),
+                                              offset: Offset(-4, -4),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                          ],
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child:   Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(bottom: 2.0),
+                                              child: Image.asset("assets/images/city.png",height: 35,),
+                                            ),
+                                            Padding(padding: const EdgeInsets.all(5),
+                                              child:  Text("Apartments",style:
+                                              TextStyle(height: 1.2,
+                                                  letterSpacing: 0.5,
+                                                  fontSize: 11,fontWeight: FontWeight.bold
+                                              ),),
+                                            )
+
+                                          ],
+                                        )
+                                    ),
+                                  ),
+                                ),
+                                //logo2
+                                GestureDetector(
+                                  onTap: (){
+                                    purpose= "Rent";
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> filter.Filter(data: purpose,)));
+                                  },
+                                  child:
+                                  Padding(
+                                    padding: const EdgeInsets.all(5),
+                                    /*padding: const EdgeInsets.only(
+                                        left: 5.0, right: 5.0, top: 8, bottom: 0),*/
+                                    child: Container(
+                                        width: screenSize.width * 0.3,
+                                        height: screenSize.height*0.11,
+                                        padding: const EdgeInsets.only(top: 0),
+                                        decoration: BoxDecoration(
+
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.8),
+                                              offset: Offset(7, 7),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                            BoxShadow(
+                                              color: Colors.white.withOpacity(0.8),
+                                              offset: Offset(-4, -4),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                          ],
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child:   Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(bottom: 2.0),
+                                              child: Image.asset("assets/images/villa-new.png",height: 35,),
+                                            ),
+                                            Padding(padding: const EdgeInsets.all(5),
+                                              child:  Text("Villas",style:
+                                              TextStyle(height: 1.2,
+                                                  letterSpacing: 0.5,
+                                                  fontSize: 11,fontWeight: FontWeight.bold
+                                              ),),
+                                            )
+
+                                          ],
+                                        )
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          //banner
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 10.0, right: 10.0, top: 20.0, bottom: 0),
+                            child:
+                            GestureDetector(
+                              onTap: ()async{
+                                Navigator.push(context, MaterialPageRoute(builder: (context)=> New_Projects()));
+                              },
+                              child: Container(
+                                width: screenSize.width * 1.0,
+                                height: 150,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      offset: Offset(4, 4),
+                                      blurRadius: 8,
+                                      spreadRadius: 2,
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.8),
+                                      offset: Offset(-4, -4),
+                                      blurRadius: 8,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  /* mainAxisAlignment: MainAxisAlignment.start,
+                                                                  crossAxisAlignment: CrossAxisAlignment.center,*/
+                                  children: [
+                                    Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 10,left: 00,right: 0),
+                                        child: Container(
+                                          width: screenSize.width*0.4,
+                                          height: 100,
+                                          // color: Colors.grey,
+                                          padding: const EdgeInsets.only(top: 10,left: 10,right: 5),
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text("New Projects            ",style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 18,fontWeight: FontWeight.bold
+                                              ),textAlign: TextAlign.left,),
+                                              Text("Discover more about the UAE "
+                                                  "real estate market",style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 14,
+                                              ),
+                                                softWrap: true,)
+                                            ],
+                                          ),
+                                        )
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 0.0,right: 0),
+                                      child: Container(
+                                          height: screenSize.height*0.15,
+                                          width: screenSize.width*0.5,
+                                          decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(10)
+                                          ),
+                                          // color: Colors.grey,
+                                          child: Image.asset('assets/images/banner1.jpg',fit: BoxFit.contain,)
+                                      ),
+                                    ),
+
+                                  ],
+                                ),),
+                            ),),
+
+
+
+                          //  Text
+                          Container(
+                            margin: const EdgeInsets.only(top: 20, left: 5, right: 15),
+                            height: screenSize.height * 0.05,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Left: Property count
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  child: Text(
+                                    "${featuredModel?.totalProperties ?? 0} Properties",
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+
+
+
+                                // Right: Dropdown (Featured)
+                                PopupMenuButton<String>(
+                                  elevation: 0,
+                                  onSelected: (value) {
+                                    setState(() {
+                                      selectedSort = value;
+                                      // 🔁 Call your sorting/filter logic here
+                                    });
+                                  },
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  offset: const Offset(0, 35),
+                                  color: Colors.white, // Needed to style the container inside
+                                  itemBuilder: (context) {
+                                    final List<String> sortOptions = [
+                                      "Featured",
+                                      "Newest",
+                                      "Price (low)",
+                                      "Price (high)",
+                                    ];
+
+                                    return [
+                                      PopupMenuItem<String>(
+                                        enabled: false,
+                                        padding: EdgeInsets.zero,
+                                        child: Container(
+                                          width: 200,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white, // 👈 Your dropdown background
                                             borderRadius: BorderRadius.circular(12),
                                           ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(10),
-                                            child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: sortOptions.map((option) {
+                                              return InkWell(
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                  final selectedKey = sortMap[option]!;
+                                                  setState(() {
+                                                    selectedSort = option;
+                                                    selectedSortKey = selectedKey; // ✅ Store selected sort key
+                                                    featuredModel = null;
+                                                    nextPageUrl = null;
+                                                  });
+                                                  getFeaturedProperties(sortBy: selectedKey); // ✅ Sorted API call
+                                                  _scrollController.jumpTo(0); // ✅ Reset scroll
+                                                },
 
-                                                  Column(
-                                                    children: [
-                                                      Stack(
-                                                        clipBehavior: Clip.none,
-                                                        // ✅ Allows the overlap outside the Stack
+                                                child: Column(
+                                                  children: [
+                                                    Padding(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                                      child: Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                         children: [
-                                                          // 🖼️ Property Image Carousel with Rounded Corners
-                                                          ClipRRect(
-                                                            borderRadius: BorderRadius.circular(12),
-                                                            child: AspectRatio(
-                                                              aspectRatio: 1.4,
-                                                              child: PageView.builder(
-                                                                controller: _pageController,
-                                                                scrollDirection: Axis.horizontal,
-                                                                itemCount: item.media?.length ?? 0,
-                                                                onPageChanged: (index) {
-                                                                  setState(() {
-                                                                    _currentImageIndex = index;
-                                                                  });
-                                                                },
-                                                                itemBuilder: (context, imgIndex) {
-                                                                  return CachedNetworkImage(
-                                                                    imageUrl: item.media![imgIndex]
-                                                                        .originalUrl.toString(),
-                                                                    fit: BoxFit.cover,
-                                                                  );
-                                                                },
-                                                              ),
-                                                            ),
+                                                          Text(
+                                                            option,
+                                                            style: const TextStyle(color: Colors.black), // 👈 Black text
                                                           ),
 
-                                                          // ⚪ Image Indicator Dots
-                                                          Positioned(
-                                                            bottom: 12,
-                                                            left: 0,
-                                                            right: 0,
-                                                            child: Row(
-                                                              mainAxisAlignment: MainAxisAlignment.center,
-                                                              children: List.generate(
-                                                                item.media?.length ?? 0,
-                                                                    (index) {
-                                                                  final distance = (index -
-                                                                      _currentImageIndex).abs();
-                                                                  double scale;
-                                                                  double opacity;
-
-                                                                  if (distance == 0) {
-                                                                    scale = 1.2;
-                                                                    opacity = 1.0;
-                                                                  } else if (distance == 1) {
-                                                                    scale = 1.0;
-                                                                    opacity = 0.7;
-                                                                  } else if (distance == 2) {
-                                                                    scale = 0.8;
-                                                                    opacity = 0.5;
-                                                                  } else {
-                                                                    scale = 0.5;
-                                                                    opacity = 0.0;
-                                                                  }
-
-                                                                  return AnimatedOpacity(
-                                                                    duration: Duration(milliseconds: 300),
-                                                                    opacity: opacity,
-                                                                    child: SizedBox(
-                                                                      width: 12,
-                                                                      // fixed size for layout stability
-                                                                      height: 12,
-                                                                      child: Center(
-                                                                        child: Container(
-                                                                          width: 8 * scale,
-                                                                          height: 8 * scale,
-                                                                          decoration: BoxDecoration(
-                                                                            color: Colors.white,
-                                                                            shape: BoxShape.circle,
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  );
-                                                                },
-                                                              ),
-                                                            ),
-                                                          ),
-
-
-                                                          // ❤️ Favorite Icon
-                                                          // ❤️ Favorite Icon
-                                                          Positioned(
-                                                            top: 10,
-                                                            right: 10,
-                                                            child: Material(
-                                                              color: Colors.white,
-                                                              shape: const CircleBorder(),
-                                                              elevation: 4,
-                                                              child: Consumer<FavoriteProvider>(
-                                                                builder: (context, favProvider, _) {
-                                                                  final isFav = favProvider.isFavorite(item.id!);
-                                                                  return IconButton(
-                                                                    icon: Icon(
-                                                                      isFav ? Icons.favorite : Icons.favorite_border,
-                                                                      color: isFav ? Colors.red : Colors.grey,
-                                                                      size: 20,
-                                                                    ),
-                                                                    onPressed: () async {
-                                                                      if (token.isEmpty) {
-                                                                        // 🔒 Show login prompt
-                                                                        showDialog(
-                                                                          context: context,
-                                                                          builder: (ctx) => Dialog(
-                                                                            backgroundColor: Colors.transparent,
-                                                                            insetPadding: EdgeInsets.zero,
-                                                                            child: Container(
-                                                                              height: 70,
-                                                                              margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
-                                                                              decoration: BoxDecoration(
-                                                                                color: Colors.red,
-                                                                                borderRadius: BorderRadius.circular(10),
-                                                                              ),
-                                                                              child: Stack(
-                                                                                clipBehavior: Clip.none,
-                                                                                children: [
-                                                                                  Positioned(
-                                                                                    top: -14,
-                                                                                    right: -10,
-                                                                                    child: Material(
-                                                                                      color: Colors.transparent,
-                                                                                      child: IconButton(
-                                                                                        icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                                                                                        onPressed: () => Navigator.of(ctx).pop(),
-                                                                                        padding: EdgeInsets.zero,
-                                                                                        constraints: const BoxConstraints(),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                  Positioned(
-                                                                                    left: 16,
-                                                                                    right: 16,
-                                                                                    bottom: 12,
-                                                                                    child: Row(
-                                                                                      children: [
-                                                                                        const Expanded(
-                                                                                          child: Text(
-                                                                                            'Login required to add favorites.',
-                                                                                            style: TextStyle(color: Colors.white, fontSize: 13),
-                                                                                          ),
-                                                                                        ),
-                                                                                        const SizedBox(width: 12),
-                                                                                        GestureDetector(
-                                                                                          onTap: () {
-                                                                                            Navigator.of(ctx).pop();
-                                                                                            Navigator.of(ctx).pushNamed('/login');
-                                                                                          },
-                                                                                          child: const Text(
-                                                                                            'Login',
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.white,
-                                                                                              fontWeight: FontWeight.bold,
-                                                                                              decoration: TextDecoration.underline,
-                                                                                              decorationColor: Colors.white,
-                                                                                              decorationThickness: 1.5,
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ],
-                                                                                    ),
-                                                                                  ),
-                                                                                ],
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        );
-                                                                        return;
-                                                                      }
-
-                                                                      // ✅ Use Provider's API-integrated method
-                                                                      final success = await favProvider.toggleFavoriteWithApi(item.id!, token);
-                                                                      if (!success) {
-                                                                        ScaffoldMessenger.of(context).showSnackBar(
-                                                                          const SnackBar(content: Text("Failed to update favorite.")),
-                                                                        );
-                                                                      }
-                                                                    },
-                                                                  );
-                                                                },
-                                                              ),
-                                                            ),
-                                                          ),
-
-
-
-
-                                                          // 👈 returns an empty widget when not logged in
-
-
-                                                          // 👈 Return nothing if not logged in
-
-
-                                                          // 🧑‍💼 Overlapping Agent Profile Image
-                                                          // 🧑‍💼 Overlapping Agent Profile Image
-                                                          // 🧑‍💼 Agent Profile with Navigation to Featured_Detail
-                                                          // 🟢 Positioned Circle Avatar (left: 10)
-                                                          Positioned(
-                                                            bottom: -30,
-                                                            left: 10,
-                                                            child: GestureDetector(
-                                                              onTap: () {
-                                                                Navigator.push(
-                                                                  context,
-                                                                  MaterialPageRoute(
-                                                                    builder: (context) => Featured_Detail(data: item.id.toString()),
-                                                                  ),
-                                                                );
-                                                              },
-                                                              child: Column(
-                                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                                children: [
-                                                                  CircleAvatar(
-                                                                    radius: 28,
-                                                                    backgroundImage: (item.agentImage != null && item.agentImage!.isNotEmpty)
-                                                                        ? CachedNetworkImageProvider(item.agentImage!)
-                                                                        : const AssetImage("assets/images/dummy.jpg") as ImageProvider,
-                                                                  ),
-                                                                  const SizedBox(height: 6),
-                                                                  Transform.translate(
-                                                                    offset: const Offset(-5, 0), // shift 4 pixels to the left
-                                                                    child: Text(
-                                                                      "AGENT",
-                                                                      style: TextStyle(
-                                                                        fontSize: 12,
-                                                                        fontWeight: FontWeight.w500,
-                                                                        color: Color(0xFF1A73E9),
-                                                                        letterSpacing: 0.5,
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-
-
-
-
-
+                                                          if (selectedSort == option)
+                                                            const Icon(Icons.check, color: Colors.green, size: 18),
                                                         ],
                                                       ),
+                                                    ),
+                                                    if (option != sortOptions.last)
+                                                      const Divider(height: 1, thickness: 0.5, color: Colors.grey),
+                                                  ],
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ),
+                                      ),
+                                    ];
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: Colors.red),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Image.asset(
+                                          "assets/images/filter.png",
+                                          height: 16,
+                                          width: 16,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(selectedSort), // 👉 No TextStyle here
+                                        const Icon(Icons.arrow_drop_down, size: 18),
+                                      ],
+                                    ),
+                                  ),
+                                ),
 
-                                                      // 🔽 Spacer so that the overlapping image is not clipped
-                                                      const SizedBox(height: 15),
 
-                                                      Padding(
-                                                        padding: const EdgeInsets.only(left: 0, right: 0, top: 4, bottom: 4),
+                              ],
+                            ),
+                          ),
+                          featuredModel == null
+                              ? const Center(child: ShimmerCard())
+                              :
+
+
+                          //Expanded(
+                          // child:
+                          /*Expanded(
+                                          child:*/
+                          ListView.builder(
+
+                              shrinkWrap: true,
+                              padding: EdgeInsets.zero,
+                              physics: NeverScrollableScrollPhysics(),
+
+                              // 👈 only if inside a parent scrollable view
+                              itemCount: (featuredModel?.data?.length ?? 0) + (nextPageUrl != null ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                final properties = featuredModel?.data ?? [];
+
+                                // 🔄 Show loader at end if next page exists
+                                if (index == properties.length && nextPageUrl != null) {
+                                  return const CircularProgressIndicator();
+                                } else if (index == properties.length && nextPageUrl == null) {
+                                  return const SizedBox.shrink(); // Nothing more to show
+                                }
+
+
+                                // 🔐 Safety check (extra)
+                                if (index >= properties.length) return const SizedBox.shrink();
+
+                                final item = properties[index];
+
+
+
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    String id = item.id.toString();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Featured_Detail(data: id),
+                                      ),
+                                    );
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    child: Card(
+                                      color: Colors.white,
+                                      shadowColor: Colors.white,
+                                      elevation: 10,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10),
+                                        child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+
+                                              Column(
+                                                children: [
+                                                  Stack(
+                                                    clipBehavior: Clip.none,
+                                                    // ✅ Allows the overlap outside the Stack
+                                                    children: [
+                                                      // 🖼️ Property Image Carousel with Rounded Corners
+                                                      ClipRRect(
+                                                        borderRadius: BorderRadius.circular(12),
+                                                        child: AspectRatio(
+                                                          aspectRatio: 1.4,
+                                                          child: PageView.builder(
+                                                            controller: _pageController,
+                                                            scrollDirection: Axis.horizontal,
+                                                            itemCount: item.media?.length ?? 0,
+                                                            onPageChanged: (index) {
+                                                              setState(() {
+                                                                _currentImageIndex = index;
+                                                              });
+                                                            },
+                                                            itemBuilder: (context, imgIndex) {
+                                                              return CachedNetworkImage(
+                                                                imageUrl: item.media![imgIndex]
+                                                                    .originalUrl.toString(),
+                                                                fit: BoxFit.cover,
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
+                                                      ),
+
+                                                      // ⚪ Image Indicator Dots
+                                                      Positioned(
+                                                        bottom: 12,
+                                                        left: 0,
+                                                        right: 0,
                                                         child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                                          children: [
-                                                            // Agent Name
-                                                            Expanded(
-                                                              child: Padding(
-                                                                padding: const EdgeInsets.only(left: 10),
-                                                                child: Text(
-                                                                  item.agentName ?? 'Agent',
-                                                                  style: const TextStyle(
-                                                                    fontSize: 15,
-                                                                    fontWeight: FontWeight.w600,
-                                                                    color: Colors.black,
-                                                                  ),
-                                                                  overflow: TextOverflow.ellipsis,
-                                                                ),
-                                                              ),
-                                                            ),
+                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          children: List.generate(
+                                                            item.media?.length ?? 0,
+                                                                (index) {
+                                                              final distance = (index -
+                                                                  _currentImageIndex).abs();
+                                                              double scale;
+                                                              double opacity;
 
-                                                            // Listed text + agency logo
-                                                            Row(
-                                                              children: [
-                                                                if (item.postedOn != null && item.postedOn!.isNotEmpty)
-                                                                  Text(
-                                                                    'Listed ${item.postedOn}',
-                                                                    style: const TextStyle(
-                                                                      fontSize: 13,
-                                                                      color: Colors.grey,
-                                                                    ),
-                                                                  ),
-                                                                const SizedBox(width: 4),
-                                                                if (item.agencyLogo != null && item.agencyLogo!.isNotEmpty)
-                                                                  Padding(
-                                                                    padding: const EdgeInsets.all(8.0),
+                                                              if (distance == 0) {
+                                                                scale = 1.2;
+                                                                opacity = 1.0;
+                                                              } else if (distance == 1) {
+                                                                scale = 1.0;
+                                                                opacity = 0.7;
+                                                              } else if (distance == 2) {
+                                                                scale = 0.8;
+                                                                opacity = 0.5;
+                                                              } else {
+                                                                scale = 0.5;
+                                                                opacity = 0.0;
+                                                              }
+
+                                                              return AnimatedOpacity(
+                                                                duration: Duration(milliseconds: 300),
+                                                                opacity: opacity,
+                                                                child: SizedBox(
+                                                                  width: 12,
+                                                                  // fixed size for layout stability
+                                                                  height: 12,
+                                                                  child: Center(
                                                                     child: Container(
-                                                                      height: 30,
-                                                                      width: 60,
+                                                                      width: 8 * scale,
+                                                                      height: 8 * scale,
                                                                       decoration: BoxDecoration(
-                                                                        borderRadius: BorderRadius.circular(4),
-                                                                        image: DecorationImage(
-                                                                          image: CachedNetworkImageProvider(item.agencyLogo!),
-                                                                          fit: BoxFit.contain,
-                                                                        ),
+                                                                        color: Colors.white,
+                                                                        shape: BoxShape.circle,
                                                                       ),
                                                                     ),
                                                                   ),
-                                                              ],
+                                                                ),
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
+                                                      ),
+
+
+                                                      // ❤️ Favorite Icon
+                                                      // ❤️ Favorite Icon
+                                                      Positioned(
+                                                        top: 10,
+                                                        right: 10,
+                                                        child: Material(
+                                                          color: Colors.white,
+                                                          shape: const CircleBorder(),
+                                                          elevation: 4,
+                                                          child: Consumer<FavoriteProvider>(
+                                                            builder: (context, favProvider, _) {
+                                                              final isLoggedIn = token.isNotEmpty;
+                                                              final isFav = isLoggedIn && favProvider.isFavorite(item.id!); // ✅ Only true for logged-in users
+
+                                                              return IconButton(
+                                                                icon: Icon(
+                                                                  isFav ? Icons.favorite : Icons.favorite_border,
+                                                                  color: isFav ? Colors.red : Colors.grey, // ✅ Grey for logged-out users
+                                                                  size: 20,
+                                                                ),
+                                                                onPressed: () async {
+                                                                  if (!isLoggedIn) {
+                                                                    // 🔒 Show login prompt
+                                                                    showDialog(
+                                                                      context: context,
+                                                                      builder: (ctx) => Dialog(
+                                                                        backgroundColor: Colors.transparent,
+                                                                        insetPadding: EdgeInsets.zero,
+                                                                        child: Container(
+                                                                          height: 70,
+                                                                          margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+                                                                          decoration: BoxDecoration(
+                                                                            color: Colors.red,
+                                                                            borderRadius: BorderRadius.circular(10),
+                                                                          ),
+                                                                          child: Stack(
+                                                                            clipBehavior: Clip.none,
+                                                                            children: [
+                                                                              Positioned(
+                                                                                top: -14,
+                                                                                right: -10,
+                                                                                child: Material(
+                                                                                  color: Colors.transparent,
+                                                                                  child: IconButton(
+                                                                                    icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                                                    onPressed: () => Navigator.of(ctx).pop(),
+                                                                                    padding: EdgeInsets.zero,
+                                                                                    constraints: const BoxConstraints(),
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                              Positioned(
+                                                                                left: 16,
+                                                                                right: 16,
+                                                                                bottom: 12,
+                                                                                child: Row(
+                                                                                  children: [
+                                                                                    const Expanded(
+                                                                                      child: Text(
+                                                                                        'Login required to add favorites.',
+                                                                                        style: TextStyle(color: Colors.white, fontSize: 13),
+                                                                                      ),
+                                                                                    ),
+                                                                                    const SizedBox(width: 12),
+                                                                                    GestureDetector(
+                                                                                      onTap: () {
+                                                                                        Navigator.of(ctx).pop();
+                                                                                        Navigator.of(ctx).pushNamed('/login');
+                                                                                      },
+                                                                                      child: const Text(
+                                                                                        'Login',
+                                                                                        style: TextStyle(
+                                                                                          color: Colors.white,
+                                                                                          fontWeight: FontWeight.bold,
+                                                                                          decoration: TextDecoration.underline,
+                                                                                          decorationColor: Colors.white,
+                                                                                          decorationThickness: 1.5,
+                                                                                        ),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    );
+                                                                    return;
+                                                                  }
+
+                                                                  // ✅ Use Provider's API-integrated method
+                                                                  final success = await favProvider.toggleFavoriteWithApi(item.id!, token);
+                                                                  if (!success) {
+                                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                                      const SnackBar(content: Text("Failed to update favorite.")),
+                                                                    );
+                                                                  }
+                                                                },
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
+                                                      ),
+
+
+
+
+                                                      // 👈 returns an empty widget when not logged in
+
+
+                                                      // 👈 Return nothing if not logged in
+
+
+                                                      // 🧑‍💼 Overlapping Agent Profile Image
+                                                      // 🧑‍💼 Overlapping Agent Profile Image
+                                                      // 🧑‍💼 Agent Profile with Navigation to Featured_Detail
+                                                      // 🟢 Positioned Circle Avatar (left: 10)
+                                                      Positioned(
+                                                        bottom: -30,
+                                                        left: 10,
+                                                        child: GestureDetector(
+                                                          onTap: () {
+                                                            Navigator.push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                builder: (context) => Featured_Detail(data: item.id.toString()),
+                                                              ),
+                                                            );
+                                                          },
+                                                          child: Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                                            children: [
+                                                              CircleAvatar(
+                                                                radius: 28,
+                                                                backgroundImage: (item.agentImage != null && item.agentImage!.isNotEmpty)
+                                                                    ? CachedNetworkImageProvider(item.agentImage!)
+                                                                    : const AssetImage("assets/images/dummy.jpg") as ImageProvider,
+                                                              ),
+                                                              const SizedBox(height: 6),
+                                                              Transform.translate(
+                                                                offset: const Offset(-5, 0), // shift 4 pixels to the left
+                                                                child: Text(
+                                                                  "AGENT",
+                                                                  style: TextStyle(
+                                                                    fontSize: 12,
+                                                                    fontWeight: FontWeight.w500,
+                                                                    color: Color(0xFF1A73E9),
+                                                                    letterSpacing: 0.5,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+
+
+
+
+
+                                                    ],
+                                                  ),
+
+                                                  // 🔽 Spacer so that the overlapping image is not clipped
+                                                  const SizedBox(height: 15),
+
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(left: 0, right: 0, top: 4, bottom: 4),
+                                                    child: Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                                      children: [
+                                                        // Agent Name
+                                                        Expanded(
+                                                          child: Padding(
+                                                            padding: const EdgeInsets.only(left: 10),
+                                                            child: Text(
+                                                              item.agentName ?? 'Agent',
+                                                              style: const TextStyle(
+                                                                fontSize: 15,
+                                                                fontWeight: FontWeight.w600,
+                                                                color: Colors.black,
+                                                              ),
+                                                              overflow: TextOverflow.ellipsis,
                                                             ),
+                                                          ),
+                                                        ),
+
+                                                        // Listed text + agency logo
+                                                        Row(
+                                                          children: [
+                                                            if (item.postedOn != null && item.postedOn!.isNotEmpty)
+                                                              Text(
+                                                                'Listed ${item.postedOn}',
+                                                                style: const TextStyle(
+                                                                  fontSize: 13,
+                                                                  color: Colors.grey,
+                                                                ),
+                                                              ),
+                                                            const SizedBox(width: 4),
+                                                            if (item.agencyLogo != null && item.agencyLogo!.isNotEmpty)
+                                                              Padding(
+                                                                padding: const EdgeInsets.all(8.0),
+                                                                child: Container(
+                                                                  height: 30,
+                                                                  width: 60,
+                                                                  decoration: BoxDecoration(
+                                                                    borderRadius: BorderRadius.circular(4),
+                                                                    image: DecorationImage(
+                                                                      image: CachedNetworkImageProvider(item.agencyLogo!),
+                                                                      fit: BoxFit.contain,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
                                                           ],
                                                         ),
-                                                      ),
-
-SizedBox(height: 5,),
-
-// 👇 Divider line here
-                                                      const Divider(
-                                                        thickness: 0.3,
-                                                        color: Colors.grey,
-                                                        height: 6,
-                                                      ),
-
-
-
-
-                                                    ],
-                                                  ),
-
-                                                  SizedBox(height: 8,),
-
-                                                  Text(
-                                                    item.title.toString(),
-                                                    style: TextStyle(fontSize: 16, height: 1.4),
-                                                    overflow: TextOverflow.ellipsis,
-                                                    maxLines: 1,
-                                                  ),
-                                                  SizedBox(height: 5),
-                                                  Text(
-                                                    '${item.price} AED',
-                                                    style: TextStyle(
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 22,
-                                                      height: 1.4,
+                                                      ],
                                                     ),
                                                   ),
-                                                  SizedBox(height: 5),
-                                                  Row(
-                                                    children: [
-                                                      Image.asset("assets/images/map.png", height: 14),
-                                                      SizedBox(width: 5),
-                                                      Expanded(
-                                                        child: Text(
-                                                          item.location.toString(),
-                                                          style: TextStyle(fontSize: 13),
-                                                          overflow: TextOverflow.ellipsis,
-                                                          maxLines: 1,
-                                                        ),
-                                                      ),
-                                                    ],
+
+                                                  SizedBox(height: 5,),
+
+// 👇 Divider line here
+                                                  const Divider(
+                                                    thickness: 0.3,
+                                                    color: Colors.grey,
+                                                    height: 6,
                                                   ),
-                                                  SizedBox(height: 8),
-                                                  Row(
-                                                    children: [
-                                                      Image.asset("assets/images/bed.png", height: 14),
-                                                      SizedBox(width: 5),
-                                                      Text(item.bedrooms.toString()),
-                                                      SizedBox(width: 10),
-                                                      Image.asset("assets/images/bath.png", height: 14),
-                                                      SizedBox(width: 5),
-                                                      Text(item.bathrooms.toString()),
-                                                      SizedBox(width: 10),
-                                                      Image.asset(
-                                                          "assets/images/messure.png", height: 14),
-                                                      SizedBox(width: 5),
-                                                      Text(item.squareFeet.toString()),
-                                                    ],
+
+
+
+
+                                                ],
+                                              ),
+
+                                              SizedBox(height: 8,),
+
+                                              Text(
+                                                item.title.toString(),
+                                                style: TextStyle(fontSize: 16, height: 1.4),
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                              ),
+                                              SizedBox(height: 5),
+                                              Text(
+                                                '${item.price} AED',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 22,
+                                                  height: 1.4,
+                                                ),
+                                              ),
+                                              SizedBox(height: 5),
+                                              Row(
+                                                children: [
+                                                  Image.asset("assets/images/map.png", height: 14),
+                                                  SizedBox(width: 5),
+                                                  Expanded(
+                                                    child: Text(
+                                                      item.location.toString(),
+                                                      style: TextStyle(fontSize: 13),
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
+                                                    ),
                                                   ),
-                                                  /* SizedBox(height: 15),
+                                                ],
+                                              ),
+                                              SizedBox(height: 8),
+                                              Row(
+                                                children: [
+                                                  Image.asset("assets/images/bed.png", height: 14),
+                                                  SizedBox(width: 5),
+                                                  Text(item.bedrooms.toString()),
+                                                  SizedBox(width: 10),
+                                                  Image.asset("assets/images/bath.png", height: 14),
+                                                  SizedBox(width: 5),
+                                                  Text(item.bathrooms.toString()),
+                                                  SizedBox(width: 10),
+                                                  Image.asset(
+                                                      "assets/images/messure.png", height: 14),
+                                                  SizedBox(width: 5),
+                                                  Text(item.squareFeet.toString()),
+                                                ],
+                                              ),
+                                              /* SizedBox(height: 15),
                                                                                               Row(
                                                                                                 children: [
                                                                                                   Image.asset("assets/images/Flooring.png", height: 20),
@@ -1913,97 +1915,97 @@ SizedBox(height: 5,),
                                                                                                   Text(item.squareFeet.toString()),
                                                                                                 ],
                                                                                               ),*/
-                                                  SizedBox(height: 15,),
-                                                  Row(
-                                                    children: [
-                                                      Expanded(
-                                                        child: ElevatedButton.icon(
-                                                          onPressed: () async {
-                                                            // Use the correct sanitizer for call (international format with +)
-                                                            String phone = 'tel:${phoneCallNumber(
-                                                                item.phoneNumber ?? '')}';
-                                                            try {
-                                                              final bool launched = await launchUrlString(
-                                                                phone,
-                                                                mode: LaunchMode.externalApplication,
-                                                              );
-                                                              if (!launched) print(
-                                                                  "❌ Could not launch dialer");
-                                                            } catch (e) {
-                                                              print("❌ Exception: $e");
-                                                            }
-                                                          },
-                                                          icon: const Icon(Icons.call, color: Colors.red),
-                                                          label: const Text(
-                                                              "Call", style: TextStyle(color: Colors
-                                                              .black)),
-                                                          style: ElevatedButton.styleFrom(
-                                                            backgroundColor: Colors.grey[100],
-                                                            shape: RoundedRectangleBorder(
-                                                                borderRadius: BorderRadius.circular(10)),
-                                                            elevation: 2,
-                                                            padding: const EdgeInsets.symmetric(
-                                                                vertical: 10),
-                                                          ),
-                                                        ),
+                                              SizedBox(height: 15,),
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: ElevatedButton.icon(
+                                                      onPressed: () async {
+                                                        // Use the correct sanitizer for call (international format with +)
+                                                        String phone = 'tel:${phoneCallNumber(
+                                                            item.phoneNumber ?? '')}';
+                                                        try {
+                                                          final bool launched = await launchUrlString(
+                                                            phone,
+                                                            mode: LaunchMode.externalApplication,
+                                                          );
+                                                          if (!launched) print(
+                                                              "❌ Could not launch dialer");
+                                                        } catch (e) {
+                                                          print("❌ Exception: $e");
+                                                        }
+                                                      },
+                                                      icon: const Icon(Icons.call, color: Colors.red),
+                                                      label: const Text(
+                                                          "Call", style: TextStyle(color: Colors
+                                                          .black)),
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: Colors.grey[100],
+                                                        shape: RoundedRectangleBorder(
+                                                            borderRadius: BorderRadius.circular(10)),
+                                                        elevation: 2,
+                                                        padding: const EdgeInsets.symmetric(
+                                                            vertical: 10),
                                                       ),
-                                                      const SizedBox(width: 10),
-                                                      Expanded(
-                                                        child: ElevatedButton.icon(
-                                                          onPressed: () async {
-                                                            final phone = whatsAppNumber(item.whatsapp ??
-                                                                '');
-                                                            final message = Uri.encodeComponent(
-                                                                "Hello"); // you can change message
-                                                            final url = Uri.parse(
-                                                                "https://wa.me/$phone?text=$message");
-                                                            if (await canLaunchUrl(url)) {
-                                                              try {
-                                                                final launched = await launchUrl(url,
-                                                                    mode: LaunchMode.externalApplication);
-                                                                if (!launched) print(
-                                                                    "❌ Could not launch WhatsApp");
-                                                              } catch (e) {
-                                                                print("❌ Exception: $e");
-                                                              }
-                                                            } else {
-                                                              print("❌ WhatsApp not available");
-                                                            }
-                                                          },
-                                                          icon: Image.asset(
-                                                              "assets/images/whats.png", height: 20),
-                                                          label: const Text(
-                                                              "WhatsApp", style: TextStyle(color: Colors
-                                                              .black)),
-                                                          style: ElevatedButton.styleFrom(
-                                                            backgroundColor: Colors.grey[100],
-                                                            shape: RoundedRectangleBorder(
-                                                                borderRadius: BorderRadius.circular(10)),
-                                                            elevation: 2,
-                                                            padding: const EdgeInsets.symmetric(
-                                                                vertical: 10),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
+                                                    ),
                                                   ),
+                                                  const SizedBox(width: 10),
+                                                  Expanded(
+                                                    child: ElevatedButton.icon(
+                                                      onPressed: () async {
+                                                        final phone = whatsAppNumber(item.whatsapp ??
+                                                            '');
+                                                        final message = Uri.encodeComponent(
+                                                            "Hello"); // you can change message
+                                                        final url = Uri.parse(
+                                                            "https://wa.me/$phone?text=$message");
+                                                        if (await canLaunchUrl(url)) {
+                                                          try {
+                                                            final launched = await launchUrl(url,
+                                                                mode: LaunchMode.externalApplication);
+                                                            if (!launched) print(
+                                                                "❌ Could not launch WhatsApp");
+                                                          } catch (e) {
+                                                            print("❌ Exception: $e");
+                                                          }
+                                                        } else {
+                                                          print("❌ WhatsApp not available");
+                                                        }
+                                                      },
+                                                      icon: Image.asset(
+                                                          "assets/images/whats.png", height: 20),
+                                                      label: const Text(
+                                                          "WhatsApp", style: TextStyle(color: Colors
+                                                          .black)),
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: Colors.grey[100],
+                                                        shape: RoundedRectangleBorder(
+                                                            borderRadius: BorderRadius.circular(10)),
+                                                        elevation: 2,
+                                                        padding: const EdgeInsets.symmetric(
+                                                            vertical: 10),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
 
-                                                ]),
-                                          ),
-                                        ),
+                                            ]),
                                       ),
-                                    );
-                                  }
-                              ),
+                                    ),
+                                  ),
+                                );
+                              }
+                          ),
 
-                            ]
-                        ),
-                      ),
-                    )
+                        ]
+                    ),
+                  ),
+                )
 
 
 
-                ],
+            ],
           ),
           //),
         )

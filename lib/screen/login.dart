@@ -4,6 +4,7 @@ import 'package:Akarat/screen/register_screen.dart';
 import 'package:Akarat/screen/forgot_password.dart'; // <-- Add this import
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../providers/profile_image_provider.dart';
 import '../secure_storage.dart';
 import '../services/favorite_service.dart';
 import 'secure_storage.dart';
@@ -11,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/services/api_service.dart';
 import 'package:Akarat/screen/home.dart';
+import 'package:provider/provider.dart';
+
 
 import 'package:http/http.dart' as http;
 
@@ -164,65 +167,62 @@ class _LoginDemoState extends State<LoginDemo> {
       );
 
       if (result is Map<String, dynamic>) {
-        if (result.containsKey('token') && result['token'] != null) {
-          final token = result['token'];
+        final token = result['token'];
+        if (token != null && token.toString().isNotEmpty) {
+          // Save token
           await SecureStorage.writeToken(token);
 
-          // ✅ Save user name to SharedPreferences
-          if (result.containsKey('user') && result['user']['name'] != null) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('user_name', result['user']['name']);
+          // Save username & load profile image
+          final username = (result['name'] ?? '').toString().trim();
+          if (username.isNotEmpty) {
+            await SecureStorage.write('user_name', username);
+            await SecureStorage.write('user_image', result['image'] ?? '');  // <-- ADD THIS
+            await context.read<ProfileImageProvider>().loadImageForUser(username);
+            debugPrint("✅ Loaded profile image for user: $username");
+          } else {
+            debugPrint("⚠️ Username missing in login response.");
           }
 
-          // ✅ 1. Fetch and optionally cache logged-in favorites
-          final apiFavorites = await FavoriteService.fetchApiFavorites(token);
+          // Fetch and sync favorites
+          try {
+            final apiFavorites = await FavoriteService.fetchApiFavorites(token);
+            await FavoriteService.saveFavorites({});
+            FavoriteService.loggedInFavorites = apiFavorites;
+            debugPrint("✅ Favorites synced. Count: ${apiFavorites.length}");
+          } catch (e) {
+            debugPrint("❌ Failed to fetch favorites: $e");
+          }
 
-          // ✅ 2. Optional: Clear guest favorites
-          await FavoriteService.saveFavorites({});
-
-          // ✅ 3. Store fetched favorites globally (optional)
-          FavoriteService.loggedInFavorites = apiFavorites;
-
+          // Navigate to Home
           if (!mounted) return;
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const Home()),
                 (route) => false,
           );
-        }
-
-        else {
-          // Extract server error message
-          String error = 'Unable to login. An unexpected error occurred. Please try logging in again.';
+        } else {
+          // Handle backend errors
+          String error = 'Unable to login. Please try again.';
           if (result.containsKey('message')) {
             error = result['message'];
           } else if (result.containsKey('errors')) {
             final errors = result['errors'];
             if (errors is Map && errors.isNotEmpty) {
-              final firstKey = errors.keys.first;
-              final firstError = errors[firstKey];
+              final firstError = errors.values.first;
               if (firstError is List && firstError.isNotEmpty) {
                 error = firstError.first;
               }
             }
           }
-
-          setState(() {
-            errorMessage = error;
-          });
-
-          return;
+          setState(() => errorMessage = error);
         }
-      } else {
-        setState(() {
-          errorMessage = 'Unexpected response from server';
-        });
+      }
+      else {
+        setState(() => errorMessage = 'Unexpected response from server');
       }
     } catch (e) {
+      debugPrint("❌ Login error: $e");
       if (!mounted) return;
-      setState(() {
-        errorMessage = 'Unable to login. An unexpected error occurred. Please try logging in again.';
-      });
-
+      setState(() => errorMessage = 'Unable to login. Please try again.');
       Future.delayed(const Duration(seconds: 10), () {
         if (mounted) setState(() => errorMessage = null);
       });
@@ -230,6 +230,7 @@ class _LoginDemoState extends State<LoginDemo> {
       if (mounted) setState(() => isLoading = false);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
