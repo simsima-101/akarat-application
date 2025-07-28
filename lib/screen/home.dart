@@ -2097,7 +2097,8 @@ class _MyHomePageState extends State<HomeDemo> {
 
           IconButton(
             tooltip: "Email",
-            icon: const Icon(Icons.email_outlined, color: Colors.red),
+            icon: const Icon(Icons.email_outlined, color: Colors.red,
+            size: 28),
             onPressed: () async {
               final Uri emailUri = Uri.parse(
                 'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',

@@ -413,7 +413,8 @@ class _My_AccountState extends State<My_Account> {
           ),
           IconButton(
             tooltip: "Email",
-            icon: const Icon(Icons.email_outlined, color: Colors.red),
+            icon: const Icon(Icons.email_outlined, color: Colors.red,
+            size: 28),
             onPressed: () async {
               final Uri emailUri = Uri.parse('mailto:info@akarat.com?subject=Property%20Inquiry');
               if (await canLaunchUrl(emailUri)) {
