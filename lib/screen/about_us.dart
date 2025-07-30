@@ -4,10 +4,14 @@
   import 'package:Akarat/screen/profile_login.dart';
   import 'package:flutter/material.dart';
   import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-  import '../utils/fav_login.dart';
+  import '../secure_storage.dart';
+import '../services/favorite_service.dart';
+import '../utils/fav_login.dart';
   import '../utils/fav_logout.dart';
   import '../utils/shared_preference_manager.dart';
+import 'login.dart';
 
   class About_Us extends StatefulWidget {
 
@@ -167,14 +171,111 @@
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             GestureDetector(
-              onTap: () async {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-              },
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Home())),
+
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Image.asset("assets/images/home.png", height: 25),
               ),
             ),
+
+            IconButton(
+              enableFeedback: false,
+              onPressed: () async {
+                final token = await SecureStorage.getToken();
+
+                if (token == null || token.isEmpty) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: Colors.white, // white container
+                      title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                      content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(color: Colors.red), // red text
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const LoginDemo()),
+                            );
+                          },
+                          child: const Text(
+                            "Login",
+                            style: TextStyle(color: Colors.red), // red text
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                else {
+                  // ✅ Logged in – go to favorites
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Fav_Logout()),
+                  ).then((_) async {
+                    // 🔁 Re-sync when coming back
+                    final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
+                    setState(() {
+                      FavoriteService.loggedInFavorites = updatedFavorites;
+                    });
+                  });
+
+                }
+              },
+              icon: pageIndex == 2
+                  ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+                  : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+            ),
+
+
+
+            IconButton(
+              tooltip: "Email",
+              icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+              onPressed: () async {
+                final Uri emailUri = Uri.parse(
+                  'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+                );
+
+                if (await canLaunchUrl(emailUri)) {
+                  await launchUrl(emailUri);
+                } else {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: Colors.white, // White dialog container
+                      title: const Text(
+                        'Email not available',
+                        style: TextStyle(color: Colors.black), // Title in black
+                      ),
+                      content: const Text(
+                        'No email app is configured on this device. Please add a mail account first.',
+                        style: TextStyle(color: Colors.black), // Content in black
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            'OK',
+                            style: TextStyle(color: Colors.red), // Red "OK" text
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              },
+            ),
+
             Padding(
               padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
               child: IconButton(
@@ -188,6 +289,8 @@
                     }
                   });
                 },
+
+
                 icon: pageIndex == 3
                     ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
                     : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),

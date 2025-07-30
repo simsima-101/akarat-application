@@ -217,7 +217,7 @@ class _My_AccountState extends State<My_Account> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
 
                 /// Settings
                 _buildSettings(isLoggedIn),
@@ -413,24 +413,42 @@ class _My_AccountState extends State<My_Account> {
           ),
           IconButton(
             tooltip: "Email",
-            icon: const Icon(Icons.email_outlined, color: Colors.red,
-            size: 28),
+            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
             onPressed: () async {
-              final Uri emailUri = Uri.parse('mailto:info@akarat.com?subject=Property%20Inquiry');
+              final Uri emailUri = Uri.parse(
+                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+              );
+
               if (await canLaunchUrl(emailUri)) {
                 await launchUrl(emailUri);
               } else {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('Email not available'),
-                    content: const Text('No email app is configured on this device.'),
-                    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+                    backgroundColor: Colors.white, // White dialog container
+                    title: const Text(
+                      'Email not available',
+                      style: TextStyle(color: Colors.black), // Title in black
+                    ),
+                    content: const Text(
+                      'No email app is configured on this device. Please add a mail account first.',
+                      style: TextStyle(color: Colors.black), // Content in black
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          'OK',
+                          style: TextStyle(color: Colors.red), // Red "OK" text
+                        ),
+                      ),
+                    ],
                   ),
                 );
               }
             },
           ),
+
           const Padding(
             padding: EdgeInsets.only(right: 20.0),
             child: Icon(Icons.dehaze, color: Colors.red, size: 35),

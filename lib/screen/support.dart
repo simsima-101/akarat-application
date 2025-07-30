@@ -10,6 +10,11 @@ import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
+import '../secure_storage.dart';
+import '../services/favorite_service.dart';
+import '../utils/fav_logout.dart';
+import 'login.dart';
+
 
 class Support extends StatefulWidget {
   const Support({super.key});
@@ -120,110 +125,45 @@ class _SupportState extends State<Support> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
-    return Scaffold(
+
+    return WillPopScope(
+        onWillPop: () async {
+      if (token == '') {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+      } else {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+      }
+      return false; // prevent default pop
+    },
+    child: Scaffold(
         backgroundColor: Colors.white,
-        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 1,
+          iconTheme: const IconThemeData(color: Colors.red),
+          title: const Text(
+            "Contact Us",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: Colors.black,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
         body: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Column(
-                children: <Widget>[
-                  Container(
-                    height: screenSize.height*0.1,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.circular(2.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(
-                            0.3,
-                            0.3,
-                          ),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ), //BoxShadow
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ), //BoxShadow
-                      ],),
-                    child:  Stack(
-                      // alignment: Alignment.topCenter,
-                      children: <Widget>[
-                        Padding(
-                          padding: EdgeInsets.only(top: 25),
-                          child: Container(
-                            height: screenSize.height*0.07,
-                            width: double.infinity,
-                            // color: Color(0xFFEEEEEE),
-                            child:   Row(
-                              children: [GestureDetector(
-                                onTap: (){
-                                  setState(() {
-                                    if(token == ''){
-                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-                                    }
-                                    else{
-                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                                    }
-                                  });                                },
-                                child:   Container(
-                                  margin: const EdgeInsets.only(left: 10,top: 5,bottom: 0),
-                                  height: 35,
-                                  width: 35,
-                                  padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadiusDirectional.circular(20.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey,
-                                        offset: const Offset(
-                                          0.3,
-                                          0.3,
-                                        ),
-                                        blurRadius: 0.3,
-                                        spreadRadius: 0.3,
-                                      ), //BoxShadow
-                                      BoxShadow(
-                                        color: Colors.white,
-                                        offset: const Offset(0.0, 0.0),
-                                        blurRadius: 0.0,
-                                        spreadRadius: 0.0,
-                                      ), //BoxShadow
-                                    ],
-                                  ),
-                                  child: Image.asset("assets/images/ar-left.png",
-                                    width: 15,
-                                    height: 15,
-                                    fit: BoxFit.contain,),
-                                ),
-                              ),
-                                SizedBox(
-                                  width: screenSize.width*0.23,
-                                ),
-                                Padding(padding: const EdgeInsets.all(8.0),
-                                  child: Text("Contact Us",style: TextStyle(
-                                      fontWeight: FontWeight.bold,fontSize: 20
-                                  ),),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Ask us anything?",
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
                     ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(left: 10,right: 10,top: 25),
-                    height: screenSize.height*0.05,
-                    width: screenSize.width*0.9,
-                    // color: Colors.grey,
-                    child: Text("Ask us anything?",textAlign: TextAlign.left
-                      ,style: TextStyle(
-                          fontSize: 25,fontWeight: FontWeight.bold,letterSpacing: 0.5
-
-                      ),),
                   ),
                   Container(
                     margin: const EdgeInsets.only(left: 10,right: 10,top: 10),
@@ -549,7 +489,7 @@ class _SupportState extends State<Support> {
                 ]
             )
         )
-    );
+    ),);
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(
@@ -566,14 +506,111 @@ class _SupportState extends State<Support> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-            onTap: () async {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-            },
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Home())),
+
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Image.asset("assets/images/home.png", height: 25),
             ),
           ),
+
+          IconButton(
+            enableFeedback: false,
+            onPressed: () async {
+              final token = await SecureStorage.getToken();
+
+              if (token == null || token.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // white container
+                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
+                        },
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              else {
+                // ✅ Logged in – go to favorites
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const Fav_Logout()),
+                ).then((_) async {
+                  // 🔁 Re-sync when coming back
+                  final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
+                  setState(() {
+                    FavoriteService.loggedInFavorites = updatedFavorites;
+                  });
+                });
+
+              }
+            },
+            icon: pageIndex == 2
+                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+          ),
+
+
+
+          IconButton(
+            tooltip: "Email",
+            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+            onPressed: () async {
+              final Uri emailUri = Uri.parse(
+                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+              );
+
+              if (await canLaunchUrl(emailUri)) {
+                await launchUrl(emailUri);
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // White dialog container
+                    title: const Text(
+                      'Email not available',
+                      style: TextStyle(color: Colors.black), // Title in black
+                    ),
+                    content: const Text(
+                      'No email app is configured on this device. Please add a mail account first.',
+                      style: TextStyle(color: Colors.black), // Content in black
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          'OK',
+                          style: TextStyle(color: Colors.red), // Red "OK" text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+
           Padding(
             padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
             child: IconButton(
@@ -587,6 +624,8 @@ class _SupportState extends State<Support> {
                   }
                 });
               },
+
+
               icon: pageIndex == 3
                   ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
                   : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),

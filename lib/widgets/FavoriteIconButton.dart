@@ -42,7 +42,8 @@ class FavoriteIconButton extends StatelessWidget {
         }
 
         // ✅ Toggle local + sync API
-        context.read<FavoriteProvider>().toggleFavorite(parsedId);
+        context.read<FavoriteProvider>().toggleFavorite(parsedId, context);
+
         await FavoriteService.toggleFavoriteApi(token, parsedId);
       },
     );

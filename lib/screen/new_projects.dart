@@ -17,6 +17,8 @@ import '../model/togglemodel.dart';
 import '../model/projectmodel.dart';
 import '../secure_storage.dart';
 
+import '../services/favorite_service.dart';
+import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'featured_detail.dart';
 import 'login.dart';
@@ -25,6 +27,7 @@ import 'package:Akarat/utils/whatsapp_button.dart';
 
 import 'package:provider/provider.dart';
 import '../providers/favorite_provider.dart';
+import '../screen/my_nav_bar.dart';
 
 
 
@@ -371,18 +374,26 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
         backgroundColor: Colors.white,
         bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         appBar: AppBar(
-          title: const Text(
-              "New Projects", style: TextStyle(color: Colors.black,
-              fontWeight: FontWeight.bold)),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.red),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Home())), // ✅ Add close functionality
-          ),
+          backgroundColor: Colors.white, // White AppBar background
+          elevation: 1, // Small shadow for separation
           centerTitle: true,
-          backgroundColor: Color(0xFFFFFFFF),
-          iconTheme: const IconThemeData(color: Colors.red),
-          elevation: 1,
+          iconTheme: const IconThemeData(color: Colors.red), // Icon color
+          title: const Text(
+            "New Projects",
+            style: TextStyle(
+              color: Colors.black, // Title color
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Home()),
+            ),
+          ),
         ),
+
         body:
         //SingleChildScrollView(
         //  child:
@@ -391,11 +402,11 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
               Container(
                 margin: const EdgeInsets.only(top: 15,left: 15,right: 15),
                 padding: const EdgeInsets.only(top: 5,left: 5,right: 10),
-                height: 50,
+                // height: 50,
                 width: double.infinity,
                 //color: Colors.grey,
-                child: Text("Find off-plan development and everything you need to "
-                    "know to invest in UAE's real estate market",style: TextStyle(letterSpacing: 0.5,),),
+                // child: Text("Find off-plan development and everything you need to "
+                //     "know to invest in UAE's real estate market",style: TextStyle(letterSpacing: 0.5,),),
               ),
 
 
@@ -627,7 +638,8 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                                 }
 
                                                 // ✅ Toggle using API
-                                                final success = await favProvider.toggleFavoriteWithApi(item.id!, token);
+                                                final success = await favProvider.toggleFavoriteWithApi(item.id!, token, context);
+
                                                 if (!success) {
                                                   ScaffoldMessenger.of(context).showSnackBar(
                                                     const SnackBar(content: Text("Failed to update favorite.")),
@@ -895,178 +907,138 @@ SizedBox(height: 8,),
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-              onTap: ()async{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                child: Image.asset("assets/images/home.png",height: 25,),
-              )),
-          Container(
-            margin: const EdgeInsets.only(left: 40),
-            height: 35,
-            width: 35,
-            padding: const EdgeInsets.only(top: 2),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadiusDirectional.circular(20.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey,
-                  offset: const Offset(0.5, 0.5),
-                  blurRadius: 1.0,
-                  spreadRadius: 0.5,
-                ),
-                BoxShadow(
-                  color: Colors.white,
-                  offset: const Offset(0.0, 0.0),
-                  blurRadius: 0.0,
-                  spreadRadius: 0.0,
-                ),
-              ],
-            ),
-            child: GestureDetector(
-              onTap: () async {
-                // Example: use first project, or replace with desired number
-                final phone = projectModel.isNotEmpty
-                    ? phoneCallNumber(projectModel[0].phoneNumber ?? '')
-                    : '';
-                if (phone.isNotEmpty) {
-                  final telUrl = 'tel:$phone';
-                  if (await canLaunchUrlString(telUrl)) {
-                    await launchUrlString(telUrl, mode: LaunchMode.externalApplication);
-                  }
-                }
-              },
-              child: Icon(Icons.call_outlined, color: Colors.red),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Home())),
+
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
             ),
           ),
 
-          Container(
-            margin: const EdgeInsets.only(left: 1),
-            height: 35,
-            width: 35,
-            padding: const EdgeInsets.only(top: 2),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadiusDirectional.circular(20.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey,
-                  offset: const Offset(0.5, 0.5),
-                  blurRadius: 1.0,
-                  spreadRadius: 0.5,
-                ),
-                BoxShadow(
-                  color: Colors.white,
-                  offset: const Offset(0.0, 0.0),
-                  blurRadius: 0.0,
-                  spreadRadius: 0.0,
-                ),
-              ],
-            ),
-            child: GestureDetector(
-              onTap: () async {
-                // Sanitize phone number to 971XXXXXXXXX (no plus)
-                final phoneRaw = projectModel.isNotEmpty ? projectModel[0].whatsapp ?? '' : '';
-                final phone = whatsAppNumber(phoneRaw); // always in 971XXXXXXXXX
-                final message = Uri.encodeComponent("Hello");
-                final waUrl = Uri.parse("https://wa.me/$phone?text=$message");
-
-                if (await canLaunchUrl(waUrl)) {
-                  try {
-                    final launched = await launchUrl(
-                      waUrl,
-                      mode: LaunchMode.externalApplication,
-                    );
-                    if (!launched) {
-                      print("❌ Could not launch WhatsApp");
-                    }
-                  } catch (e) {
-                    print("❌ Exception: $e");
-                  }
-                } else {
-                  print("❌ WhatsApp not available or URL not supported");
-                }
-              },
-              child: Image.asset("assets/images/whats.png", height: 20),
-            ),
-          ),
-          // Container(
-          //   margin: const EdgeInsets.only(left: 1, right: 40),
-          //   height: 35,
-          //   width: 35,
-          //   padding: const EdgeInsets.only(top: 2),
-          //   decoration: BoxDecoration(
-          //     borderRadius: BorderRadiusDirectional.circular(20.0),
-          //     boxShadow: [
-          //       BoxShadow(
-          //         color: Colors.grey,
-          //         offset: const Offset(0.5, 0.5),
-          //         blurRadius: 1.0,
-          //         spreadRadius: 0.5,
-          //       ),
-          //       BoxShadow(
-          //         color: Colors.white,
-          //         offset: const Offset(0.0, 0.0),
-          //         blurRadius: 0.0,
-          //         spreadRadius: 0.0,
-          //       ),
-          //     ],
-          //   ),
-          //   child: GestureDetector(
-          //     onTap: () async {
-          //       // final String? email = projectDetailModel?.data?.email;
-          //       if (email == null || email.isEmpty) {
-          //         ScaffoldMessenger.of(context).showSnackBar(
-          //           const SnackBar(content: Text('No email available for this property.')),
-          //         );
-          //         return;
-          //       }
-          //       final Uri emailUri = Uri(
-          //         scheme: 'mailto',
-          //         path: email,
-          //         query: Uri.encodeFull('subject=Property Inquiry&body=Hi, I saw your property on Akarat.'),
-          //       );
-          //       if (await canLaunchUrl(emailUri)) {
-          //         await launchUrl(emailUri);
-          //       } else {
-          //         ScaffoldMessenger.of(context).showSnackBar(
-          //           SnackBar(content: Text('Could not launch $emailUri')),
-          //         );
-          //       }
-          //     },
-          //     child: const Icon(Icons.mail, color: Colors.red),
-          //   ),
-          // ),
           IconButton(
             enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-                }
-                else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+            onPressed: () async {
+              final token = await SecureStorage.getToken();
 
-                }
-              });
+              if (token == null || token.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // white container
+                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
+                        },
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              else {
+                // ✅ Logged in – go to favorites
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const Fav_Logout()),
+                ).then((_) async {
+                  // 🔁 Re-sync when coming back
+                  final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
+                  setState(() {
+                    FavoriteService.loggedInFavorites = updatedFavorites;
+                  });
+                });
+
+              }
             },
-            icon: pageIndex == 3
-                ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
+            icon: pageIndex == 2
+                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+          ),
+
+
+
+          IconButton(
+            tooltip: "Email",
+            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+            onPressed: () async {
+              final Uri emailUri = Uri.parse(
+                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+              );
+
+              if (await canLaunchUrl(emailUri)) {
+                await launchUrl(emailUri);
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // White dialog container
+                    title: const Text(
+                      'Email not available',
+                      style: TextStyle(color: Colors.black), // Title in black
+                    ),
+                    content: const Text(
+                      'No email app is configured on this device. Please add a mail account first.',
+                      style: TextStyle(color: Colors.black), // Content in black
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          'OK',
+                          style: TextStyle(color: Colors.red), // Red "OK" text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                setState(() {
+                  if (token == '') {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  }
+                });
+              },
+
+
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
             ),
           ),
         ],
       ),
+
     );
   }
 }

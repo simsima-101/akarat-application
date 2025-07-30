@@ -1102,14 +1102,14 @@ class _AboutAgentState extends State<AboutAgent> {
                                             }
 
                                             // 🌀 Toggle via API + Provider
-                                            favProvider.toggleFavorite(propertyId);
+                                            favProvider.toggleFavorite(propertyId, context);
                                             property.saved = !isSaved;
 
                                             final success = await toggledApi(token, property.id!);
 
                                             if (!success) {
                                               // ❌ Revert toggle on failure
-                                              favProvider.toggleFavorite(propertyId);
+                                              favProvider.toggleFavorite(propertyId,context);
                                               property.saved = isSaved;
 
                                               ScaffoldMessenger.of(context).showSnackBar(

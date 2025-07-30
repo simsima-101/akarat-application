@@ -8,10 +8,8 @@ class FavoriteProvider with ChangeNotifier {
 
   Set<int> get favorites => _favorites;
 
-  /// ✅ Returns true if a property ID is marked as favorite
   bool isFavorite(int id) => _favorites.contains(id);
 
-  /// ✅ Load favorites from SharedPreferences
   Future<void> loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getStringList('favorite_properties') ?? [];
@@ -20,42 +18,45 @@ class FavoriteProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// ✅ Set all favorites at once (e.g. from API)
   void setFavorites(Set<int> newFavorites) {
     _favorites = newFavorites;
     _saveToPrefs();
     notifyListeners();
   }
 
-  /// ✅ Add a property to favorites
-  void addFavorite(int id) {
+  void addFavorite(int id, BuildContext context) {
     _favorites.add(id);
     _saveToPrefs();
+    _showSnackBar(context, "Added to favorites", Colors.green);
     notifyListeners();
   }
 
-  /// ✅ Remove a property from favorites
-  void removeFavorite(int id) {
+  void removeFavorite(int id, BuildContext context) {
     _favorites.remove(id);
     _saveToPrefs();
+    _showSnackBar(context, "Removed from favorites", Colors.red);
     notifyListeners();
   }
 
-  /// ✅ Toggle favorite locally
-  Future<void> toggleFavorite(int id) async {
+  /// ✅ Toggle favorite locally with notification
+  Future<void> toggleFavorite(int id, BuildContext context) async {
+    bool added;
     if (_favorites.contains(id)) {
       _favorites.remove(id);
+      added = false;
       debugPrint('💔 Removed $id from favorites');
     } else {
       _favorites.add(id);
+      added = true;
       debugPrint('❤️ Added $id to favorites');
     }
     await _saveToPrefs();
+    _showSnackBar(context, added ? "Added to favorites" : "Removed from favorites", added ? Colors.green : Colors.red);
     notifyListeners();
   }
 
-  /// ✅ Toggle favorite with API
-  Future<bool> toggleFavoriteWithApi(int id, String token) async {
+  /// ✅ Toggle favorite with API and show notification
+  Future<bool> toggleFavoriteWithApi(int id, String token, BuildContext context) async {
     final url = Uri.parse('https://akarat.com/api/toggle-saved-property');
     try {
       final response = await http.post(
@@ -68,20 +69,20 @@ class FavoriteProvider with ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        // Update local state if API succeeds
-        await toggleFavorite(id);
+        await toggleFavorite(id, context);
         return true;
       } else {
         debugPrint("❌ API Failed: ${response.statusCode}");
+        _showSnackBar(context, "Failed to update favorites", Colors.red);
         return false;
       }
     } catch (e) {
       debugPrint("🚨 API Error: $e");
+      _showSnackBar(context, "Error updating favorites", Colors.red);
       return false;
     }
   }
 
-  /// ✅ Clear all favorites
   Future<void> clearFavorites() async {
     _favorites.clear();
     await _saveToPrefs();
@@ -89,7 +90,6 @@ class FavoriteProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// ✅ Save to SharedPreferences
   Future<void> _saveToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
@@ -98,9 +98,28 @@ class FavoriteProvider with ChangeNotifier {
     );
   }
 
-  /// ✅ Number of favorites (used for badge or indicator)
   int get favoriteCount => _favorites.length;
 
-  /// Optional: expose all favorites
   Set<int> get allFavorites => _favorites;
+
+  /// 🔔 Show global notification
+  void _showSnackBar(BuildContext context, String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              color == Colors.green ? Icons.favorite : Icons.favorite_border,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 10),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 }
