@@ -19,6 +19,8 @@ import '../secure_storage.dart';
 import 'favorite.dart';
 import 'login.dart';
 import 'login_page.dart';
+import 'package:Akarat/screen/main_screen.dart'; // <-- add this import
+
 
 class My_Account extends StatefulWidget {
   const My_Account({super.key});
@@ -106,7 +108,7 @@ class _My_AccountState extends State<My_Account> {
 
 
     return Scaffold(
-      bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
+      // bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
       backgroundColor: Colors.white,
       body: FutureBuilder<String?>(
         future: SecureStorage.getToken(),
@@ -292,22 +294,32 @@ class _My_AccountState extends State<My_Account> {
       children: [
         _settingsContainer([
           _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => FindAgentDemo()));
+            MainScreen.changeTab?.call(0);  // Switch to Home tab
+            MainScreen.switchToHomeAndPush(FindAgentDemo());
           }),
+
+
+
           _settingsTile("Favorites", "assets/images/favourites.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => Favorite()));
+            MainScreen.changeTab?.call(0);
+            MainScreen.switchToHomeAndPush(Fav_Logout());
+
           }),
           _settingsTile("About Us", "assets/images/about.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => About_Us()));
+            MainScreen.changeTab?.call(0);
+            MainScreen.switchToHomeAndPush(About_Us());
           }),
           _settingsTile("Support", "assets/images/support.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => Support()));
+            MainScreen.changeTab?.call(0);
+            MainScreen.switchToHomeAndPush(Support());
           }),
           _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => Privacy()));
+            MainScreen.changeTab?.call(0);
+            MainScreen.switchToHomeAndPush(Privacy());
           }),
           _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => TermsCondition()));
+            MainScreen.changeTab?.call(0);
+            MainScreen.switchToHomeAndPush(TermsCondition());
           }),
         ]),
         _settingsContainer(isLoggedIn
@@ -363,100 +375,100 @@ class _My_AccountState extends State<My_Account> {
     );
   }
 
-  Container buildMyNavBar(BuildContext context) {
-    return Container(
-      height: 50,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Home())),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Image.asset("assets/images/home.png", height: 25),
-            ),
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () async {
-              final token = await SecureStorage.getToken();
-              if (token == null || token.isEmpty) {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white,
-                    title: const Text("Login Required"),
-                    content: const Text("Please login to access favorites."),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
-                        },
-                        child: const Text("Login", style: TextStyle(color: Colors.red)),
-                      ),
-                    ],
-                  ),
-                );
-              } else {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => Fav_Logout()));
-              }
-            },
-            icon: pageIndex == 2
-                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
-          ),
-          IconButton(
-            tooltip: "Email",
-            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
-            onPressed: () async {
-              final Uri emailUri = Uri.parse(
-                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
-              );
-
-              if (await canLaunchUrl(emailUri)) {
-                await launchUrl(emailUri);
-              } else {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white, // White dialog container
-                    title: const Text(
-                      'Email not available',
-                      style: TextStyle(color: Colors.black), // Title in black
-                    ),
-                    content: const Text(
-                      'No email app is configured on this device. Please add a mail account first.',
-                      style: TextStyle(color: Colors.black), // Content in black
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          'OK',
-                          style: TextStyle(color: Colors.red), // Red "OK" text
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-            },
-          ),
-
-          const Padding(
-            padding: EdgeInsets.only(right: 20.0),
-            child: Icon(Icons.dehaze, color: Colors.red, size: 35),
-          ),
-        ],
-      ),
-    );
-  }
+  // Container buildMyNavBar(BuildContext context) {
+  //   return Container(
+  //     height: 50,
+  //     decoration: const BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+  //     ),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: [
+  //         GestureDetector(
+  //           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Home())),
+  //           child: Padding(
+  //             padding: const EdgeInsets.symmetric(horizontal: 20.0),
+  //             child: Image.asset("assets/images/home.png", height: 25),
+  //           ),
+  //         ),
+  //         IconButton(
+  //           enableFeedback: false,
+  //           onPressed: () async {
+  //             final token = await SecureStorage.getToken();
+  //             if (token == null || token.isEmpty) {
+  //               showDialog(
+  //                 context: context,
+  //                 builder: (context) => AlertDialog(
+  //                   backgroundColor: Colors.white,
+  //                   title: const Text("Login Required"),
+  //                   content: const Text("Please login to access favorites."),
+  //                   actions: [
+  //                     TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+  //                     TextButton(
+  //                       onPressed: () {
+  //                         Navigator.pop(context);
+  //                         Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
+  //                       },
+  //                       child: const Text("Login", style: TextStyle(color: Colors.red)),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               );
+  //             } else {
+  //               Navigator.push(context, MaterialPageRoute(builder: (context) => Fav_Logout()));
+  //             }
+  //           },
+  //           icon: pageIndex == 2
+  //               ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+  //               : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+  //         ),
+  //         IconButton(
+  //           tooltip: "Email",
+  //           icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+  //           onPressed: () async {
+  //             final Uri emailUri = Uri.parse(
+  //               'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+  //             );
+  //
+  //             if (await canLaunchUrl(emailUri)) {
+  //               await launchUrl(emailUri);
+  //             } else {
+  //               showDialog(
+  //                 context: context,
+  //                 builder: (context) => AlertDialog(
+  //                   backgroundColor: Colors.white, // White dialog container
+  //                   title: const Text(
+  //                     'Email not available',
+  //                     style: TextStyle(color: Colors.black), // Title in black
+  //                   ),
+  //                   content: const Text(
+  //                     'No email app is configured on this device. Please add a mail account first.',
+  //                     style: TextStyle(color: Colors.black), // Content in black
+  //                   ),
+  //                   actions: [
+  //                     TextButton(
+  //                       onPressed: () => Navigator.pop(context),
+  //                       child: const Text(
+  //                         'OK',
+  //                         style: TextStyle(color: Colors.red), // Red "OK" text
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               );
+  //             }
+  //           },
+  //         ),
+  //
+  //         const Padding(
+  //           padding: EdgeInsets.only(right: 20.0),
+  //           child: Icon(Icons.dehaze, color: Colors.red, size: 35),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _settingsTile(String title, String iconPath, VoidCallback onTap) {
     return GestureDetector(

@@ -1,3 +1,4 @@
+import 'package:Akarat/screen/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -40,7 +41,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const Home(), // 👈 Initial screen (you can change to New_Projects() if needed)
+      home: const MainScreen(),
+// 👈 Initial screen (you can change to New_Projects() if needed)
       routes: {
         '/login': (context) => const Login(),
         '/register': (context) => RegisterScreen(),
@@ -58,7 +60,8 @@ class MyApp extends StatelessWidget {
             token: args['token'] ?? '',
           );
         },
-        '/new-projects': (context) => const New_Projects(), // ✅ Optional: add named route
+        '/new-projects': (context) => const New_ProjectsDemo(),
+
       },
     );
   }

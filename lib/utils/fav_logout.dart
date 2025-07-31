@@ -151,6 +151,14 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     _fetchSavedProperties();
   }
 
+
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    refreshFavorites();  // 🔄 auto-refresh when screen is revisited
+  }
+
   Future<void> _fetchSavedProperties() async {
     token = await SecureStorage.getToken();
 
@@ -196,6 +204,11 @@ class _Fav_LogoutState extends State<Fav_Logout> {
   }
 
 
+  Future<void> refreshFavorites() async {
+    await _fetchSavedProperties();
+  }
+
+
 
   Future<bool> _urlExists(String url) async {
     try {
@@ -222,180 +235,180 @@ class _Fav_LogoutState extends State<Fav_Logout> {
   }
 
 
-  Container buildMyNavBar(BuildContext context) {
-    return Container(
-      height: 120,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.popUntil(context, (route) => route.isFirst);
-            },
-
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Image.asset("assets/images/home.png", height: 25),
-            ),
-          ),
-
-          IconButton(
-            enableFeedback: false,
-            onPressed: () async {
-              final token = await SecureStorage.getToken();
-
-              if (token == null || token.isEmpty) {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white, // white container
-                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          "Cancel",
-                          style: TextStyle(color: Colors.red), // red text
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const LoginDemo()),
-                          );
-                        },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(color: Colors.red), // red text
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-              else {
-                // ✅ Logged in – go to favorites
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const Fav_Logout()),
-                ).then((_) async {
-                  // 🔁 Re-sync when coming back
-                  final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
-                  setState(() {
-                    FavoriteService.loggedInFavorites = updatedFavorites;
-                  });
-                });
-
-              }
-            },
-            icon: pageIndex == 2
-                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
-          ),
-
-
-
-          IconButton(
-            tooltip: "Email",
-
-            icon: const Icon(Icons.email_outlined, color: Colors.red,
-              size: 28,),
-
-            onPressed: () async {
-              final Uri emailUri = Uri.parse(
-                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
-              );
-
-              if (await canLaunchUrl(emailUri)) {
-                await launchUrl(emailUri);
-              } else {
-                showDialog(
-                  context: context,
-                  builder: (context) => Dialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16), // Rounded corners
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white, // White background
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            'Email not available',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'No email app is configured on this device. Please add a mail account first.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 14),
-                          ),
-                          const SizedBox(height: 20),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text(
-                                'OK',
-                                style: TextStyle(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-
-              }
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
-            child: IconButton(
-              enableFeedback: false,
-              onPressed: () {
-                setState(() {
-                  if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  } else {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  }
-                });
-              },
-
-
-              icon: pageIndex == 3
-                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
-            ),
-          ),
-        ],
-      ),
-
-    );
-  }
+  // Container buildMyNavBar(BuildContext context) {
+  //   return Container(
+  //     height: 120,
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: const BorderRadius.only(
+  //         topLeft: Radius.circular(20),
+  //         topRight: Radius.circular(20),
+  //       ),
+  //     ),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+  //       crossAxisAlignment: CrossAxisAlignment.center,
+  //       children: [
+  //         GestureDetector(
+  //           onTap: () {
+  //             Navigator.popUntil(context, (route) => route.isFirst);
+  //           },
+  //
+  //           child: Padding(
+  //             padding: const EdgeInsets.symmetric(horizontal: 20.0),
+  //             child: Image.asset("assets/images/home.png", height: 25),
+  //           ),
+  //         ),
+  //
+  //         IconButton(
+  //           enableFeedback: false,
+  //           onPressed: () async {
+  //             final token = await SecureStorage.getToken();
+  //
+  //             if (token == null || token.isEmpty) {
+  //               showDialog(
+  //                 context: context,
+  //                 builder: (context) => AlertDialog(
+  //                   backgroundColor: Colors.white, // white container
+  //                   title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+  //                   content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+  //                   actions: [
+  //                     TextButton(
+  //                       onPressed: () => Navigator.pop(context),
+  //                       child: const Text(
+  //                         "Cancel",
+  //                         style: TextStyle(color: Colors.red), // red text
+  //                       ),
+  //                     ),
+  //                     TextButton(
+  //                       onPressed: () {
+  //                         Navigator.pop(context);
+  //                         Navigator.push(
+  //                           context,
+  //                           MaterialPageRoute(builder: (_) => const LoginDemo()),
+  //                         );
+  //                       },
+  //                       child: const Text(
+  //                         "Login",
+  //                         style: TextStyle(color: Colors.red), // red text
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               );
+  //             }
+  //             else {
+  //               // ✅ Logged in – go to favorites
+  //               Navigator.push(
+  //                 context,
+  //                 MaterialPageRoute(builder: (_) => const Fav_Logout()),
+  //               ).then((_) async {
+  //                 // 🔁 Re-sync when coming back
+  //                 final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
+  //                 setState(() {
+  //                   FavoriteService.loggedInFavorites = updatedFavorites;
+  //                 });
+  //               });
+  //
+  //             }
+  //           },
+  //           icon: pageIndex == 2
+  //               ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+  //               : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+  //         ),
+  //
+  //
+  //
+  //         IconButton(
+  //           tooltip: "Email",
+  //
+  //           icon: const Icon(Icons.email_outlined, color: Colors.red,
+  //             size: 28,),
+  //
+  //           onPressed: () async {
+  //             final Uri emailUri = Uri.parse(
+  //               'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+  //             );
+  //
+  //             if (await canLaunchUrl(emailUri)) {
+  //               await launchUrl(emailUri);
+  //             } else {
+  //               showDialog(
+  //                 context: context,
+  //                 builder: (context) => Dialog(
+  //                   shape: RoundedRectangleBorder(
+  //                     borderRadius: BorderRadius.circular(16), // Rounded corners
+  //                   ),
+  //                   child: Container(
+  //                     padding: const EdgeInsets.all(20),
+  //                     decoration: BoxDecoration(
+  //                       color: Colors.white, // White background
+  //                       borderRadius: BorderRadius.circular(16),
+  //                     ),
+  //                     child: Column(
+  //                       mainAxisSize: MainAxisSize.min,
+  //                       children: [
+  //                         const Text(
+  //                           'Email not available',
+  //                           style: TextStyle(
+  //                             fontSize: 18,
+  //                             fontWeight: FontWeight.bold,
+  //                           ),
+  //                         ),
+  //                         const SizedBox(height: 12),
+  //                         const Text(
+  //                           'No email app is configured on this device. Please add a mail account first.',
+  //                           textAlign: TextAlign.center,
+  //                           style: TextStyle(fontSize: 14),
+  //                         ),
+  //                         const SizedBox(height: 20),
+  //                         Align(
+  //                           alignment: Alignment.centerRight,
+  //                           child: TextButton(
+  //                             onPressed: () => Navigator.pop(context),
+  //                             child: const Text(
+  //                               'OK',
+  //                               style: TextStyle(
+  //                                 color: Colors.red,
+  //                                 fontWeight: FontWeight.bold,
+  //                               ),
+  //                             ),
+  //                           ),
+  //                         ),
+  //                       ],
+  //                     ),
+  //                   ),
+  //                 ),
+  //               );
+  //
+  //             }
+  //           },
+  //         ),
+  //         Padding(
+  //           padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+  //           child: IconButton(
+  //             enableFeedback: false,
+  //             onPressed: () {
+  //               setState(() {
+  //                 if (token == '') {
+  //                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+  //                 } else {
+  //                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+  //                 }
+  //               });
+  //             },
+  //
+  //
+  //             icon: pageIndex == 3
+  //                 ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+  //                 : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -793,7 +806,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
         },
       ),
 
-      bottomNavigationBar: buildMyNavBar(context),
+      // bottomNavigationBar: buildMyNavBar(context),
 
     );
 

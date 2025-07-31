@@ -176,7 +176,7 @@ class _Product_DetailState extends State<Product_Detail> {
     final double longitude = double.tryParse(lngStr ?? '') ?? 55.2030;
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
+      // bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(30.0),
         child: AppBar(
@@ -1344,184 +1344,184 @@ class _Product_DetailState extends State<Product_Detail> {
     );
   }
 
-  Container buildMyNavBar(BuildContext context) {
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          GestureDetector(
-              onTap: () async {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Home()));
-              },
-              child: Image.asset("assets/images/home.png", height: 22)),
-          Container(
-              margin: const EdgeInsets.only(left: 40),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(0.5, 0.5),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ),
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ),
-                ],
-              ),
-              child: GestureDetector(
-                  onTap: () async {
-                    final phone = whatsAppNumber(productModels!.data!.phoneNumber ?? '');
-                    final message = Uri.encodeComponent("Hello");
-                    final waUrl = Uri.parse("https://wa.me/$phone?text=$message");
-
-                    if (await canLaunchUrl(waUrl)) {
-                      try {
-                        final launched = await launchUrl(
-                          waUrl,
-                          mode: LaunchMode.externalApplication, // 💥 critical on Android 15
-                        );
-
-                        if (!launched) {
-                          print("❌ Could not launch WhatsApp");
-                        }
-                      } catch (e) {
-                        print("❌ Exception: $e");
-                      }
-                    } else {
-                      print("❌ WhatsApp not available or URL not supported");
-                    }
-                  },
-                  child: Icon(Icons.call_outlined, color: Colors.red))),
-          Container(
-              margin: const EdgeInsets.only(left: 1),
-              height: 35,
-              width: 35,
-              padding: const EdgeInsets.only(top: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: const Offset(0.5, 0.5),
-                    blurRadius: 1.0,
-                    spreadRadius: 0.5,
-                  ),
-                  BoxShadow(
-                    color: Colors.white,
-                    offset: const Offset(0.0, 0.0),
-                    blurRadius: 0.0,
-                    spreadRadius: 0.0,
-                  ),
-                ],
-              ),
-    child: GestureDetector(
-    onTap: () async {
-    // Sanitize the phone number!
-    final phoneRaw = productModels!.data!.whatsapp ?? '';
-    final phone = whatsAppNumber(phoneRaw); // always in 971XXXXXXXXX
-    final message = Uri.encodeComponent("Hello");
-    final waUrl = Uri.parse("https://wa.me/$phone?text=$message"); // CORRECT format
-
-    if (await canLaunchUrl(waUrl)) {
-    try {
-    final launched = await launchUrl(
-    waUrl,
-    mode: LaunchMode.externalApplication,
-    );
-    if (!launched) {
-    print("❌ Could not launch WhatsApp");
-    }
-    } catch (e) {
-    print("❌ Exception: $e");
-    }
-    } else {
-    print("❌ WhatsApp not available or URL not supported");
-    }
-    },
-
-                  child: Image.asset("assets/images/whats.png", height: 20))),
-          // Container(
-          //     margin: const EdgeInsets.only(left: 1, right: 40),
-          //     height: 35,
-          //     width: 35,
-          //     padding: const EdgeInsets.only(top: 2),
-          //     decoration: BoxDecoration(
-          //       borderRadius: BorderRadiusDirectional.circular(20.0),
-          //       boxShadow: [
-          //         BoxShadow(
-          //           color: Colors.grey,
-          //           offset: const Offset(0.5, 0.5),
-          //           blurRadius: 1.0,
-          //           spreadRadius: 0.5,
-          //         ),
-          //         BoxShadow(
-          //           color: Colors.white,
-          //           offset: const Offset(0.0, 0.0),
-          //           blurRadius: 0.0,
-          //           spreadRadius: 0.0,
-          //         ),
-          //       ],
-          //     ),
-          //     child: GestureDetector(
-          //         onTap: () async {
-          //           final Uri emailUri = Uri(
-          //             scheme: 'mailto',
-          //             path: '${productModels!.data!.email}',
-          //             query: 'subject=Property Inquiry&body=Hi, I saw your property on Akarat.',
-          //           );
-          //           if (await canLaunchUrl(emailUri)) {
-          //             await launchUrl(emailUri);
-          //           } else {
-          //             throw 'Could not launch $emailUri';
-          //           }
-          //         },
-          //         child: Icon(Icons.mail, color: Colors.red))),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-                }
-                else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                }
-              });
-            },
-            icon: pageIndex == 3
-                ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
-                : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Container buildMyNavBar(BuildContext context) {
+  //   return Container(
+  //     height: 40,
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: const BorderRadius.only(
+  //         topLeft: Radius.circular(20),
+  //         topRight: Radius.circular(20),
+  //       ),
+  //     ),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //       children: [
+  //         GestureDetector(
+  //             onTap: () async {
+  //               Navigator.push(context,
+  //                   MaterialPageRoute(builder: (context) => Home()));
+  //             },
+  //             child: Image.asset("assets/images/home.png", height: 22)),
+  //         Container(
+  //             margin: const EdgeInsets.only(left: 40),
+  //             height: 35,
+  //             width: 35,
+  //             padding: const EdgeInsets.only(top: 2),
+  //             decoration: BoxDecoration(
+  //               borderRadius: BorderRadiusDirectional.circular(20.0),
+  //               boxShadow: [
+  //                 BoxShadow(
+  //                   color: Colors.grey,
+  //                   offset: const Offset(0.5, 0.5),
+  //                   blurRadius: 1.0,
+  //                   spreadRadius: 0.5,
+  //                 ),
+  //                 BoxShadow(
+  //                   color: Colors.white,
+  //                   offset: const Offset(0.0, 0.0),
+  //                   blurRadius: 0.0,
+  //                   spreadRadius: 0.0,
+  //                 ),
+  //               ],
+  //             ),
+  //             child: GestureDetector(
+  //                 onTap: () async {
+  //                   final phone = whatsAppNumber(productModels!.data!.phoneNumber ?? '');
+  //                   final message = Uri.encodeComponent("Hello");
+  //                   final waUrl = Uri.parse("https://wa.me/$phone?text=$message");
+  //
+  //                   if (await canLaunchUrl(waUrl)) {
+  //                     try {
+  //                       final launched = await launchUrl(
+  //                         waUrl,
+  //                         mode: LaunchMode.externalApplication, // 💥 critical on Android 15
+  //                       );
+  //
+  //                       if (!launched) {
+  //                         print("❌ Could not launch WhatsApp");
+  //                       }
+  //                     } catch (e) {
+  //                       print("❌ Exception: $e");
+  //                     }
+  //                   } else {
+  //                     print("❌ WhatsApp not available or URL not supported");
+  //                   }
+  //                 },
+  //                 child: Icon(Icons.call_outlined, color: Colors.red))),
+  //         Container(
+  //             margin: const EdgeInsets.only(left: 1),
+  //             height: 35,
+  //             width: 35,
+  //             padding: const EdgeInsets.only(top: 2),
+  //             decoration: BoxDecoration(
+  //               borderRadius: BorderRadiusDirectional.circular(20.0),
+  //               boxShadow: [
+  //                 BoxShadow(
+  //                   color: Colors.grey,
+  //                   offset: const Offset(0.5, 0.5),
+  //                   blurRadius: 1.0,
+  //                   spreadRadius: 0.5,
+  //                 ),
+  //                 BoxShadow(
+  //                   color: Colors.white,
+  //                   offset: const Offset(0.0, 0.0),
+  //                   blurRadius: 0.0,
+  //                   spreadRadius: 0.0,
+  //                 ),
+  //               ],
+  //             ),
+  //   child: GestureDetector(
+  //   onTap: () async {
+  //   // Sanitize the phone number!
+  //   final phoneRaw = productModels!.data!.whatsapp ?? '';
+  //   final phone = whatsAppNumber(phoneRaw); // always in 971XXXXXXXXX
+  //   final message = Uri.encodeComponent("Hello");
+  //   final waUrl = Uri.parse("https://wa.me/$phone?text=$message"); // CORRECT format
+  //
+  //   if (await canLaunchUrl(waUrl)) {
+  //   try {
+  //   final launched = await launchUrl(
+  //   waUrl,
+  //   mode: LaunchMode.externalApplication,
+  //   );
+  //   if (!launched) {
+  //   print("❌ Could not launch WhatsApp");
+  //   }
+  //   } catch (e) {
+  //   print("❌ Exception: $e");
+  //   }
+  //   } else {
+  //   print("❌ WhatsApp not available or URL not supported");
+  //   }
+  //   },
+  //
+  //                 child: Image.asset("assets/images/whats.png", height: 20))),
+  //         // Container(
+  //         //     margin: const EdgeInsets.only(left: 1, right: 40),
+  //         //     height: 35,
+  //         //     width: 35,
+  //         //     padding: const EdgeInsets.only(top: 2),
+  //         //     decoration: BoxDecoration(
+  //         //       borderRadius: BorderRadiusDirectional.circular(20.0),
+  //         //       boxShadow: [
+  //         //         BoxShadow(
+  //         //           color: Colors.grey,
+  //         //           offset: const Offset(0.5, 0.5),
+  //         //           blurRadius: 1.0,
+  //         //           spreadRadius: 0.5,
+  //         //         ),
+  //         //         BoxShadow(
+  //         //           color: Colors.white,
+  //         //           offset: const Offset(0.0, 0.0),
+  //         //           blurRadius: 0.0,
+  //         //           spreadRadius: 0.0,
+  //         //         ),
+  //         //       ],
+  //         //     ),
+  //         //     child: GestureDetector(
+  //         //         onTap: () async {
+  //         //           final Uri emailUri = Uri(
+  //         //             scheme: 'mailto',
+  //         //             path: '${productModels!.data!.email}',
+  //         //             query: 'subject=Property Inquiry&body=Hi, I saw your property on Akarat.',
+  //         //           );
+  //         //           if (await canLaunchUrl(emailUri)) {
+  //         //             await launchUrl(emailUri);
+  //         //           } else {
+  //         //             throw 'Could not launch $emailUri';
+  //         //           }
+  //         //         },
+  //         //         child: Icon(Icons.mail, color: Colors.red))),
+  //         IconButton(
+  //           enableFeedback: false,
+  //           onPressed: () {
+  //             setState(() {
+  //               if(token == ''){
+  //                 Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+  //               }
+  //               else{
+  //                 Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+  //
+  //               }
+  //             });
+  //           },
+  //           icon: pageIndex == 3
+  //               ? const Icon(
+  //             Icons.dehaze,
+  //             color: Colors.red,
+  //             size: 35,
+  //           )
+  //               : const Icon(
+  //             Icons.dehaze_outlined,
+  //             color: Colors.red,
+  //             size: 35,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
 
 BoxDecoration _iconBoxDecoration() {

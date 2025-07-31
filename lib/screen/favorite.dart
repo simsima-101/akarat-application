@@ -79,50 +79,50 @@ class _FavoriteState extends State<Favorite> {
   }
 
   // <--- buildMyNavBar INSIDE the class
-  Container buildMyNavBar(BuildContext context) {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          GestureDetector(
-            onTap: () async {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Image.asset("assets/images/home.png", height: 25),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
-            child: IconButton(
-              enableFeedback: false,
-              onPressed: () {
-                setState(() {
-                  if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  } else {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  }
-                });
-              },
-              icon: pageIndex == 3
-                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
-            ),
-          ),
-        ],
-      ),
-
-    );
-  }
+  // Container buildMyNavBar(BuildContext context) {
+  //   return Container(
+  //     height: 50,
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: const BorderRadius.only(
+  //         topLeft: Radius.circular(20),
+  //         topRight: Radius.circular(20),
+  //       ),
+  //     ),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+  //       crossAxisAlignment: CrossAxisAlignment.center,
+  //       children: [
+  //         GestureDetector(
+  //           onTap: () async {
+  //             Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+  //           },
+  //           child: Padding(
+  //             padding: const EdgeInsets.symmetric(horizontal: 20.0),
+  //             child: Image.asset("assets/images/home.png", height: 25),
+  //           ),
+  //         ),
+  //         Padding(
+  //           padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+  //           child: IconButton(
+  //             enableFeedback: false,
+  //             onPressed: () {
+  //               setState(() {
+  //                 if (token == '') {
+  //                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+  //                 } else {
+  //                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+  //                 }
+  //               });
+  //             },
+  //             icon: pageIndex == 3
+  //                 ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+  //                 : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //
+  //   );
+  // }
 }

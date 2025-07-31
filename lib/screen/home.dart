@@ -689,7 +689,7 @@ class _MyHomePageState extends State<HomeDemo> {
         onWillPop: _onWillPop,
         child: Scaffold(
           // appBar: AppBar(),
-          bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+          // bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
           //body: pages[pageIndex],
           backgroundColor: Colors.white,
           body:
@@ -1043,10 +1043,15 @@ class _MyHomePageState extends State<HomeDemo> {
                                 ),
                                 //logo2
                                 GestureDetector(
-                                  onTap: (){
-                                    // purpose=""
-                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> New_Projects()));
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const New_ProjectsDemo(), // ✅ Use the demo screen
+                                      ),
+                                    );
                                   },
+
                                   child:
                                   Padding(
                                     padding: const EdgeInsets.all(5),
@@ -1269,9 +1274,15 @@ class _MyHomePageState extends State<HomeDemo> {
                                 left: 10.0, right: 10.0, top: 20.0, bottom: 0),
                             child:
                             GestureDetector(
-                              onTap: ()async{
-                                Navigator.push(context, MaterialPageRoute(builder: (context)=> New_Projects()));
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const New_ProjectsDemo(), // ✅ Use the demo screen
+                                  ),
+                                );
                               },
+
                               child: Container(
                                 width: screenSize.width * 1.0,
                                 height: 150,
@@ -1705,6 +1716,8 @@ class _MyHomePageState extends State<HomeDemo> {
 
                                                                   // ✅ Use Provider's API-integrated method
                                                                   final success = await favProvider.toggleFavoriteWithApi(item.id!, token, context);
+                                                                  Provider.of<FavoriteProvider>(context, listen: false).loadFavorites();
+
 
                                                                   if (!success) {
                                                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -2012,151 +2025,151 @@ class _MyHomePageState extends State<HomeDemo> {
         )
     );
   }
-  Container buildMyNavBar(BuildContext context) {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.popUntil(context, (route) => route.isFirst);
-            },
-
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Image.asset("assets/images/home.png", height: 25),
-            ),
-          ),
-
-          IconButton(
-            enableFeedback: false,
-            onPressed: () async {
-              final token = await SecureStorage.getToken();
-
-              if (token == null || token.isEmpty) {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white, // white container
-                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          "Cancel",
-                          style: TextStyle(color: Colors.red), // red text
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const LoginDemo()),
-                          );
-                        },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(color: Colors.red), // red text
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-              else {
-                // ✅ Logged in – go to favorites
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const Fav_Logout()),
-                ).then((_) async {
-                  // 🔁 Re-sync when coming back
-                  final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
-                  setState(() {
-                    FavoriteService.loggedInFavorites = updatedFavorites;
-                  });
-                });
-
-              }
-            },
-            icon: pageIndex == 2
-                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
-          ),
-
-
-
-          IconButton(
-            tooltip: "Email",
-            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
-            onPressed: () async {
-              final Uri emailUri = Uri.parse(
-                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
-              );
-
-              if (await canLaunchUrl(emailUri)) {
-                await launchUrl(emailUri);
-              } else {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white, // White dialog container
-                    title: const Text(
-                      'Email not available',
-                      style: TextStyle(color: Colors.black), // Title in black
-                    ),
-                    content: const Text(
-                      'No email app is configured on this device. Please add a mail account first.',
-                      style: TextStyle(color: Colors.black), // Content in black
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          'OK',
-                          style: TextStyle(color: Colors.red), // Red "OK" text
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-            },
-          ),
-
-          Padding(
-            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
-            child: IconButton(
-              enableFeedback: false,
-              onPressed: () {
-                setState(() {
-                  if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  } else {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  }
-                });
-              },
-
-
-              icon: pageIndex == 3
-                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
-            ),
-          ),
-        ],
-      ),
-
-    );
-  }
+  // Container buildMyNavBar(BuildContext context) {
+  //   return Container(
+  //     height: 50,
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: const BorderRadius.only(
+  //         topLeft: Radius.circular(20),
+  //         topRight: Radius.circular(20),
+  //       ),
+  //     ),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+  //       crossAxisAlignment: CrossAxisAlignment.center,
+  //       children: [
+  //         GestureDetector(
+  //           onTap: () {
+  //             Navigator.popUntil(context, (route) => route.isFirst);
+  //           },
+  //
+  //           child: Padding(
+  //             padding: const EdgeInsets.symmetric(horizontal: 20.0),
+  //             child: Image.asset("assets/images/home.png", height: 25),
+  //           ),
+  //         ),
+  //
+  //         IconButton(
+  //           enableFeedback: false,
+  //           onPressed: () async {
+  //             final token = await SecureStorage.getToken();
+  //
+  //             if (token == null || token.isEmpty) {
+  //               showDialog(
+  //                 context: context,
+  //                 builder: (context) => AlertDialog(
+  //                   backgroundColor: Colors.white, // white container
+  //                   title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+  //                   content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+  //                   actions: [
+  //                     TextButton(
+  //                       onPressed: () => Navigator.pop(context),
+  //                       child: const Text(
+  //                         "Cancel",
+  //                         style: TextStyle(color: Colors.red), // red text
+  //                       ),
+  //                     ),
+  //                     TextButton(
+  //                       onPressed: () {
+  //                         Navigator.pop(context);
+  //                         Navigator.push(
+  //                           context,
+  //                           MaterialPageRoute(builder: (_) => const LoginDemo()),
+  //                         );
+  //                       },
+  //                       child: const Text(
+  //                         "Login",
+  //                         style: TextStyle(color: Colors.red), // red text
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               );
+  //             }
+  //             else {
+  //               // ✅ Logged in – go to favorites
+  //               Navigator.push(
+  //                 context,
+  //                 MaterialPageRoute(builder: (_) => const Fav_Logout()),
+  //               ).then((_) async {
+  //                 // 🔁 Re-sync when coming back
+  //                 final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
+  //                 setState(() {
+  //                   FavoriteService.loggedInFavorites = updatedFavorites;
+  //                 });
+  //               });
+  //
+  //             }
+  //           },
+  //           icon: pageIndex == 2
+  //               ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+  //               : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+  //         ),
+  //
+  //
+  //
+  //         IconButton(
+  //           tooltip: "Email",
+  //           icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+  //           onPressed: () async {
+  //             final Uri emailUri = Uri.parse(
+  //               'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+  //             );
+  //
+  //             if (await canLaunchUrl(emailUri)) {
+  //               await launchUrl(emailUri);
+  //             } else {
+  //               showDialog(
+  //                 context: context,
+  //                 builder: (context) => AlertDialog(
+  //                   backgroundColor: Colors.white, // White dialog container
+  //                   title: const Text(
+  //                     'Email not available',
+  //                     style: TextStyle(color: Colors.black), // Title in black
+  //                   ),
+  //                   content: const Text(
+  //                     'No email app is configured on this device. Please add a mail account first.',
+  //                     style: TextStyle(color: Colors.black), // Content in black
+  //                   ),
+  //                   actions: [
+  //                     TextButton(
+  //                       onPressed: () => Navigator.pop(context),
+  //                       child: const Text(
+  //                         'OK',
+  //                         style: TextStyle(color: Colors.red), // Red "OK" text
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               );
+  //             }
+  //           },
+  //         ),
+  //
+  //         Padding(
+  //           padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+  //           child: IconButton(
+  //             enableFeedback: false,
+  //             onPressed: () {
+  //               setState(() {
+  //                 if (token == '') {
+  //                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+  //                 } else {
+  //                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+  //                 }
+  //               });
+  //             },
+  //
+  //
+  //             icon: pageIndex == 3
+  //                 ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+  //                 : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //
+  //   );
+  // }
 }

@@ -506,7 +506,7 @@ class _SearchState extends State<Search> {
     }
 
     return Scaffold(
-        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+        // bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         backgroundColor: Colors.white,
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(30.0),
@@ -1843,98 +1843,98 @@ class _SearchState extends State<Search> {
     );
   }
 
-  Container buildMyNavBar(BuildContext context) {
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          GestureDetector(
-              onTap: ()async{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-              },
-              child: Image.asset("assets/images/home.png",height: 25,)),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: "Rent")));
-
-              });
-            },
-            icon: pageIndex == 1
-                ? const Icon(
-              Icons.search,
-              color: Colors.red,
-              size: 30,
-            )
-                : const Icon(
-              Icons.search_outlined,
-              color: Colors.red,
-              size: 30,
-            ),
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-                }
-                else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                }
-              });
-            },
-            icon: pageIndex == 2
-                ? const Icon(
-              Icons.favorite,
-              color: Colors.red,
-              size: 30,
-            )
-                : const Icon(
-              Icons.favorite_border_outlined,
-              color: Colors.red,
-              size: 30,
-            ),
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-                }
-                else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
-                }
-              });
-            },
-            icon: pageIndex == 3
-                ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 30,
-            )
-                : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 30,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Container buildMyNavBar(BuildContext context) {
+  //   return Container(
+  //     height: 40,
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: const BorderRadius.only(
+  //         topLeft: Radius.circular(20),
+  //         topRight: Radius.circular(20),
+  //       ),
+  //     ),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //       children: [
+  //         GestureDetector(
+  //             onTap: ()async{
+  //               Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+  //             },
+  //             child: Image.asset("assets/images/home.png",height: 25,)),
+  //         IconButton(
+  //           enableFeedback: false,
+  //           onPressed: () {
+  //             setState(() {
+  //               Navigator.push(context, MaterialPageRoute(builder: (context)=> Filter(data: "Rent")));
+  //
+  //             });
+  //           },
+  //           icon: pageIndex == 1
+  //               ? const Icon(
+  //             Icons.search,
+  //             color: Colors.red,
+  //             size: 30,
+  //           )
+  //               : const Icon(
+  //             Icons.search_outlined,
+  //             color: Colors.red,
+  //             size: 30,
+  //           ),
+  //         ),
+  //         IconButton(
+  //           enableFeedback: false,
+  //           onPressed: () {
+  //             setState(() {
+  //               if(token == ''){
+  //                 Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+  //               }
+  //               else{
+  //                 Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+  //
+  //               }
+  //             });
+  //           },
+  //           icon: pageIndex == 2
+  //               ? const Icon(
+  //             Icons.favorite,
+  //             color: Colors.red,
+  //             size: 30,
+  //           )
+  //               : const Icon(
+  //             Icons.favorite_border_outlined,
+  //             color: Colors.red,
+  //             size: 30,
+  //           ),
+  //         ),
+  //         IconButton(
+  //           enableFeedback: false,
+  //           onPressed: () {
+  //             setState(() {
+  //               if(token == ''){
+  //                 Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+  //               }
+  //               else{
+  //                 Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+  //
+  //               }
+  //             });
+  //           },
+  //           icon: pageIndex == 3
+  //               ? const Icon(
+  //             Icons.dehaze,
+  //             color: Colors.red,
+  //             size: 30,
+  //           )
+  //               : const Icon(
+  //             Icons.dehaze_outlined,
+  //             color: Colors.red,
+  //             size: 30,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
 Widget _rangeDisplayBox(String value) {
   return Container(
