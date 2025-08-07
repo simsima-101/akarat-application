@@ -185,7 +185,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
           final property = Property.fromJson(e);
           final intId = int.tryParse(property.id ?? '');
           if (intId != null) {
-            favProvider.addFavorite(intId, context);
+            favProvider.addFavorite(intId, context, showSnackBar: false);
+
             // ✅ sync with provider
             property.saved = true;                // ✅ update local model
           }
@@ -847,7 +848,6 @@ Future<String> resolveImageUrl(String? rawUrl) async {
   // As last resort, placeholder
   return 'https://via.placeholder.com/400x300.png?text=No+Image';
 }
-
 
 
 

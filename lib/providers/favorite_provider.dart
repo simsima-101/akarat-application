@@ -24,22 +24,21 @@ class FavoriteProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void addFavorite(int id, BuildContext context) {
+  void addFavorite(int id, BuildContext context, {bool showSnackBar = true}) {
     _favorites.add(id);
     _saveToPrefs();
-    _showSnackBar(context, "Added to favorites", Colors.green);
+    if (showSnackBar) _showSnackBar(context, "Added to favorites", Colors.green);
     notifyListeners();
   }
 
-  void removeFavorite(int id, BuildContext context) {
+  void removeFavorite(int id, BuildContext context, {bool showSnackBar = true}) {
     _favorites.remove(id);
     _saveToPrefs();
-    _showSnackBar(context, "Removed from favorites", Colors.red);
+    if (showSnackBar) _showSnackBar(context, "Removed from favorites", Colors.red);
     notifyListeners();
   }
 
-  /// ✅ Toggle favorite locally with notification
-  Future<void> toggleFavorite(int id, BuildContext context) async {
+  Future<void> toggleFavorite(int id, BuildContext context, {bool showSnackBar = true}) async {
     bool added;
     if (_favorites.contains(id)) {
       _favorites.remove(id);
@@ -51,12 +50,17 @@ class FavoriteProvider with ChangeNotifier {
       debugPrint('❤️ Added $id to favorites');
     }
     await _saveToPrefs();
-    _showSnackBar(context, added ? "Added to favorites" : "Removed from favorites", added ? Colors.green : Colors.red);
+    if (showSnackBar) {
+      _showSnackBar(
+          context,
+          added ? "Added to favorites" : "Removed from favorites",
+          added ? Colors.green : Colors.red
+      );
+    }
     notifyListeners();
   }
 
-  /// ✅ Toggle favorite with API and show notification
-  Future<bool> toggleFavoriteWithApi(int id, String token, BuildContext context) async {
+  Future<bool> toggleFavoriteWithApi(int id, String token, BuildContext context, {bool showSnackBar = true}) async {
     final url = Uri.parse('https://akarat.com/api/toggle-saved-property');
     try {
       final response = await http.post(
@@ -69,16 +73,16 @@ class FavoriteProvider with ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        await toggleFavorite(id, context);
+        await toggleFavorite(id, context, showSnackBar: showSnackBar);
         return true;
       } else {
         debugPrint("❌ API Failed: ${response.statusCode}");
-        _showSnackBar(context, "Failed to update favorites", Colors.red);
+        if (showSnackBar) _showSnackBar(context, "Failed to update favorites", Colors.red);
         return false;
       }
     } catch (e) {
       debugPrint("🚨 API Error: $e");
-      _showSnackBar(context, "Error updating favorites", Colors.red);
+      if (showSnackBar) _showSnackBar(context, "Error updating favorites", Colors.red);
       return false;
     }
   }

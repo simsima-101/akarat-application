@@ -541,6 +541,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 SafeArea(
                                   child: Column(
                                     children: [
+
                                       DropdownButtonFormField<String>(
                                           isExpanded: true,
                                           decoration: _dropdownDecoration("Services needed"), // just hint
@@ -593,133 +594,226 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
                                 const SizedBox(height: 10),
 
-                                // Language Dropdown
-                                FutureBuilder<Language>(
-                                  future: languageFuture,
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return DropdownButtonFormField<String>(
-                                        decoration: _dropdownDecoration("Language"),
-                                        items: [
-                                          const DropdownMenuItem(
-                                            value: '',
-                                            child: Text('Loading...'),
+                              FutureBuilder<Language>(
+                                future: languageFuture,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    // Loading state
+                                    return DropdownButtonFormField<String>(
+                                      isExpanded: true,
+                                      decoration: _dropdownDecoration("Language"),
+                                      dropdownColor: Colors.white,
+                                      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black,
+                                      ),
+                                      value: selectedLanguage,
+                                      items: const [
+                                        DropdownMenuItem<String>(
+                                          value: null,
+                                          child: Text(
+                                            "None",
+                                            style: TextStyle(color: Colors.grey),
                                           ),
-                                        ],
-                                        onChanged: null, // disables dropdown
-                                      );// shows nothing
-                                    } else if (snapshot.hasError) {
-                                      return Text("Error: ${snapshot.error}");
-                                    } else {
-                                      final language = ["Language"];
-                                      language.addAll(
-                                          snapshot.data?.languages
-                                              ?.where((lang) => lang.trim().isNotEmpty && lang.trim().length > 1)
-                                              .toSet()
-                                              .toList() ?? []
-                                      );
-
-                                      return DropdownButtonFormField<String>(
-                                        isExpanded: true,
-                                        decoration: _dropdownDecoration("Language"),
-                                        dropdownColor: Colors.white,
-                                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.black,
                                         ),
-                                        value: language.contains(selectedLanguage) ? selectedLanguage : null,
-                                        items: language.map((item) {
-                                          if (item == "Language") {
-                                            return DropdownMenuItem<String>(
-                                              value: '',
-                                              enabled: true,
-                                              child: Text(
-                                                item,
-                                                style: const TextStyle(color: Colors.grey),
-                                              ),
+                                      ],
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedLanguage = value;
+                                        });
+                                      },
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return Text("Error: ${snapshot.error}");
+                                  } else {
+                                    final List<String> languageList = snapshot.data?.languages
+                                        ?.where((lang) => lang.trim().isNotEmpty && lang.trim().length > 1)
+                                        .toSet()
+                                        .toList() ??
+                                        [];
+
+                                    return GestureDetector(
+                                      onTap: () async {
+                                        final result = await showDialog<String>(
+                                          context: context,
+                                          builder: (context) {
+                                            String searchText = '';
+                                            List<String> filteredList = ["None", ...languageList];
+
+                                            return StatefulBuilder(
+                                              builder: (context, setState) {
+                                                return AlertDialog(
+                                                  backgroundColor: Colors.white,
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                  title: const Text("Select Language"),
+                                                  content: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      TextField(
+                                                        decoration: const InputDecoration(
+                                                          hintText: "Search...",
+                                                          contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                                                        ),
+                                                        onChanged: (value) {
+                                                          setState(() {
+                                                            searchText = value;
+                                                            filteredList = ["None", ...languageList]
+                                                                .where((lang) => lang.toLowerCase().contains(searchText.toLowerCase()))
+                                                                .toList();
+                                                          });
+                                                        },
+                                                      ),
+                                                      const SizedBox(height: 10),
+                                                      SizedBox(
+                                                        height: 250,
+                                                        width: double.maxFinite,
+                                                        child: ListView.builder(
+                                                          itemCount: filteredList.length,
+                                                          itemBuilder: (context, index) {
+                                                            return ListTile(
+                                                              title: Text(filteredList[index]),
+                                                              onTap: () {
+                                                                Navigator.pop(context, filteredList[index]);
+                                                              },
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
                                             );
-                                          } else {
-                                            return DropdownMenuItem<String>(
-                                              value: item,
-                                              child: Text(item),
-                                            );
-                                          }
-                                        }).toList(),
-                                        onChanged: (value) {
+                                          },
+                                        );
+
+                                        if (result != null) {
                                           setState(() {
-                                            selectedLanguage = value!;
+                                            selectedLanguage = (result == "None") ? null : result;
                                           });
-                                        },
-                                      );
+                                        }
+                                      },
+                                      child: InputDecorator(
+                                        decoration: _dropdownDecoration("Language"),
+                                        child: Text(
+                                          selectedLanguage?.isNotEmpty == true ? selectedLanguage! : "Select Language",
+                                          style: TextStyle(
+                                            color: selectedLanguage?.isNotEmpty == true ? Colors.black : Colors.grey,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
 
-                                    }
-                                  },
-                                ),
 
-                                const SizedBox(height: 10),
 
-                                FutureBuilder<Nationality>(
-                                  future: nationalityFuture,
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return DropdownButtonFormField<String>(
-                                        decoration: _dropdownDecoration("Nationality"),
-                                        items: const [
-                                          DropdownMenuItem(
-                                            value: null,
-                                            child: Text("Loading..."),
-                                          )
-                                        ],
-                                        onChanged: null,
-                                      );
-                                    } else if (snapshot.hasError) {
-                                      return Text("Error: ${snapshot.error}");
-                                    } else {
-                                      final nationalities = ["Nationality"]; // add default item
-                                      nationalities.addAll(snapshot.data?.nationalities?.toSet().toList() ?? []);
+                              const SizedBox(height: 10),
 
-                                      // Prevent mismatch
-                                      if (!nationalities.contains(selectedNationality)) {
-                                        selectedNationality = null;
-                                      }
+                              FutureBuilder<Nationality>(
+                                future: nationalityFuture,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return DropdownButtonFormField<String>(
+                                      decoration: _dropdownDecoration("Nationality"),
+                                      items: const [
+                                        DropdownMenuItem(
+                                          value: null,
+                                          child: Text("Loading..."),
+                                        )
+                                      ],
+                                      onChanged: null,
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return Text("Error: ${snapshot.error}");
+                                  } else {
+                                    final List<String> nationalityList =
+                                        snapshot.data?.nationalities?.toSet().toList() ?? [];
 
-                                      return DropdownButtonFormField<String>(
-                                        isExpanded: true,
-                                        decoration: _dropdownDecoration("Nationality"),
-                                        dropdownColor: Colors.white,
-                                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
-                                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black),
-                                        value: selectedNationality,
-                                        items: nationalities.map((item) {
-                                          if (item == "Nationality") {
-                                            return DropdownMenuItem<String>(
-                                              value: '',
-                                              enabled: true,
-                                              child: Text(
-                                                item,
-                                                style: const TextStyle(color: Colors.grey),
-                                              ),
+                                    return GestureDetector(
+                                      onTap: () async {
+                                        final result = await showDialog<String>(
+                                          context: context,
+                                          builder: (context) {
+                                            String searchText = '';
+                                            List<String> filteredList = ["None", ...nationalityList];
+
+                                            return StatefulBuilder(
+                                              builder: (context, setState) {
+                                                return AlertDialog(
+                                                  backgroundColor: Colors.white,
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                  title: const Text("Select Nationality"),
+                                                  content: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      TextField(
+                                                        decoration: const InputDecoration(
+                                                          hintText: "Search...",
+                                                          contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                                                        ),
+                                                        onChanged: (value) {
+                                                          setState(() {
+                                                            searchText = value;
+                                                            filteredList = ["None", ...nationalityList]
+                                                                .where((nat) => nat.toLowerCase().contains(searchText.toLowerCase()))
+                                                                .toList();
+                                                          });
+                                                        },
+                                                      ),
+                                                      const SizedBox(height: 10),
+                                                      SizedBox(
+                                                        height: 250,
+                                                        width: double.maxFinite,
+                                                        child: ListView.builder(
+                                                          itemCount: filteredList.length,
+                                                          itemBuilder: (context, index) {
+                                                            return ListTile(
+                                                              title: Text(filteredList[index]),
+                                                              onTap: () {
+                                                                Navigator.pop(context, filteredList[index]);
+                                                              },
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
                                             );
-                                          } else {
-                                            return DropdownMenuItem<String>(
-                                              value: item,
-                                              child: Text(item),
-                                            );
-                                          }
-                                        }).toList(),
-                                        onChanged: (value) {
+                                          },
+                                        );
+
+                                        if (result != null) {
                                           setState(() {
-                                            selectedNationality = value!;
+                                            selectedNationality = (result == "None") ? null : result;
                                           });
-                                        },
-                                      );
-                                    }
-                                  },
-                                ),
+                                        }
+                                      },
+                                      child: InputDecorator(
+                                        decoration: _dropdownDecoration("Nationality"),
+                                        child: Text(
+                                          selectedNationality?.isNotEmpty == true ? selectedNationality! : "Select Nationality",
+                                          style: TextStyle(
+                                            color: selectedNationality?.isNotEmpty == true ? Colors.black : Colors.grey,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
 
-                                const SizedBox(height: 20),
+
+                              const SizedBox(height: 20),
 
                                 // Search Button
                                 ElevatedButton(
@@ -1010,198 +1104,198 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
 
 
-  // Widget buildSearchBarComingSoon() {
-  //   // return Container(
-  //   //   // Use full available width (or keep fixed 400 if you prefer)
-  //   //   width: double.infinity,
-  //   //   height: 50,
-  //   //   padding: const EdgeInsets.symmetric(horizontal: 12),
-  //   //   decoration: BoxDecoration(
-  //   //     color: Colors.white,                                // active background
-  //   //     borderRadius: BorderRadius.circular(10.0),
-  //   //     boxShadow: [
-  //   //       BoxShadow(
-  //   //         color: Colors.grey.withOpacity(0.5),
-  //   //         offset: Offset(0, 0),
-  //   //         blurRadius: 4.0,
-  //   //         spreadRadius: 1.0,
-  //   //       ),
-  //   //       BoxShadow(
-  //   //         color: Colors.white.withOpacity(0.8),
-  //   //         offset: Offset(0, 0),
-  //   //         blurRadius: 2.0,
-  //   //         spreadRadius: 0.0,
-  //   //       ),
-  //   //     ],
-  //   //   ),
-  //   //   child: Row(
-  //   //     children: [
-  //   //       const Icon(Icons.search, color: Colors.red),      // active icon color
-  //   //       const SizedBox(width: 8),
-  //   //       Expanded(
-  //   //         child: TextField(
-  //   //           controller: _searchController,
-  //   //           decoration: InputDecoration(
-  //   //             hintText: "Search for a locality, area or city",
-  //   //             hintStyle: TextStyle(
-  //   //               color: Colors.grey.shade600,
-  //   //               fontSize: 13,
-  //   //               fontWeight: FontWeight.w500,
-  //   //             ),
-  //   //             border: InputBorder.none,
-  //   //           ),
-  //   //           onChanged: (value) {
-  //   //             // TODO: your search logic here
-  //   //           },
-  //   //         ),
-  //   //       ),
-  //   //       const SizedBox(width: 8),
-  //   //       GestureDetector(
-  //   //         onTap: () {
-  //   //           // TODO: voice input logic
-  //   //         },
-  //   //
-  //   //       ),
-  //   //     ],
-  //   //   ),
-  //   // );
-  // }
+// Widget buildSearchBarComingSoon() {
+//   // return Container(
+//   //   // Use full available width (or keep fixed 400 if you prefer)
+//   //   width: double.infinity,
+//   //   height: 50,
+//   //   padding: const EdgeInsets.symmetric(horizontal: 12),
+//   //   decoration: BoxDecoration(
+//   //     color: Colors.white,                                // active background
+//   //     borderRadius: BorderRadius.circular(10.0),
+//   //     boxShadow: [
+//   //       BoxShadow(
+//   //         color: Colors.grey.withOpacity(0.5),
+//   //         offset: Offset(0, 0),
+//   //         blurRadius: 4.0,
+//   //         spreadRadius: 1.0,
+//   //       ),
+//   //       BoxShadow(
+//   //         color: Colors.white.withOpacity(0.8),
+//   //         offset: Offset(0, 0),
+//   //         blurRadius: 2.0,
+//   //         spreadRadius: 0.0,
+//   //       ),
+//   //     ],
+//   //   ),
+//   //   child: Row(
+//   //     children: [
+//   //       const Icon(Icons.search, color: Colors.red),      // active icon color
+//   //       const SizedBox(width: 8),
+//   //       Expanded(
+//   //         child: TextField(
+//   //           controller: _searchController,
+//   //           decoration: InputDecoration(
+//   //             hintText: "Search for a locality, area or city",
+//   //             hintStyle: TextStyle(
+//   //               color: Colors.grey.shade600,
+//   //               fontSize: 13,
+//   //               fontWeight: FontWeight.w500,
+//   //             ),
+//   //             border: InputBorder.none,
+//   //           ),
+//   //           onChanged: (value) {
+//   //             // TODO: your search logic here
+//   //           },
+//   //         ),
+//   //       ),
+//   //       const SizedBox(width: 8),
+//   //       GestureDetector(
+//   //         onTap: () {
+//   //           // TODO: voice input logic
+//   //         },
+//   //
+//   //       ),
+//   //     ],
+//   //   ),
+//   // );
+// }
 
 
-  // Container buildMyNavBar(BuildContext context) {
-  //   return Container(
-  //     height: 50,
-  //     decoration: BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: const BorderRadius.only(
-  //         topLeft: Radius.circular(20),
-  //         topRight: Radius.circular(20),
-  //       ),
-  //     ),
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
-  //       crossAxisAlignment: CrossAxisAlignment.center,
-  //       children: [
-  //         GestureDetector(
-  //           onTap: () async {
-  //             Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-  //           },
-  //           child: Padding(
-  //             padding: const EdgeInsets.symmetric(horizontal: 20.0),
-  //             child: Image.asset("assets/images/home.png", height: 25),
-  //           ),
-  //         ),
-  //
-  //
-  //         IconButton(
-  //           enableFeedback: false,
-  //           onPressed: () async {
-  //             final token = await SecureStorage.getToken();
-  //
-  //             if (token == null || token.isEmpty) {
-  //               showDialog(
-  //                 context: context,
-  //                 builder: (context) => AlertDialog(
-  //                   backgroundColor: Colors.white, // white container
-  //                   title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-  //                   content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
-  //                   actions: [
-  //                     TextButton(
-  //                       onPressed: () => Navigator.pop(context),
-  //                       child: const Text(
-  //                         "Cancel",
-  //                         style: TextStyle(color: Colors.red), // red text
-  //                       ),
-  //                     ),
-  //                     TextButton(
-  //                       onPressed: () {
-  //                         Navigator.pop(context);
-  //                         Navigator.push(
-  //                           context,
-  //                           MaterialPageRoute(builder: (_) => const LoginDemo()),
-  //                         );
-  //                       },
-  //                       child: const Text(
-  //                         "Login",
-  //                         style: TextStyle(color: Colors.red), // red text
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               );
-  //             }
-  //             else {
-  //               // ✅ Logged in – go to favorites
-  //               Navigator.push(
-  //                 context,
-  //                 MaterialPageRoute(builder: (context) => Fav_Logout()),
-  //               );
-  //             }
-  //           },
-  //           icon: pageIndex == 2
-  //               ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-  //               : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
-  //         ),
-  //
-  //         IconButton(
-  //           tooltip: "Email",
-  //           icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
-  //           onPressed: () async {
-  //             final Uri emailUri = Uri.parse(
-  //               'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
-  //             );
-  //
-  //             if (await canLaunchUrl(emailUri)) {
-  //               await launchUrl(emailUri);
-  //             } else {
-  //               showDialog(
-  //                 context: context,
-  //                 builder: (context) => AlertDialog(
-  //                   backgroundColor: Colors.white, // White dialog container
-  //                   title: const Text(
-  //                     'Email not available',
-  //                     style: TextStyle(color: Colors.black), // Title in black
-  //                   ),
-  //                   content: const Text(
-  //                     'No email app is configured on this device. Please add a mail account first.',
-  //                     style: TextStyle(color: Colors.black), // Content in black
-  //                   ),
-  //                   actions: [
-  //                     TextButton(
-  //                       onPressed: () => Navigator.pop(context),
-  //                       child: const Text(
-  //                         'OK',
-  //                         style: TextStyle(color: Colors.red), // Red "OK" text
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               );
-  //             }
-  //           },
-  //         ),
-  //
-  //         Padding(
-  //           padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
-  //           child: IconButton(
-  //             enableFeedback: false,
-  //             onPressed: () {
-  //               setState(() {
-  //                 if (token == '') {
-  //                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-  //                 } else {
-  //                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-  //                 }
-  //               });
-  //             },
-  //             icon: pageIndex == 3
-  //                 ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-  //                 : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //
-  //   );
-  // }
+// Container buildMyNavBar(BuildContext context) {
+//   return Container(
+//     height: 50,
+//     decoration: BoxDecoration(
+//       color: Colors.white,
+//       borderRadius: const BorderRadius.only(
+//         topLeft: Radius.circular(20),
+//         topRight: Radius.circular(20),
+//       ),
+//     ),
+//     child: Row(
+//       mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+//       crossAxisAlignment: CrossAxisAlignment.center,
+//       children: [
+//         GestureDetector(
+//           onTap: () async {
+//             Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+//           },
+//           child: Padding(
+//             padding: const EdgeInsets.symmetric(horizontal: 20.0),
+//             child: Image.asset("assets/images/home.png", height: 25),
+//           ),
+//         ),
+//
+//
+//         IconButton(
+//           enableFeedback: false,
+//           onPressed: () async {
+//             final token = await SecureStorage.getToken();
+//
+//             if (token == null || token.isEmpty) {
+//               showDialog(
+//                 context: context,
+//                 builder: (context) => AlertDialog(
+//                   backgroundColor: Colors.white, // white container
+//                   title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+//                   content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+//                   actions: [
+//                     TextButton(
+//                       onPressed: () => Navigator.pop(context),
+//                       child: const Text(
+//                         "Cancel",
+//                         style: TextStyle(color: Colors.red), // red text
+//                       ),
+//                     ),
+//                     TextButton(
+//                       onPressed: () {
+//                         Navigator.pop(context);
+//                         Navigator.push(
+//                           context,
+//                           MaterialPageRoute(builder: (_) => const LoginDemo()),
+//                         );
+//                       },
+//                       child: const Text(
+//                         "Login",
+//                         style: TextStyle(color: Colors.red), // red text
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               );
+//             }
+//             else {
+//               // ✅ Logged in – go to favorites
+//               Navigator.push(
+//                 context,
+//                 MaterialPageRoute(builder: (context) => Fav_Logout()),
+//               );
+//             }
+//           },
+//           icon: pageIndex == 2
+//               ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+//               : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+//         ),
+//
+//         IconButton(
+//           tooltip: "Email",
+//           icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+//           onPressed: () async {
+//             final Uri emailUri = Uri.parse(
+//               'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+//             );
+//
+//             if (await canLaunchUrl(emailUri)) {
+//               await launchUrl(emailUri);
+//             } else {
+//               showDialog(
+//                 context: context,
+//                 builder: (context) => AlertDialog(
+//                   backgroundColor: Colors.white, // White dialog container
+//                   title: const Text(
+//                     'Email not available',
+//                     style: TextStyle(color: Colors.black), // Title in black
+//                   ),
+//                   content: const Text(
+//                     'No email app is configured on this device. Please add a mail account first.',
+//                     style: TextStyle(color: Colors.black), // Content in black
+//                   ),
+//                   actions: [
+//                     TextButton(
+//                       onPressed: () => Navigator.pop(context),
+//                       child: const Text(
+//                         'OK',
+//                         style: TextStyle(color: Colors.red), // Red "OK" text
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               );
+//             }
+//           },
+//         ),
+//
+//         Padding(
+//           padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+//           child: IconButton(
+//             enableFeedback: false,
+//             onPressed: () {
+//               setState(() {
+//                 if (token == '') {
+//                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+//                 } else {
+//                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+//                 }
+//               });
+//             },
+//             icon: pageIndex == 3
+//                 ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+//                 : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+//           ),
+//         ),
+//       ],
+//     ),
+//
+//   );
+// }
 }

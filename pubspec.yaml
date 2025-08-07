@@ -1,28 +1,21 @@
 name: Akarat
 description: "A new Flutter project."
 publish_to: 'none'
-
 version: 1.0.8+15
-
-
-
-
-
-
-
-
 
 environment:
   sdk: ^3.6.1
 
 dependencies:
+  flutter:
+    sdk: flutter
   carousel_slider: ^5.0.0
   standard_searchbar: ^2.0.0
   sliding_switch: ^1.0.0
   syncfusion_flutter_sliders: ^30.1.38
   syncfusion_flutter_charts: ^30.1.39
   syncfusion_flutter_core: ^30.1.39
-  bubble_tab_indicator:
+  bubble_tab_indicator: ^0.1.6
   tuna_flutter_range_slider: ^1.0.0
   smooth_page_indicator: ^1.1.0
   get: ^4.6.5
@@ -49,22 +42,8 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   auto_size_text: ^3.0.0
   flutter_typeahead: ^5.2.0
-
   image_picker: ^1.0.4
   path_provider: ^2.1.2
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 dev_dependencies:
   flutter_test:
@@ -77,7 +56,6 @@ flutter_launcher_icons:
   ios: true
   image_path_ios: "assets/images/app-icon_new.png"
   remove_alpha_ios: true
-
 
 flutter:
   uses-material-design: true
