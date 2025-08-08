@@ -667,7 +667,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                                       ),
                                                       const SizedBox(height: 10),
                                                       SizedBox(
-                                                        height: 250,
+                                                        height: 400,
                                                         width: double.maxFinite,
                                                         child: ListView.builder(
                                                           itemCount: filteredList.length,
@@ -768,7 +768,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                                       ),
                                                       const SizedBox(height: 10),
                                                       SizedBox(
-                                                        height: 250,
+                                                        height: 400,
                                                         width: double.maxFinite,
                                                         child: ListView.builder(
                                                           itemCount: filteredList.length,

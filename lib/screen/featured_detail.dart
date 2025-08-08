@@ -191,12 +191,11 @@ class _Featured_DetailState extends State<Featured_Detail> {
           child: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.red),
-              onPressed: ()async {
-                setState(() {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-                });
+              onPressed: () {
+                Navigator.pop(context);
               },
             ),
+
             centerTitle: true,
             backgroundColor: Color(0xFFFFFFFF),
             iconTheme: const IconThemeData(color: Colors.red),

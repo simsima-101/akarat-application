@@ -9,17 +9,14 @@ import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/screen/property_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../model/togglemodel.dart';
-import '../model/projectmodel.dart';
 import '../secure_storage.dart';
 
 import '../services/favorite_service.dart';
 import '../utils/fav_logout.dart';
-import '../utils/shared_preference_manager.dart';
 import 'featured_detail.dart';
 import 'login.dart';
 import 'my_account.dart';
@@ -87,7 +84,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
 
   // Create an object of SharedPreferencesManager class
-  SharedPreferencesManager prefManager = SharedPreferencesManager();
+
 
   String phoneCallNumber(String input) {
     input = input.replaceAll(RegExp(r'[^\d+]'), '');
@@ -175,7 +172,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
   }
 
 
-  Map<String, List<Data>> _searchCache = {};
+
   String lastSearchQuery = '';
 
   Future<void> _callSearchApi(String query) async {
@@ -186,13 +183,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
     lastSearchQuery = query;
 
-    // Use cached data if available
-    if (_searchCache.containsKey(query)) {
-      setState(() {
-        projectModel = _searchCache[query]!;
-      });
-      return;
-    }
+
 
     try {
       final response = await http.get(Uri.parse(
@@ -203,8 +194,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
         final data = jsonDecode(response.body);
         final result = ProjectModel.fromJson(data);
 
-        _searchCache[query] = result.data ?? [];
-        projectModel = _searchCache[query]!;
+
 
         if (mounted) {
           setState(() {
@@ -226,40 +216,8 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
     setState(() => isLoading = true);
 
-    final prefs = await SharedPreferences.getInstance();
-    final cacheKey = 'new_projects_cache';
-    final cacheTimeKey = 'new_projects_cache_time';
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
-
     final uri = Uri.parse("https://akarat.com/api/new-projects?page=$currentPage");
 
-    // ✅ Load from cache if not loading more and cache is valid
-    if (!loadMore && now - lastFetched < Duration(hours: 6).inMilliseconds) {
-      final cachedData = prefs.getString(cacheKey);
-      if (cachedData != null) {
-        try {
-          final jsonData = jsonDecode(cachedData);
-          final ProjectResponseModel responseModel = ProjectResponseModel.fromJson(jsonData);
-          final ProjectModel cachedModel = responseModel.data!;
-          final newItems = cachedModel.data ?? [];
-
-          setState(() {
-            projectModel = newItems;
-            hasMore = cachedModel.meta?.currentPage != cachedModel.meta?.lastPage;
-            currentPage = (cachedModel.meta?.currentPage ?? 1) + 1;
-            isLoading = false;
-          });
-
-          debugPrint("📦 Loaded new projects from cache");
-          return;
-        } catch (e) {
-          debugPrint("⚠️ Cache parsing failed: $e");
-        }
-      }
-    }
-
-    // ✅ Make API call
     try {
       final response = await http.get(uri);
 
@@ -281,12 +239,6 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
           isLoading = false;
         });
 
-        // ✅ Save to cache if it's the first page
-        if (!loadMore && currentPage == 2) {
-          await prefs.setString(cacheKey, jsonEncode(jsonData));
-          await prefs.setInt(cacheTimeKey, now);
-          debugPrint("✅ Cached new projects");
-        }
       } else {
         debugPrint("❌ API Error: ${response.statusCode}");
         setState(() => isLoading = false);
@@ -296,6 +248,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
       setState(() => isLoading = false);
     }
   }
+
 
 
 
@@ -344,7 +297,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
   @override
   Widget build(BuildContext context) {
-    if (projectModel == null) {
+    if (projectModel.isEmpty) {
       if (showNoPropertiesMessage) {
         return Scaffold(
           body: Center(
@@ -369,6 +322,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
         );
       }
     }
+
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,

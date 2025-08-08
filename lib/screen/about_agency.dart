@@ -831,118 +831,6 @@ class _About_AgencyState extends State<About_Agency> {
                               padding: const EdgeInsets.all(8.0),
                               child: Column(
                                 children: [
-                                  //About details
-                                  // const SizedBox(height: 20,),
-                                  //  Padding(
-                                  //    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                  //    child: Row(
-                                  //      crossAxisAlignment: CrossAxisAlignment.center,  // center children vertically
-                                  //      children: [
-                                  //        Expanded(
-                                  //          child: Container(
-                                  //            height: 45,
-                                  //            decoration: BoxDecoration(
-                                  //              color: Colors.white,
-                                  //              borderRadius: BorderRadius.circular(10.0),
-                                  //              boxShadow: [
-                                  //                BoxShadow(
-                                  //                  color: Colors.grey.withOpacity(0.3),
-                                  //                  offset: const Offset(0.3, 0.3),
-                                  //                  blurRadius: 2.0,
-                                  //                  spreadRadius: 0.3,
-                                  //                ),
-                                  //                BoxShadow(
-                                  //                  color: Colors.white.withOpacity(0.8),
-                                  //                  offset: const Offset(0, 0),
-                                  //                  blurRadius: 0,
-                                  //                  spreadRadius: 0,
-                                  //                ),
-                                  //              ],
-                                  //            ),
-                                  //            child: TextField(
-                                  //              controller: _locationController,
-                                  //              readOnly: true,
-                                  //              onTap: () {
-                                  //                // TODO: open your location picker here
-                                  //              },
-                                  //              decoration: InputDecoration(
-                                  //                hintText: "Select Location",
-                                  //                hintStyle: TextStyle(
-                                  //                  color: Colors.grey.shade600,
-                                  //                  fontSize: 15,
-                                  //                  letterSpacing: 0.5,
-                                  //                ),
-                                  //                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                                  //                prefixIconConstraints: const BoxConstraints(
-                                  //                  minWidth: 40,
-                                  //                  minHeight: 40,
-                                  //                ),
-                                  //                prefixIcon: Padding(
-                                  //                  padding: const EdgeInsets.only(left: 8, right: 8),
-                                  //                  child: Image.asset(
-                                  //                    "assets/images/map.png",
-                                  //                    width: 24,
-                                  //                    height: 24,
-                                  //                    fit: BoxFit.contain,
-                                  //                  ),
-                                  //                ),
-                                  //                border: InputBorder.none,
-                                  //              ),
-                                  //            ),
-                                  //          ),
-                                  //        ),
-                                  //
-                                  //        // if you want a filter button/icon next to it:
-                                  //        const SizedBox(width: 16),
-                                  //        // Image.asset("assets/images/filter.png", width: 24, height: 24),
-                                  //      ],
-                                  //    ),
-                                  //  ),
-
-                                  // Padding(
-                                  //   padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                                  //   child: Row(
-                                  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  //     children: ["All", "Buy", "Rent"].map((label) {
-                                  //       // All buttons disabled → adding "(Coming Soon)" to label
-                                  //       String displayLabel = "$label (Coming Soon)";
-                                  //
-                                  //       return Container(
-                                  //         width: screenSize.width * 0.25,
-                                  //         height: 35,
-                                  //         alignment: Alignment.center,
-                                  //         decoration: BoxDecoration(
-                                  //           color: Colors.grey.shade300, // grey background
-                                  //           borderRadius: BorderRadius.circular(10),
-                                  //           boxShadow: [
-                                  //             BoxShadow(
-                                  //               color: Colors.grey.withOpacity(0.5),
-                                  //               offset: Offset(4, 4),
-                                  //               blurRadius: 8,
-                                  //               spreadRadius: 2,
-                                  //             ),
-                                  //             BoxShadow(
-                                  //               color: Colors.white.withOpacity(0.8),
-                                  //               offset: Offset(-4, -4),
-                                  //               blurRadius: 8,
-                                  //               spreadRadius: 2,
-                                  //             ),
-                                  //           ],
-                                  //         ),
-                                  //         child: Text(
-                                  //           displayLabel, // Show "Buy (Coming Soon)"
-                                  //           textAlign: TextAlign.center,
-                                  //           style: TextStyle(
-                                  //             letterSpacing: 0.5,
-                                  //             color: Colors.black45,
-                                  //             fontSize: 11, // slightly smaller to fit
-                                  //             fontWeight: FontWeight.bold,
-                                  //           ),
-                                  //         ),
-                                  //       );
-                                  //     }).toList(),
-                                  //   ),
-                                  // ),
 
 
                                   Expanded(
@@ -975,7 +863,7 @@ class _About_AgencyState extends State<About_Agency> {
                                                 ));
                                               },
                                               child : Padding(
-                                                padding: const EdgeInsets.only(top: 0.0,left: 0,right: 0),
+                                                padding: const EdgeInsets.only(bottom: 15),
                                                 child: Card(
                                                   color: Colors.white,
                                                   borderOnForeground: true,
@@ -1181,8 +1069,10 @@ class _About_AgencyState extends State<About_Agency> {
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 itemBuilder: (context, index) {
                                   if (agencyAgentsModel == null) {
-                                    return Center(child: CircularProgressIndicator());
+                                    return const Center(child: CircularProgressIndicator());
                                   }
+
+                                  final agent = agencyAgentsModel!.data![index];
 
                                   return GestureDetector(
                                     onTap: () {
@@ -1195,6 +1085,7 @@ class _About_AgencyState extends State<About_Agency> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             // Agent image
                                             Container(
@@ -1205,119 +1096,124 @@ class _About_AgencyState extends State<About_Agency> {
                                                 boxShadow: [
                                                   BoxShadow(
                                                     color: Colors.grey.withOpacity(0.3),
-                                                    offset: Offset(0, 2),
+                                                    offset: const Offset(0, 2),
                                                     blurRadius: 4,
                                                   ),
                                                 ],
                                               ),
                                               child: CircleAvatar(
-                                                backgroundImage: NetworkImage(agencyAgentsModel!.data![index].image.toString()),
+                                                backgroundImage: NetworkImage(agent.image.toString()),
                                               ),
                                             ),
 
-                                            SizedBox(width: 10),
+                                            const SizedBox(width: 12),
 
-                                            // Agent details
+                                            // Info + Sale/Rent + Bio
                                             Expanded(
                                               child: Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
-                                                  // Name
                                                   Text(
-                                                    agencyAgentsModel!.data![index].name.toString(),
-                                                    style: TextStyle(
-                                                      fontSize: 15,
+                                                    agent.name ?? '',
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
                                                       fontWeight: FontWeight.bold,
                                                       letterSpacing: 0.5,
                                                     ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
-                                                  SizedBox(height: 4),
+                                                  const SizedBox(height: 4),
 
-                                                  // Speaks
                                                   Text(
-                                                    "Speaks: ${agencyAgentsModel!.data![index].languages.toString()}",
-                                                    style: TextStyle(fontSize: 12, letterSpacing: 0.5),
+                                                    "${agent.propertiesCount ?? 0} Properties",
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Color(0xFF3A7CED),
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
-                                                  SizedBox(height: 8),
+                                                  const SizedBox(height: 4),
 
-                                                  // Sale & Rent buttons
-                                                  // Container(
-                                                  //   width: screenSize.width * 0.35,
-                                                  //   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-                                                  //   decoration: BoxDecoration(
-                                                  //     color: Colors.white,
-                                                  //     borderRadius: BorderRadius.circular(6),
-                                                  //     boxShadow: [
-                                                  //       BoxShadow(
-                                                  //         color: Colors.grey.withOpacity(0.3),
-                                                  //         offset: Offset(2, 2),
-                                                  //         blurRadius: 6,
-                                                  //         spreadRadius: 1,
-                                                  //       ),
-                                                  //     ],
-                                                  //   ),
-                                                  //   child: Column(
-                                                  //     crossAxisAlignment: CrossAxisAlignment.stretch,
-                                                  //     children: [
-                                                  //       // Sale button
-                                                  //       // Container(
-                                                  //       //   height: 24,
-                                                  //       //   alignment: Alignment.center,
-                                                  //       //   decoration: BoxDecoration(
-                                                  //       //     color: Colors.grey.shade200,
-                                                  //       //     borderRadius: BorderRadius.circular(4),
-                                                  //       //     boxShadow: [
-                                                  //       //       BoxShadow(
-                                                  //       //         color: Colors.grey.withOpacity(0.2),
-                                                  //       //         offset: Offset(1, 1),
-                                                  //       //         blurRadius: 3,
-                                                  //       //         spreadRadius: 1,
-                                                  //       //       ),
-                                                  //       //     ],
-                                                  //       //   ),
-                                                  //       //   child: Text(
-                                                  //       //     "${agencyAgentsModel!.data![index].sale} Sale (Coming Soon)",
-                                                  //       //     textAlign: TextAlign.center,
-                                                  //       //     style: TextStyle(
-                                                  //       //       letterSpacing: 0.4,
-                                                  //       //       color: Colors.black54,
-                                                  //       //       fontWeight: FontWeight.w500,
-                                                  //       //       fontSize: 9,
-                                                  //       //     ),
-                                                  //       //   ),
-                                                  //       // ),
-                                                  //       // SizedBox(height: 5),
-                                                  //       //
-                                                  //       // // Rent button
-                                                  //       // Container(
-                                                  //       //   height: 24,
-                                                  //       //   alignment: Alignment.center,
-                                                  //       //   decoration: BoxDecoration(
-                                                  //       //     color: Colors.grey.shade200,
-                                                  //       //     borderRadius: BorderRadius.circular(4),
-                                                  //       //     boxShadow: [
-                                                  //       //       BoxShadow(
-                                                  //       //         color: Colors.grey.withOpacity(0.2),
-                                                  //       //         offset: Offset(1, 1),
-                                                  //       //         blurRadius: 3,
-                                                  //       //         spreadRadius: 1,
-                                                  //       //       ),
-                                                  //       //     ],
-                                                  //       //   ),
-                                                  //       //   child: Text(
-                                                  //       //     "${agencyAgentsModel!.data![index].rent} Rent (Coming Soon)",
-                                                  //       //     textAlign: TextAlign.center,
-                                                  //       //     style: TextStyle(
-                                                  //       //       letterSpacing: 0.4,
-                                                  //       //       color: Colors.black54,
-                                                  //       //       fontWeight: FontWeight.w500,
-                                                  //       //       fontSize: 9,
-                                                  //       //     ),
-                                                  //       //   ),
-                                                  //       // ),
-                                                  //     ],
-                                                  //   ),
-                                                  // ),
+                                                  Text(
+                                                    "Speaks: ${agent.languages?.isNotEmpty == true ? agent.languages : 'N/A'}",
+                                                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  const SizedBox(height: 8),
+
+                                                  Row(
+                                                    children: [
+                                                      Container(
+                                                        width: 55,
+                                                        height: 20,
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.white,
+                                                          borderRadius: BorderRadius.circular(6),
+                                                          border: Border.all(color: Colors.white),
+                                                          boxShadow: const [
+                                                            BoxShadow(
+                                                              color: Color(0x40000000),
+                                                              blurRadius: 2,
+                                                              offset: Offset(0, 0),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        child: Center(
+                                                          child: Text(
+                                                            "${agent.sale ?? 0} Sale",
+                                                            style: const TextStyle(
+                                                              fontSize: 10,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Color(0xFF3A7CED),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 10),
+                                                      Container(
+                                                        width: 55,
+                                                        height: 20,
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.white,
+                                                          borderRadius: BorderRadius.circular(6),
+                                                          border: Border.all(color: Colors.white),
+                                                          boxShadow: const [
+                                                            BoxShadow(
+                                                              color: Color(0x40000000),
+                                                              blurRadius: 2,
+                                                              offset: Offset(0, 0),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        child: Center(
+                                                          child: Text(
+                                                            "${agent.rent ?? 0} Rent",
+                                                            style: const TextStyle(
+                                                              fontSize: 10,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Color(0xFF3A7CED),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+
+                                                  const SizedBox(height: 6),
+                                                  if ((agent.bio?.trim().isNotEmpty ?? false))
+                                                    Text(
+                                                      agent.bio!,
+                                                      style: const TextStyle(
+                                                        fontSize: 11,
+                                                        color: Colors.black45,
+                                                        fontStyle: FontStyle.italic,
+                                                      ),
+                                                      maxLines: 2,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
                                                 ],
                                               ),
                                             ),
@@ -1329,6 +1225,7 @@ class _About_AgencyState extends State<About_Agency> {
                                 },
                               ),
                             ),
+
 
                             //Review
                             SingleChildScrollView(

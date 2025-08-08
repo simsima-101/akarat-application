@@ -471,21 +471,10 @@ class _AboutAgentState extends State<AboutAgent> {
                     icon: const Icon(Icons.arrow_back, color: Colors.red, size: 26),
                     padding: const EdgeInsets.all(12), // Ensures large tap area
                     constraints: const BoxConstraints(), // Removes default 48x48 min size if needed
-                    onPressed: () async {
-                      setState(() {
-                        if (token == '') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => FindAgentDemo()),
-                          );
-                        } else {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => FindAgentDemo()),
-                          );
-                        }
-                      });
+                    onPressed: () {
+                      Navigator.pop(context);
                     },
+
                   ),
                 ),
 
@@ -662,215 +651,192 @@ class _AboutAgentState extends State<AboutAgent> {
             Expanded(
               child: TabBarView(
                 children: [
-                  SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 10,),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Row(
+                  Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
                               children: [
-                                Text("About", style: TextStyle(
-                                    fontSize: 18, color: Colors.black, letterSpacing: 0.5
-                                ),textAlign: TextAlign.left,),
-                                Text("")
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "About",
+                                        style: TextStyle(fontSize: 18, color: Colors.black, letterSpacing: 0.5),
+                                        textAlign: TextAlign.left,
+                                      ),
+                                      Text("")
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "Language(s)",
+                                        style: TextStyle(fontSize: 12, color: Colors.grey, letterSpacing: 0.5),
+                                      ),
+                                      Text("")
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        '${agentDetail!.languages}',
+                                        style: TextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.5),
+                                      ),
+                                      Text("")
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "Expertise",
+                                        style: TextStyle(fontSize: 12, color: Colors.grey, letterSpacing: 0.5),
+                                      ),
+                                      Text("")
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Text(
+                                    agentDetail!.expertise.toString(),
+                                    style: TextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.5),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "Services Area",
+                                        style: TextStyle(fontSize: 12, color: Colors.grey, letterSpacing: 0.5),
+                                      ),
+                                      Text("")
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Text(
+                                    agentDetail!.serviceAreas!.toString(),
+                                    style: TextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.5),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "Description",
+                                        style: TextStyle(fontSize: 13, color: Colors.black, letterSpacing: 0.5),
+                                      ),
+                                      Text("")
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                agentDetail!.about != null && agentDetail!.about!.trim().isNotEmpty
+                                    ? Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                                  child: HtmlExpandableText(
+                                    htmlContent: agentDetail!.about!.replaceAll('\r\n', '<br>'),
+                                  ),
+                                )
+                                    : Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                                  child: Text(
+                                    "No description available",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black54,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "BRN",
+                                        style: TextStyle(fontSize: 12, color: Colors.grey, letterSpacing: 0.5),
+                                      ),
+                                      Text("")
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        agentDetail!.brokerRegisterationNumber.toString(),
+                                        style: TextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.5),
+                                      ),
+                                      Text("")
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "Experience",
+                                        style: TextStyle(fontSize: 12, color: Colors.grey, letterSpacing: 0.5),
+                                      ),
+                                      Text("")
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "${agentDetail!.experience} Years",
+                                        style: TextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.5),
+                                      ),
+                                      Text("")
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 15),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 10,),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Row(
-                              children: [
-                                Text("Language(s)", style: TextStyle(
-                                    fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                ),),
-
-                                Text("")
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10,),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Row(
-                              children: [
-                                Text('${agentDetail!.languages}', style: TextStyle(
-                                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                                ),),
-
-                                Text("")
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10,),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Row(
-                              children: [
-                                Text("Expertise", style: TextStyle(
-                                    fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                ),),
-                                Text("")
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10,),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Text(agentDetail!.expertise.toString(), style: TextStyle(
-                                fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                            ),),
-                          ),
-                          const SizedBox(height: 10,),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Row(
-                              children: [
-                                Text("Services Area", style: TextStyle(
-                                    fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                ),),
-                                Text("")
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10,),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Text(agentDetail!.serviceAreas!.toString(), style: TextStyle(
-                                fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                            ),
-                            ),
-                          ),
-                          const SizedBox(height: 10,),
-                          // Padding(
-                          //   padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                          //   child: Row(
-                          //     children: [
-                          //         Text("Properties", style: TextStyle(
-                          //             fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                          //         ),),
-                          //       Text("")
-                          //     ],
-                          //   ),
-                          // ),
-                          // const SizedBox(height: 10,),
-                          // Container(
-                          //   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          //   height: MediaQuery.of(context).size.height * 0.06,
-                          //   alignment: Alignment.centerLeft,
-                          //   child: ListView(
-                          //     scrollDirection: Axis.horizontal,
-                          //     physics: const BouncingScrollPhysics(),
-                          //     shrinkWrap: true,
-                          //     children: [
-                          //       _buildTagContainer(
-                          //         text: "${agentDetail!.rent} Properties for Rent",
-                          //         iconPath: "assets/images/arrow.png",
-                          //       ),
-                          //       const SizedBox(width: 4,),
-                          //       _buildTagContainer(
-                          //         text: "${agentDetail!.sale} Properties for Sale",
-                          //         iconPath: "assets/images/arrow.png",
-                          //       ),
-                          //     ],
-                          //   ),
-                          // ),
-
-                          const SizedBox(height: 10,),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Row(
-                              children: [
-                                Text("Description", style: TextStyle(
-                                    fontSize: 13, color: Colors.black, letterSpacing: 0.5
-                                ),),
-
-                                Text("")
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10,),
-                          agentDetail!.about != null && agentDetail!.about!.trim().isNotEmpty
-                              ? Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                            child: HtmlExpandableText(
-                              htmlContent: agentDetail!.about!.replaceAll('\r\n', '<br>'),
-                            ),
-                          )
-                              : Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                            child: Text(
-                              "No description available",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.black54,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ),
-
-
-                          const SizedBox(height: 10,),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Row(
-                              children: [
-                                Text("BRN", style: TextStyle(
-                                    fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                ),),
-
-                                Text("")
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10,),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Row(
-                              children: [
-                                Text(agentDetail!.brokerRegisterationNumber.toString(), style: TextStyle(
-                                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                                ),),
-                                Text("")
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 10,),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Row(
-                              children: [
-                                Text("Experience", style: TextStyle(
-                                    fontSize: 12, color: Colors.grey, letterSpacing: 0.5
-                                ),),
-                                Text("")
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10,),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Row(
-                              children: [
-                                Text("${agentDetail!.experience} Years", style: TextStyle(
-                                    fontSize: 15, color: Colors.black, letterSpacing: 0.5
-                                ),),
-                                Text("")
-                              ],
-                            ),
-                          ),
-                          SizedBox(
-                            height: 20,
-                          )
-                        ],
-
+                        ),
                       ),
+                      SafeArea(
+                        child: buildMyNavBar(context), // 👈 This is shown only under About tab
+                      ),
+                    ],
+                  ),
 
-                    ),),
                   Padding(
                     padding: const EdgeInsets.all(10),
                     child: Column(
@@ -913,478 +879,478 @@ class _AboutAgentState extends State<AboutAgent> {
                                       ),
                                     );
                                   },
-                                child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                child: Card(
-                                color: Colors.white,
-                                shadowColor: Colors.white,
-                                elevation: 10,
-                                shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Padding(
-                                padding: const EdgeInsets.all(10),
-                                child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-
-                                Column(
-                                children: [
-                                Stack(
-                                          clipBehavior: Clip.none,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    child: Card(
+                                      color: Colors.white,
+                                      shadowColor: Colors.white,
+                                      elevation: 10,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            // 🖼️ Image Carousel
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(12),
-                                              child: AspectRatio(
-                                                aspectRatio: 1.5,
-                                                child: PageView.builder(
-                                                  itemCount: property.media?.length ?? 0,
-                                                  scrollDirection: Axis.horizontal,
-                                                  controller: _pageController,
-                                                  onPageChanged: (_) {},
 
-                                                  itemBuilder: (context, imgIndex) {
-                                                    final imageUrl = property.media![imgIndex].originalUrl ?? '';
-                                                    return CachedNetworkImage(
-                                                      imageUrl: imageUrl,
-                                                      fit: BoxFit.cover,
-                                                      placeholder: (context, url) => Center(child: CircularProgressIndicator()),
-                                                      errorWidget: (context, url, error) => Icon(Icons.error),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                            ),
+                                            Column(
+                                              children: [
+                                                Stack(
+                                                  clipBehavior: Clip.none,
+                                                  children: [
+                                                    // 🖼️ Image Carousel
+                                                    ClipRRect(
+                                                      borderRadius: BorderRadius.circular(12),
+                                                      child: AspectRatio(
+                                                        aspectRatio: 1.5,
+                                                        child: PageView.builder(
+                                                          itemCount: property.media?.length ?? 0,
+                                                          scrollDirection: Axis.horizontal,
+                                                          controller: _pageController,
+                                                          onPageChanged: (_) {},
 
-                                            // 🔘 Dot Indicator
-                                            Positioned(
-                                              bottom: 12,
-                                              left: 0,
-                                              right: 0,
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: List.generate(
-                                                  item.media?.length ?? 0,
-                                                      (index) {
-                                                    final distance = (index -
-                                                        _currentImageIndex).abs();
-                                                    double scale;
-                                                    double opacity;
-
-                                                    if (distance == 0) {
-                                                      scale = 1.2;
-                                                      opacity = 1.0;
-                                                    } else if (distance == 1) {
-                                                      scale = 1.0;
-                                                      opacity = 0.7;
-                                                    } else if (distance == 2) {
-                                                      scale = 0.8;
-                                                      opacity = 0.5;
-                                                    } else {
-                                                      scale = 0.5;
-                                                      opacity = 0.0;
-                                                    }
-
-                                                    return AnimatedOpacity(
-                                                      duration: Duration(milliseconds: 300),
-                                                      opacity: opacity,
-                                                      child: SizedBox(
-                                                        width: 12,
-                                                        // fixed size for layout stability
-                                                        height: 12,
-                                                        child: Center(
-                                                          child: Container(
-                                                            width: 8 * scale,
-                                                            height: 8 * scale,
-                                                            decoration: BoxDecoration(
-                                                              color: Colors.white,
-                                                              shape: BoxShape.circle,
-                                                            ),
-                                                          ),
+                                                          itemBuilder: (context, imgIndex) {
+                                                            final imageUrl = property.media![imgIndex].originalUrl ?? '';
+                                                            return CachedNetworkImage(
+                                                              imageUrl: imageUrl,
+                                                              fit: BoxFit.cover,
+                                                              placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                                                              errorWidget: (context, url, error) => Icon(Icons.error),
+                                                            );
+                                                          },
                                                         ),
                                                       ),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-
-                                            // ❤️ Favorite Icon
-
-
-                                Positioned(
-                                  top: 10,
-                                  right: 10,
-                                  child: Consumer<FavoriteProvider>(
-                                    builder: (context, favProvider, _) {
-                                      final propertyId = int.tryParse(property.id?.toString() ?? '') ?? 0;
-
-                                      final isSaved = favProvider.isFavorite(propertyId);
-
-                                      return Material(
-                                        color: Colors.white,
-                                        shape: const CircleBorder(),
-                                        elevation: 4,
-                                        child: IconButton(
-                                          icon: Icon(
-                                            isSaved ? Icons.favorite : Icons.favorite_border,
-                                            color: isSaved ? Colors.red : Colors.grey,
-                                          ),
-                                          onPressed: () async {
-                                            final token = await SecureStorage.getToken();
-
-                                            if (token == null || token.isEmpty) {
-                                              // 🔒 Show login-required dialog
-                                              showDialog(
-                                                context: context,
-                                                builder: (ctx) => Dialog(
-                                                  backgroundColor: Colors.transparent,
-                                                  insetPadding: EdgeInsets.zero,
-                                                  child: Container(
-                                                    height: 70,
-                                                    margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.red,
-                                                      borderRadius: BorderRadius.circular(10),
                                                     ),
-                                                    child: Stack(
-                                                      clipBehavior: Clip.none,
-                                                      children: [
-                                                        Positioned(
-                                                          top: -14,
-                                                          right: -10,
-                                                          child: IconButton(
-                                                            icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                                                            onPressed: () => Navigator.of(ctx).pop(),
-                                                            padding: EdgeInsets.zero,
-                                                            constraints: const BoxConstraints(),
-                                                          ),
-                                                        ),
-                                                        Positioned(
-                                                          left: 16,
-                                                          right: 16,
-                                                          bottom: 12,
-                                                          child: Row(
-                                                            children: [
-                                                              const Expanded(
-                                                                child: Text(
-                                                                  'Login required to add favorites.',
-                                                                  style: TextStyle(color: Colors.white, fontSize: 13),
-                                                                ),
-                                                              ),
-                                                              const SizedBox(width: 12),
-                                                              GestureDetector(
-                                                                onTap: () {
-                                                                  Navigator.of(ctx).pop();
-                                                                  Navigator.of(ctx).pushNamed('/login');
-                                                                },
-                                                                child: const Text(
-                                                                  'Login',
-                                                                  style: TextStyle(
-                                                                    color: Colors.white,
-                                                                    fontWeight: FontWeight.bold,
-                                                                    decoration: TextDecoration.underline,
-                                                                    decorationColor: Colors.white,
-                                                                    decorationThickness: 1.5,
+
+                                                    // 🔘 Dot Indicator
+                                                    Positioned(
+                                                      bottom: 12,
+                                                      left: 0,
+                                                      right: 0,
+                                                      child: Row(
+                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                        children: List.generate(
+                                                          item.media?.length ?? 0,
+                                                              (index) {
+                                                            final distance = (index -
+                                                                _currentImageIndex).abs();
+                                                            double scale;
+                                                            double opacity;
+
+                                                            if (distance == 0) {
+                                                              scale = 1.2;
+                                                              opacity = 1.0;
+                                                            } else if (distance == 1) {
+                                                              scale = 1.0;
+                                                              opacity = 0.7;
+                                                            } else if (distance == 2) {
+                                                              scale = 0.8;
+                                                              opacity = 0.5;
+                                                            } else {
+                                                              scale = 0.5;
+                                                              opacity = 0.0;
+                                                            }
+
+                                                            return AnimatedOpacity(
+                                                              duration: Duration(milliseconds: 300),
+                                                              opacity: opacity,
+                                                              child: SizedBox(
+                                                                width: 12,
+                                                                // fixed size for layout stability
+                                                                height: 12,
+                                                                child: Center(
+                                                                  child: Container(
+                                                                    width: 8 * scale,
+                                                                    height: 8 * scale,
+                                                                    decoration: BoxDecoration(
+                                                                      color: Colors.white,
+                                                                      shape: BoxShape.circle,
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               ),
-                                                            ],
-                                                          ),
+                                                            );
+                                                          },
                                                         ),
-                                                      ],
+                                                      ),
                                                     ),
-                                                  ),
-                                                ),
-                                              );
-                                              return;
-                                            }
 
-                                            // 🌀 Toggle via API + Provider
-                                            favProvider.toggleFavorite(propertyId, context);
-                                            property.saved = !isSaved;
-
-                                            final success = await toggledApi(token, property.id!);
-
-                                            if (!success) {
-                                              // ❌ Revert toggle on failure
-                                              favProvider.toggleFavorite(propertyId,context);
-                                              property.saved = isSaved;
-
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(content: Text("Failed to update favorite.")),
-                                              );
-                                            }
-                                          },
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
+                                                    // ❤️ Favorite Icon
 
 
-                                  // 👤 Agent Badge
-                                            Positioned(
-                                              bottom: -30,
-                                              left: 10,
-                                              child: GestureDetector(
-                                                onTap: () {
-                                                  String id = property.id.toString();
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) => Featured_Detail(data: id),
+                                                    Positioned(
+                                                      top: 10,
+                                                      right: 10,
+                                                      child: Consumer<FavoriteProvider>(
+                                                        builder: (context, favProvider, _) {
+                                                          final propertyId = int.tryParse(property.id?.toString() ?? '') ?? 0;
+
+                                                          final isSaved = favProvider.isFavorite(propertyId);
+
+                                                          return Material(
+                                                            color: Colors.white,
+                                                            shape: const CircleBorder(),
+                                                            elevation: 4,
+                                                            child: IconButton(
+                                                              icon: Icon(
+                                                                isSaved ? Icons.favorite : Icons.favorite_border,
+                                                                color: isSaved ? Colors.red : Colors.grey,
+                                                              ),
+                                                              onPressed: () async {
+                                                                final token = await SecureStorage.getToken();
+
+                                                                if (token == null || token.isEmpty) {
+                                                                  // 🔒 Show login-required dialog
+                                                                  showDialog(
+                                                                    context: context,
+                                                                    builder: (ctx) => Dialog(
+                                                                      backgroundColor: Colors.transparent,
+                                                                      insetPadding: EdgeInsets.zero,
+                                                                      child: Container(
+                                                                        height: 70,
+                                                                        margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+                                                                        decoration: BoxDecoration(
+                                                                          color: Colors.red,
+                                                                          borderRadius: BorderRadius.circular(10),
+                                                                        ),
+                                                                        child: Stack(
+                                                                          clipBehavior: Clip.none,
+                                                                          children: [
+                                                                            Positioned(
+                                                                              top: -14,
+                                                                              right: -10,
+                                                                              child: IconButton(
+                                                                                icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                                                onPressed: () => Navigator.of(ctx).pop(),
+                                                                                padding: EdgeInsets.zero,
+                                                                                constraints: const BoxConstraints(),
+                                                                              ),
+                                                                            ),
+                                                                            Positioned(
+                                                                              left: 16,
+                                                                              right: 16,
+                                                                              bottom: 12,
+                                                                              child: Row(
+                                                                                children: [
+                                                                                  const Expanded(
+                                                                                    child: Text(
+                                                                                      'Login required to add favorites.',
+                                                                                      style: TextStyle(color: Colors.white, fontSize: 13),
+                                                                                    ),
+                                                                                  ),
+                                                                                  const SizedBox(width: 12),
+                                                                                  GestureDetector(
+                                                                                    onTap: () {
+                                                                                      Navigator.of(ctx).pop();
+                                                                                      Navigator.of(ctx).pushNamed('/login');
+                                                                                    },
+                                                                                    child: const Text(
+                                                                                      'Login',
+                                                                                      style: TextStyle(
+                                                                                        color: Colors.white,
+                                                                                        fontWeight: FontWeight.bold,
+                                                                                        decoration: TextDecoration.underline,
+                                                                                        decorationColor: Colors.white,
+                                                                                        decorationThickness: 1.5,
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                  return;
+                                                                }
+
+                                                                // 🌀 Toggle via API + Provider
+                                                                favProvider.toggleFavorite(propertyId, context);
+                                                                property.saved = !isSaved;
+
+                                                                final success = await toggledApi(token, property.id!);
+
+                                                                if (!success) {
+                                                                  // ❌ Revert toggle on failure
+                                                                  favProvider.toggleFavorite(propertyId,context);
+                                                                  property.saved = isSaved;
+
+                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                    const SnackBar(content: Text("Failed to update favorite.")),
+                                                                  );
+                                                                }
+                                                              },
+                                                            ),
+                                                          );
+                                                        },
+                                                      ),
                                                     ),
-                                                  );
-                                                },
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                  children: [
-                                                    CircleAvatar(
-                                                      radius: 28,
-                                                      backgroundImage: (property.agentImage != null && property.agentImage!.isNotEmpty)
-                                                          ? CachedNetworkImageProvider(property.agentImage!)
-                                                          : const AssetImage("assets/images/dummy.jpg") as ImageProvider,
-                                                    ),
-                                                    const SizedBox(height: 6),
-                                                    Transform.translate(
-                                                      offset: const Offset(-5, 0),
-                                                      child: Text(
-                                                        "AGENT",
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: Color(0xFF1A73E9),
-                                                          letterSpacing: 0.5,
+
+
+                                                    // 👤 Agent Badge
+                                                    Positioned(
+                                                      bottom: -30,
+                                                      left: 10,
+                                                      child: GestureDetector(
+                                                        onTap: () {
+                                                          String id = property.id.toString();
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (context) => Featured_Detail(data: id),
+                                                            ),
+                                                          );
+                                                        },
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                                          children: [
+                                                            CircleAvatar(
+                                                              radius: 28,
+                                                              backgroundImage: (property.agentImage != null && property.agentImage!.isNotEmpty)
+                                                                  ? CachedNetworkImageProvider(property.agentImage!)
+                                                                  : const AssetImage("assets/images/dummy.jpg") as ImageProvider,
+                                                            ),
+                                                            const SizedBox(height: 6),
+                                                            Transform.translate(
+                                                              offset: const Offset(-5, 0),
+                                                              child: Text(
+                                                                "AGENT",
+                                                                style: TextStyle(
+                                                                  fontSize: 12,
+                                                                  fontWeight: FontWeight.w500,
+                                                                  color: Color(0xFF1A73E9),
+                                                                  letterSpacing: 0.5,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
                                                       ),
                                                     ),
                                                   ],
                                                 ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
 
 
-                                        // 🔽 Spacer so that the overlapping image is not clipped
-                                        const SizedBox(height: 15),
+                                                // 🔽 Spacer so that the overlapping image is not clipped
+                                                const SizedBox(height: 15),
 
-                                        Padding(
-                                          padding: const EdgeInsets.only(left: 0, right: 0, top: 4, bottom: 4),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              // Agent Name
-                                              Expanded(
-                                                child: Padding(
-                                                  padding: const EdgeInsets.only(left: 10),
-                                                  child: Text(
-                                                    property.agentName ?? 'Agent',
-                                                    style: const TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.w600,
-                                                      color: Colors.black,
-                                                    ),
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                              ),
-
-                                              // Listed text + agency logo
-                                              Row(
-                                                children: [
-                                                  if (property.postedOn != null && property.postedOn!.isNotEmpty)
-                                                    Text(
-                                                      'Listed ${property.postedOn}',
-                                                      style: const TextStyle(
-                                                        fontSize: 13,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  const SizedBox(width: 4),
-                                                  if (property.agencyLogo != null && property.agencyLogo!.isNotEmpty)
-                                                    Padding(
-                                                      padding: const EdgeInsets.all(8.0),
-                                                      child: Container(
-                                                        height: 30,
-                                                        width: 60,
-                                                        decoration: BoxDecoration(
-                                                          borderRadius: BorderRadius.circular(4),
-                                                          image: DecorationImage(
-                                                            image: CachedNetworkImageProvider(property.agencyLogo!),
-                                                            fit: BoxFit.contain,
+                                                Padding(
+                                                  padding: const EdgeInsets.only(left: 0, right: 0, top: 4, bottom: 4),
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                                    children: [
+                                                      // Agent Name
+                                                      Expanded(
+                                                        child: Padding(
+                                                          padding: const EdgeInsets.only(left: 10),
+                                                          child: Text(
+                                                            property.agentName ?? 'Agent',
+                                                            style: const TextStyle(
+                                                              fontSize: 15,
+                                                              fontWeight: FontWeight.w600,
+                                                              color: Colors.black,
+                                                            ),
+                                                            overflow: TextOverflow.ellipsis,
                                                           ),
                                                         ),
                                                       ),
+
+                                                      // Listed text + agency logo
+                                                      Row(
+                                                        children: [
+                                                          if (property.postedOn != null && property.postedOn!.isNotEmpty)
+                                                            Text(
+                                                              'Listed ${property.postedOn}',
+                                                              style: const TextStyle(
+                                                                fontSize: 13,
+                                                                color: Colors.grey,
+                                                              ),
+                                                            ),
+                                                          const SizedBox(width: 4),
+                                                          if (property.agencyLogo != null && property.agencyLogo!.isNotEmpty)
+                                                            Padding(
+                                                              padding: const EdgeInsets.all(8.0),
+                                                              child: Container(
+                                                                height: 30,
+                                                                width: 60,
+                                                                decoration: BoxDecoration(
+                                                                  borderRadius: BorderRadius.circular(4),
+                                                                  image: DecorationImage(
+                                                                    image: CachedNetworkImageProvider(property.agencyLogo!),
+                                                                    fit: BoxFit.contain,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+
+                                                SizedBox(height: 5,),
+
+                                                const Divider(
+                                                  color: Colors.grey,
+                                                  thickness: 0.3,
+                                                  height: 6,
+                                                ),
+
+
+
+
+                                                SizedBox(height: 8,),
+
+
+                                                Padding(
+                                                  padding: const EdgeInsets.only(top: 5),
+                                                  child: ListTile(
+                                                    title: Text(
+                                                      property.title.toString(),
+                                                      style: TextStyle(fontSize: 16, height: 1.4),
                                                     ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-
-                                        SizedBox(height: 5,),
-
-                                        const Divider(
-                                          color: Colors.grey,
-                                          thickness: 0.3,
-                                          height: 6,
-                                        ),
-
-
-
-
-                                        SizedBox(height: 8,),
-
-
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 5),
-                                          child: ListTile(
-                                            title: Text(
-                                              property.title.toString(),
-                                              style: TextStyle(fontSize: 16, height: 1.4),
-                                            ),
-                                            subtitle: Padding(
-                                              padding: const EdgeInsets.only(top: 8.0),
-                                              child: Text(
-                                                '${property.price} AED',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 22,
-                                                    height: 1.4),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Row(
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10, right: 5, top: 0),
-                                              child:
-                                              Image.asset("assets/images/map.png", height: 14),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 0, right: 0, top: 0),
-                                              child: Text(
-                                                property.location.toString(),
-                                                style: TextStyle(
-                                                    fontSize: 13,
-                                                    height: 1.4,
-                                                    overflow: TextOverflow.visible),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 8),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                          child: Row(
-                                            children: [
-                                              Image.asset("assets/images/bed.png", height: 13),
-                                              SizedBox(width: 5),
-                                              Text(property.bedrooms.toString()),
-                                              SizedBox(width: 10),
-                                              Image.asset("assets/images/bath.png", height: 13),
-                                              SizedBox(width: 5),
-                                              Text(property.bathrooms.toString()),
-                                              SizedBox(width: 10),
-                                              Image.asset("assets/images/messure.png",
-                                                  height: 13),
-                                              SizedBox(width: 5),
-                                              Text(property.squareFeet.toString()),
-                                            ],
-                                          ),
-                                        ),
-
-                                        SizedBox(height: 15),
-                                        Row(
-                                          children: [
-                                            const SizedBox(width: 10),
-                                            Expanded(
-                                              child: ElevatedButton.icon(
-                                                onPressed: () async {
-                                                  String phone =
-                                                      'tel:${item.phoneNumber}';
-                                                  try {
-                                                    final bool launched = await launchUrlString(
-                                                      phone,
-                                                      mode: LaunchMode.externalApplication,
-                                                    );
-                                                    if (!launched) print("❌ Could not launch dialer");
-                                                  } catch (e) {
-                                                    print("❌ Exception: $e");
-                                                  }
-                                                },
-                                                icon: const Icon(Icons.call, color: Colors.red),
-                                                label: const Text("Call",
-                                                    style: TextStyle(color: Colors.black)),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.grey[100],
-                                                  shape: RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(10)),
-                                                  elevation: 2,
-                                                  padding:
-                                                  const EdgeInsets.symmetric(vertical: 10),
+                                                    subtitle: Padding(
+                                                      padding: const EdgeInsets.only(top: 8.0),
+                                                      child: Text(
+                                                        '${property.price} AED',
+                                                        style: TextStyle(
+                                                            fontWeight: FontWeight.bold,
+                                                            fontSize: 22,
+                                                            height: 1.4),
+                                                      ),
+                                                    ),
+                                                  ),
                                                 ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Expanded(
-                                              child: ElevatedButton.icon(
-                                                onPressed: () async {
-                                                  //final property = agentProperties.data![index];
-
-                                                  final rawNumber = property.whatsapp ?? property.phoneNumber ?? '';
-                                                  final phone = whatsAppNumber(rawNumber);
-
-                                                  if (phone.isEmpty) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text("No WhatsApp number available")),
-                                                    );
-                                                    return;
-                                                  }
-
-                                                  final message = Uri.encodeComponent("Hello");
-                                                  final url = Uri.parse("https://wa.me/$phone?text=$message");
-
-                                                  if (await canLaunchUrl(url)) {
-                                                    try {
-                                                      await launchUrl(url, mode: LaunchMode.externalApplication);
-                                                    } catch (e) {
-                                                      print("❌ Exception: $e");
-                                                    }
-                                                  } else {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text("Cannot open WhatsApp")),
-                                                    );
-                                                  }
-                                                },
-                                                icon: Image.asset("assets/images/whats.png", height: 20),
-                                                label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.grey[100],
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                  elevation: 2,
-                                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                                Row(
+                                                  children: [
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(
+                                                          left: 10, right: 5, top: 0),
+                                                      child:
+                                                      Image.asset("assets/images/map.png", height: 14),
+                                                    ),
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(
+                                                          left: 0, right: 0, top: 0),
+                                                      child: Text(
+                                                        property.location.toString(),
+                                                        style: TextStyle(
+                                                            fontSize: 13,
+                                                            height: 1.4,
+                                                            overflow: TextOverflow.visible),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
-                                              ),
+                                                SizedBox(height: 8),
+                                                Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                                  child: Row(
+                                                    children: [
+                                                      Image.asset("assets/images/bed.png", height: 13),
+                                                      SizedBox(width: 5),
+                                                      Text(property.bedrooms.toString()),
+                                                      SizedBox(width: 10),
+                                                      Image.asset("assets/images/bath.png", height: 13),
+                                                      SizedBox(width: 5),
+                                                      Text(property.bathrooms.toString()),
+                                                      SizedBox(width: 10),
+                                                      Image.asset("assets/images/messure.png",
+                                                          height: 13),
+                                                      SizedBox(width: 5),
+                                                      Text(property.squareFeet.toString()),
+                                                    ],
+                                                  ),
+                                                ),
+
+                                                SizedBox(height: 15),
+                                                Row(
+                                                  children: [
+                                                    const SizedBox(width: 10),
+                                                    Expanded(
+                                                      child: ElevatedButton.icon(
+                                                        onPressed: () async {
+                                                          String phone =
+                                                              'tel:${item.phoneNumber}';
+                                                          try {
+                                                            final bool launched = await launchUrlString(
+                                                              phone,
+                                                              mode: LaunchMode.externalApplication,
+                                                            );
+                                                            if (!launched) print("❌ Could not launch dialer");
+                                                          } catch (e) {
+                                                            print("❌ Exception: $e");
+                                                          }
+                                                        },
+                                                        icon: const Icon(Icons.call, color: Colors.red),
+                                                        label: const Text("Call",
+                                                            style: TextStyle(color: Colors.black)),
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: Colors.grey[100],
+                                                          shape: RoundedRectangleBorder(
+                                                              borderRadius: BorderRadius.circular(10)),
+                                                          elevation: 2,
+                                                          padding:
+                                                          const EdgeInsets.symmetric(vertical: 10),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 10),
+                                                    Expanded(
+                                                      child: ElevatedButton.icon(
+                                                        onPressed: () async {
+                                                          //final property = agentProperties.data![index];
+
+                                                          final rawNumber = property.whatsapp ?? property.phoneNumber ?? '';
+                                                          final phone = whatsAppNumber(rawNumber);
+
+                                                          if (phone.isEmpty) {
+                                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                              const SnackBar(content: Text("No WhatsApp number available")),
+                                                            );
+                                                            return;
+                                                          }
+
+                                                          final message = Uri.encodeComponent("Hello");
+                                                          final url = Uri.parse("https://wa.me/$phone?text=$message");
+
+                                                          if (await canLaunchUrl(url)) {
+                                                            try {
+                                                              await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                            } catch (e) {
+                                                              print("❌ Exception: $e");
+                                                            }
+                                                          } else {
+                                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                              const SnackBar(content: Text("Cannot open WhatsApp")),
+                                                            );
+                                                          }
+                                                        },
+                                                        icon: Image.asset("assets/images/whats.png", height: 20),
+                                                        label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: Colors.grey[100],
+                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                          elevation: 2,
+                                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                                        ),
+                                                      ),
+                                                    ),
+
+
+
+                                                    const SizedBox(width: 10),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 10),
+                                              ],
                                             ),
-
-
-
-                                            const SizedBox(width: 10),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                      ],
-                                    ),
-                                ],  ),
-                                    ),),), );
+                                          ],  ),
+                                      ),),), );
 
 
 
@@ -1753,6 +1719,199 @@ class _AboutAgentState extends State<AboutAgent> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+
+  Container buildMyNavBar(BuildContext context) {
+    return Container(
+      height: 50,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          GestureDetector(
+              onTap: () async {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Home()));
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: Image.asset("assets/images/home.png", height: 25,),
+              )),
+
+          Container(
+            margin: const EdgeInsets.only(left: 18),
+            height: 35,
+            width: 35,
+            padding: const EdgeInsets.only(top: 2),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadiusDirectional.circular(20.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey,
+                  offset: const Offset(0.5, 0.5),
+                  blurRadius: 1.0,
+                  spreadRadius: 0.5,
+                ),
+                BoxShadow(
+                  color: Colors.white,
+                  offset: const Offset(0.0, 0.0),
+                  blurRadius: 0.0,
+                  spreadRadius: 0.0,
+                ),
+              ],
+            ),
+            child: GestureDetector(
+              onTap: () async {
+                // Example: use first project, or replace with desired number
+                final phone = phoneCallNumber(
+                    agentDetail?.phone ?? ''
+                );
+
+                if (phone.isNotEmpty) {
+                  final telUrl = 'tel:$phone';
+                  if (await canLaunchUrlString(telUrl)) {
+                    await launchUrlString(
+                        telUrl, mode: LaunchMode.externalApplication);
+                  }
+                }
+              },
+              child: Icon(Icons.call_outlined, color: Colors.red),
+            ),
+          ),
+
+          Container(
+            margin: const EdgeInsets.only(left: 1),
+            height: 35,
+            width: 35,
+            padding: const EdgeInsets.only(top: 2),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadiusDirectional.circular(20.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey,
+                  offset: const Offset(0.5, 0.5),
+                  blurRadius: 1.0,
+                  spreadRadius: 0.5,
+                ),
+                BoxShadow(
+                  color: Colors.white,
+                  offset: const Offset(0.0, 0.0),
+                  blurRadius: 0.0,
+                  spreadRadius: 0.0,
+                ),
+              ],
+            ),
+            child: GestureDetector(
+              onTap: () async {
+                // Sanitize phone number to 971XXXXXXXXX (no plus)
+                final phoneRaw = agentDetail?.whatsapp?? '';
+                final phone = whatsAppNumber(phoneRaw); // always in 971XXXXXXXXX
+
+                final message = Uri.encodeComponent("Hello");
+                final waUrl = Uri.parse("https://wa.me/$phone?text=$message");
+
+                if (await canLaunchUrl(waUrl)) {
+                  try {
+                    final launched = await launchUrl(
+                      waUrl,
+                      mode: LaunchMode.externalApplication,
+                    );
+                    if (!launched) {
+                      print("❌ Could not launch WhatsApp");
+                    }
+                  } catch (e) {
+                    print("❌ Exception: $e");
+                  }
+                } else {
+                  print("❌ WhatsApp not available or URL not supported");
+                }
+              },
+              child: Image.asset("assets/images/whats.png", height: 20),
+            ),
+          ),
+          // Container(
+          //   margin: const EdgeInsets.only(left: 1, right: 40),
+          //   height: 35,
+          //   width: 35,
+          //   padding: const EdgeInsets.only(top: 2),
+          //   decoration: BoxDecoration(
+          //     borderRadius: BorderRadiusDirectional.circular(20.0),
+          //     boxShadow: [
+          //       BoxShadow(
+          //         color: Colors.grey,
+          //         offset: const Offset(0.5, 0.5),
+          //         blurRadius: 1.0,
+          //         spreadRadius: 0.5,
+          //       ),
+          //       BoxShadow(
+          //         color: Colors.white,
+          //         offset: const Offset(0.0, 0.0),
+          //         blurRadius: 0.0,
+          //         spreadRadius: 0.0,
+          //       ),
+          //     ],
+          //   ),
+          //   child: GestureDetector(
+          //     onTap: () async {
+          //       // final String? email = projectDetailModel?.data?.email;
+          //       if (email == null || email.isEmpty) {
+          //         ScaffoldMessenger.of(context).showSnackBar(
+          //           const SnackBar(content: Text('No email available for this property.')),
+          //         );
+          //         return;
+          //       }
+          //       final Uri emailUri = Uri(
+          //         scheme: 'mailto',
+          //         path: email,
+          //         query: Uri.encodeFull('subject=Property Inquiry&body=Hi, I saw your property on Akarat.'),
+          //       );
+          //       if (await canLaunchUrl(emailUri)) {
+          //         await launchUrl(emailUri);
+          //       } else {
+          //         ScaffoldMessenger.of(context).showSnackBar(
+          //           SnackBar(content: Text('Could not launch $emailUri')),
+          //         );
+          //       }
+          //     },
+          //     child: const Icon(Icons.mail, color: Colors.red),
+          //   ),
+          // ),
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
+              setState(() {
+                if (token == '') {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => My_Account()));
+                }
+                else {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => My_Account()));
+                }
+              });
+            },
+            icon: pageIndex == 3
+                ? const Icon(
+              Icons.dehaze,
+              color: Colors.red,
+              size: 35,
+            )
+                : const Icon(
+              Icons.dehaze_outlined,
+              color: Colors.red,
+              size: 35,
+            ),
+          ),
+        ],
       ),
     );
   }

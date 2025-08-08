@@ -37,6 +37,9 @@ class Data {
   int? sale;
   int? rent;
   String? image;
+  String? bio;
+  int? propertiesCount;
+
 
   Data(
       {this.id,
@@ -47,7 +50,9 @@ class Data {
         this.languages,
         this.sale,
         this.rent,
-        this.image});
+        this.image,
+        this.bio,
+        this.propertiesCount, });
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -59,6 +64,8 @@ class Data {
     sale = json['sale'];
     rent = json['rent'];
     image = json['image'];
+    bio = json['bio']; // 👈 new
+    propertiesCount = json['properties_count'];
   }
 
   Map<String, dynamic> toJson() {
@@ -72,6 +79,8 @@ class Data {
     data['sale'] = this.sale;
     data['rent'] = this.rent;
     data['image'] = this.image;
+    data['bio'] = bio; // ✅ add this if needed
+    data['properties_count'] = propertiesCount;
     return data;
   }
 }

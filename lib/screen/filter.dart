@@ -57,8 +57,25 @@ class _FilterDemoState extends State<FilterDemo> {
   double startarea = 3000;
   double endarea = 5000;
   double end = 5000;
-  SfRangeValues _values = SfRangeValues(80000 ,200000);
-  SfRangeValues _valuesArea = SfRangeValues(3000 ,5000);
+  SfRangeValues _values = SfRangeValues(500.0, 300000.0); // full range internally
+
+  final TextEditingController minPriceController = TextEditingController();
+  final TextEditingController maxPriceController = TextEditingController();
+
+  bool isMinTyping = false;
+  bool isMaxTyping = false;
+
+  late RangeController _priceRangeController;
+  late RangeController _areaRangeController;
+
+
+  SfRangeValues _valuesArea = SfRangeValues(0.0, 0.0);
+  TextEditingController minAreaController = TextEditingController();
+  TextEditingController maxAreaController = TextEditingController();
+  bool isMinAreaTyping = false;
+  bool isMaxAreaTyping = false;
+  String min_sqrfeet = '';
+  String max_sqrfeet = '';
   late RangeController _rangeController;
   late RangeController _rangeControllerarea;
   final agenciesController = TextEditingController();
@@ -98,6 +115,9 @@ class _FilterDemoState extends State<FilterDemo> {
   @override
   void initState() {
     super.initState();
+
+    _priceRangeController = RangeController(start: 500, end: 300000);
+    _areaRangeController = RangeController(start: 0, end: 10000);
 
     // Set selected product index and purpose
     selectedproduct = _product.indexOf(widget.data);
@@ -200,6 +220,11 @@ class _FilterDemoState extends State<FilterDemo> {
     _rangeController.dispose();
     _rangeControllerarea.dispose();
     super.dispose();
+    minPriceController.dispose();
+    maxPriceController.dispose();
+    minAreaController.dispose();
+    maxAreaController.dispose();
+
   }
 
 // Product list (UI display)
@@ -359,8 +384,9 @@ class _FilterDemoState extends State<FilterDemo> {
   int? selectedtype; // Holds the index of the selected container
   int? selectedproduct ; // Holds the index of the selected container
   int? selectedcategory; // Holds the index of the selected container
-  int? selectedbedroom; // Holds the index of the selected container
-  int? selectedbathroom; // Holds the index of the selected container
+  Set<int> selectedBedrooms = {};
+  Set<int> selectedBathrooms = {};
+
   int? selectedamenities; // Holds the index of the selected container
   // int? selectedamenities; // Holds the index of the selected container
   int? selectedrent; // Holds the index of the selected container
@@ -374,8 +400,7 @@ class _FilterDemoState extends State<FilterDemo> {
   String rent = ' ';
   String min_price = '';
   String max_price = ' ';
-  String min_sqrfeet = ' ';
-  String max_sqrfeet = ' ';
+
   Set<int> selectedIndexes = {};
   PropertyTypeModel? propertyTypeModel;
 
@@ -679,7 +704,7 @@ class _FilterDemoState extends State<FilterDemo> {
           TextButton(
             onPressed: () {
               setState(() {
-                // Reset all string/int filter variables
+                // Reset all filter variables
                 purpose = '';
                 category = '';
                 bedroom = '';
@@ -692,27 +717,34 @@ class _FilterDemoState extends State<FilterDemo> {
                 min_sqrfeet = '';
                 max_sqrfeet = '';
 
-                // Reset selected indexes
+                // Reset selected indexes and lists
                 selectedIndex = null;
                 selectedtype = null;
                 selectedproduct = null;
                 selectedcategory = null;
-                selectedbedroom = null;
-                selectedbathroom = null;
+                selectedBedrooms.clear();
+                selectedBathrooms.clear();
                 selectedrent = null;
-
-                // Reset amenities
                 selectedIndexes.clear();
 
-                updateFilterCount();
+                // Reset sliders to full range
+                _priceRangeController.start = 500;
+                _priceRangeController.end = 300000;
 
-                // Reset sliders
-                _values = SfRangeValues(80000, 200000);
-                _valuesArea = SfRangeValues(3000, 5000);
+                _areaRangeController.start = 0;
+                _areaRangeController.end = 10000;
 
-                // Also clear text fields if any (you already use controllers for search etc.)
+
+                // Clear all text field controllers
+                minPriceController.clear();
+                maxPriceController.clear();
+                minAreaController.clear();
+                maxAreaController.clear();
                 _searchController.clear();
                 agenciesController.clear();
+
+                // Update filter count (UI)
+                updateFilterCount();
               });
             },
             child: const Text(
@@ -724,6 +756,8 @@ class _FilterDemoState extends State<FilterDemo> {
             ),
           ),
         ],
+
+
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -932,7 +966,8 @@ class _FilterDemoState extends State<FilterDemo> {
               const Divider(height: 1,indent: 15,endIndent: 15,),
               const SizedBox(height: 20),
               //text
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(padding: const EdgeInsets.only(left: 20),
                     child:  Text("Price range",
@@ -945,6 +980,10 @@ class _FilterDemoState extends State<FilterDemo> {
                   ),
                 ],
               ),
+
+
+
+
               const SizedBox(height: 10),
               Padding(
                   padding: const EdgeInsets.only(top: 0,left: 20,right: 10),
@@ -975,8 +1014,29 @@ class _FilterDemoState extends State<FilterDemo> {
                                 ), //BoxShadow
                               ],
                             ),
-                            child: Text(_values.start.toStringAsFixed(0),style: TextStyle(
-                                fontWeight: FontWeight.bold,fontSize: 15 ))
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom:8.0),
+                              child: TextFormField(
+                                controller: minPriceController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(border: InputBorder.none),
+                                onTap: () => isMinTyping = true,              // 👈 starts typing
+                                onEditingComplete: () => isMinTyping = false, // 👈 ends typing (on "done")
+                                onChanged: (val) {
+                                  final start = double.tryParse(val) ?? 0;
+                                  if (start <= _values.end) {
+                                    setState(() {
+                                      _values = SfRangeValues(start, _values.end);
+                                      min_price = start.toStringAsFixed(0);
+                                    });
+                                    showResult(autoUpdate: true);
+                                  }
+                                },
+                              ),
+                            ),
+
+
+
 
                         ),
 
@@ -1011,8 +1071,29 @@ class _FilterDemoState extends State<FilterDemo> {
                                 ), //BoxShadow
                               ],
                             ),
-                            child: Text(_values.end.toStringAsFixed(0),style: TextStyle(
-                                fontWeight: FontWeight.bold ,fontSize: 15))
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: TextFormField(
+                                controller: maxPriceController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(border: InputBorder.none),
+                                onTap: () => isMaxTyping = true,
+                                onEditingComplete: () => isMaxTyping = false,
+                                onChanged: (val) {
+                                  final end = double.tryParse(val) ?? 0;
+                                  if (end >= _values.start) {
+                                    setState(() {
+                                      _values = SfRangeValues(_values.start, end);
+                                      max_price = end.toStringAsFixed(0);
+                                    });
+                                    showResult(autoUpdate: true);
+                                  }
+                                },
+                              ),
+                            ),
+
+
+
                         ),
                       ]
                   )
@@ -1043,17 +1124,30 @@ class _FilterDemoState extends State<FilterDemo> {
                     inactiveColor: Color(0x80F1EEEE) ,
                     enableTooltip: true,
                     shouldAlwaysShowTooltip: true,
-                    initialValues: _values,
+                    controller: _priceRangeController,
+
                     tooltipTextFormatterCallback: (actualValue, _) =>
                     'AED ${actualValue.toInt()}',
-                    onChanged: (value) {
+                    onChanged: (SfRangeValues value) {
                       setState(() {
                         _values = SfRangeValues(value.start, value.end);
                         min_price = value.start.toStringAsFixed(0);
                         max_price = value.end.toStringAsFixed(0);
+
+                        // ✅ Force update min only if not currently editing, or if value actually changed
+                        if (!isMinTyping || minPriceController.text != value.start.toStringAsFixed(0)) {
+                          minPriceController.text = value.start.toStringAsFixed(0);
+                        }
+
+                        if (!isMaxTyping || maxPriceController.text != value.end.toStringAsFixed(0)) {
+                          maxPriceController.text = value.end.toStringAsFixed(0);
+                        }
                       });
-                      showResult(autoUpdate: true); // ✅ call API to update count
+
+                      showResult(autoUpdate: true);
                     },
+
+
 
                     child: SizedBox(
                       height: 60,
@@ -1126,13 +1220,22 @@ class _FilterDemoState extends State<FilterDemo> {
                     scrollDirection: Axis.horizontal,
                     itemCount: _bedroom.length,
                     itemBuilder: (context, index) {
-                      final isSelected = selectedbedroom == index;
+                      final isSelected = selectedBedrooms.contains(index);
+
                       return GestureDetector(
                         onTap: () async {
                           setState(() {
-                            selectedbedroom = index;
-                            bedroom = _bedroom[index];
+                            if (selectedBedrooms.contains(index)) {
+                              selectedBedrooms.remove(index);
+                            } else {
+                              selectedBedrooms.add(index);
+                            }
+
+                            // Convert selected values into comma-separated string
+                            bedroom = selectedBedrooms.map((i) => _bedroom[i]).join(',');
                           });
+                          await updateFilterCount();
+
                           await updateFilterCount(); // ✅ NOW this will work
                         },
 
@@ -1214,13 +1317,21 @@ class _FilterDemoState extends State<FilterDemo> {
                     scrollDirection: Axis.horizontal,
                     itemCount: _bathroom.length,
                     itemBuilder: (context, index) {
-                      final isSelected = selectedbathroom == index;
+                      final isSelected = selectedBathrooms.contains(index);
+
                       return GestureDetector(
                         onTap: () async{
                           setState(() {
-                            selectedbathroom = index;
-                            bathroom = _bathroom[index];
+                            if (selectedBathrooms.contains(index)) {
+                              selectedBathrooms.remove(index);
+                            } else {
+                              selectedBathrooms.add(index);
+                            }
+
+                            bathroom = selectedBathrooms.map((i) => _bathroom[i]).join(',');
                           });
+                          await updateFilterCount();
+
                           await updateFilterCount(); // ✅ call API to update count
                         },
 
@@ -1281,160 +1392,154 @@ class _FilterDemoState extends State<FilterDemo> {
               const Divider(height: 1,indent: 15,endIndent: 15,),
               const SizedBox(height: 20),
               //area
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(padding: const EdgeInsets.only(left: 20),
-                    child:  Text("Area/Size",
+                  const Padding(
+                    padding: EdgeInsets.only(left: 20),
+                    child: Text(
+                      "Area/Size",
                       style: TextStyle(
-                        color: Colors.black,fontSize: 16.0,
+                        color: Colors.black,
+                        fontSize: 16.0,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
                       ),
-                      textAlign: TextAlign.left,),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Padding(
-                  padding: const EdgeInsets.only(top: 0,left: 20,right: 10),
-                  child: Row(
-                      spacing: 15,
-                      children: [
-                        Container(
-                            width: screenSize.width*0.38,
-                            height: 40,
-                            padding: const EdgeInsets.only(top: 8,left: 8),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],
-                            ),
-                            child: Text(_valuesArea.start.toStringAsFixed(0),style: TextStyle(
-                                fontWeight: FontWeight.bold,fontSize: 15
-                            ),)
-                        ),
-
-                        Padding(padding: const EdgeInsets.only(top: 5),
-                          child:  Text("to",
-                            style: TextStyle(
-                                color: Colors.black,fontSize: 15.0),
-                            textAlign: TextAlign.left,),
-                        ),
-
-                        Container(
-                            width: screenSize.width*0.38,
-                            height: 40,
-                            padding: const EdgeInsets.only(top: 8,left: 8),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],
-                            ),
-                            child: Text(_valuesArea.end.toStringAsFixed(0),style: TextStyle(
-                                fontWeight: FontWeight.bold ,fontSize: 15))
-                        ),
-                      ]
-                  )
-              ),
-              const SizedBox(height: 20),
-              //rangeslider
-              Padding(
-                padding: const EdgeInsets.all(5),
-                child: SfRangeSelectorTheme(
-                  data: SfRangeSelectorThemeData(
-                    tooltipBackgroundColor: Colors.black, // Change tooltip background color
-                    tooltipTextStyle: TextStyle(
-                      color: Colors.white, // Change tooltip text color
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  child: SfRangeSelector(
-                    min: 500,
-                    max: 10000,
-                    interval: 1000,
-                    enableTooltip: true,
-                    shouldAlwaysShowTooltip: true,
-                    activeColor: Color(0xFF2575D4), // ✅ blue line
-
-                    inactiveColor: Color(0x80F1EEEE) ,
-                    initialValues: _valuesArea,
-                    onChanged: (value) async {
-                      setState(() {
-                        _valuesArea = SfRangeValues(value.start, value.end);
-                        min_sqrfeet = value.start.toStringAsFixed(0);
-                        max_sqrfeet = value.end.toStringAsFixed(0);
-                      });
-                      await updateFilterCount(); // ✅ call API to update count
-                    },
-
-                    child: SizedBox(
-                      height: 70,
-                      width: 400,
-                      child: SfCartesianChart(
-                        plotAreaBorderColor: Colors.transparent,
-                        margin: const EdgeInsets.all(0),
-                        primaryXAxis: NumericAxis(minimum: 500, maximum: 10000,
-                          isVisible: false,),
-                        primaryYAxis: NumericAxis(isVisible: false),
-                        plotAreaBorderWidth: 0,
-                        plotAreaBackgroundColor: Colors.transparent,
-                        series: <ColumnSeries<Dataarea, double>>[
-                          ColumnSeries<Dataarea, double>(
-                            trackColor: Colors.transparent,
-                            // color: Color.fromARGB(255, 126, 184, 253),
-                            dataSource: chartDataarea,
-                            selectionBehavior: SelectionBehavior(
-                              unselectedOpacity: 0,
-                              selectedOpacity: 0.0,unselectedColor: Colors.transparent,
-                              selectionController: _rangeControllerarea,
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        // Minimum area input
+                        Expanded(
+                          child: Container(
+                            height: 40,
+                            padding: const EdgeInsets.only(left: 8),
+                            decoration: _inputBoxDecoration(),
+                            child: TextFormField(
+                              controller: minAreaController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(border: InputBorder.none),
+                              onTap: () => isMinAreaTyping = true,
+                              onEditingComplete: () => isMinAreaTyping = false,
+                              onChanged: (val) {
+                                final start = double.tryParse(val) ?? 0;
+                                if (start <= _valuesArea.end) {
+                                  setState(() {
+                                    _valuesArea = SfRangeValues(start, _valuesArea.end);
+                                    min_sqrfeet = start.toStringAsFixed(0);
+                                  });
+                                  updateFilterCount();
+                                }
+                              },
                             ),
-                            xValueMapper: (Dataarea sales, int index) => sales.x,
-                            yValueMapper: (Dataarea sales, int index) => sales.y,
-                            pointColorMapper: (Dataarea sales, int index) {
-                              return const Color.fromARGB(255, 37, 117, 212);
-                            },
-                            // color: const Color.fromRGBO(255, 255, 255, 0),
-                            dashArray: const <double>[5, 3],
-                            // borderColor: const Color.fromRGBO(194, 194, 194, 1),
-                            animationDuration: 0,
-                            borderWidth: 0,
-                            //opacity: 0.5,
                           ),
-                        ],
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Text("to", style: TextStyle(fontSize: 15)),
+                        ),
+                        // Maximum area input
+                        Expanded(
+                          child: Container(
+                            height: 40,
+                            padding: const EdgeInsets.only(left: 8),
+                            decoration: _inputBoxDecoration(),
+                            child: TextFormField(
+                              controller: maxAreaController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(border: InputBorder.none),
+                              onTap: () => isMaxAreaTyping = true,
+                              onEditingComplete: () => isMaxAreaTyping = false,
+                              onChanged: (val) {
+                                final end = double.tryParse(val) ?? 0;
+                                if (end >= _valuesArea.start) {
+                                  setState(() {
+                                    _valuesArea = SfRangeValues(_valuesArea.start, end);
+                                    max_sqrfeet = end.toStringAsFixed(0);
+                                  });
+                                  updateFilterCount();
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Slider
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: SfRangeSelectorTheme(
+                      data: SfRangeSelectorThemeData(
+                        tooltipBackgroundColor: Colors.black,
+                        tooltipTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      child: SfRangeSelector(
+                        min: 0,
+                        max: 10000,
+                        interval: 1000,
+                        enableTooltip: true,
+                        shouldAlwaysShowTooltip: true,
+                        activeColor: const Color(0xFF2575D4),
+                        inactiveColor: const Color(0x80F1EEEE),
+                        controller: _areaRangeController,
+
+                        onChanged: (value) {
+                          setState(() {
+                            _valuesArea = SfRangeValues(value.start, value.end);
+                            min_sqrfeet = value.start.toStringAsFixed(0);
+                            max_sqrfeet = value.end.toStringAsFixed(0);
+
+                            // Sync text fields only if user isn't editing
+                            if (!isMinAreaTyping || minAreaController.text != value.start.toStringAsFixed(0)) {
+                              minAreaController.text = value.start.toStringAsFixed(0);
+                            }
+
+                            if (!isMaxAreaTyping || maxAreaController.text != value.end.toStringAsFixed(0)) {
+                              maxAreaController.text = value.end.toStringAsFixed(0);
+                            }
+                          });
+                          updateFilterCount();
+                        },
+                        child: SizedBox(
+                          height: 70,
+                          width: double.infinity,
+                          child: SfCartesianChart(
+                            plotAreaBorderColor: Colors.transparent,
+                            margin: const EdgeInsets.all(0),
+                            primaryXAxis: NumericAxis(minimum: 0, maximum: 10000, isVisible: false),
+                            primaryYAxis: NumericAxis(isVisible: false),
+                            plotAreaBorderWidth: 0,
+                            plotAreaBackgroundColor: Colors.transparent,
+                            series: <ColumnSeries<Dataarea, double>>[
+                              ColumnSeries<Dataarea, double>(
+                                dataSource: chartDataarea,
+                                selectionBehavior: SelectionBehavior(
+                                  unselectedOpacity: 0,
+                                  selectedOpacity: 0,
+                                  unselectedColor: Colors.transparent,
+                                  selectionController: _rangeControllerarea,
+                                ),
+                                xValueMapper: (Dataarea sales, int index) => sales.x,
+                                yValueMapper: (Dataarea sales, int index) => sales.y,
+                                pointColorMapper: (Dataarea sales, int index) =>
+                                const Color.fromARGB(255, 37, 117, 212),
+                                dashArray: const <double>[5, 3],
+                                animationDuration: 0,
+                                borderWidth: 0,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
               const SizedBox(height: 10),
               const Divider(height: 1,indent: 15,endIndent: 15,),
@@ -1888,7 +1993,28 @@ class _FilterDemoState extends State<FilterDemo> {
     ) ;
 
   }
-  // Container buildMyNavBar(BuildContext context) {
+
+  BoxDecoration _inputBoxDecoration() {
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(6.0),
+      boxShadow: const [
+        BoxShadow(
+          color: Colors.grey,
+          offset: Offset(0.3, 0.3),
+          blurRadius: 0.3,
+          spreadRadius: 0.3,
+        ),
+        BoxShadow(
+          color: Colors.white,
+          offset: Offset(0, 0),
+          blurRadius: 0,
+          spreadRadius: 0,
+        ),
+      ],
+    );
+  }
+
+// Container buildMyNavBar(BuildContext context) {
   //   return Container(
   //     height: 50,
   //     decoration: BoxDecoration(

@@ -54,6 +54,7 @@ class FliterListDemo extends StatefulWidget {
   final FilterModel? filterModel;   // ✅ updated as nullable
   final String? location;
 
+
   const FliterListDemo({super.key, this.filterModel, this.location});
 
 
@@ -664,14 +665,20 @@ class _FliterListDemoState extends State<FliterListDemo> {
                               clipBehavior: Clip.hardEdge, // ✅ Needed for proper tap area
                               child: InkWell(
                                 customBorder: const CircleBorder(),
-                                onTap: () {
-                                  Navigator.push(
+                                onTap: () async {
+                                  final result = await Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const Filter(data: "Rent"),
+                                      builder: (context) => Filter(data: "Rent"),
                                     ),
                                   );
+
+                                  if (result != null) {
+                                    // Optionally update anything with result
+                                    print("Returned: $result");
+                                  }
                                 },
+
                                 child: Container(
                                   height: 35,
                                   width: 35,
