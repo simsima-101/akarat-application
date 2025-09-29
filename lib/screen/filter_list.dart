@@ -5,7 +5,8 @@ import 'package:Akarat/screen/search.dart';
 import 'package:Akarat/screen/searchexample.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:Akarat/model/filtermodel.dart';
+import 'package:Akarat/model/filtermodel.dart' as fm;
+
 import 'package:Akarat/screen/blog.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/profile_login.dart';
@@ -38,7 +39,7 @@ import 'package:provider/provider.dart';
 
 
 class FliterList extends StatelessWidget {
-  final FilterModel? filterModel;  // ❌ was required, ✅ now optional
+  final fm.FilterModel? filterModel;  // ❌ was required, ✅ now optional
   final String? location;
   final bool forceRefresh;
 
@@ -51,7 +52,7 @@ class FliterList extends StatelessWidget {
 }
 
 class FliterListDemo extends StatefulWidget {
-  final FilterModel? filterModel;   // ✅ updated as nullable
+  final fm.FilterModel? filterModel;   // ✅ updated as nullable
   final String? location;
 
 
@@ -62,7 +63,7 @@ class FliterListDemo extends StatefulWidget {
   _FliterListDemoState createState() => _FliterListDemoState();
 }
 class _FliterListDemoState extends State<FliterListDemo> {
-  late  FilterModel filterModel;
+  late  fm.FilterModel filterModel;
   int pageIndex = 0;
   int? property_id ;
   String token = '';
@@ -74,6 +75,21 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
   bool get isLoggedIn => token.isNotEmpty;
 
+  // paging
+  int _page = 1;
+  int _perPage = 40;    // ask for 40 on first load (match your "Show results" count)
+  bool _isFetchingMore = false;
+  bool _hasMore = true;
+
+  // 👇 ADD THIS METHOD HERE
+  Future<void> _resetPagingAndFetch() async {
+    setState(() {
+      _page = 1;
+      _hasMore = true;
+      _perPage = 40; // keep aligned with your "Show results" count
+    });
+    await showResult(forceRefresh: true);
+  }
 
 
 
@@ -163,38 +179,93 @@ class _FliterListDemoState extends State<FliterListDemo> {
   }
 
 
+  // Add these to your state (once):
+// int _page = 1;
+// int _perPage = 40;  // or whatever you want to request on first load
+
   String buildApiUrl() {
-    // Helper to map UI input to API-compatible purpose
-    String mapPurpose(String purpose) {
-      switch (purpose.trim().toLowerCase()) {
-        case 'rent':
-          return 'to-rent';
-        case 'sale':
-          return 'for-sale';
-        default:
-          return '';
+    String mapPurpose(String p) {
+      switch (p.trim().toLowerCase()) {
+        case 'rent': return 'to-rent';
+        case 'buy':
+        case 'sale': return 'for-sale';
+        default:     return '';
       }
     }
 
-    final params = FilterParams(
-      location: selectedLocation,
+    final baseParams = fm.FilterParams(
+      location: (selectedLocation ?? '').trim(),
       purpose: mapPurpose(purpose),
-      propertyType: property_type.trim(),
+      propertyType: property_type.trim() == 'All Residential' ? '' : property_type.trim(),
       bedroom: (bedroom.trim().toLowerCase() != 'all') ? bedroom.trim() : '',
       bathroom: (bathroom.trim().toLowerCase() != 'all') ? bathroom.trim() : '',
       minPrice: min_price.trim(),
       maxPrice: max_price.trim(),
-      paymentPeriod: (rent.trim().toLowerCase() != 'all') ? rent.trim() : '',
-    );
+      paymentPeriod: (rent.trim().toLowerCase() != 'all') ? rent.trim().toLowerCase() : '',
+    ).toQueryMap();
 
-    final queryString = params.toQueryMap().entries
-        .map((e) => "${e.key}=${Uri.encodeComponent(e.value)}")
-        .join('&');
+    final params = <String, String>{
+      ...baseParams,
+      'page': _page.toString(), // 👈 only page matters
+    }..removeWhere((k, v) => v.isEmpty);
 
-    final fullUrl = 'https://akarat.com/api/filters?$queryString';
-    debugPrint("🔍 Final API URL: $fullUrl");
-    return fullUrl;
+    final searchText = (selectedLocation ?? '').trim();
+    if (searchText.isNotEmpty) {
+      params.remove('location');
+      params['search'] = searchText; // <-- key change
+    }
+
+
+    final uri = Uri.https('akarat.com', '/api/filters', params);
+    debugPrint('📢 Filter API URL: $uri'); // should show ...?search=Downtown...
+    return uri.toString();
   }
+
+  Future<void> _fetchMore() async {
+    if (_isFetchingMore || !_hasMore || _isLoading) return;
+
+    setState(() { _isFetchingMore = true; });
+    try {
+      _page += 1;
+      final url = buildApiUrl();
+      debugPrint('➡️ Fetching page $_page: $url');
+
+      final res = await http.get(Uri.parse(url));
+      if (res.statusCode != 200) {
+        debugPrint('❌ FetchMore failed: ${res.statusCode}');
+        setState(() { _isFetchingMore = false; _hasMore = false; });
+        return;
+      }
+
+      final map = jsonDecode(res.body) as Map<String, dynamic>;
+      final listJson = (map['data']?['data'] as List?) ?? [];
+      final metaJson = (map['data']?['meta'] as Map<String, dynamic>?) ?? {};
+
+      final favProvider = context.read<FavoriteProvider>();
+      final newItems = listJson
+          .map((e) => fm.Data.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      for (var p in newItems) {
+        final intId = int.tryParse(p.id?.toString() ?? '') ?? 0;
+        p.saved = favProvider.isFavorite(intId);
+      }
+
+      setState(() {
+        filterModel.data ??= [];
+        filterModel.data!.addAll(newItems);
+        _hasMore = (metaJson['current_page'] ?? _page) < (metaJson['last_page'] ?? _page);
+        _isFetchingMore = false;
+      });
+
+      debugPrint('📦 Appended ${newItems.length}, total=${filterModel.data!.length}, hasMore=$_hasMore');
+    } catch (e) {
+      debugPrint('🚨 FetchMore error: $e');
+      setState(() { _isFetchingMore = false; _hasMore = false; });
+    }
+  }
+
+
 
 
 
@@ -203,11 +274,18 @@ class _FliterListDemoState extends State<FliterListDemo> {
   @override
   void initState() {
     super.initState();
-
     _rangeController = RangeController(start: start.toString(), end: end.toString());
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 300) {
+        _fetchMore();
+      }
+    });
 
     _loadLoginToken();
   }
+
 
   @override
   void didChangeDependencies() {
@@ -227,10 +305,12 @@ class _FliterListDemoState extends State<FliterListDemo> {
       await _loadFavorites();
 
       // 🌐 Initialize filter model & default UI selections
-      filterModel = widget.filterModel ?? FilterModel();
-      selectedproduct = 0;
-      purpose = "Rent";
-      selectedtype = 0;
+      filterModel = widget.filterModel ?? fm.FilterModel();
+      purpose = '';        // no purpose filter by default
+      selectedproduct = null;
+      selectedtype = null;
+      property_type = 'All Residential';
+
       selectedLocation = widget.location?.toString();
 
       // 📍 Load locations
@@ -280,6 +360,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
   @override
   void dispose() {
     _rangeController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
   final List<int> yValues = [5000, 3000, 9000,7000,10000,1500,4000,];
@@ -425,85 +506,57 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
 
   Future<void> showResult({bool forceRefresh = false}) async {
-    setState(() {
-      _isLoading = true; // Start loading
-    });
+    setState(() { _isLoading = true; });
 
-    final prefs = await SharedPreferences.getInstance();
-    final cacheKey =
-        'filters_result_${property_type}_$ftype$bedroom$min_price$max_price$rent$bathroom$purpose';
-    final cacheTimeKey = '${cacheKey}_time';
-    final now = DateTime.now().millisecondsSinceEpoch;
-
-    String paymentPeriodParam = purpose == 'Rent' ? rent : '';
-
-    // Ensure property_type is set for Rent
-    if (purpose == 'Rent' &&
-        (property_type.trim().isEmpty || property_type == ' ')) {
-      if (propertyTypeModel != null &&
-          propertyTypeModel!.data != null &&
-          propertyTypeModel!.data!.isNotEmpty) {
-        property_type = propertyTypeModel!.data!.first.name ?? '';
-        debugPrint("ℹ️ Auto-selected property_type for Rent: $property_type");
-      } else {
-        debugPrint("❌ Cannot proceed — no property_type selected for Rent");
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
+    // Do not auto-filter by type
+    if (property_type.trim().isEmpty || property_type == ' ') {
+      property_type = 'All Residential'; // your buildApiUrl() already strips this to ''
     }
+
 
     try {
-      final apiUrl = buildApiUrl();
-      final response = await http.get(Uri.parse(apiUrl));
+      _page = 1; // reset to first page
+      final url = buildApiUrl();
+      final res = await http.get(Uri.parse(url));
 
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        final featureResponse = FilterResponseModel.fromJson(responseData);
-        final feature = featureResponse.data;
-
-        final favProvider = context.read<FavoriteProvider>();
-
-
-        setState(() {
-          // Always reset model so UI updates (even if empty)
-          filterModel = feature ?? FilterModel(data: []);
-
-          // Sync favorites for each property
-          for (var prop in filterModel.data!) {
-            final intId = int.tryParse(prop.id?.toString() ?? '') ?? 0;
-            prop.saved = favProvider.isFavorite(intId);
-          }
-
-          _isLoading = false; // Stop loading
-        });
-
-        // Scroll to top when new results are loaded
-        if (_scrollController.hasClients) {
-          _scrollController.jumpTo(0);
-        }
-
-        debugPrint(
-            "✅ Fetched and updated filter result (${filterModel.data?.length ?? 0} items)");
-
-        await prefs.setString(cacheKey, response.body);
-        await prefs.setInt(cacheTimeKey, now);
-      } else {
-        debugPrint("❌ Filter API failed: ${response.statusCode}");
-        setState(() {
-          filterModel = FilterModel(data: []);
-          _isLoading = false;
-        });
+      if (res.statusCode != 200) {
+        debugPrint("❌ Filter API failed: ${res.statusCode}");
+        setState(() { filterModel = fm.FilterModel(data: []); _isLoading = false; _hasMore = false; });
+        return;
       }
-    } catch (e) {
-      debugPrint("🚨 Filter API exception: $e");
+
+      final map = jsonDecode(res.body) as Map<String, dynamic>;
+
+      // Extract list + meta from the structure you posted
+      final listJson = (map['data']?['data'] as List?) ?? [];
+      final metaJson = (map['data']?['meta'] as Map<String, dynamic>?) ?? {};
+
+      final favProvider = context.read<FavoriteProvider>();
+      final items = listJson
+          .map((e) => fm.Data.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+// adjust to your item model type
+      for (var p in items) {
+        final intId = int.tryParse(p.id?.toString() ?? '') ?? 0;
+        p.saved = favProvider.isFavorite(intId);
+      }
+
       setState(() {
-        filterModel = FilterModel(data: []);
+        filterModel = fm.FilterModel(data: items);
+        _hasMore = (metaJson['current_page'] ?? 1) < (metaJson['last_page'] ?? 1);
         _isLoading = false;
       });
+
+      if (_scrollController.hasClients) _scrollController.jumpTo(0);
+
+      debugPrint('✅ Page 1 loaded: ${items.length} items | hasMore=$_hasMore');
+    } catch (e) {
+      debugPrint("🚨 Filter API exception: $e");
+      setState(() { filterModel = fm.FilterModel(data: []); _isLoading = false; _hasMore = false; });
     }
   }
+
 
 
 
@@ -639,9 +692,10 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
-      // bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+       bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
+        controller: _scrollController,
         child: Column(
           // mainAxisSize: MainAxisSize.min,
             children: <Widget>[
@@ -833,19 +887,31 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
                                               bool isSelected = selectedproduct == index;
                                               return GestureDetector(
-                                                onTap: () async {
-                                                  setModalState(() {
-                                                    selectedproduct = index;
-                                                    purpose = _product[index];
-                                                    selectedPurposeText = _product[index];
-                                                  });
+                                                  onTap: () async {
+                                                    setModalState(() {
+                                                      selectedproduct = index;
+                                                      purpose = _product[index];
+                                                      selectedPurposeText = _product[index];
+                                                    });
 
-                                                  await showResult(forceRefresh: true);
-                                                  Navigator.pop(context);
-                                                },
+                                                    // refresh available property types for the new purpose (and location if set)
+                                                    await propertyApi(purpose, location: selectedLocation);
+
+                                                    // optionally default-select the first type for the new purpose
+                                                    if ((propertyTypeModel?.data?.isNotEmpty ?? false)) {
+                                                      setState(() {
+                                                        selectedtype = 0;
+                                                        property_type = propertyTypeModel!.data!.first.name ?? '';
+                                                      });
+                                                    }
+
+                                                    await _resetPagingAndFetch();
+                                                    Navigator.pop(context);
+                                                  },
 
 
-                                                child: Container(
+
+                                                  child: Container(
                                                   margin: const EdgeInsets.only(right: 10),
                                                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                                                   decoration: BoxDecoration(
@@ -888,7 +954,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                     rent = label;
                                                   });
 
-                                                  await showResult(forceRefresh: true);
+                                                  await _resetPagingAndFetch();
+
                                                   Navigator.pop(context);
                                                 },
 
@@ -926,7 +993,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                             onPressed: isPurposeLoading
                                                 ? null
                                                 : () async {  // <-- add async here
-                                              await showResult(forceRefresh: true);
+                                              await _resetPagingAndFetch();
+
 
                                               Navigator.pop(context);
                                             },
@@ -1037,7 +1105,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                     property_type = item.name.toString();
                                                   });
 
-                                                  await showResult(forceRefresh: true);
+                                                  await _resetPagingAndFetch();
+
                                                   Navigator.pop(context);
                                                 },
 
@@ -1088,10 +1157,11 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                         SizedBox(
                                           width: double.infinity,
                                           child: ElevatedButton(
-                                            onPressed: () {
-                                              showResult(forceRefresh: true);   // 🔥 added forceRefresh
+                                            onPressed: () async {
+                                              await _resetPagingAndFetch();
                                               Navigator.pop(context);
                                             },
+
 
 
                                             style: ElevatedButton.styleFrom(
@@ -1263,7 +1333,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                           height: 45,
                                           child: ElevatedButton(
                                             onPressed: () async {
-                                              await showResult(forceRefresh: true);
+                                              await _resetPagingAndFetch();
+
 
                                               Navigator.pop(context); // Close the bottom sheet after showing result
                                             },
@@ -1392,7 +1463,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                       print('Selected bedroom for API: $bedroom');
                                                     });
 
-                                                    await showResult(forceRefresh: true);
+                                                    await _resetPagingAndFetch();
+
                                                     Navigator.pop(context);
                                                   },
 
@@ -1437,7 +1509,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                         // Show Results button
                                         GestureDetector(
                                           onTap: () async {
-                                            await showResult(forceRefresh: true);
+                                            await _resetPagingAndFetch();
+
 
                                             Navigator.pop(context); // ✅ Close BottomSheet after API call
                                           },
@@ -1573,7 +1646,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                         bathroom = _bathroom[index];
                                                       });
 
-                                                      await showResult(forceRefresh: true);
+                                                      await _resetPagingAndFetch();
+
                                                       Navigator.pop(context);
                                                     },
 
@@ -1624,7 +1698,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                         ),
                                         GestureDetector(
                                           onTap: () async {
-                                            await showResult(forceRefresh: true);
+                                            await _resetPagingAndFetch();
+
 
                                             Navigator.pop(context); // ✅ Close BottomSheet after API call
                                           },
@@ -1755,12 +1830,11 @@ class _FliterListDemoState extends State<FliterListDemo> {
                       ),
 
                       GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _resetAllFilters();
-                            showResult(forceRefresh: true);
-                          });
+                        onTap: () async {
+                          _resetAllFilters();
+                          await _resetPagingAndFetch();
                         },
+
 
                         child: Padding(
                           padding: const EdgeInsets.only(top: 3, bottom: 3, right: 10, left: 0),
@@ -1873,8 +1947,10 @@ class _FliterListDemoState extends State<FliterListDemo> {
                 padding: const EdgeInsets.all(8.0),
                 itemCount: 5,
                 shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(), // ✅ make it non-scrollable
                 itemBuilder: (context, index) => const ShimmerCard(),
               )
+
                   : (filterModel.data == null || filterModel.data!.isEmpty)
                   ? Padding(
                 padding: const EdgeInsets.symmetric(vertical: 50),
@@ -1887,18 +1963,28 @@ class _FliterListDemoState extends State<FliterListDemo> {
                 ),
               )
                   : ListView.builder(
-                controller: _scrollController,
+
                 padding: const EdgeInsets.all(0),
                 scrollDirection: Axis.vertical,
-                physics: const ScrollPhysics(),
-                itemCount: filterModel.data?.length ?? 0,
+                physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
+                // 👇 add one extra "row" for the loading spinner when fetching more
+                itemCount: (filterModel.data?.length ?? 0) + (_isFetchingMore ? 1 : 0),
                 itemBuilder: (context, index) {
+                  final items = filterModel.data ?? [];
 
-                  final property = filterModel.data![index];
+                  // 👇 if we're fetching more and this is the extra last row, show a spinner
+                  if (_isFetchingMore && index == items.length) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
 
-                  bool isFavorited =
-                  favoriteProperties.contains(filterModel.data![index].id);
+                  final property = items[index];
+
+                  final bool isFavorited =
+                  favoriteProperties.contains(property.id);
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Card(
@@ -2200,146 +2286,146 @@ class _FliterListDemoState extends State<FliterListDemo> {
       ),
     );
   }
-  // Container buildMyNavBar(BuildContext context) {
-  //   return Container(
-  //     height: 50,
-  //     decoration: BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: const BorderRadius.only(
-  //         topLeft: Radius.circular(20),
-  //         topRight: Radius.circular(20),
-  //       ),
-  //     ),
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
-  //       crossAxisAlignment: CrossAxisAlignment.center,
-  //       children: [
-  //         GestureDetector(
-  //           onTap: () async {
-  //             Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-  //           },
-  //           child: Padding(
-  //             padding: const EdgeInsets.symmetric(horizontal: 20.0),
-  //             child: Image.asset("assets/images/home.png", height: 25),
-  //           ),
-  //         ),
-  //
-  //         IconButton(
-  //           enableFeedback: false,
-  //           onPressed: () async {
-  //             final token = await SecureStorage.getToken();
-  //
-  //             if (token == null || token.isEmpty) {
-  //               showDialog(
-  //                 context: context,
-  //                 builder: (context) => AlertDialog(
-  //                   backgroundColor: Colors.white,
-  //                   title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-  //                   content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
-  //                   actions: [
-  //                     TextButton(
-  //                       onPressed: () => Navigator.pop(context),
-  //                       child: const Text("Cancel", style: TextStyle(color: Colors.red)),
-  //                     ),
-  //                     TextButton(
-  //                       onPressed: () {
-  //                         Navigator.pop(context);
-  //                         Navigator.push(
-  //                           context,
-  //                           MaterialPageRoute(builder: (_) => const LoginDemo()),
-  //                         );
-  //                       },
-  //                       child: const Text("Login", style: TextStyle(color: Colors.red)),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               );
-  //             } else {
-  //               // ✅ Updated version using cleaner logic
-  //               await Navigator.push(
-  //                 context,
-  //                 MaterialPageRoute(builder: (_) => const Fav_Logout()),
-  //               );
-  //
-  //               // 🔁 Reload favorite properties
-  //               await _loadFavorites();
-  //
-  //               setState(() {
-  //                 for (var p in filterModel.data!) {
-  //                   p.saved = favoriteProperties.contains(p.id);
-  //                 }
-  //               });
-  //             }
-  //           },
-  //           icon: pageIndex == 2
-  //               ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-  //               : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
-  //         ),
-  //
-  //
-  //
-  //
-  //
-  //         IconButton(
-  //           tooltip: "Email",
-  //           icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
-  //           onPressed: () async {
-  //             final Uri emailUri = Uri.parse(
-  //               'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
-  //             );
-  //
-  //             if (await canLaunchUrl(emailUri)) {
-  //               await launchUrl(emailUri);
-  //             } else {
-  //               showDialog(
-  //                 context: context,
-  //                 builder: (context) => AlertDialog(
-  //                   backgroundColor: Colors.white, // White dialog container
-  //                   title: const Text(
-  //                     'Email not available',
-  //                     style: TextStyle(color: Colors.black), // Title in black
-  //                   ),
-  //                   content: const Text(
-  //                     'No email app is configured on this device. Please add a mail account first.',
-  //                     style: TextStyle(color: Colors.black), // Content in black
-  //                   ),
-  //                   actions: [
-  //                     TextButton(
-  //                       onPressed: () => Navigator.pop(context),
-  //                       child: const Text(
-  //                         'OK',
-  //                         style: TextStyle(color: Colors.red), // Red "OK" text
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               );
-  //             }
-  //           },
-  //         ),
-  //
-  //         Padding(
-  //           padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
-  //           child: IconButton(
-  //             enableFeedback: false,
-  //             onPressed: () {
-  //               if (!isLoggedIn) {
-  //                 Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-  //               } else {
-  //                 Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-  //               }
-  //             },
-  //
-  //             icon: pageIndex == 3
-  //                 ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-  //                 : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //
-  //   );
-  // }
+  Container buildMyNavBar(BuildContext context) {
+    return Container(
+      height: 50,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          GestureDetector(
+            onTap: () async {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
+            ),
+          ),
+
+          IconButton(
+            enableFeedback: false,
+            onPressed: () async {
+              final token = await SecureStorage.getToken();
+
+              if (token == null || token.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white,
+                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
+                        },
+                        child: const Text("Login", style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                // ✅ Updated version using cleaner logic
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const Fav_Logout()),
+                );
+
+                // 🔁 Reload favorite properties
+                await _loadFavorites();
+
+                setState(() {
+                  for (var p in filterModel.data!) {
+                    p.saved = favoriteProperties.contains(p.id);
+                  }
+                });
+              }
+            },
+            icon: pageIndex == 2
+                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+          ),
+
+
+
+
+
+          IconButton(
+            tooltip: "Email",
+            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+            onPressed: () async {
+              final Uri emailUri = Uri.parse(
+                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+              );
+
+              if (await canLaunchUrl(emailUri)) {
+                await launchUrl(emailUri);
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // White dialog container
+                    title: const Text(
+                      'Email not available',
+                      style: TextStyle(color: Colors.black), // Title in black
+                    ),
+                    content: const Text(
+                      'No email app is configured on this device. Please add a mail account first.',
+                      style: TextStyle(color: Colors.black), // Content in black
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          'OK',
+                          style: TextStyle(color: Colors.red), // Red "OK" text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                if (!isLoggedIn) {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                } else {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                }
+              },
+
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+            ),
+          ),
+        ],
+      ),
+
+    );
+  }
 }
 BoxDecoration _iconBoxDecoration() {
   return BoxDecoration(

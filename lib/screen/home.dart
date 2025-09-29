@@ -112,6 +112,47 @@ class _MyHomePageState extends State<HomeDemo> {
 
   final ScrollController _scrollController = ScrollController();
 
+  // Persist the selected API sort across requests/pages
+  String _currentSortKey = 'featured'; // 'featured' | 'newest' | 'price_asc' | 'price_desc'
+
+
+  List<featured.Data> _mergeDedupFeatured(
+      List<featured.Data> a,
+      List<featured.Data> b,
+      ) {
+    final map = <int, featured.Data>{};
+    for (final p in [...a, ...b]) {
+      final id = int.tryParse(p.id?.toString() ?? '') ?? -1;
+      if (id != -1) map[id] = p; // later item wins (fresh data)
+    }
+    return map.values.toList();
+  }
+
+  void _applyClientSortIfNeeded(List<featured.Data> list) {
+    if (_currentSortKey == 'newest') {
+      int idOf(featured.Data d) => int.tryParse(d.id?.toString() ?? '') ?? 0;
+      list.sort((a, b) => idOf(b).compareTo(idOf(a))); // newest first (id DESC)
+
+      // If you have a createdAt field, prefer it:
+      // int ts(featured.Data d) =>
+      //   DateTime.tryParse(d.createdAt ?? '')?.millisecondsSinceEpoch
+      //     ?? int.tryParse(d.id?.toString() ?? '') ?? 0;
+      // list.sort((a, b) => ts(b).compareTo(ts(a)));
+    }
+
+    // Optional guard for price sorting if backend slips:
+    // if (_currentSortKey == 'price_asc' || _currentSortKey == 'price_desc') {
+    //   num priceOf(featured.Data d) =>
+    //       num.tryParse('${d.price}'.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+    //   list.sort((a, b) => _currentSortKey == 'price_asc'
+    //       ? priceOf(a).compareTo(priceOf(b))
+    //       : priceOf(b).compareTo(priceOf(a)));
+    // }
+  }
+
+
+
+
 
   final Map<String, String> sortMap = {
     "Featured": "featured",
@@ -165,6 +206,7 @@ class _MyHomePageState extends State<HomeDemo> {
     return input; // fallback
   }
 
+
   Future<void> fetchLocationSuggestions(String query) async {
     String url = query.isEmpty
         ? 'https://akarat.com/api/locations'
@@ -214,25 +256,24 @@ class _MyHomePageState extends State<HomeDemo> {
     return prefs.getString('token') ?? '';
   }
 
-  Future<filter.FilterModel> fetchFilterData(String location) async {
-    final response = await http.get(Uri.parse(
-      'https://akarat.com/api/filters?location=${Uri.encodeComponent(location)}',
-    ));
+  Future<filter.FilterModel> fetchFilterData(String text) async {
+    final uri = Uri.https('akarat.com', '/api/filters', {'search': text});
+    final res = await http.get(uri);
 
-    if (response.statusCode == 200) {
-      final responseData = jsonDecode(response.body);
-      final featureResponse = filter.FilterResponseModel.fromJson(responseData);
-      final feature = featureResponse.data;
-
-      if (feature != null) {
-        feature.data = feature.data!.where((item) => item.location == location).toList();
-      }
-
-      return feature!;
-    } else {
-      throw Exception("API failed: ${response.statusCode}");
+    if (res.statusCode != 200) {
+      throw Exception("Filters API failed: ${res.statusCode}");
     }
+
+    final parsed = filter.FilterResponseModel.fromJson(jsonDecode(res.body));
+    final feature = parsed.data;
+    if (feature == null) throw Exception("Empty data");
+
+    // ❌ remove any client-side equality filter on location
+    // feature.data = feature.data!.where((it) => it.location == text).toList();
+
+    return feature;
   }
+
 
   void fetchProperties(String sortBy) async {
     final url = Uri.parse('https://akarat.com/api/properties?sort_by=$sortBy');
@@ -459,57 +500,74 @@ class _MyHomePageState extends State<HomeDemo> {
   Future<void> getFeaturedProperties({
     bool loadMore = false,
     bool forceRefresh = false,
-    String? sortBy,
   }) async {
     if (isLoading) return;
 
-    // Stop if no more pages available on loadMore
+    // Stop if no more pages on loadMore
     if (loadMore && (nextPageUrl == null || nextPageUrl!.isEmpty)) {
-      print("🔴 No more pages to load.");
+      debugPrint("🔴 No more pages to load.");
       return;
     }
 
     setState(() => isLoading = true);
 
+    // Build URL ourselves to ALWAYS include sort_by
     String url;
-    if (forceRefresh || (!loadMore && featuredModel == null)) {
-      // Initial load or refresh
-      url = "https://akarat.com/api/properties?page=1";
-      if (sortBy != null) {
-        url += "&sort_by=$sortBy";
+    if (loadMore) {
+      // Derive next page from meta; don't trust links.next because it may drop sort
+      final meta = featuredModel?.meta;
+      final current = meta?.currentPage ?? 1;
+      final last    = meta?.lastPage ?? 1;
+      if (current >= last) {
+        setState(() => isLoading = false);
+        return;
       }
-      nextPageUrl = null; // reset pagination
+      final nextPage = current + 1;
+      url = "https://akarat.com/api/properties?page=$nextPage&sort_by=$_currentSortKey";
     } else {
-      // Load next page from API
-      url = nextPageUrl!;
+      // Initial load or refresh
+      url = "https://akarat.com/api/properties?page=1&sort_by=$_currentSortKey";
     }
 
     try {
-      print("📡 Fetching URL: $url");
-      final response = await http.get(Uri.parse(url)).timeout(Duration(seconds: 10));
+      debugPrint("📡 Fetching URL: $url");
+      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         final model = featured.FeaturedResponseModel.fromJson(jsonData);
 
-        setState(() {
-          if (loadMore) {
-            final List<featured.Data> currentList = featuredModel?.data ?? [];
-            final List<featured.Data> newItems = model.data?.data ?? [];
+        final List<featured.Data> incoming = model.data?.data ?? <featured.Data>[];
+        final List<featured.Data> current  = loadMore ? (featuredModel?.data ?? <featured.Data>[]) : <featured.Data>[];
 
-            featuredModel = featured.FeaturedModel(
-              data: [...currentList, ...newItems],
-              links: model.data?.links,
-              meta: model.data?.meta,
-              totalProperties: model.data?.totalProperties,
-            );
+        // Merge + de-dupe by id
+        final merged = _mergeDedupFeatured(current, incoming);
+
+        // Optional client-side enforcement for "newest"
+        _applyClientSortIfNeeded(merged);
+
+        setState(() {
+          featuredModel = featured.FeaturedModel(
+            data: merged,
+            links: model.data?.links,
+            meta: model.data?.meta,
+            totalProperties: model.data?.totalProperties,
+          );
+
+          // Compute a safe nextPageUrl that preserves sort_by
+          final m = model.data?.meta;
+          if (m != null) {
+            final cur  = m.currentPage ?? 1;
+            final last = m.lastPage ?? 1;
+            nextPageUrl = (cur < last)
+                ? "https://akarat.com/api/properties?page=${cur + 1}&sort_by=$_currentSortKey"
+                : null;
           } else {
-            featuredModel = model.data;
+            nextPageUrl = null;
           }
 
-          nextPageUrl = model.data?.links?.next;
-          print("✅ Next Page URL: $nextPageUrl");
-          print("📦 Total loaded: ${featuredModel?.data?.length}");
+          debugPrint("✅ Next Page URL: $nextPageUrl");
+          debugPrint("📦 Total loaded: ${featuredModel?.data?.length}");
         });
       } else {
         debugPrint("❌ API Error: ${response.statusCode}");
@@ -517,9 +575,10 @@ class _MyHomePageState extends State<HomeDemo> {
     } catch (e) {
       debugPrint("❌ Fetch error: $e");
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
   }
+
 
 
 
@@ -1403,14 +1462,16 @@ class _MyHomePageState extends State<HomeDemo> {
                                                   Navigator.pop(context);
                                                   final selectedKey = sortMap[option]!;
                                                   setState(() {
-                                                    selectedSort = option;
-                                                    selectedSortKey = selectedKey; // ✅ Store selected sort key
-                                                    featuredModel = null;
-                                                    nextPageUrl = null;
+                                                    selectedSort = option;              // for UI label
+                                                    selectedSortKey = selectedKey;      // keep if you use elsewhere
+                                                    _currentSortKey = selectedKey;      // <-- persist for pagination
+                                                    featuredModel = null;               // clear existing data
+                                                    nextPageUrl = null;                 // reset pagination
                                                   });
-                                                  getFeaturedProperties(sortBy: selectedKey); // ✅ Sorted API call
-                                                  _scrollController.jumpTo(0); // ✅ Reset scroll
+                                                  getFeaturedProperties(forceRefresh: true); // will use _currentSortKey
+                                                  _scrollController.jumpTo(0);
                                                 },
+
 
                                                 child: Column(
                                                   children: [

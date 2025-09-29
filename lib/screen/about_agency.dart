@@ -25,6 +25,14 @@ import 'login.dart';
 import 'package:Akarat/utils/whatsapp_button.dart';
 
 
+// Force HTTPS so iOS hardware doesn't block http:// images/redirects
+String secureUrl(String? url) {
+  if (url == null) return '';
+  return url.startsWith('http://')
+      ? url.replaceFirst('http://', 'https://')
+      : url;
+}
+
 class About_Agency extends StatefulWidget {
   const About_Agency({super.key, required this.data});
   final String data;
@@ -40,6 +48,10 @@ class _About_AgencyState extends State<About_Agency> {
   String email = '';
   String result = '';
   bool isDataRead = false;
+  bool isAgentsLoading = true;
+  bool _agencyLoading = true;
+  String? _agencyError;
+
   // Create an object of SharedPreferencesManager class
   SharedPreferencesManager prefManager = SharedPreferencesManager();
 
@@ -83,27 +95,38 @@ class _About_AgencyState extends State<About_Agency> {
   }
 
   Future<void> _loadAgencyDetails() async {
+    if (mounted) {
+      setState(() {
+        _agencyLoading = true;
+        _agencyError = null;
+      });
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final cachedKey = 'agency_details_${widget.data}';
     final cachedTimeKey = 'cached_time_agency_${widget.data}';
     final now = DateTime.now().millisecondsSinceEpoch;
     final lastFetched = prefs.getInt(cachedTimeKey) ?? 0;
 
-    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
-      final cachedData = prefs.getString(cachedKey);
-      if (cachedData != null) {
-        final jsonData = json.decode(cachedData);
-        final model = AgencyDetailmodel.fromJson(jsonData);
-        setState(() {
-          agencyDetailmodel = model;
-        });
-        return;
-      }
-    }
-
     try {
+      // ✅ Use cache if within 6 hours
+      if (now - lastFetched < const Duration(hours: 6).inMilliseconds) {
+        final cachedData = prefs.getString(cachedKey);
+        if (cachedData != null) {
+          final jsonData = json.decode(cachedData);
+          final model = AgencyDetailmodel.fromJson(jsonData);
+          if (!mounted) return;
+          setState(() {
+            agencyDetailmodel = model;
+            _agencyLoading = false;
+          });
+          return;
+        }
+      }
+
+      // 🌐 Fallback to API
       final uri = Uri.parse('https://akarat.com/api/company/${widget.data}');
-      final response = await http.get(uri).timeout(const Duration(seconds: 8));
+      final response = await http.get(uri).timeout(const Duration(seconds: 12));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = jsonDecode(response.body);
@@ -112,18 +135,33 @@ class _About_AgencyState extends State<About_Agency> {
         await prefs.setString(cachedKey, json.encode(jsonData));
         await prefs.setInt(cachedTimeKey, now);
 
-        if (mounted) {
-          setState(() {
-            agencyDetailmodel = parsedModel;
-          });
-        }
+        if (!mounted) return;
+        setState(() {
+          agencyDetailmodel = parsedModel;
+          _agencyLoading = false;
+        });
       } else {
-        debugPrint("❌ API Error: ${response.statusCode}");
+        if (!mounted) return;
+        setState(() {
+          _agencyError = 'API ${response.statusCode}';
+          _agencyLoading = false;
+        });
       }
+    } on TimeoutException {
+      if (!mounted) return;
+      setState(() {
+        _agencyError = 'timeout';
+        _agencyLoading = false;
+      });
     } catch (e) {
-      debugPrint("🚨 Error: $e");
+      if (!mounted) return;
+      setState(() {
+        _agencyError = '$e';
+        _agencyLoading = false;
+      });
     }
   }
+
 
   ToggleModel? toggleModel;
 
@@ -190,7 +228,10 @@ class _About_AgencyState extends State<About_Agency> {
       final apiUrl = "https://akarat.com/api/company/properties/$user?page=$currentPage";
       print("🌐 Calling API: $apiUrl");
 
-      final response = await http.get(Uri.parse(apiUrl));
+      final response = await http
+          .get(Uri.parse(apiUrl))
+          .timeout(const Duration(seconds: 12));
+
 
       print("📄 API Status Code: ${response.statusCode}");
 
@@ -247,41 +288,45 @@ class _About_AgencyState extends State<About_Agency> {
     final now = DateTime.now().millisecondsSinceEpoch;
     final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
-      final cachedData = prefs.getString(cacheKey);
-      if (cachedData != null) {
-        final jsonData = json.decode(cachedData);
-        final cachedModel = AgencyAgentsModel.fromJson(jsonData);
-        setState(() {
-          agencyAgentsModel = cachedModel;
-        });
-        return;
-      }
-    }
-
-    // If no cache or cache is stale, fetch from API
     try {
-      final response = await http
-          .get(Uri.parse("https://akarat.com/api/company/agents/$user"))
-          .timeout(const Duration(seconds: 8));
+      // Use cache if fresh
+      if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+        final cachedData = prefs.getString(cacheKey);
+        if (cachedData != null) {
+          final jsonData = json.decode(cachedData);
+          setState(() {
+            agencyAgentsModel = AgencyAgentsModel.fromJson(jsonData);
+            isAgentsLoading = false;
+          });
+          return;
+        }
+      }
+
+      final uri = Uri.parse("https://akarat.com/api/company/agents/$user");
+      final response = await http.get(uri).timeout(const Duration(seconds: 12));
+      debugPrint('Agents status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final freshModel = AgencyAgentsModel.fromJson(data);
-
         await prefs.setString(cacheKey, json.encode(data));
         await prefs.setInt(cacheTimeKey, now);
-
         setState(() {
-          agencyAgentsModel = freshModel;
+          agencyAgentsModel = AgencyAgentsModel.fromJson(data);
+          isAgentsLoading = false;
         });
       } else {
-        debugPrint("❌ Agents API failed: ${response.statusCode}");
+        debugPrint("❌ Agents API failed: ${response.statusCode} / ${response.body}");
+        setState(() => isAgentsLoading = false);
       }
+    } on TimeoutException catch (e) {
+      debugPrint("⏱️ Agents timeout: $e");
+      setState(() => isAgentsLoading = false);
     } catch (e) {
-      debugPrint("🚨 Agents API error: $e");
+      debugPrint("🚨 Agents exception: $e");
+      setState(() => isAgentsLoading = false);
     }
   }
+
 
   Future<void> toggledApi( token,  propertyId) async {
     try {
@@ -342,14 +387,39 @@ class _About_AgencyState extends State<About_Agency> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
-    if (agencyDetailmodel == null) {
+    // NEW
+    if (_agencyLoading) {
       return Scaffold(
-          body: ListView.builder(
-            itemCount: 5,
-            itemBuilder: (context, index) => const ShimmerCard(),)
-        // body: Center(child: const ShimmerCard()), // Show loading state
+        body: ListView.builder(
+          itemCount: 5,
+          itemBuilder: (_, __) => const ShimmerCard(),
+        ),
       );
     }
+
+    if (agencyDetailmodel == null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Failed to load agency'),
+              if (_agencyError != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(_agencyError!, style: const TextStyle(color: Colors.red)),
+                ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: _loadAgencyDetails,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -365,7 +435,7 @@ class _About_AgencyState extends State<About_Agency> {
             },
           ),
         ),
-        // bottomNavigationBar: SafeArea(child: buildMyNavBar(context),),
+        bottomNavigationBar: SafeArea(child: buildMyNavBar(context),),
         body: DefaultTabController(
 
             length: 4,
@@ -454,10 +524,11 @@ class _About_AgencyState extends State<About_Agency> {
                                     child: Align(
                                       alignment: Alignment.bottomCenter, // Push logo downward
                                       child: CachedNetworkImage(
-                                        imageUrl: agencyDetailmodel!.image.toString(),
-                                        height: screenSize.height * 0.08, // Size of logo
+                                        imageUrl: secureUrl(agencyDetailmodel!.image),
+                                        height: screenSize.height * 0.08,
                                         fit: BoxFit.contain,
                                       ),
+
                                     ),
                                   ),
 
@@ -887,9 +958,10 @@ class _About_AgencyState extends State<About_Agency> {
                                                                     itemCount: property.media?.length ?? 0,
                                                                     itemBuilder: (context, mediaIndex) {
                                                                       return CachedNetworkImage(
-                                                                        imageUrl: property.media![mediaIndex].originalUrl.toString(),
+                                                                        imageUrl: secureUrl(property.media![mediaIndex].originalUrl),
                                                                         fit: BoxFit.fill,
                                                                       );
+
                                                                     },
                                                                   ),
                                                                 ),
@@ -1061,170 +1133,135 @@ class _About_AgencyState extends State<About_Agency> {
                             // ),
                             //Agent
                             // AGENTS TAB
+// --- AGENTS TAB (drop-in) ---
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: ListView.builder(
-                                itemCount: agencyAgentsModel?.data?.length ?? 0,
-                                shrinkWrap: true,
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  if (agencyAgentsModel == null) {
+                              child: Builder(
+                                builder: (context) {
+                                  // A) show spinner only while fetching
+                                  if (isAgentsLoading) {
                                     return const Center(child: CircularProgressIndicator());
                                   }
 
-                                  final agent = agencyAgentsModel!.data![index];
+                                  // B) resolve list safely (null -> empty)
+                                  final agents = agencyAgentsModel?.data ?? const [];
 
-                                  return GestureDetector(
-                                    onTap: () {
-                                      // Navigate if needed
-                                    },
-                                    child: Card(
-                                      color: Colors.white,
-                                      elevation: 10,
-                                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            // Agent image
-                                            Container(
-                                              width: screenSize.width * 0.2,
-                                              height: screenSize.width * 0.2,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.grey.withOpacity(0.3),
-                                                    offset: const Offset(0, 2),
-                                                    blurRadius: 4,
-                                                  ),
-                                                ],
-                                              ),
-                                              child: CircleAvatar(
-                                                backgroundImage: NetworkImage(agent.image.toString()),
-                                              ),
-                                            ),
+                                  // C) empty state when fetch failed or no data
+                                  if (agents.isEmpty) {
+                                    return const Center(child: Text('No agents found'));
+                                  }
 
-                                            const SizedBox(width: 12),
+                                  // D) the list
+                                  return ListView.separated(
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    itemCount: agents.length,
+                                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                    itemBuilder: (context, index) {
+                                      final agent = agents[index];
+                                      final avatarUrl = secureUrl(agent.image);
 
-                                            // Info + Sale/Rent + Bio
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    agent.name ?? '',
-                                                    style: const TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight: FontWeight.bold,
-                                                      letterSpacing: 0.5,
+                                      return Card(
+                                        color: Colors.white,
+                                        elevation: 10,
+                                        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              // Avatar with safe fallback
+                                              Container(
+                                                width: MediaQuery.of(context).size.width * 0.2,
+                                                height: MediaQuery.of(context).size.width * 0.2,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey.withOpacity(0.3),
+                                                      offset: const Offset(0, 2),
+                                                      blurRadius: 4,
                                                     ),
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                  const SizedBox(height: 4),
+                                                  ],
+                                                ),
+                                                child: CircleAvatar(
+                                                  backgroundImage:
+                                                  (avatarUrl.isNotEmpty) ? NetworkImage(avatarUrl) : null,
+                                                  onBackgroundImageError: (_, __) {},
+                                                  child: (avatarUrl.isEmpty)
+                                                      ? const Icon(Icons.person, color: Colors.white)
+                                                      : null,
+                                                ),
+                                              ),
 
-                                                  Text(
-                                                    "${agent.propertiesCount ?? 0} Properties",
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Color(0xFF3A7CED),
-                                                    ),
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                  const SizedBox(height: 4),
+                                              const SizedBox(width: 12),
 
-                                                  Text(
-                                                    "Speaks: ${agent.languages?.isNotEmpty == true ? agent.languages : 'N/A'}",
-                                                    style: const TextStyle(fontSize: 12, color: Colors.black54),
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                  const SizedBox(height: 8),
-
-                                                  Row(
-                                                    children: [
-                                                      Container(
-                                                        width: 55,
-                                                        height: 20,
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.white,
-                                                          borderRadius: BorderRadius.circular(6),
-                                                          border: Border.all(color: Colors.white),
-                                                          boxShadow: const [
-                                                            BoxShadow(
-                                                              color: Color(0x40000000),
-                                                              blurRadius: 2,
-                                                              offset: Offset(0, 0),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        child: Center(
-                                                          child: Text(
-                                                            "${agent.sale ?? 0} Sale",
-                                                            style: const TextStyle(
-                                                              fontSize: 10,
-                                                              fontWeight: FontWeight.w500,
-                                                              color: Color(0xFF3A7CED),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      const SizedBox(width: 10),
-                                                      Container(
-                                                        width: 55,
-                                                        height: 20,
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.white,
-                                                          borderRadius: BorderRadius.circular(6),
-                                                          border: Border.all(color: Colors.white),
-                                                          boxShadow: const [
-                                                            BoxShadow(
-                                                              color: Color(0x40000000),
-                                                              blurRadius: 2,
-                                                              offset: Offset(0, 0),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        child: Center(
-                                                          child: Text(
-                                                            "${agent.rent ?? 0} Rent",
-                                                            style: const TextStyle(
-                                                              fontSize: 10,
-                                                              fontWeight: FontWeight.w500,
-                                                              color: Color(0xFF3A7CED),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-
-                                                  const SizedBox(height: 6),
-                                                  if ((agent.bio?.trim().isNotEmpty ?? false))
+                                              // Info + Sale/Rent + Bio
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
                                                     Text(
-                                                      agent.bio!,
+                                                      agent.name ?? '',
                                                       style: const TextStyle(
-                                                        fontSize: 11,
-                                                        color: Colors.black45,
-                                                        fontStyle: FontStyle.italic,
+                                                        fontSize: 14,
+                                                        fontWeight: FontWeight.bold,
+                                                        letterSpacing: 0.5,
                                                       ),
-                                                      maxLines: 2,
+                                                      maxLines: 1,
                                                       overflow: TextOverflow.ellipsis,
                                                     ),
-                                                ],
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      "${agent.propertiesCount ?? 0} Properties",
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        color: Color(0xFF3A7CED),
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      "Speaks: ${agent.languages?.isNotEmpty == true ? agent.languages : 'N/A'}",
+                                                      style: const TextStyle(fontSize: 12, color: Colors.black54),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                    const SizedBox(height: 8),
+
+                                                    Row(
+                                                      children: [
+                                                        _pill("${agent.sale ?? 0} Sale"),
+                                                        const SizedBox(width: 10),
+                                                        _pill("${agent.rent ?? 0} Rent"),
+                                                      ],
+                                                    ),
+
+                                                    const SizedBox(height: 6),
+                                                    if ((agent.bio?.trim().isNotEmpty ?? false))
+                                                      Text(
+                                                        agent.bio!,
+                                                        style: const TextStyle(
+                                                          fontSize: 11,
+                                                          color: Colors.black45,
+                                                          fontStyle: FontStyle.italic,
+                                                        ),
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ),
+                                      );
+                                    },
                                   );
                                 },
                               ),
                             ),
+
 
 
                             //Review
@@ -1361,142 +1398,168 @@ class _About_AgencyState extends State<About_Agency> {
     );
   }
 
-  // Container buildMyNavBar(BuildContext context) {
-  //   return Container(
-  //     height: 50,
-  //     decoration: BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: const BorderRadius.only(
-  //         topLeft: Radius.circular(20),
-  //         topRight: Radius.circular(20),
-  //       ),
-  //     ),
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
-  //       crossAxisAlignment: CrossAxisAlignment.center,
-  //       children: [
-  //         GestureDetector(
-  //           onTap: () async {
-  //             Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-  //           },
-  //           child: Padding(
-  //             padding: const EdgeInsets.symmetric(horizontal: 20.0),
-  //             child: Image.asset("assets/images/home.png", height: 25),
-  //           ),
-  //         ),
-  //
-  //
-  //         IconButton(
-  //           enableFeedback: false,
-  //           onPressed: () async {
-  //             final token = await SecureStorage.getToken();
-  //
-  //             if (token == null || token.isEmpty) {
-  //               showDialog(
-  //                 context: context,
-  //                 builder: (context) => AlertDialog(
-  //                   backgroundColor: Colors.white, // white container
-  //                   title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-  //                   content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
-  //                   actions: [
-  //                     TextButton(
-  //                       onPressed: () => Navigator.pop(context),
-  //                       child: const Text(
-  //                         "Cancel",
-  //                         style: TextStyle(color: Colors.red), // red text
-  //                       ),
-  //                     ),
-  //                     TextButton(
-  //                       onPressed: () {
-  //                         Navigator.pop(context);
-  //                         Navigator.push(
-  //                           context,
-  //                           MaterialPageRoute(builder: (_) => const LoginDemo()),
-  //                         );
-  //                       },
-  //                       child: const Text(
-  //                         "Login",
-  //                         style: TextStyle(color: Colors.red), // red text
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               );
-  //             }
-  //             else {
-  //               // ✅ Logged in – go to favorites
-  //               Navigator.push(
-  //                 context,
-  //                 MaterialPageRoute(builder: (context) => Fav_Logout()),
-  //               );
-  //             }
-  //           },
-  //           icon: pageIndex == 2
-  //               ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-  //               : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
-  //         ),
-  //
-  //         IconButton(
-  //           tooltip: "Email",
-  //           icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
-  //           onPressed: () async {
-  //             final Uri emailUri = Uri.parse(
-  //               'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
-  //             );
-  //
-  //             if (await canLaunchUrl(emailUri)) {
-  //               await launchUrl(emailUri);
-  //             } else {
-  //               showDialog(
-  //                 context: context,
-  //                 builder: (context) => AlertDialog(
-  //                   backgroundColor: Colors.white, // White dialog container
-  //                   title: const Text(
-  //                     'Email not available',
-  //                     style: TextStyle(color: Colors.black), // Title in black
-  //                   ),
-  //                   content: const Text(
-  //                     'No email app is configured on this device. Please add a mail account first.',
-  //                     style: TextStyle(color: Colors.black), // Content in black
-  //                   ),
-  //                   actions: [
-  //                     TextButton(
-  //                       onPressed: () => Navigator.pop(context),
-  //                       child: const Text(
-  //                         'OK',
-  //                         style: TextStyle(color: Colors.red), // Red "OK" text
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               );
-  //             }
-  //           },
-  //         ),
-  //
-  //         Padding(
-  //           padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
-  //           child: IconButton(
-  //             enableFeedback: false,
-  //             onPressed: () {
-  //               setState(() {
-  //                 if (token == '') {
-  //                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-  //                 } else {
-  //                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-  //                 }
-  //               });
-  //             },
-  //             icon: pageIndex == 3
-  //                 ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-  //                 : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //
-  //   );
-  // }
+  Container buildMyNavBar(BuildContext context) {
+    return Container(
+      height: 50,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          GestureDetector(
+            onTap: () async {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
+            ),
+          ),
+
+
+          IconButton(
+            enableFeedback: false,
+            onPressed: () async {
+              final token = await SecureStorage.getToken();
+
+              if (token == null || token.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // white container
+                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
+                        },
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              else {
+                // ✅ Logged in – go to favorites
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Fav_Logout()),
+                );
+              }
+            },
+            icon: pageIndex == 2
+                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+          ),
+
+          IconButton(
+            tooltip: "Email",
+            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+            onPressed: () async {
+              final Uri emailUri = Uri.parse(
+                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+              );
+
+              if (await canLaunchUrl(emailUri)) {
+                await launchUrl(emailUri);
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // White dialog container
+                    title: const Text(
+                      'Email not available',
+                      style: TextStyle(color: Colors.black), // Title in black
+                    ),
+                    content: const Text(
+                      'No email app is configured on this device. Please add a mail account first.',
+                      style: TextStyle(color: Colors.black), // Content in black
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          'OK',
+                          style: TextStyle(color: Colors.red), // Red "OK" text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                setState(() {
+                  if (token == '') {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                  }
+                });
+              },
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+            ),
+          ),
+        ],
+      ),
+
+    );
+  }
+
+
+  // Small label used in the Agents cards
+  Widget _pill(String text) => Container(
+    width: 55,
+    height: 20,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(6),
+      border: Border.all(color: Colors.white),
+      boxShadow: const [
+        BoxShadow(color: Color(0x40000000), blurRadius: 2, offset: Offset(0, 0)),
+      ],
+    ),
+    child: Center(
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF3A7CED),
+        ),
+      ),
+    ),
+  );
+
 
   Widget _buildTagContainer({required String text, required String iconPath}) {
     return Padding(

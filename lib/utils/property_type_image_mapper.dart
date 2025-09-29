@@ -50,7 +50,8 @@ class PropertyImageListScreen extends StatelessWidget {
   final List<Map<String, String>> propertyTypeModel = const [
     {'name': 'Apartment', 'icon': 'apartment'},
     {'name': 'Studio', 'icon': 'https://akarat.com/assets/media/icons/property-types/studio.png'},
-    {'name': 'Unknown', 'icon': 'invalid-icon'}, // For testing fallback
+    {'name': 'Unknown', 'icon': 'invalid-icon'},
+    {'name': 'Building', 'icon': 'https://akarat.com/assets/images/building.png'},// For testing fallback
   ];
 
   @override

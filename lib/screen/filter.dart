@@ -57,10 +57,27 @@ class _FilterDemoState extends State<FilterDemo> {
   double startarea = 3000;
   double endarea = 5000;
   double end = 5000;
+  int _selected = 0;
+  final List<String> _completion = const ['All', 'Ready', 'Off-Plan'];
+  int selectedCompletion = 0;
+  final List<String> _propTypes = const ['Residential', 'Commercial'];
+  int selectedPropType = 0; // 0 = Residential, 1 = Commercial
+
+
+  bool get isNewProjects => _selected == 1;
+
+
+
+
+
   SfRangeValues _values = SfRangeValues(500.0, 300000.0); // full range internally
 
   final TextEditingController minPriceController = TextEditingController();
   final TextEditingController maxPriceController = TextEditingController();
+
+
+
+
 
   bool isMinTyping = false;
   bool isMaxTyping = false;
@@ -100,6 +117,44 @@ class _FilterDemoState extends State<FilterDemo> {
   // Create an object of SharedPreferencesManager class
   SharedPreferencesManager prefManager = SharedPreferencesManager();
   // Method to read data from shared preferences
+
+
+
+  Widget _showResultsButton(BuildContext context, Size screenSize) {
+    return GestureDetector(
+      onTap: () => showResult(),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 25.0, left: 15, bottom: 15, right: 15),
+        child: Container(
+          width: screenSize.width * 0.9,
+          height: 45,
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadiusDirectional.circular(6.0),
+            boxShadow: const [
+              BoxShadow(color: Colors.grey, offset: Offset(0.3, 0.3), blurRadius: 0.3, spreadRadius: 0.3),
+              BoxShadow(color: Colors.white, offset: Offset(0, 0), blurRadius: 0, spreadRadius: 0),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              "Showing $displayedFilterResultCount Results",
+              style: const TextStyle(
+                color: Colors.white,
+                letterSpacing: 0.5,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+
+
   void readData() async {
     token = await prefManager.readStringFromPref();
     email = await prefManager.readStringFromPrefemail();
@@ -229,18 +284,17 @@ class _FilterDemoState extends State<FilterDemo> {
 
 // Product list (UI display)
   final List<String> _product = [
-    'Rent',
     'Buy',
-    'New Projects',
-    'Commercial'
+    'Rent',
+
   ];
 
 // Product API map (to send correct "purpose" to API)
   final Map<String, String> _productApiMap = {
-    'Rent': 'to-rent',
+
     'Buy': 'for-sale',
-    'New Projects': 'new-project',
-    'Commercial': 'commercial',
+    'Rent': 'to-rent',
+
   };
 
 // Category list
@@ -495,13 +549,18 @@ class _FilterDemoState extends State<FilterDemo> {
         );
       } else {
         // ✅ Push Replacement with route name to avoid duplicate FliterList
+        // REPLACE your current Navigator call inside the big red button:
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            settings: RouteSettings(name: 'FliterList'),
-            builder: (context) => FliterList(filterModel: filterModel),
+            settings: const RouteSettings(name: 'FliterList'),
+            builder: (context) => FliterList(
+              filterModel: filterModel,
+              forceRefresh: true,  // 👈 tell results screen to reset paging
+            ),
           ),
         );
+
       }
     }
 
@@ -673,8 +732,18 @@ class _FilterDemoState extends State<FilterDemo> {
       );
     }
     Size screenSize = MediaQuery.sizeOf(context);
+
+    final int rentIndex = _product.indexOf('Rent');
+    final bool isNewProjects = _selected == 1;
+
+    final bool showProductPills = !isNewProjects;                          // Properties only
+    final bool showCompletion  = !isNewProjects;                          // Properties only
+    final bool showRentPaid    = !isNewProjects && selectedproduct == rentIndex; // Properties + Rent only
+    final bool showHandoverBy  = isNewProjects;                           // New Projects only ✅
+
+
     return Scaffold(
-      // bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+      bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Color(0xFFF9F9F9), // Softer white
@@ -762,127 +831,259 @@ class _FilterDemoState extends State<FilterDemo> {
       body: SingleChildScrollView(
         child: Column(
             children: <Widget>[
-              const SizedBox(height: 20),
-              //properties
-              Padding(
-                padding: const EdgeInsets.all(5),
-                child: SizedBox(
-                  height: 60,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _product.length,
-                    itemBuilder: (context, index) {
-                      final isSelected = selectedproduct == index;
 
-                      return GestureDetector(
-                        onTap: () async {
-                          setState(() {
-                            selectedproduct = index;
-                            purpose = _product[index];
-                            _isLoading = true;
-                          });
+              Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.all(5),
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFFF5F4F9), Color(0xFFF5F4F9)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          offset: const Offset(0, 2),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        // Properties
+                        // ✅ UPDATED: Properties toggle
+                        GestureDetector(
+                          onTap: () async {
+                            setState(() {
+                              _selected = 0;
+                              selectedCompletion = 0;                  // reset Handover/Completion
+                              selectedproduct ??= 0;                   // default to "Buy" when coming from New Projects
+                              purpose = _product[selectedproduct!];    // "Buy" or "Rent"
+                              if (purpose != 'Rent') {
+                                selectedrent = null;
+                                rent = '';
+                              }
+                              _isLoading = true;                       // hide type chips briefly
+                            });
 
-                          await propertyApi(purpose);
+                            // 1) Reload property types for the chosen purpose
+                            await propertyApi(purpose);
 
-                          setState(() {
-                            _isLoading = false;
-                          });
-                        },
-                        child: Container(
-                          alignment: Alignment.center,
-                          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          decoration: BoxDecoration(
-                            color: Colors.white, // No background color change
-                            border: Border.all(
-                              color: isSelected ? Colors.black : Colors.transparent,
-                              width: 2,
+                            // 2) Pick the first type safely (if any)
+                            final firstTypeName = (propertyTypeModel?.data?.isNotEmpty ?? false)
+                                ? (propertyTypeModel!.data!.first.name ?? '')
+                                : '';
+
+                            setState(() {
+                              selectedtype = firstTypeName.isNotEmpty ? 0 : null;
+                              property_type = firstTypeName;           // '' if none returned
+                              _isLoading = false;
+                            });
+
+                            // 3) Update the live count → drives "Showing X Results"
+                            await updateFilterCount();
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            width: 180,
+                            height: 45,
+                            alignment: Alignment.center,
+                            margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            decoration: BoxDecoration(
+                              color: _selected == 0 ? const Color(0xFF3A7CED) : Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: const Offset(0, 2),
+                                  blurRadius: 4,
+                                  spreadRadius: 0,
+                                ),
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: const Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
+                              ],
                             ),
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                offset: const Offset(0, 2),
-                                blurRadius: 4,
-                                spreadRadius: 0,
+                            child: Text(
+                              "Properties",
+                              style: TextStyle(
+                                color: _selected == 0 ? Colors.white : Colors.black,
+                                letterSpacing: 0.5,
+                                fontSize: 14,
                               ),
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.8),
-                                offset: const Offset(-4, -4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            _product[index],
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                              fontSize: 14,
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
                           ),
                         ),
-                      );
-                    },
+
+
+
+                        // New Projects
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selected = 1;
+                              selectedCompletion = 0; // default to “All”
+                              selectedproduct = null;
+                              purpose = '';
+                              selectedrent = null;
+                              rent = '';
+                            });
+
+                            updateFilterCount();
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            width: 180,
+                            height: 45,
+                            alignment: Alignment.center,
+                            margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            decoration: BoxDecoration(
+                              color: _selected == 1 ? const Color(0xFF3A7CED) : Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: const Offset(0, 2),
+                                  blurRadius: 4,
+                                  spreadRadius: 0,
+                                ),
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: const Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              "New Projects",
+                              style: TextStyle(
+                                color: _selected == 1 ? Colors.white : Colors.black,
+                                letterSpacing: 0.5,
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        )
+
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
 
+              const SizedBox(height: 10),
+              //properties
+              if (showProductPills) ...[
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: SizedBox(
+                    height: 60,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _product.length,
+                      itemBuilder: (context, index) {
+                        final isSelected = selectedproduct == index;
+                        return GestureDetector(
+                          onTap: () async {
+                            setState(() {
+                              selectedproduct = index;
+                              purpose = _product[index];
+                              _isLoading = true;
+                            });
 
-              const SizedBox(height: 20),
-              // const Divider(height: 1,indent: 15,endIndent: 15,),
-              // const SizedBox(height: 20),
-              //Searchbar
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 10),
-              //   child: Container(
-              //     height: 65,
-              //     padding: const EdgeInsets.symmetric(horizontal: 12),
-              //     decoration: BoxDecoration(
-              //       color: Colors.white,                          // white background
-              //       borderRadius: BorderRadius.circular(25),
-              //       border: Border.all(color: Colors.red.shade200, width: 1),  // colored border
-              //     ),
-              //     child: Row(
-              //       children: [
-              //         Image.asset(
-              //           "assets/images/map.png",
-              //           height: 22,
-              //           color: Colors.red,                         // active icon color
-              //         ),
-              //         const SizedBox(width: 10),
-              //         Expanded(
-              //           child: TextField(
-              //             controller: _searchController,            // define in your State
-              //             decoration: InputDecoration(
-              //               hintText: "Search for a locality, area or city",
-              //               hintStyle: TextStyle(
-              //                 color: Colors.grey.shade600,
-              //                 fontSize: 14,
-              //               ),
-              //               border: InputBorder.none,
-              //             ),
-              //             onChanged: (value) {
-              //               // TODO: your search logic here
-              //             },
-              //           ),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
+                            // fetch property types for the selected purpose
+                            await propertyApi(purpose);
+
+                            // pick the first type safely (if any)
+                            final firstTypeName = (propertyTypeModel?.data?.isNotEmpty ?? false)
+                                ? (propertyTypeModel!.data!.first.name ?? '')
+                                : '';
+
+                            setState(() {
+                              selectedtype = 0;                // select first chip
+                              property_type = firstTypeName;   // set its name ('' if none)
+                              _isLoading = false;
+                            });
+
+                            // refresh the live “Showing X Results” count
+                            await updateFilterCount();
+                          },
+
+                          child: Container(
+                            width: 180,
+                            height: 34,
+                            alignment: Alignment.center,
+                            margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            decoration: BoxDecoration(
+                              color: isSelected ? const Color(0xFFF5F4F9) : Colors.white,
+                              border: Border.all(
+                                color: isSelected ? Colors.black : Colors.transparent,
+                                width: 1,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: const Offset(0, 2),
+                                  blurRadius: 4,
+                                  spreadRadius: 0,
+                                ),
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: const Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              _product[index],
+                              style: const TextStyle(
+                                color: Colors.black,
+                                letterSpacing: 0.5,
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
 
 
-              const SizedBox(height: 20),
-              const Divider(height: 1,indent: 15,endIndent: 15,),
-              const SizedBox(height: 20),
-              //property type
+
+
+
+
+
+              const SizedBox(height: 10),
+
+
+
+
+
+
+
               Row(
                 children: [
-                  Padding(padding: const EdgeInsets.only(left: 20),
+                  Padding(padding: const EdgeInsets.only(left: 18),
                       // child:  Text(purpose,
                       child:  Text("Property Type",
                         style: TextStyle(
@@ -893,7 +1094,120 @@ class _FilterDemoState extends State<FilterDemo> {
                   ),
                 ],
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 12),
+
+              Row(
+                children: [
+                  const SizedBox(width: 12),
+
+                  // Residential
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => selectedPropType = 0),
+
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        height: 40,
+                        alignment: Alignment.center,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          // selected: subtle gray gradient; unselected: white
+                          gradient: selectedPropType == 0
+                              ? const LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [Color(0xFFF5F4F9), Color(0xFFEFEFF3)],
+                          )
+                              : null,
+                          color: selectedPropType == 0 ? null : Colors.white,
+                          border: Border.all(
+                            color: selectedPropType == 0 ? Colors.black : Color(0xFFE6E4EE),
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              offset: const Offset(0, 3),
+                              blurRadius: 6,
+                              spreadRadius: 0,
+                            ),
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.9),
+                              offset: const Offset(-2, -2),
+                              blurRadius: 6,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: const Text(
+                          'Residential',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Commercial
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => selectedPropType = 1),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        height: 40,
+                        alignment: Alignment.center,
+                        margin: const EdgeInsets.only(left: 8, right: 12),
+                        decoration: BoxDecoration(
+                          gradient: selectedPropType == 1
+                              ? const LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [Color(0xFFF5F4F9), Color(0xFFEFEFF3)],
+                          )
+                              : null,
+                          color: selectedPropType == 1 ? null : Colors.white,
+                          border: Border.all(
+                            color: selectedPropType == 1 ? Colors.black : Color(0xFFE6E4EE),
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              offset: const Offset(0, 3),
+                              blurRadius: 6,
+                              spreadRadius: 0,
+                            ),
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.9),
+                              offset: const Offset(-2, -2),
+                              blurRadius: 6,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: const Text(
+                          'Commercial',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height:10),
+
               AnimatedOpacity(
                 opacity: _isLoading ? 0.0 : 1.0,
                 duration: const Duration(milliseconds: 500),
@@ -910,7 +1224,9 @@ class _FilterDemoState extends State<FilterDemo> {
                             selectedtype = index;
                             property_type = propertyTypeModel!.data![index].name.toString();
                           });
+                          await updateFilterCount();   // 👈 add this line
                         },
+
                         child: Container(
                           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
@@ -962,9 +1278,85 @@ class _FilterDemoState extends State<FilterDemo> {
                   ),
                 ),
               ),
+
+              // const Divider(height: 1,indent: 15,endIndent: 15,),
               const SizedBox(height: 20),
-              const Divider(height: 1,indent: 15,endIndent: 15,),
-              const SizedBox(height: 20),
+
+
+
+              // --- Completion Status ---
+              if (showCompletion) ...[
+                Padding(
+                  padding: const EdgeInsets.only(right: 100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Completion Status',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 15),
+
+                      // Pills row (scrollable if needed)
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: List.generate(_completion.length, (i) {
+                            final bool isSelected = selectedCompletion == i;
+
+                            return GestureDetector(
+                              onTap: () => setState(() => selectedCompletion = i),
+                              child: Container(
+                                // auto width based on label
+                                constraints: const BoxConstraints(minHeight: 34),
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                margin: const EdgeInsets.only(right: 10),
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: isSelected ? const Color(0xFFF5F4F9) : Colors.white,
+                                  border: Border.all(
+                                    color: isSelected ? Colors.black : const Color(0xFFE6E4EE),
+                                    width: 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.15),
+                                      offset: const Offset(0, 2),
+                                      blurRadius: 4,
+                                      spreadRadius: 0,
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.9),
+                                      offset: const Offset(-2, -2),
+                                      blurRadius: 6,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  _completion[i],
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    letterSpacing: 0.2,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+
+
+                const SizedBox(height: 20),
+                const Divider(height: 1,indent: 15,endIndent: 15,),
+                const SizedBox(height: 20),
+              ],
               //text
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -991,49 +1383,49 @@ class _FilterDemoState extends State<FilterDemo> {
                       spacing: 15,
                       children: [
                         Container(
-                            width: screenSize.width*0.38,
-                            height: 40,
-                            padding: const EdgeInsets.only(top: 8,left: 8),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],
+                          width: screenSize.width*0.38,
+                          height: 40,
+                          padding: const EdgeInsets.only(top: 8,left: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadiusDirectional.circular(6.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: const Offset(
+                                  0.3,
+                                  0.3,
+                                ),
+                                blurRadius: 0.3,
+                                spreadRadius: 0.3,
+                              ), //BoxShadow
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: const Offset(0.0, 0.0),
+                                blurRadius: 0.0,
+                                spreadRadius: 0.0,
+                              ), //BoxShadow
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom:8.0),
+                            child: TextFormField(
+                              controller: minPriceController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(border: InputBorder.none),
+                              onTap: () => isMinTyping = true,              // 👈 starts typing
+                              onEditingComplete: () => isMinTyping = false, // 👈 ends typing (on "done")
+                              onChanged: (val) {
+                                final start = double.tryParse(val) ?? 0;
+                                if (start <= _values.end) {
+                                  setState(() {
+                                    _values = SfRangeValues(start, _values.end);
+                                    min_price = start.toStringAsFixed(0);
+                                  });
+                                  showResult(autoUpdate: true);
+                                }
+                              },
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom:8.0),
-                              child: TextFormField(
-                                controller: minPriceController,
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(border: InputBorder.none),
-                                onTap: () => isMinTyping = true,              // 👈 starts typing
-                                onEditingComplete: () => isMinTyping = false, // 👈 ends typing (on "done")
-                                onChanged: (val) {
-                                  final start = double.tryParse(val) ?? 0;
-                                  if (start <= _values.end) {
-                                    setState(() {
-                                      _values = SfRangeValues(start, _values.end);
-                                      min_price = start.toStringAsFixed(0);
-                                    });
-                                    showResult(autoUpdate: true);
-                                  }
-                                },
-                              ),
-                            ),
+                          ),
 
 
 
@@ -1048,49 +1440,49 @@ class _FilterDemoState extends State<FilterDemo> {
                         ),
 
                         Container(
-                            width: screenSize.width*0.38,
-                            height: 40,
-                            padding: const EdgeInsets.only(top: 8,left: 8),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(6.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],
+                          width: screenSize.width*0.38,
+                          height: 40,
+                          padding: const EdgeInsets.only(top: 8,left: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadiusDirectional.circular(6.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: const Offset(
+                                  0.3,
+                                  0.3,
+                                ),
+                                blurRadius: 0.3,
+                                spreadRadius: 0.3,
+                              ), //BoxShadow
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: const Offset(0.0, 0.0),
+                                blurRadius: 0.0,
+                                spreadRadius: 0.0,
+                              ), //BoxShadow
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: TextFormField(
+                              controller: maxPriceController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(border: InputBorder.none),
+                              onTap: () => isMaxTyping = true,
+                              onEditingComplete: () => isMaxTyping = false,
+                              onChanged: (val) {
+                                final end = double.tryParse(val) ?? 0;
+                                if (end >= _values.start) {
+                                  setState(() {
+                                    _values = SfRangeValues(_values.start, end);
+                                    max_price = end.toStringAsFixed(0);
+                                  });
+                                  showResult(autoUpdate: true);
+                                }
+                              },
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 8.0),
-                              child: TextFormField(
-                                controller: maxPriceController,
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(border: InputBorder.none),
-                                onTap: () => isMaxTyping = true,
-                                onEditingComplete: () => isMaxTyping = false,
-                                onChanged: (val) {
-                                  final end = double.tryParse(val) ?? 0;
-                                  if (end >= _values.start) {
-                                    setState(() {
-                                      _values = SfRangeValues(_values.start, end);
-                                      max_price = end.toStringAsFixed(0);
-                                    });
-                                    showResult(autoUpdate: true);
-                                  }
-                                },
-                              ),
-                            ),
+                          ),
 
 
 
@@ -1234,7 +1626,7 @@ class _FilterDemoState extends State<FilterDemo> {
                             // Convert selected values into comma-separated string
                             bedroom = selectedBedrooms.map((i) => _bedroom[i]).join(',');
                           });
-                          await updateFilterCount();
+
 
                           await updateFilterCount(); // ✅ NOW this will work
                         },
@@ -1330,7 +1722,7 @@ class _FilterDemoState extends State<FilterDemo> {
 
                             bathroom = selectedBathrooms.map((i) => _bathroom[i]).join(',');
                           });
-                          await updateFilterCount();
+
 
                           await updateFilterCount(); // ✅ call API to update count
                         },
@@ -1633,362 +2025,459 @@ class _FilterDemoState extends State<FilterDemo> {
               const SizedBox(height: 20),
               const Divider(height: 1,indent: 15,endIndent: 15,),
               const SizedBox(height: 20),
-              //Amenities
-              Row(
-                children: [
-                  Padding(padding: const EdgeInsets.only(left: 20),
-                    child:  Text("Amenities",
-                      style: TextStyle(
-                        color: Colors.black,fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
+
+
+              // --- Completion Status ---
+              if (showHandoverBy) ...[
+                Padding(
+                  padding: const EdgeInsets.only(right: 100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Handover By',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                      textAlign: TextAlign.left,),
+                      const SizedBox(height: 15),
+
+                      // Pills row (scrollable if needed)
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: List.generate(_completion.length, (i) {
+                            final bool isSelected = selectedCompletion == i;
+
+                            return GestureDetector(
+                              onTap: () => setState(() => selectedCompletion = i),
+                              child: Container(
+                                // auto width based on label
+                                constraints: const BoxConstraints(minHeight: 34),
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                margin: const EdgeInsets.only(right: 10),
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: isSelected ? const Color(0xFFF5F4F9) : Colors.white,
+                                  border: Border.all(
+                                    color: isSelected ? Colors.black : const Color(0xFFE6E4EE),
+                                    width: 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.15),
+                                      offset: const Offset(0, 2),
+                                      blurRadius: 4,
+                                      spreadRadius: 0,
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.9),
+                                      offset: const Offset(-2, -2),
+                                      blurRadius: 6,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  _completion[i],
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    letterSpacing: 0.2,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: GridView.builder(
-                      itemCount: _showAllAmenities ? amenities.length : 5,
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 4,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
+                ),
+
+                SizedBox(height: 10,),
+                //Amenities
+                Row(
+                  children: [
+                    Padding(padding: const EdgeInsets.only(left: 20),
+                      child:  Text("Amenities",
+                        style: TextStyle(
+                          color: Colors.black,fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                        textAlign: TextAlign.left,),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: GridView.builder(
+                        itemCount: _showAllAmenities ? amenities.length : 5,
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 4,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
+                        itemBuilder: (context, index) {
+                          final isSelected = selectedIndexes.contains(index);
+                          return GestureDetector(
+                            onTap: () async {
+                              setState(() {
+                                isSelected
+                                    ? selectedIndexes.remove(index)
+                                    : selectedIndexes.add(index);
+                              });
+                              await updateFilterCount(); // ✅ call API to update count
+                            },
+
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(
+                                  color: isSelected ? Colors.black87 : Colors.grey.shade300,
+                                  width: isSelected ? 2 : 1,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 3,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Row(
+                                children: [
+                                  CachedNetworkImage(
+                                    imageUrl: amenities[index].icon ?? '',
+                                    width: 18,
+                                    height: 18,
+                                    placeholder: (context, url) => const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                    errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 18),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      amenities[index].title ?? '',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                            ),
+                          );
+                        },
                       ),
+                    ),
+
+                    if (amenities.length > 6)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10.0),
+                        child: TextButton(
+                          onPressed: () async {
+                            // Wait for all amenities icons to be cached completely
+                            await Future.wait(
+                              amenities.map((amenity) async {
+                                final url = amenity.icon;
+                                if (url != null && url.isNotEmpty) {
+                                  try {
+                                    final imageProvider = CachedNetworkImageProvider(url);
+                                    await precacheImage(imageProvider, context); // Await each cache
+                                  } catch (e) {
+                                    // Handle any failed image silently
+                                  }
+                                }
+                              }),
+                            );
+
+                            // Navigate only AFTER all images are cached
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FullAmenitiesScreen(
+                                  allAmenities: amenities,
+                                  selectedIndexes: selectedIndexes,
+                                  onDone: (selected) async{
+                                    setState(() {
+                                      selectedIndexes = selected;
+                                    });
+                                    await updateFilterCount();
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+
+
+
+
+                          child: Text(
+                            _showAllAmenities ? "Show less amenities" : "Show more amenities",
+                            style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold,fontSize: 16),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                const Divider(height: 1,indent: 15,endIndent: 15,),
+                const SizedBox(height: 20),
+
+
+
+
+
+
+
+                // const SizedBox(height: 20),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 16),
+                //   child: Container(
+                //     width: double.infinity,
+                //     height: 100,
+                //     padding: const EdgeInsets.all(16),
+                //     decoration: BoxDecoration(
+                //       color: Color(0xFFFFFBF0)
+                //       ,
+                //       borderRadius: BorderRadius.circular(10),
+                //       boxShadow: [
+                //         BoxShadow(
+                //           color: Colors.grey.withOpacity(0.2),
+                //           blurRadius: 6,
+                //           offset: Offset(0, 3),
+                //         ),
+                //       ],
+                //     ),
+                //     child: Column(
+                //       crossAxisAlignment: CrossAxisAlignment.start,
+                //       children: [
+                //         Row(
+                //           children: [
+                //             Image.asset(
+                //               "assets/images/app-icon_new.png",
+                //               width: 22,
+                //               height: 22,
+                //               fit: BoxFit.contain,
+                //             ),
+                //             const SizedBox(width: 8),
+                //             const Text(
+                //               "Explore more locations",
+                //               style: TextStyle(
+                //                 fontSize: 16,
+                //                 fontWeight: FontWeight.bold,
+                //                 color: Colors.black87,
+                //                 letterSpacing: 0.5,
+                //               ),
+                //             ),
+                //           ],
+                //         ),
+                //
+                //         const SizedBox(height: 12),
+                //         Row(
+                //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //           children: ["Dubai", "AbuDhabi", "Sharjah", "Ajman", "Al Ain"].map((city) {
+                //             return Container(
+                //               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                //               decoration: BoxDecoration(
+                //                 color: Colors.white,
+                //                 borderRadius: BorderRadius.circular(12),
+                //                 boxShadow: [
+                //                   BoxShadow(
+                //                     color: Colors.grey.withOpacity(0.2),
+                //                     blurRadius: 4,
+                //                     offset: Offset(1, 2),
+                //                   ),
+                //                 ],
+                //               ),
+                //               child: Text(
+                //                 city,
+                //                 style: const TextStyle(
+                //                   fontSize: 13,
+                //                   fontWeight: FontWeight.w600,
+                //                   color: Colors.black87,
+                //                 ),
+                //               ),
+                //             );
+                //           }).toList(),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
+                // const SizedBox(height: 20),
+
+                const Divider(height: 1,indent: 15,endIndent: 15,),
+                SizedBox(height: 8,),
+                // Container(
+                //   height: 100,
+                // ),
+                // GestureDetector(
+                //   onTap: () {
+                //     showResult();
+                //   },
+                //   child: Padding(
+                //     padding: const EdgeInsets.only(top: 25.0, left: 15, bottom: 15, right: 15),
+                //     child: Container(
+                //       width: screenSize.width * 0.9,
+                //       height: 45,
+                //       decoration: BoxDecoration(
+                //         color: Colors.red,
+                //         borderRadius: BorderRadiusDirectional.circular(6.0),
+                //         boxShadow: [
+                //           BoxShadow(
+                //             color: Colors.grey,
+                //             offset: const Offset(0.3, 0.3),
+                //             blurRadius: 0.3,
+                //             spreadRadius: 0.3,
+                //           ),
+                //           BoxShadow(
+                //             color: Colors.white,
+                //             offset: const Offset(0.0, 0.0),
+                //             blurRadius: 0.0,
+                //             spreadRadius: 0.0,
+                //           ),
+                //         ],
+                //       ),
+                //       child: Center(
+                //         child: Text(
+                //           "Showing $displayedFilterResultCount Results" ,// ✅ Live count!
+                //           style: TextStyle(
+                //             color: Colors.white,
+                //             letterSpacing: 0.5,
+                //             fontWeight: FontWeight.bold,
+                //             fontSize: 15,
+                //           ),
+                //           textAlign: TextAlign.center,
+                //         ),
+                //       ),
+                //     ),
+                //   ),
+                // ),
+
+              ],
+
+              //real estate
+              if (showRentPaid) ...[
+                Row(
+                  children: const [
+                    Padding(
+                      padding: EdgeInsets.only(left: 20),
+                      child: Text(
+                        "Rent is paid",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: SizedBox(
+                    height: 60,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const ScrollPhysics(),
+                      itemCount: _rent.length,
                       itemBuilder: (context, index) {
-                        final isSelected = selectedIndexes.contains(index);
+                        final isSelected = selectedrent == index;
                         return GestureDetector(
                           onTap: () async {
                             setState(() {
-                              isSelected
-                                  ? selectedIndexes.remove(index)
-                                  : selectedIndexes.add(index);
+                              selectedrent = index;
+                              rent = _rent[index];
                             });
-                            await updateFilterCount(); // ✅ call API to update count
+                            await updateFilterCount();
                           },
-
                           child: Container(
+                            margin: const EdgeInsets.all(5),
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               border: Border.all(
                                 color: isSelected ? Colors.black87 : Colors.grey.shade300,
                                 width: isSelected ? 2 : 1,
                               ),
-                              borderRadius: BorderRadius.circular(10),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 3,
-                                  offset: const Offset(0, 1),
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: const Offset(4, 4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: const Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
                                 ),
                               ],
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            alignment: Alignment.center,
                             child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                CachedNetworkImage(
-                                  imageUrl: amenities[index].icon ?? '',
-                                  width: 18,
-                                  height: 18,
-                                  placeholder: (context, url) => const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  ),
-                                  errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 18),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    amenities[index].title ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black,
-                                    ),
+                                if (isSelected) ...[
+                                  const Icon(Icons.check, size: 18, color: Colors.green),
+                                  const SizedBox(width: 4),
+                                ],
+                                Text(
+                                  _rent[index],
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    letterSpacing: 0.5,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
                                   ),
                                 ),
                               ],
                             ),
-
                           ),
                         );
                       },
                     ),
                   ),
-
-                  if (amenities.length > 6)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10.0),
-                      child: TextButton(
-                        onPressed: () async {
-                          // Wait for all amenities icons to be cached completely
-                          await Future.wait(
-                            amenities.map((amenity) async {
-                              final url = amenity.icon;
-                              if (url != null && url.isNotEmpty) {
-                                try {
-                                  final imageProvider = CachedNetworkImageProvider(url);
-                                  await precacheImage(imageProvider, context); // Await each cache
-                                } catch (e) {
-                                  // Handle any failed image silently
-                                }
-                              }
-                            }),
-                          );
-
-                          // Navigate only AFTER all images are cached
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => FullAmenitiesScreen(
-                                allAmenities: amenities,
-                                selectedIndexes: selectedIndexes,
-                                onDone: (selected) async{
-                                  setState(() {
-                                    selectedIndexes = selected;
-                                  });
-                                  await updateFilterCount();
-                                },
-                              ),
-                            ),
-                          );
-                        },
+                ),
+              ],
 
 
-
-
-                        child: Text(
-                          _showAllAmenities ? "Show less amenities" : "Show more amenities",
-                          style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold,fontSize: 16),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+              const Divider(height: 1, indent: 15, endIndent: 15),
+              const SizedBox(height: 8),
+              _showResultsButton(context, screenSize),
               const SizedBox(height: 10),
-              const Divider(height: 1,indent: 15,endIndent: 15,),
-              const SizedBox(height: 20),
-              //real estate
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20),
-                    child:  Text("Rent is paid",style: TextStyle(
-                        color: Colors.black,fontSize: 16.0,
-                        fontWeight: FontWeight.bold,letterSpacing: 0.5
-                    ),textAlign: TextAlign.left,),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Padding(
-                padding: const EdgeInsets.all(5),
-                child: SizedBox(
-                  height: 60,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    physics: const ScrollPhysics(),
-                    itemCount: _rent.length,
-                    itemBuilder: (context, index) {
-                      final isSelected = selectedrent == index;
-                      return GestureDetector(
-                        onTap: () async {
-                          setState(() {
-                            selectedrent = index;
-                            rent = _rent[index];
-                          });
-                          await updateFilterCount();// ✅ call API to update count
-                        },
-
-                        child: Container(
-                          margin: const EdgeInsets.all(5),
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(
-                              color: isSelected ? Colors.black87 : Colors.grey.shade300,
-                              width: isSelected ? 2 : 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                offset: Offset(4, 4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.8),
-                                offset: Offset(-4, -4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (isSelected) ...[
-                                Icon(Icons.check, size: 18, color: Colors.green),
-                                SizedBox(width: 4),
-                              ],
-                              Text(
-                                _rent[index],
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  letterSpacing: 0.5,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-
-
-              // const SizedBox(height: 20),
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 16),
-              //   child: Container(
-              //     width: double.infinity,
-              //     height: 100,
-              //     padding: const EdgeInsets.all(16),
-              //     decoration: BoxDecoration(
-              //       color: Color(0xFFFFFBF0)
-              //       ,
-              //       borderRadius: BorderRadius.circular(10),
-              //       boxShadow: [
-              //         BoxShadow(
-              //           color: Colors.grey.withOpacity(0.2),
-              //           blurRadius: 6,
-              //           offset: Offset(0, 3),
-              //         ),
-              //       ],
-              //     ),
-              //     child: Column(
-              //       crossAxisAlignment: CrossAxisAlignment.start,
-              //       children: [
-              //         Row(
-              //           children: [
-              //             Image.asset(
-              //               "assets/images/app-icon_new.png",
-              //               width: 22,
-              //               height: 22,
-              //               fit: BoxFit.contain,
-              //             ),
-              //             const SizedBox(width: 8),
-              //             const Text(
-              //               "Explore more locations",
-              //               style: TextStyle(
-              //                 fontSize: 16,
-              //                 fontWeight: FontWeight.bold,
-              //                 color: Colors.black87,
-              //                 letterSpacing: 0.5,
-              //               ),
-              //             ),
-              //           ],
-              //         ),
-              //
-              //         const SizedBox(height: 12),
-              //         Row(
-              //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //           children: ["Dubai", "AbuDhabi", "Sharjah", "Ajman", "Al Ain"].map((city) {
-              //             return Container(
-              //               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              //               decoration: BoxDecoration(
-              //                 color: Colors.white,
-              //                 borderRadius: BorderRadius.circular(12),
-              //                 boxShadow: [
-              //                   BoxShadow(
-              //                     color: Colors.grey.withOpacity(0.2),
-              //                     blurRadius: 4,
-              //                     offset: Offset(1, 2),
-              //                   ),
-              //                 ],
-              //               ),
-              //               child: Text(
-              //                 city,
-              //                 style: const TextStyle(
-              //                   fontSize: 13,
-              //                   fontWeight: FontWeight.w600,
-              //                   color: Colors.black87,
-              //                 ),
-              //               ),
-              //             );
-              //           }).toList(),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
-              // const SizedBox(height: 20),
-
-              const Divider(height: 1,indent: 15,endIndent: 15,),
-              Container(
-                height: 100,
-              ),
-              GestureDetector(
-                onTap: () {
-                  showResult();
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 25.0, left: 15, bottom: 15, right: 15),
-                  child: Container(
-                    width: screenSize.width * 0.9,
-                    height: 45,
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadiusDirectional.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: const Offset(0.3, 0.3),
-                          blurRadius: 0.3,
-                          spreadRadius: 0.3,
-                        ),
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 0.0,
-                          spreadRadius: 0.0,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        "Showing $displayedFilterResultCount Results" ,// ✅ Live count!
-                        style: TextStyle(
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
 
               Container(
                 height: 10,
               ),
-            ]),
+
+
+
+            ]
+
+        ),
+
       ),
     ) ;
 
@@ -2014,175 +2503,175 @@ class _FilterDemoState extends State<FilterDemo> {
     );
   }
 
-// Container buildMyNavBar(BuildContext context) {
-  //   return Container(
-  //     height: 50,
-  //     decoration: BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: const BorderRadius.only(
-  //         topLeft: Radius.circular(20),
-  //         topRight: Radius.circular(20),
-  //       ),
-  //     ),
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceAround,
-  //       children: [
-  //         GestureDetector(
-  //             onTap: ()async{
-  //               Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
-  //             },
-  //             child: Image.asset("assets/images/home.png",height: 25,)),
-  //         // IconButton(
-  //         //   enableFeedback: false,
-  //         //   onPressed: () {
-  //         //     setState(() {
-  //         //       pageIndex = 1;
-  //         //     });
-  //         //   },
-  //         //   icon: pageIndex == 1
-  //         //       ? const Icon(
-  //         //     Icons.search,
-  //         //     color: Colors.red,
-  //         //     size: 35,
-  //         //   )
-  //         //       : const Icon(
-  //         //     Icons.search_outlined,
-  //         //     color: Colors.red,
-  //         //     size: 35,
-  //         //   ),
-  //         // ),
-  //         IconButton(
-  //           enableFeedback: false,
-  //           onPressed: () async {
-  //             final token = await SecureStorage.getToken();
-  //
-  //             if (token == null || token.isEmpty) {
-  //               showDialog(
-  //                 context: context,
-  //                 builder: (context) => AlertDialog(
-  //                   backgroundColor: Colors.white, // white container
-  //                   title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-  //                   content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
-  //                   actions: [
-  //                     TextButton(
-  //                       onPressed: () => Navigator.pop(context),
-  //                       child: const Text(
-  //                         "Cancel",
-  //                         style: TextStyle(color: Colors.red), // red text
-  //                       ),
-  //                     ),
-  //                     TextButton(
-  //                       onPressed: () {
-  //                         Navigator.pop(context);
-  //                         Navigator.push(
-  //                           context,
-  //                           MaterialPageRoute(builder: (_) => const LoginDemo()),
-  //                         );
-  //                       },
-  //                       child: const Text(
-  //                         "Login",
-  //                         style: TextStyle(color: Colors.red), // red text
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               );
-  //             }
-  //             else {
-  //               // ✅ Logged in – go to favorites
-  //               Navigator.push(
-  //                 context,
-  //                 MaterialPageRoute(builder: (context) => Fav_Logout()),
-  //               );
-  //             }
-  //           },
-  //           icon: pageIndex == 2
-  //               ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-  //               : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
-  //         ),
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //         IconButton(
-  //           tooltip: "Email",
-  //           icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
-  //           onPressed: () async {
-  //             final Uri emailUri = Uri.parse(
-  //               'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
-  //             );
-  //
-  //             if (await canLaunchUrl(emailUri)) {
-  //               await launchUrl(emailUri);
-  //             } else {
-  //               showDialog(
-  //                 context: context,
-  //                 builder: (context) => AlertDialog(
-  //                   backgroundColor: Colors.white, // White dialog container
-  //                   title: const Text(
-  //                     'Email not available',
-  //                     style: TextStyle(color: Colors.black), // Title in black
-  //                   ),
-  //                   content: const Text(
-  //                     'No email app is configured on this device. Please add a mail account first.',
-  //                     style: TextStyle(color: Colors.black), // Content in black
-  //                   ),
-  //                   actions: [
-  //                     TextButton(
-  //                       onPressed: () => Navigator.pop(context),
-  //                       child: const Text(
-  //                         'OK',
-  //                         style: TextStyle(color: Colors.red), // Red "OK" text
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               );
-  //             }
-  //           },
-  //         ),
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //         IconButton(
-  //           enableFeedback: false,
-  //           onPressed: () {
-  //             setState(() {
-  //               if(token == ''){
-  //                 Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-  //               }
-  //               else{
-  //                 Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-  //
-  //               }
-  //             });
-  //           },
-  //           icon: pageIndex == 3
-  //               ? const Icon(
-  //             Icons.dehaze,
-  //             color: Colors.red,
-  //             size: 35,
-  //           )
-  //               : const Icon(
-  //             Icons.dehaze_outlined,
-  //             color: Colors.red,
-  //             size: 35,
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+  Container buildMyNavBar(BuildContext context) {
+    return Container(
+      height: 50,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          GestureDetector(
+              onTap: ()async{
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+              },
+              child: Image.asset("assets/images/home.png",height: 25,)),
+          // IconButton(
+          //   enableFeedback: false,
+          //   onPressed: () {
+          //     setState(() {
+          //       pageIndex = 1;
+          //     });
+          //   },
+          //   icon: pageIndex == 1
+          //       ? const Icon(
+          //     Icons.search,
+          //     color: Colors.red,
+          //     size: 35,
+          //   )
+          //       : const Icon(
+          //     Icons.search_outlined,
+          //     color: Colors.red,
+          //     size: 35,
+          //   ),
+          // ),
+          IconButton(
+            enableFeedback: false,
+            onPressed: () async {
+              final token = await SecureStorage.getToken();
+
+              if (token == null || token.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // white container
+                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
+                        },
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              else {
+                // ✅ Logged in – go to favorites
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Fav_Logout()),
+                );
+              }
+            },
+            icon: pageIndex == 2
+                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+          ),
+
+
+
+
+
+
+
+
+          IconButton(
+            tooltip: "Email",
+            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+            onPressed: () async {
+              final Uri emailUri = Uri.parse(
+                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+              );
+
+              if (await canLaunchUrl(emailUri)) {
+                await launchUrl(emailUri);
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // White dialog container
+                    title: const Text(
+                      'Email not available',
+                      style: TextStyle(color: Colors.black), // Title in black
+                    ),
+                    content: const Text(
+                      'No email app is configured on this device. Please add a mail account first.',
+                      style: TextStyle(color: Colors.black), // Content in black
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          'OK',
+                          style: TextStyle(color: Colors.red), // Red "OK" text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+
+
+
+
+
+
+
+
+
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
+              setState(() {
+                if(token == ''){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
+
+                }
+              });
+            },
+            icon: pageIndex == 3
+                ? const Icon(
+              Icons.dehaze,
+              color: Colors.red,
+              size: 35,
+            )
+                : const Icon(
+              Icons.dehaze_outlined,
+              color: Colors.red,
+              size: 35,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 class Data {
   final double x, y;

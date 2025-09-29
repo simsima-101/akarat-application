@@ -26,6 +26,9 @@ import 'package:provider/provider.dart';
 import '../providers/favorite_provider.dart';
 import '../screen/my_nav_bar.dart';
 
+import 'package:Akarat/screen/new_project_detail.dart';
+
+
 
 
 
@@ -448,15 +451,15 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
                     return GestureDetector(
                       onTap: () {
-                        String id = item.id.toString();
-
+                        final id = item.id.toString();
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Featured_Detail(data: id),
+                            builder: (context) => NewProjectDetail(id: id), // ✅ new
                           ),
                         );
                       },
+
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                         child: Card(
@@ -616,15 +619,15 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                         left: 10,
                                         child: GestureDetector(
                                           onTap: () {
-                                            String id = item.id.toString();
-
+                                            final id = item.id.toString();
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => Featured_Detail(data: id),
+                                                builder: (context) => NewProjectDetail(id: id), // ✅ new
                                               ),
                                             );
                                           },
+
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.center,
                                             children: [

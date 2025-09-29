@@ -1,12 +1,8 @@
-import 'package:Akarat/screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:Akarat/services/api_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../secure_storage.dart';
 import 'home.dart';
 import 'login.dart';
-// import 'package:Akarat/screen/login.dart'; // Uncomment and update as needed
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -29,18 +25,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       color: const Color(0xFFF5F5F5),
       borderRadius: BorderRadius.circular(10),
       boxShadow: const [
-        BoxShadow(
-          color: Colors.grey,
-          offset: Offset(0, 0),
-          blurRadius: 0.1,
-          spreadRadius: 0.1,
-        ),
-        BoxShadow(
-          color: Colors.white,
-          offset: Offset(0, 0),
-          blurRadius: 0,
-          spreadRadius: 0,
-        ),
+        BoxShadow(color: Colors.grey, offset: Offset(0, 0), blurRadius: 0.1, spreadRadius: 0.1),
+        BoxShadow(color: Colors.white, offset: Offset(0, 0), blurRadius: 0, spreadRadius: 0),
       ],
     );
   }
@@ -48,73 +34,57 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> onRegisterButtonPressed() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    // close keyboard
+    FocusScope.of(context).unfocus();
+
+    setState(() => _isLoading = true);
+
+    final name = nameController.text.trim();
+    final email = emailController.text.trim().toLowerCase(); // normalize email
+    final password = passwordController.text.trim();
 
     try {
-      // Step 1: Register the user
-      final responseJson = await ApiService.registerUser(
-        name: nameController.text.trim(),
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-        passwordConfirmation: confirmPasswordController.text.trim(),
+      // STEP A: Send OTP
+      final res = await ApiService.sendRegisterOtp(email: email);
+      if (!mounted) return;
+
+      final msg = (res['message'] as String?) ?? 'We sent a 6-digit code to your email.';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+
+      // STEP B: Navigate via the ROOT navigator so it finds your named route
+      Navigator.of(context, rootNavigator: true).pushNamed(
+        '/verify-otp',
+        arguments: {
+          'mode': 'register',
+          'name': name,
+          'email': email,
+          'password': password,
+          'expiresIn': res['expires_in'],
+          'resendAfter': res['resend_after'],
+        },
       );
 
-      // Step 2: Login automatically using the same credentials
-      final loginResult = await ApiService.loginUser(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-
-      if (loginResult is Map<String, dynamic> &&
-          loginResult.containsKey('token')) {
-
-        final token = loginResult['token'];
-
-        // Extract name safely (either at root or inside "user")
-        final name = loginResult['name'] ??
-            (loginResult['user'] != null ? loginResult['user']['name'] : '') ??
-            '';
-
-        // Step 3: Save token and username securely
-        await SecureStorage.writeToken(token);
-        await SecureStorage.write('user_name', name); // <-- Save username securely
-
-
-        print("✅ Saved user name: $name");
-
-        // Step 4: Navigate to Home
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration & Login successful!')),
-        );
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const Home()),
-              (route) => false,
-        );
-      } else {
-        // Fallback for unexpected login structure
-        debugPrint("⚠️ Unexpected login response: $loginResult");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login completed, but response was unexpected.')),
-        );
-      }
+      // If you still ever hit routing issues, uncomment this hard push which bypasses the routes table:
+      // Navigator.of(context, rootNavigator: true).push(
+      //   MaterialPageRoute(
+      //     builder: (_) => const OtpVerificationScreen(),
+      //     settings: RouteSettings(arguments: {
+      //       'mode': 'register',
+      //       'name': name,
+      //       'email': email,
+      //       'password': password,
+      //       'expiresIn': res['expires_in'],
+      //       'resendAfter': res['resend_after'],
+      //     }),
+      //   ),
+      // );
     } catch (e) {
-      debugPrint('RegisterUser error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration failed: $e')),
-      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
   }
-
-
-
 
   @override
   void dispose() {
@@ -133,11 +103,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-
-
-
             const SizedBox(height: 30),
-
             Align(
               alignment: Alignment.topRight,
               child: Padding(
@@ -146,30 +112,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => Home()), // 🏠 Go to home screen
+                      MaterialPageRoute(builder: (_) => const Home()),
                     );
                   },
                   child: const Icon(Icons.close, size: 28, color: Colors.black),
                 ),
               ),
             ),
-            // You can add a close button or profile navigation here if needed
             Padding(
               padding: const EdgeInsets.only(top: 100.0),
               child: Center(
-                child: SizedBox(
-                    width: 150,
-                    height: 55,
-                    child: Image.asset('assets/images/app_icon.png')),
+                child: SizedBox(width: 150, height: 55, child: Image.asset('assets/images/app_icon.png')),
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 0),
               child: Center(
-                child: SizedBox(
-                    width: 150,
-                    height: 40,
-                    child: Image.asset('assets/images/logo-text.png')),
+                child: SizedBox(width: 150, height: 40, child: Image.asset('assets/images/logo-text.png')),
               ),
             ),
             Padding(
@@ -183,39 +142,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       decoration: _boxDecoration(),
                       child: Column(
                         children: [
-                          const Text(
-                            "Create an account",
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
+                          const Text("Create an account", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 10),
 
-                          // Google Button (UI only)
-
-                          const SizedBox(height: 10),
-
-                          // Name Field
                           Container(
                             width: screenSize.width * 0.85,
                             decoration: _boxDecoration(),
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: TextFormField(
                               controller: nameController,
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                hintText: 'Name',
-                              ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Please enter your name';
-                                }
-                                return null;
-                              },
+                              decoration: const InputDecoration(border: InputBorder.none, hintText: 'Name'),
+                              validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter your name' : null,
                             ),
                           ),
                           const SizedBox(height: 10),
 
-                          // Email Field
                           Container(
                             width: screenSize.width * 0.85,
                             decoration: _boxDecoration(),
@@ -223,17 +164,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             child: TextFormField(
                               controller: emailController,
                               keyboardType: TextInputType.emailAddress,
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                hintText: 'Email',
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your email';
-                                }
-                                if (!RegExp(
-                                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                    .hasMatch(value)) {
+                              decoration: const InputDecoration(border: InputBorder.none, hintText: 'Email'),
+                              validator: (v) {
+                                if (v == null || v.isEmpty) return 'Please enter your email';
+                                if (!RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
                                   return 'Invalid email format';
                                 }
                                 return null;
@@ -242,7 +176,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(height: 10),
 
-                          // Password Field
                           Container(
                             width: screenSize.width * 0.85,
                             decoration: _boxDecoration(),
@@ -250,24 +183,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             child: TextFormField(
                               controller: passwordController,
                               obscureText: true,
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                hintText: 'Password',
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your password';
-                                }
-                                if (value.length < 6) {
-                                  return 'Password must be at least 6 characters';
-                                }
+                              decoration: const InputDecoration(border: InputBorder.none, hintText: 'Password'),
+                              validator: (v) {
+                                if (v == null || v.isEmpty) return 'Please enter your password';
+                                if (v.length < 6) return 'Password must be at least 6 characters';
                                 return null;
                               },
                             ),
                           ),
                           const SizedBox(height: 10),
 
-                          // Confirm Password Field
                           Container(
                             width: screenSize.width * 0.85,
                             decoration: _boxDecoration(),
@@ -275,24 +200,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             child: TextFormField(
                               controller: confirmPasswordController,
                               obscureText: true,
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                hintText: 'Confirm Password',
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please confirm your password';
-                                }
-                                if (value != passwordController.text) {
-                                  return 'Passwords do not match';
-                                }
+                              decoration: const InputDecoration(border: InputBorder.none, hintText: 'Confirm Password'),
+                              validator: (v) {
+                                if (v == null || v.isEmpty) return 'Please confirm your password';
+                                if (v != passwordController.text) return 'Passwords do not match';
                                 return null;
                               },
                             ),
                           ),
                           const SizedBox(height: 15),
 
-                          // Register Button
                           SizedBox(
                             width: screenSize.width * 0.85,
                             height: 50,
@@ -300,19 +217,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFEEEEEE),
                                 elevation: 1,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               ),
                               onPressed: _isLoading ? null : onRegisterButtonPressed,
                               child: _isLoading
-                                  ? const CircularProgressIndicator(
-                                color: Colors.black,
-                              )
-                                  : const Text("Register",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black)),
+                                  ? const CircularProgressIndicator(color: Colors.black)
+                                  : const Text("Send Code",
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
                             ),
                           ),
                         ],
@@ -322,24 +233,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text("Already have an account?",
-                            style: TextStyle(
-                                color: Color(0xFF424242), fontSize: 13)),
+                        const Text("Already have an account?", style: TextStyle(color: Color(0xFF424242), fontSize: 13)),
                         const SizedBox(width: 4),
                         InkWell(
                           onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => LoginDemo(),
-                              ),
-                            );
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginDemo()));
                           },
                           child: const Text("Login Here",
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black)),
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
                         )
                       ],
                     )

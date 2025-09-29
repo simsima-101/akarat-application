@@ -9,7 +9,7 @@ import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/forgot_password.dart';
 import 'package:Akarat/screen/otp_verification.dart';
 import 'package:Akarat/screen/reset_password.dart';
-import 'package:Akarat/screen/new_projects.dart'; // ✅ Include this if New_Projects screen is used
+import 'package:Akarat/screen/new_projects.dart';
 
 // Providers
 import 'package:Akarat/providers/favorite_provider.dart';
@@ -18,15 +18,17 @@ import 'providers/profile_image_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // ✅ Create ONE instance and initialize it before runApp
   final profileProvider = ProfileImageProvider();
   await profileProvider.initialize();
-
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => FavoriteProvider()..loadFavorites()),
-        ChangeNotifierProvider(create: (_) => ProfileImageProvider()..refreshImage()), // <- important
+
+        // ✅ Use the SAME initialized instance (no second constructor call)
+        ChangeNotifierProvider.value(value: profileProvider),
       ],
       child: const MyApp(),
     ),
@@ -40,7 +42,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const Home(), // 👈 Initial screen (you can change to New_Projects() if needed)
+      home: const Home(), // or const New_Projects()
       routes: {
         '/login': (context) => const Login(),
         '/register': (context) => RegisterScreen(),
@@ -51,14 +53,16 @@ class MyApp extends StatelessWidget {
         '/reset-password': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
           if (args == null || !args.containsKey('email') || !args.containsKey('token')) {
-            return const Scaffold(body: Center(child: Text('Missing arguments for reset password.')));
+            return const Scaffold(
+              body: Center(child: Text('Missing arguments for reset password.')),
+            );
           }
           return ResetPasswordScreen(
             email: args['email'] ?? '',
             token: args['token'] ?? '',
           );
         },
-        '/new-projects': (context) => const New_Projects(), // ✅ Optional: add named route
+        '/new-projects': (context) => const New_Projects(),
       },
     );
   }

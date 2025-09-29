@@ -65,7 +65,7 @@ class Data {
     rent = json['rent'];
     image = json['image'];
     bio = json['bio']; // 👈 new
-    propertiesCount = json['properties_count'];
+    propertiesCount = json['total_properties'];
   }
 
   Map<String, dynamic> toJson() {
@@ -80,7 +80,7 @@ class Data {
     data['rent'] = this.rent;
     data['image'] = this.image;
     data['bio'] = bio; // ✅ add this if needed
-    data['properties_count'] = propertiesCount;
+    data['total_properties'] = propertiesCount;
     return data;
   }
 }

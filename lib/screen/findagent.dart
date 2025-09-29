@@ -20,6 +20,9 @@ import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'login.dart';
 
+
+const String kApiBase = 'akarat.com';
+
 void main() {
   runApp(MyApp());
 }
@@ -43,9 +46,20 @@ class FindAgentDemo extends StatefulWidget {
 class _FindAgentDemoState extends State<FindAgentDemo> {
   List<AgentsModel> agentsmodel = [];
   List<Agency> agencyList = [];
-  int currentPage = 1;
-  bool isLoading = false;
-  bool hasMore = true;
+  /// Agents tab pagination/state
+  int agentsPage = 1;
+  bool isAgentsLoading = false;
+  bool agentsHasMore = true;
+
+  /// Agencies tab pagination/state
+  int agenciesPage = 1;
+  bool isAgencyLoading = false; // keep using this name for agencies
+  bool agenciesHasMore = true;
+
+  /// Separate scroll controllers (one per tab)
+  final ScrollController _agentScroll = ScrollController();
+  final ScrollController _agencyScroll = ScrollController();
+
   final TextEditingController _agentSearchController = TextEditingController();
   final TextEditingController _agencySearchController = TextEditingController();
   int pageIndex = 0;
@@ -78,13 +92,13 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   final TextEditingController locationController = TextEditingController();
 
   // final List<String> services = ["Residential For Sale", "Residential For Rent", "Commercial For Sale","Commercial For Rent"];
-  final serviceOptions = [
-    // {'label': 'Services needed', 'value': ''},
+  final List<Map<String, String>> serviceOptions = [
     {'label': 'Residential For Sale', 'value': 'residential-for-sale'},
-    {'label': 'Residential For Rent', 'value': 'residential-for-rent'},
-    {'label': 'Commercial For Sale', 'value': 'commercial-for-sale'},
-    {'label': 'Commercial For Rent', 'value': 'commercial-for-rent'},
+    {'label': 'Residential For Rent',  'value': 'residential-for-rent'},
+    {'label': 'Commercial For Sale',   'value': 'commercial-for-sale'},
+    {'label': 'Commercial For Rent',   'value': 'commercial-for-rent'},
   ];
+
   final services = [
     {'label': 'Services needed', 'value': ''},
     {'label': 'Residential For Sale', 'value': 'residential-for-sale'},
@@ -109,7 +123,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
 
 
-  ScrollController _scrollController = ScrollController();
+
 
   @override
   void initState() {
@@ -125,15 +139,26 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     });
 
     // Scroll pagination
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent &&
-          !isLoading &&
-          hasMore) {
+    // Agents scroll listener
+    _agentScroll.addListener(() {
+      if (_agentScroll.position.pixels >=
+          _agentScroll.position.maxScrollExtent - 120 &&
+          !isAgentsLoading &&
+          agentsHasMore) {
         agentfetch(loadMore: true);
-        agencyfetch(loadMore: true); // <-- Combine here
       }
     });
+
+// Agencies scroll listener
+    _agencyScroll.addListener(() {
+      if (_agencyScroll.position.pixels >=
+          _agencyScroll.position.maxScrollExtent - 120 &&
+          !isAgencyLoading &&
+          agenciesHasMore) {
+        agencyfetch(loadMore: true);
+      }
+    });
+
 
     // Load for dropdowns or similar
     languageFuture = fetchLanguageData();
@@ -141,139 +166,270 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   }
 
 
-
-  Future<void> agentfetch({bool loadMore = false}) async {
-    if (isLoading) return;
-
-    setState(() => isLoading = true);
-
-    final queryParams = {
-      'search': locationController.text,
-      'language': selectedLanguage ?? '',
-      'page': currentPage.toString(),
-    };
-
-    if (selectedService != null && serviceValueToId[selectedService!] != null) {
-      queryParams['service_needed'] = serviceValueToId[selectedService!]!;
-    }
-
-    if (selectedNationality?.isNotEmpty == true) {
-      queryParams['nationality'] = selectedNationality!;
-    }
-
-
-    if (selectedNationality?.isNotEmpty == true) {
-      queryParams['nationality'] = selectedNationality!;
-    }
-
-    final uri = Uri.https('akarat.com', '/api/agents', queryParams);
-    final cacheKey = 'agent_cache_${uri.query}';
-    final cacheTimeKey = 'agent_cache_time_${uri.query}';
-
-
-
-
-
-
-    try {
-      final response = await http.get(uri);
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        final model = PaginatedAgentsModel.fromJson(jsonData);
-        final agentData = model.data;
-
-
-        setState(() {
-          if (loadMore) {
-            agentsmodel.addAll(agentData?.data ?? []);
-          } else {
-            agentsmodel = agentData?.data ?? [];
-          }
-          currentPage++;
-          hasMore = (agentData?.meta?.currentPage ?? 1) < (agentData?.meta?.lastPage ?? 1);
-        });
-
-
-      } else {
-        debugPrint("❌ Agent API Error: ${response.statusCode}");
-      }
-    } catch (e) {
-      debugPrint("🚨 Exception in agentfetch: $e");
-    }
-
-    setState(() => isLoading = false);
+  @override
+  void dispose() {
+    _agentScroll.dispose();
+    _agencyScroll.dispose();
+    _agentSearchController.dispose();
+    _agencySearchController.dispose();
+    locationController.dispose();
+    super.dispose();
   }
 
 
 
-  bool isAgencyLoading = false;
+  Future<void> agentfetch({bool loadMore = false}) async {
+    if (isAgentsLoading) return;
+    setState(() => isAgentsLoading = true);
+
+    final requestedPage = (loadMore ? agentsPage : 1);
+
+    // Build qp WITHOUT empty values
+    final qp = <String, String>{
+      'page': requestedPage.toString(),
+      'per_page': '10',
+      if (locationController.text.trim().isNotEmpty)
+        'search': locationController.text.trim(),
+      if (selectedService != null && serviceValueToId[selectedService!] != null)
+        'service_needed': serviceValueToId[selectedService!]!,
+      if (selectedLanguage?.trim().isNotEmpty == true)
+        'language': selectedLanguage!.trim(),
+      if (selectedNationality?.trim().isNotEmpty == true)
+        'nationality': selectedNationality!.trim(),
+    };
+
+    final uri = Uri.https(kApiBase, '/api/agents', qp);
+    debugPrint('🌐 [Agents] GET $uri (loadMore=$loadMore, requestedPage=$requestedPage)');
+
+    try {
+      final response = await http.get(uri);
+      if (response.statusCode != 200) {
+        debugPrint("❌ [Agents] ${response.statusCode} ${response.body}");
+        return;
+      }
+
+      final jsonData = json.decode(response.body);
+      // final model = PaginatedAgentsModel.fromJson(jsonData);
+      // final agentData = model.data;
+      //
+      // final fetched = (agentData?.data ?? <AgentsModel>[]);
+      // final currentFromMeta = agentData?.meta?.currentPage; // make sure your model maps current_page -> currentPage
+      // final lastFromMeta = agentData?.meta?.lastPage;
+      //
+      // // De-dupe by id
+      // final seenIds = agentsmodel.map((a) => a.id).whereType<int>().toSet();
+      // final newOnes = fetched.where((a) => a.id != null && !seenIds.contains(a.id)).toList();
+      //
+      // setState(() {
+      //   if (loadMore) {
+      //     agentsmodel.addAll(newOnes);
+      //   } else {
+      //     agentsmodel = fetched; // fresh load replaces
+      //   }
+      //
+      //   // Prefer meta when valid, else fallback to requestedPage
+      //   final current = (currentFromMeta is int && currentFromMeta > 0)
+      //       ? currentFromMeta
+      //       : requestedPage;
+      //   final last = (lastFromMeta is int && lastFromMeta > 0) ? lastFromMeta : current;
+      //
+      //   // If backend didn’t give meta, stop when nothing new arrives
+      //   agentsHasMore = (current < last) || (currentFromMeta == null && newOnes.isNotEmpty);
+      //   agentsPage = current + 1;
+      // });
+
+
+      final model = PaginatedAgentsModel.fromJson(jsonData);
+      final agentData = model.data;
+
+      final List<AgentsModel> fetched = (agentData?.data ?? <AgentsModel>[]);
+      final int? currentFromMeta = agentData?.meta?.currentPage;
+      final int? lastFromMeta = agentData?.meta?.lastPage;
+
+// ✅ De-dupe by String key (works for int or string IDs)
+      final seenAgentKeys = agentsmodel
+          .map((a) => a.id == null ? null : a.id.toString())
+          .whereType<String>()
+          .toSet();
+
+      final newAgentOnes = fetched
+          .where((a) => a.id != null && !seenAgentKeys.contains(a.id.toString()))
+          .toList();
+
+      setState(() {
+        if (loadMore) {
+          agentsmodel.addAll(newAgentOnes);
+        } else {
+          agentsmodel = fetched; // first page replace
+        }
+
+        // ✅ Has more?
+        if (currentFromMeta != null && lastFromMeta != null) {
+          agentsHasMore = currentFromMeta < lastFromMeta;
+        } else {
+          // No meta → stop if no new items came
+          agentsHasMore = newAgentOnes.isNotEmpty && fetched.isNotEmpty;
+        }
+
+        // ✅ Only advance page if there’s more
+        if (agentsHasMore) {
+          agentsPage = (currentFromMeta ?? requestedPage) + 1;
+        }
+      });
+
+// Optional hard stop: if loadMore and nothing new, stop.
+      if (loadMore && newAgentOnes.isEmpty) {
+        setState(() => agentsHasMore = false);
+      }
+
+
+      debugPrint('✅ [Agents] got ${fetched.length} (added ${newAgentOnes.length}) '
+          'current=${currentFromMeta ?? requestedPage} next=$agentsPage hasMore=$agentsHasMore');
+
+
+    } catch (e) {
+      debugPrint("🚨 [Agents] $e");
+    } finally {
+      if (mounted) setState(() => isAgentsLoading = false);
+    }
+  }
+
+
+
+
+
+
 
   Future<void> agencyfetch({bool loadMore = false}) async {
     if (isAgencyLoading) return;
-
     setState(() => isAgencyLoading = true);
 
-    final queryParams = {
-      'search': locationController.text,
-      'page': currentPage.toString(),
+    final requestedPage = (loadMore ? agenciesPage : 1);
+
+    final qp = <String, String>{
+      'page': requestedPage.toString(),
+      'per_page': '10',
+      if (locationController.text.trim().isNotEmpty)
+        'search': locationController.text.trim(),
+      if (selectedAgencyService != null &&
+          serviceValueToId[selectedAgencyService!] != null)
+        'service_needed': serviceValueToId[selectedAgencyService!]!,
     };
 
-    if (selectedAgencyService != null &&
-        serviceValueToId[selectedAgencyService!] != null) {
-      queryParams['service_needed'] = serviceValueToId[selectedAgencyService!]!;
-    }
+    final uri = Uri.https(kApiBase, '/api/companies', qp);
+    debugPrint('🌐 [Companies] GET $uri (loadMore=$loadMore, requestedPage=$requestedPage)');
 
-    final uri = Uri.https('akarat.com', '/api/companies', queryParams);
-
-
-    // ✅ Fetch from API
     try {
-      final response = await http.get(uri);
-      debugPrint("📨 Response: ${response.statusCode}");
+      final response = await http.get(uri, headers: {'Accept': 'application/json'});
+      debugPrint('📨 [Companies] Status: ${response.statusCode}');
+      if (response.statusCode != 200) {
+        debugPrint('❌ [Companies] Body: ${response.body}');
+        return;
+      }
 
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
+      final jsonData = json.decode(response.body);
 
-        if (jsonData['data'] is List) {
-          final List<dynamic> agencyJsonList = jsonData['data'];
-          setState(() {
-            if (loadMore) {
-              agencyList.addAll(
-                  agencyJsonList.map((e) => Agency.fromJson(e)).toList());
-            } else {
-              agencyList =
-                  agencyJsonList.map((e) => Agency.fromJson(e)).toList();
-            }
-            hasMore = false;
-          });
+      List<dynamic> items = const [];
+      int? currentFromMeta;
+      int? lastFromMeta;
+
+      // Handle both shapes: data:[...] OR data:{data:[...], meta:{...}}
+      if (jsonData is Map<String, dynamic>) {
+        final dataField = jsonData['data'];
+        if (dataField is List) {
+          items = dataField;
+        } else if (dataField is Map<String, dynamic>) {
+          if (dataField['data'] is List) items = dataField['data'] as List;
+          final meta = dataField['meta'];
+          if (meta is Map<String, dynamic>) {
+            currentFromMeta = (meta['current_page'] ?? meta['currentPage']) as int?;
+            lastFromMeta = (meta['last_page'] ?? meta['lastPage']) as int?;
+          }
+        } else if (jsonData['companies'] is List) {
+          items = jsonData['companies'] as List;
+        }
+      }
+
+      final fetched = items
+          .map((e) => Agency.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+// ✅ De-dupe by String key
+      final seenAgencyKeys = agencyList
+          .map((a) => a.id == null ? null : a.id.toString())
+          .whereType<String>()
+          .toSet();
+
+      final newAgencyOnes = fetched
+          .where((a) => a.id != null && !seenAgencyKeys.contains(a.id.toString()))
+          .toList();
+
+      setState(() {
+        if (loadMore) {
+          agencyList.addAll(newAgencyOnes);
         } else {
-          final model = PaginatedAgencyModel.fromJson(jsonData);
-          final fetchedAgencies = model.data;
-
-          setState(() {
-            if (loadMore) {
-              agencyList.addAll(fetchedAgencies?.data ?? []);
-            } else {
-              agencyList = fetchedAgencies?.data ?? [];
-            }
-
-            currentPage++;
-            hasMore = (fetchedAgencies?.meta?.currentPage ?? 1) <
-                (fetchedAgencies?.meta?.lastPage ?? 1);
-          });
+          agencyList = fetched;
         }
 
-        // ✅ Cache if not loadMore
+        // ✅ Has more?
+        if (currentFromMeta != null && lastFromMeta != null) {
+          agenciesHasMore = currentFromMeta < lastFromMeta;
+        } else {
+          // No meta → stop if no new items came
+          agenciesHasMore = newAgencyOnes.isNotEmpty && fetched.isNotEmpty;
+        }
 
-      } else {
-        debugPrint("❌ Agency API Error: ${response.statusCode}");
+        // ✅ Only advance page if there’s more
+        if (agenciesHasMore) {
+          agenciesPage = (currentFromMeta ?? requestedPage) + 1;
+        }
+      });
+
+// Optional hard stop when backend repeats a page
+      if (loadMore && newAgencyOnes.isEmpty) {
+        setState(() => agenciesHasMore = false);
       }
-    } catch (e) {
-      debugPrint("🚨 Exception in agencyfetch: $e");
-    }
 
-    setState(() => isAgencyLoading = false);
+
+      // final fetched = items
+      //     .map((e) => Agency.fromJson(e as Map<String, dynamic>))
+      //     .toList();
+      //
+      // // De-dupe by id
+      // final seen = agencyList.map((a) => a.id).whereType<int>().toSet();
+      // final newOnes = fetched.where((a) => a.id != null && !seen.contains(a.id)).toList();
+      //
+      // setState(() {
+      //   if (loadMore) {
+      //     agencyList.addAll(newOnes);
+      //   } else {
+      //     agencyList = fetched;
+      //   }
+      //
+      //   final current = (currentFromMeta != null && currentFromMeta! > 0)
+      //       ? currentFromMeta!
+      //       : requestedPage;
+      //   final last = (lastFromMeta != null && lastFromMeta! > 0)
+      //       ? lastFromMeta!
+      //       : current;
+      //
+      //   agenciesHasMore = (current < last) || (currentFromMeta == null && newOnes.isNotEmpty);
+      //   agenciesPage = current + 1;
+      // });
+
+      debugPrint('✅ [Companies] got ${fetched.length} (added ${newAgencyOnes.length}) '
+          'current=${currentFromMeta ?? requestedPage} next=$agenciesPage hasMore=$agenciesHasMore');
+
+
+    } catch (e) {
+      debugPrint('🚨 [Companies] $e');
+    } finally {
+      if (mounted) setState(() => isAgencyLoading = false);
+    }
   }
+
+
+
 
 
   /*    if (!loadMore && now - lastFetched < Duration(hours: 6).inMilliseconds) {
@@ -367,14 +523,12 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   final TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    if (nationalityFuture == null) {
-      return const SizedBox(height: 50); // or a placeholder
-    }
+
     Size screenSize = MediaQuery.sizeOf(context);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        // bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
         backgroundColor: Colors.white, // Light grey background
         appBar: AppBar(
           title: const Text(
@@ -399,7 +553,6 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
           actions: [
             TextButton.icon(
               onPressed: () async {
-                // Reset all filters
                 setState(() {
                   _agentSearchController.clear();
                   _agencySearchController.clear();
@@ -408,15 +561,23 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                   selectedAgencyService = null;
                   selectedLanguage = null;
                   selectedNationality = null;
+
+                  // Agents
                   agentsmodel.clear();
+                  agentsPage = 1;
+                  agentsHasMore = true;
+                  isAgentsLoading = false;
+
+                  // Agencies
                   agencyList.clear();
-                  currentPage = 1;
-                  hasMore = true;
+                  agenciesPage = 1;
+                  agenciesHasMore = true;
+                  isAgencyLoading = false;
                 });
-                // Reload data
                 await agentfetch();
                 await agencyfetch();
               },
+
               icon: const Icon(Icons.refresh, color: Colors.red, size: 20),
               label: const Text(
                 'Reset',
@@ -512,13 +673,13 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                 child: TabBarView(
                   children: [
                     SingleChildScrollView(
+                      controller: _agentScroll, // 👈 per-tab scroll controller
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-
                           Container(
                             padding: const EdgeInsets.all(15),
-                            margin: const EdgeInsets.symmetric(vertical: 15,horizontal: 12),
+                            margin: const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(15),
@@ -533,118 +694,99 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                // buildSearchBarComingSoon(),
-
                                 const SizedBox(height: 10),
 
                                 // Services Dropdown
                                 SafeArea(
                                   child: Column(
                                     children: [
-
                                       DropdownButtonFormField<String>(
-                                          isExpanded: true,
-                                          decoration: _dropdownDecoration("Services needed"), // just hint
-                                          dropdownColor: Colors.white,
-                                          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
-                                          style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black,
-                                          ),
-                                          value: selectedService,
-                                          items: [
-                                            // Add grey header item
-                                            const DropdownMenuItem<String>(
-                                              value: null,
-                                              enabled: false,
-                                              child: Text(
-                                                "Services needed", // this is the header inside dropdown
-                                                style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                        isExpanded: true,
+                                        decoration: _dropdownDecoration("Services needed"),
+                                        dropdownColor: Colors.white,
+                                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
+                                        ),
+                                        value: selectedService,
+                                        items: const [
+                                          DropdownMenuItem<String>(
+                                            value: null,
+                                            enabled: false,
+                                            child: Text(
+                                              "Services needed",
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontWeight: FontWeight.bold,
                                               ),
                                             ),
-                                            // Now your real options
-                                            ...serviceOptions.map((option) {
-                                              return DropdownMenuItem<String>(
-                                                value: option['value'],
-                                                child: Text(option['label']!),
-                                              );
-                                            }).toList(),
-                                          ],
+                                          ),
+                                        ].followedBy(
+                                          serviceOptions.map((option) => DropdownMenuItem<String>(
+                                            value: option['value'],
+                                            child: Text(option['label']!),
+                                          )),
+                                        ).toList(),
                                           onChanged: (value) {
-                                            if (value != null) {
-                                              setState(() {
-                                                selectedService = value;
-                                                currentPage = 1;
-                                                agentsmodel.clear();
-                                                hasMore = true;
-                                              });
-                                              agentfetch();
-                                            }
+                                            setState(() {
+                                              selectedService = value;              // ✅ correct
+                                              // reset ONLY agents state
+                                              agentsmodel.clear();
+                                              agentsPage = 1;
+                                              agentsHasMore = true;
+                                              isAgentsLoading = false;
+                                            });
+                                            agentfetch();                           // ✅ correct
                                           }
+
+
 
                                       ),
                                     ],
                                   ),
                                 ),
 
-
                                 const SizedBox(height: 10),
 
-                              FutureBuilder<Language>(
-                                future: languageFuture,
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState == ConnectionState.waiting) {
-                                    // Loading state
-                                    return DropdownButtonFormField<String>(
-                                      isExpanded: true,
-                                      decoration: _dropdownDecoration("Language"),
-                                      dropdownColor: Colors.white,
-                                      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
-                                      ),
-                                      value: selectedLanguage,
-                                      items: const [
-                                        DropdownMenuItem<String>(
-                                          value: null,
-                                          child: Text(
-                                            "None",
-                                            style: TextStyle(color: Colors.grey),
+                                // Language
+                                FutureBuilder<Language>(
+                                  future: languageFuture,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return DropdownButtonFormField<String>(
+                                        isExpanded: true,
+                                        decoration: _dropdownDecoration("Language"),
+                                        dropdownColor: Colors.white,
+                                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
+                                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black),
+                                        value: selectedLanguage,
+                                        items: const [
+                                          DropdownMenuItem<String>(
+                                            value: null,
+                                            child: Text("None", style: TextStyle(color: Colors.grey)),
                                           ),
-                                        ),
-                                      ],
-                                      onChanged: (value) {
-                                        setState(() {
-                                          selectedLanguage = value;
-                                        });
-                                      },
-                                    );
-                                  } else if (snapshot.hasError) {
-                                    return Text("Error: ${snapshot.error}");
-                                  } else {
-                                    final List<String> languageList = snapshot.data?.languages
-                                        ?.where((lang) => lang.trim().isNotEmpty && lang.trim().length > 1)
-                                        .toSet()
-                                        .toList() ??
-                                        [];
-
-                                    return GestureDetector(
-                                      onTap: () async {
-                                        final result = await showDialog<String>(
-                                          context: context,
-                                          builder: (context) {
-                                            String searchText = '';
-                                            List<String> filteredList = ["None", ...languageList];
-
-                                            return StatefulBuilder(
-                                              builder: (context, setState) {
-                                                return AlertDialog(
+                                        ],
+                                        onChanged: (value) => setState(() => selectedLanguage = value),
+                                      );
+                                    } else if (snapshot.hasError) {
+                                      return Text("Error: ${snapshot.error}");
+                                    } else {
+                                      final List<String> languageList = snapshot.data?.languages
+                                          ?.where((lang) => lang.trim().isNotEmpty && lang.trim().length > 1)
+                                          .toSet()
+                                          .toList() ??
+                                          [];
+                                      return GestureDetector(
+                                        onTap: () async {
+                                          final result = await showDialog<String>(
+                                            context: context,
+                                            builder: (context) {
+                                              String searchText = '';
+                                              List<String> filteredList = ["None", ...languageList];
+                                              return StatefulBuilder(
+                                                builder: (context, setState) => AlertDialog(
                                                   backgroundColor: Colors.white,
                                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                                   title: const Text("Select Language"),
@@ -671,81 +813,68 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                                         width: double.maxFinite,
                                                         child: ListView.builder(
                                                           itemCount: filteredList.length,
-                                                          itemBuilder: (context, index) {
-                                                            return ListTile(
-                                                              title: Text(filteredList[index]),
-                                                              onTap: () {
-                                                                Navigator.pop(context, filteredList[index]);
-                                                              },
-                                                            );
-                                                          },
+                                                          itemBuilder: (context, index) => ListTile(
+                                                            title: Text(filteredList[index]),
+                                                            onTap: () => Navigator.pop(context, filteredList[index]),
+                                                          ),
                                                         ),
                                                       ),
                                                     ],
                                                   ),
-                                                );
-                                              },
-                                            );
-                                          },
-                                        );
-
-                                        if (result != null) {
-                                          setState(() {
-                                            selectedLanguage = (result == "None") ? null : result;
-                                          });
-                                        }
-                                      },
-                                      child: InputDecorator(
-                                        decoration: _dropdownDecoration("Language"),
-                                        child: Text(
-                                          selectedLanguage?.isNotEmpty == true ? selectedLanguage! : "Select Language",
-                                          style: TextStyle(
-                                            color: selectedLanguage?.isNotEmpty == true ? Colors.black : Colors.grey,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500,
+                                                ),
+                                              );
+                                            },
+                                          );
+                                          if (result != null) {
+                                            setState(() {
+                                              selectedLanguage = (result == "None") ? null : result;
+                                            });
+                                          }
+                                        },
+                                        child: InputDecorator(
+                                          decoration: _dropdownDecoration("Language"),
+                                          child: Text(
+                                            selectedLanguage?.isNotEmpty == true ? selectedLanguage! : "Select Language",
+                                            style: TextStyle(
+                                              color: selectedLanguage?.isNotEmpty == true ? Colors.black : Colors.grey,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
+                                      );
+                                    }
+                                  },
+                                ),
 
+                                const SizedBox(height: 10),
 
-
-                              const SizedBox(height: 10),
-
-                              FutureBuilder<Nationality>(
-                                future: nationalityFuture,
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState == ConnectionState.waiting) {
-                                    return DropdownButtonFormField<String>(
-                                      decoration: _dropdownDecoration("Nationality"),
-                                      items: const [
-                                        DropdownMenuItem(
-                                          value: null,
-                                          child: Text("Loading..."),
-                                        )
-                                      ],
-                                      onChanged: null,
-                                    );
-                                  } else if (snapshot.hasError) {
-                                    return Text("Error: ${snapshot.error}");
-                                  } else {
-                                    final List<String> nationalityList =
-                                        snapshot.data?.nationalities?.toSet().toList() ?? [];
-
-                                    return GestureDetector(
-                                      onTap: () async {
-                                        final result = await showDialog<String>(
-                                          context: context,
-                                          builder: (context) {
-                                            String searchText = '';
-                                            List<String> filteredList = ["None", ...nationalityList];
-
-                                            return StatefulBuilder(
-                                              builder: (context, setState) {
-                                                return AlertDialog(
+                                // Nationality
+                                FutureBuilder<Nationality>(
+                                  future: nationalityFuture,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return DropdownButtonFormField<String>(
+                                        decoration: _dropdownDecoration("Nationality"),
+                                        items: const [
+                                          DropdownMenuItem(value: null, child: Text("Loading...")),
+                                        ],
+                                        onChanged: null,
+                                      );
+                                    } else if (snapshot.hasError) {
+                                      return Text("Error: ${snapshot.error}");
+                                    } else {
+                                      final List<String> nationalityList =
+                                          snapshot.data?.nationalities?.toSet().toList() ?? [];
+                                      return GestureDetector(
+                                        onTap: () async {
+                                          final result = await showDialog<String>(
+                                            context: context,
+                                            builder: (context) {
+                                              String searchText = '';
+                                              List<String> filteredList = ["None", ...nationalityList];
+                                              return StatefulBuilder(
+                                                builder: (context, setState) => AlertDialog(
                                                   backgroundColor: Colors.white,
                                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                                   title: const Text("Select Nationality"),
@@ -772,300 +901,147 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                                         width: double.maxFinite,
                                                         child: ListView.builder(
                                                           itemCount: filteredList.length,
-                                                          itemBuilder: (context, index) {
-                                                            return ListTile(
-                                                              title: Text(filteredList[index]),
-                                                              onTap: () {
-                                                                Navigator.pop(context, filteredList[index]);
-                                                              },
-                                                            );
-                                                          },
+                                                          itemBuilder: (context, index) => ListTile(
+                                                            title: Text(filteredList[index]),
+                                                            onTap: () => Navigator.pop(context, filteredList[index]),
+                                                          ),
                                                         ),
                                                       ),
                                                     ],
                                                   ),
-                                                );
-                                              },
-                                            );
-                                          },
-                                        );
-
-                                        if (result != null) {
-                                          setState(() {
-                                            selectedNationality = (result == "None") ? null : result;
-                                          });
-                                        }
-                                      },
-                                      child: InputDecorator(
-                                        decoration: _dropdownDecoration("Nationality"),
-                                        child: Text(
-                                          selectedNationality?.isNotEmpty == true ? selectedNationality! : "Select Nationality",
-                                          style: TextStyle(
-                                            color: selectedNationality?.isNotEmpty == true ? Colors.black : Colors.grey,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500,
+                                                ),
+                                              );
+                                            },
+                                          );
+                                          if (result != null) {
+                                            setState(() {
+                                              selectedNationality = (result == "None") ? null : result;
+                                            });
+                                          }
+                                        },
+                                        child: InputDecorator(
+                                          decoration: _dropdownDecoration("Nationality"),
+                                          child: Text(
+                                            selectedNationality?.isNotEmpty == true ? selectedNationality! : "Select Nationality",
+                                            style: TextStyle(
+                                              color: selectedNationality?.isNotEmpty == true ? Colors.black : Colors.grey,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
+                                      );
+                                    }
+                                  },
+                                ),
 
-
-                              const SizedBox(height: 20),
+                                const SizedBox(height: 20),
 
                                 // Search Button
                                 ElevatedButton(
                                   onPressed: () {
-
-
-
                                     setState(() {
-                                      currentPage = 1;
+                                      agentsPage = 1;
+                                      agentsHasMore = true;
+                                      isAgentsLoading = false;
                                       agentsmodel.clear();
-                                      hasMore = true;
                                     });
-                                    // Your search logic here
-                                    print("Searching with:");
-                                    print("Location: ${locationController.text}");
-                                    print("Service: $selectedService");
-                                    print("Language: $selectedLanguage");
-                                    print("Nationality: $selectedNationality");
+
+                                    debugPrint("Searching with:");
+                                    debugPrint("Location: ${locationController.text}");
+                                    debugPrint("Service: $selectedService");
+                                    debugPrint("Language: $selectedLanguage");
+                                    debugPrint("Nationality: $selectedNationality");
 
                                     agentfetch();
                                   },
+
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.blue,
                                     minimumSize: const Size.fromHeight(45),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                   ),
-                                  child: const Text("Search", style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
+                                  child: const Text("Search", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                                 ),
 
-                                if (agentsmodel.isEmpty && !isLoading) ...[
+                                if (agentsmodel.isEmpty && !isAgentsLoading) ...[
                                   const SizedBox(height: 15),
-                                  Center(
+                                  const Center(
                                     child: Text(
                                       "No Results",
-                                      style: TextStyle(
-                                        color: Colors.red,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                      style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ],
                               ],
                             ),
                           ),
+
                           const SizedBox(height: 10),
+
+                          // Prime Agent badge
                           Padding(
-                            padding:  EdgeInsets.symmetric(vertical: 0,horizontal: 15),
+                            padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 15),
                             child: Container(
-                              width: screenSize.width*0.28,
+                              width: screenSize.width * 0.28,
                               height: 35,
-                              padding:  EdgeInsets.only(top: 2,left: 5,right: 1),
+                              padding: const EdgeInsets.only(top: 2, left: 5, right: 1),
                               decoration: BoxDecoration(
                                 color: Colors.blueAccent,
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey.withOpacity(0.5),
-                                    offset: Offset(0, 2),
+                                    offset: const Offset(0, 2),
                                     blurRadius: 4,
                                     spreadRadius: 0,
                                   ),
                                   BoxShadow(
                                     color: Colors.blueAccent.withOpacity(0.8),
-                                    offset: Offset(0, 2),
+                                    offset: const Offset(0, 2),
                                     blurRadius: 4,
                                     spreadRadius: 0,
                                   ),
                                 ],
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Row(
+                              child: const Row(
                                 children: [
-                                  Padding(padding: const EdgeInsets.only(left: 1),
-                                      child:   Icon(Icons.check_circle,color: Colors.white,size: 17,)
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 1),
+                                    child: Icon(Icons.check_circle, color: Colors.white, size: 17),
                                   ),
-                                  Padding(padding: const EdgeInsets.only(left: 1,right: 3),
-                                      child:   Text("Prime Agent",style: TextStyle(
-                                          letterSpacing: 0.5,color: Colors.white,fontSize: 12
-                                      ),textAlign: TextAlign.center,)
-                                  )
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 1, right: 3),
+                                    child: Text(
+                                      "Prime Agent",
+                                      style: TextStyle(letterSpacing: 0.5, color: Colors.white, fontSize: 12),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                           ),
+
                           const SizedBox(height: 10),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
+
+                          // Description
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 15.0),
                             child: Text("Explore agents with a proven track record of high response rates and authentic listings."),
                           ),
-                          SingleChildScrollView(
-                            controller: _scrollController,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
 
-
-                                // ... your widgets above the list (like search bar, filters, titles, etc.) ...
-
-                                // Example header widgets:
-                                // Padding(
-                                //   padding: EdgeInsets.symmetric(horizontal: 15.0),
-                                //   child: Text("Explore agents with a proven track record of high response rates and authentic listings."),
-                                // ),
-                                const SizedBox(height: 10),
-
-
-                                // The agent list - this is the important part!
-                                ListView.builder(
-                                  controller: _scrollController, // 🚀 Use controller for pagination!
-                                  shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                  itemCount: agentsmodel.length + (hasMore ? 1 : 0),
-                                  itemBuilder: (context, index) {
-                                    if (index < agentsmodel.length) {
-                                      // Add fallback image handling inside your Agentcardscreen
-                                      return Agentcardscreen(agentsModel: agentsmodel[index]);
-                                    } else {
-                                      // Show loader when loading more
-                                      return const Padding(
-                                        padding: EdgeInsets.all(16.0),
-                                        child: Center(child: CircularProgressIndicator()),
-                                      );
-                                    }
-                                  },
-                                ),
-
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SingleChildScrollView(
-                      controller: _scrollController,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-
-
-
-
-                          Container(
-                            padding: const EdgeInsets.all(15),
-                            margin: const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(15),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.2),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                // buildSearchBarComingSoon(),
-
-                                const SizedBox(height: 10),
-                                DropdownButtonFormField<String>(
-                                    isExpanded: true,
-                                    decoration: _dropdownDecoration("Services needed"),
-                                    dropdownColor: Colors.white,
-                                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black,
-                                    ),
-                                    value: selectedAgencyService,
-                                    items: serviceOptions.map((option) {
-                                      return DropdownMenuItem<String>(
-                                        alignment: Alignment.bottomLeft,
-                                        value: option['value'],
-                                        child: Text(
-                                          option['label']!,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      );
-                                    }).toList(),
-                                    onChanged: (value) {
-                                      if (value != null) {
-                                        setState(() {
-                                          selectedAgencyService = value;
-                                          currentPage = 1;
-                                          agencyList.clear();
-                                          hasMore = true;
-                                        });
-                                        agencyfetch();
-                                      }
-                                    }
-
-                                ),
-                                const SizedBox(height: 20),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    print("Searching with:");
-                                    print("Location: ${locationController.text}");
-                                    print("Service: $selectedService");
-                                    agencyfetch();
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    minimumSize: const Size.fromHeight(45),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                  child: const Text("Find", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                                ),
-
-                                if (agencyList.isEmpty && !isAgencyLoading) ...[
-                                  const SizedBox(height: 15),
-                                  Center(
-                                    child: Text(
-                                      "No Results",
-                                      style: TextStyle(
-                                        color: Colors.red,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                            child: const Text("Featured Agencies", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          ),
                           const SizedBox(height: 10),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                            child: const Text("Explore agencies with a proven track record of high response rates and authentic listings."),
-                          ),
-                          // The important change is here!
+
+                          // ✅ The agent list — no extra SingleChildScrollView, no controller here
                           ListView.builder(
                             shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            itemCount: agencyList.length + (hasMore ? 1 : 0),
+                            physics: const NeverScrollableScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            itemCount: agentsmodel.length + (agentsHasMore ? 1 : 0),
                             itemBuilder: (context, index) {
-                              if (index < agencyList.length) {
-                                return Agencycardscreen(agencyModel: agencyList[index]);
+                              if (index < agentsmodel.length) {
+                                return Agentcardscreen(agentsModel: agentsmodel[index]);
                               } else {
                                 return const Padding(
                                   padding: EdgeInsets.all(16.0),
@@ -1076,7 +1052,76 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                           ),
                         ],
                       ),
+                    ),
+
+                    // --- Agencies tab (REPLACE your SingleChildScrollView with this) ---
+                    CustomScrollView(
+                      controller: _agencyScroll,
+                      slivers: [
+                        // Filters box
+                        SliverToBoxAdapter(child: _agencyFiltersBox(context)),
+
+                        // Spacing & headings
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 15.0),
+                            child: Text(
+                              "Featured Agencies",
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                        const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                        const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 15.0),
+                            child: Text(
+                              "Explore agencies with a proven track record of high response rates and authentic listings.",
+                            ),
+                          ),
+                        ),
+                        const SliverToBoxAdapter(child: SizedBox(height: 10)),
+
+                        // Agencies list
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                              if (index < agencyList.length) {
+                                return Agencycardscreen(agencyModel: agencyList[index]);
+                              }
+                              if (agenciesHasMore) {
+                                return const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Center(child: CircularProgressIndicator()),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                            childCount: agencyList.length + (agenciesHasMore ? 1 : 0),
+                          ),
+                        ),
+
+                        // Empty state (shows only when no results and not loading)
+                        if (agencyList.isEmpty && !isAgencyLoading)
+                          const SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Center(
+                                child: Text(
+                                  "No Results",
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     )
+
                   ],
                 ),
               )
@@ -1086,6 +1131,95 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
       ),
     );
   }
+
+
+  Widget _agencyFiltersBox(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(15),
+      margin: const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 10),
+          DropdownButtonFormField<String>(
+            isExpanded: true,
+            decoration: _dropdownDecoration("Services needed"),
+            dropdownColor: Colors.white,
+            icon: const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: Colors.blueAccent,
+            ),
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: Colors.black,
+            ),
+            value: selectedAgencyService,
+            items: serviceOptions.map((option) {
+              return DropdownMenuItem<String>(
+                alignment: Alignment.bottomLeft,
+                value: option['value'],
+                child: Text(
+                  option['label']!,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  selectedAgencyService = value;     // agencies filter
+                  agencyList.clear();
+                  agenciesPage = 1;
+                  agenciesHasMore = true;
+                  isAgencyLoading = false;
+                });
+                agencyfetch();                        // call agencies API
+              }
+            },
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                agencyList.clear();
+                agenciesPage = 1;
+                agenciesHasMore = true;
+                isAgencyLoading = false;
+              });
+              debugPrint("Searching agencies with:");
+              debugPrint("Location: ${locationController.text}");
+              debugPrint("Service: $selectedAgencyService");
+              agencyfetch();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              minimumSize: const Size.fromHeight(45),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              "Find",
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   InputDecoration _dropdownDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
@@ -1162,140 +1296,140 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 // }
 
 
-// Container buildMyNavBar(BuildContext context) {
-//   return Container(
-//     height: 50,
-//     decoration: BoxDecoration(
-//       color: Colors.white,
-//       borderRadius: const BorderRadius.only(
-//         topLeft: Radius.circular(20),
-//         topRight: Radius.circular(20),
-//       ),
-//     ),
-//     child: Row(
-//       mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
-//       crossAxisAlignment: CrossAxisAlignment.center,
-//       children: [
-//         GestureDetector(
-//           onTap: () async {
-//             Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-//           },
-//           child: Padding(
-//             padding: const EdgeInsets.symmetric(horizontal: 20.0),
-//             child: Image.asset("assets/images/home.png", height: 25),
-//           ),
-//         ),
-//
-//
-//         IconButton(
-//           enableFeedback: false,
-//           onPressed: () async {
-//             final token = await SecureStorage.getToken();
-//
-//             if (token == null || token.isEmpty) {
-//               showDialog(
-//                 context: context,
-//                 builder: (context) => AlertDialog(
-//                   backgroundColor: Colors.white, // white container
-//                   title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-//                   content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
-//                   actions: [
-//                     TextButton(
-//                       onPressed: () => Navigator.pop(context),
-//                       child: const Text(
-//                         "Cancel",
-//                         style: TextStyle(color: Colors.red), // red text
-//                       ),
-//                     ),
-//                     TextButton(
-//                       onPressed: () {
-//                         Navigator.pop(context);
-//                         Navigator.push(
-//                           context,
-//                           MaterialPageRoute(builder: (_) => const LoginDemo()),
-//                         );
-//                       },
-//                       child: const Text(
-//                         "Login",
-//                         style: TextStyle(color: Colors.red), // red text
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               );
-//             }
-//             else {
-//               // ✅ Logged in – go to favorites
-//               Navigator.push(
-//                 context,
-//                 MaterialPageRoute(builder: (context) => Fav_Logout()),
-//               );
-//             }
-//           },
-//           icon: pageIndex == 2
-//               ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-//               : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
-//         ),
-//
-//         IconButton(
-//           tooltip: "Email",
-//           icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
-//           onPressed: () async {
-//             final Uri emailUri = Uri.parse(
-//               'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
-//             );
-//
-//             if (await canLaunchUrl(emailUri)) {
-//               await launchUrl(emailUri);
-//             } else {
-//               showDialog(
-//                 context: context,
-//                 builder: (context) => AlertDialog(
-//                   backgroundColor: Colors.white, // White dialog container
-//                   title: const Text(
-//                     'Email not available',
-//                     style: TextStyle(color: Colors.black), // Title in black
-//                   ),
-//                   content: const Text(
-//                     'No email app is configured on this device. Please add a mail account first.',
-//                     style: TextStyle(color: Colors.black), // Content in black
-//                   ),
-//                   actions: [
-//                     TextButton(
-//                       onPressed: () => Navigator.pop(context),
-//                       child: const Text(
-//                         'OK',
-//                         style: TextStyle(color: Colors.red), // Red "OK" text
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               );
-//             }
-//           },
-//         ),
-//
-//         Padding(
-//           padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
-//           child: IconButton(
-//             enableFeedback: false,
-//             onPressed: () {
-//               setState(() {
-//                 if (token == '') {
-//                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-//                 } else {
-//                   Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-//                 }
-//               });
-//             },
-//             icon: pageIndex == 3
-//                 ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-//                 : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
-//           ),
-//         ),
-//       ],
-//     ),
-//
-//   );
-// }
+Container buildMyNavBar(BuildContext context) {
+  return Container(
+    height: 50,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(20),
+        topRight: Radius.circular(20),
+      ),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        GestureDetector(
+          onTap: () async {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Image.asset("assets/images/home.png", height: 25),
+          ),
+        ),
+
+
+        IconButton(
+          enableFeedback: false,
+          onPressed: () async {
+            final token = await SecureStorage.getToken();
+
+            if (token == null || token.isEmpty) {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: Colors.white, // white container
+                  title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                  content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        "Cancel",
+                        style: TextStyle(color: Colors.red), // red text
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginDemo()),
+                        );
+                      },
+                      child: const Text(
+                        "Login",
+                        style: TextStyle(color: Colors.red), // red text
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+            else {
+              // ✅ Logged in – go to favorites
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Fav_Logout()),
+              );
+            }
+          },
+          icon: pageIndex == 2
+              ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+              : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+        ),
+
+        IconButton(
+          tooltip: "Email",
+          icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+          onPressed: () async {
+            final Uri emailUri = Uri.parse(
+              'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+            );
+
+            if (await canLaunchUrl(emailUri)) {
+              await launchUrl(emailUri);
+            } else {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: Colors.white, // White dialog container
+                  title: const Text(
+                    'Email not available',
+                    style: TextStyle(color: Colors.black), // Title in black
+                  ),
+                  content: const Text(
+                    'No email app is configured on this device. Please add a mail account first.',
+                    style: TextStyle(color: Colors.black), // Content in black
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        'OK',
+                        style: TextStyle(color: Colors.red), // Red "OK" text
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+          },
+        ),
+
+        Padding(
+          padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+          child: IconButton(
+            enableFeedback: false,
+            onPressed: () {
+              setState(() {
+                if (token == '') {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                } else {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                }
+              });
+            },
+            icon: pageIndex == 3
+                ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+          ),
+        ),
+      ],
+    ),
+
+  );
+}
 }

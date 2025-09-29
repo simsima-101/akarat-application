@@ -261,7 +261,7 @@ class _Fav_LoginState extends State<Fav_Login> {
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
         backgroundColor: Colors.white,
-        // bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
+        bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
         body: DefaultTabController(
             length: 2,
             child: Column(children: <Widget>[
@@ -722,45 +722,45 @@ class _Fav_LoginState extends State<Fav_Login> {
             ])));
   }
 
-  // Container buildMyNavBar(BuildContext context) {
-  //   return  Container(
-  //     height: 50,
-  //     decoration: BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: const BorderRadius.only(
-  //         topLeft: Radius.circular(20),
-  //         topRight: Radius.circular(20),
-  //       ),
-  //     ),
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
-  //       crossAxisAlignment: CrossAxisAlignment.center,
-  //       children: [
-  //         GestureDetector(
-  //           onTap: () async {
-  //             Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-  //           },
-  //           child: Padding(
-  //             padding: const EdgeInsets.symmetric(horizontal: 20.0),
-  //             child: Image.asset("assets/images/home.png", height: 25),
-  //           ),
-  //         ),
-  //         Padding(
-  //           padding: const EdgeInsets.only(right: 20),
-  //           child: IconButton(
-  //             enableFeedback: false,
-  //             onPressed: () {
-  //               Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-  //             },
-  //             icon: pageIndex == 3
-  //                 ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-  //                 : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+  Container buildMyNavBar(BuildContext context) {
+    return  Container(
+      height: 50,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          GestureDetector(
+            onTap: () async {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+              },
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ✅ Add this helper function outside the class (at the bottom of Fav_Login.dart)

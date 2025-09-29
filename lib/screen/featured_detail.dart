@@ -453,21 +453,21 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           child: Text(
-                            featuredDetailModel!.data!.property!
-                                .title.toString(),
+                            featuredDetailModel?.data?.property?.title ?? '',
                             style: const TextStyle(
-                              fontSize: 25,
+                              fontSize: 22, // (a bit smaller helps long titles)
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
                             ),
+                            maxLines: 2,               // <-- allow two lines
                             overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
+                            softWrap: true,            // <-- let it wrap
                           ),
                         ),
                       ),
-                      const SizedBox(), // or remove this if not needed
                     ],
                   ),
+
                   SizedBox(height: 10,),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 15.0),

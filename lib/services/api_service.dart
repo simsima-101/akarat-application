@@ -3,256 +3,283 @@ import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 
 import '../model/agencypropertiesmodel.dart';
-import '../screen/secure_storage.dart';
 
 class ApiService {
   // Make sure baseUrl has NO trailing slash
   static const String baseUrl = "https://akarat.com/api";
 
-  // Headers for requests without auth
-  static Map<String, String> defaultHeaders = {
+  // ---------- Headers ----------
+  static const Map<String, String> _jsonHeaders = {
     'Accept': 'application/json',
     'Content-Type': 'application/json; charset=UTF-8',
   };
 
-  // Headers for requests with auth token
-  static Map<String, String> authHeaders(String token) => {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json; charset=UTF-8',
+  static Map<String, String> _authHeaders(String token) => {
+    ..._jsonHeaders,
     'Authorization': 'Bearer $token',
   };
 
-  // Helper to build full URL safely (avoid double slashes)
+  // ---------- Utils ----------
   static Uri _buildUri(String endpoint, [Map<String, String>? queryParams]) {
-    // Remove trailing slash from baseUrl if any, and starting slash from endpoint
-    final cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
-    final cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
-    Uri uri = Uri.parse('$cleanBaseUrl/$cleanEndpoint');
-
-    if (queryParams != null) {
-      uri = uri.replace(queryParameters: queryParams);
-    }
-
+    final cleanBase =
+    baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    final cleanEndpoint =
+    endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
+    var uri = Uri.parse('$cleanBase/$cleanEndpoint');
+    if (queryParams != null) uri = uri.replace(queryParameters: queryParams);
     return uri;
   }
 
-  // Generic POST request (no auth)
-  static Future<http.Response> postRequest(String endpoint, Map<String, dynamic> body) async {
+  static Map<String, dynamic> _decodeMap(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      return decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
+    } catch (_) {
+      return <String, dynamic>{};
+    }
+  }
+
+  /// Safely extract a List from common API shapes:
+  /// [], { data: [] }, { data: { data: [] } }
+  static List<dynamic> _decodeList(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is List) return decoded;
+      if (decoded is Map && decoded['data'] is List) {
+        return decoded['data'] as List<dynamic>;
+      }
+      if (decoded is Map &&
+          decoded['data'] is Map &&
+          (decoded['data'] as Map)['data'] is List) {
+        return (decoded['data'] as Map)['data'] as List<dynamic>;
+      }
+      return <dynamic>[];
+    } catch (_) {
+      return <dynamic>[];
+    }
+  }
+
+  static String _normEmail(String email) => email.trim().toLowerCase();
+
+  // Timeouts for all http.* calls
+  static const _timeout = Duration(seconds: 25);
+
+  // ---------- Generic HTTP ----------
+  static Future<http.Response> _post(
+      String endpoint, Map<String, dynamic> body) async {
     final url = _buildUri(endpoint);
-    print('POST Request to: $url');
-    print('Headers: $defaultHeaders');
-    print('Body: $body');
-
-    try {
-      final response = await http.post(
-        url,
-        headers: defaultHeaders,
-        body: jsonEncode(body),
-      );
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      return response;
-    } catch (e) {
-      print('Error during POST request: $e');
-      rethrow;
-    }
+    return await http
+        .post(url, headers: _jsonHeaders, body: jsonEncode(body))
+        .timeout(_timeout);
   }
 
-  // Generic POST request with auth token
-  static Future<http.Response> postRequestAuth(String endpoint, String token, Map<String, dynamic> body) async {
+  static Future<http.Response> _postAuth(
+      String endpoint, String token, Map<String, dynamic> body) async {
     final url = _buildUri(endpoint);
-    final headers = authHeaders(token);
-    print('POST Request (Auth) to: $url');
-    print('Headers: $headers');
-    print('Body: $body');
-
-    try {
-      final response = await http.post(
-        url,
-        headers: headers,
-        body: jsonEncode(body),
-      );
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      return response;
-    } catch (e) {
-      print('Error during POST request (Auth): $e');
-      rethrow;
-    }
+    return await http
+        .post(url, headers: _authHeaders(token), body: jsonEncode(body))
+        .timeout(_timeout);
   }
 
-  // Generic GET request (no auth)
-  static Future<http.Response> getRequest(String endpoint, [Map<String, String>? queryParams]) async {
-    final url = _buildUri(endpoint, queryParams);
-    print('GET Request to: $url');
-    print('Headers: $defaultHeaders');
-
-    try {
-      final response = await http.get(url, headers: defaultHeaders);
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      return response;
-    } catch (e) {
-      print('Error during GET request: $e');
-      rethrow;
-    }
+  static Future<http.Response> _get(String endpoint,
+      [Map<String, String>? qs]) async {
+    final url = _buildUri(endpoint, qs);
+    return await http.get(url, headers: _jsonHeaders).timeout(_timeout);
   }
 
-  // Generic GET request with auth
-  static Future<http.Response> getRequestAuth(String endpoint, String token, [Map<String, String>? queryParams]) async {
-    final url = _buildUri(endpoint, queryParams);
-    final headers = authHeaders(token);
-    print('GET Request (Auth) to: $url');
-    print('Headers: $headers');
-
-    try {
-      final response = await http.get(url, headers: headers);
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      return response;
-    } catch (e) {
-      print('Error during GET request (Auth): $e');
-      rethrow;
-    }
+  static Future<http.Response> _getAuth(String endpoint, String token,
+      [Map<String, String>? qs]) async {
+    final url = _buildUri(endpoint, qs);
+    return await http
+        .get(url, headers: _authHeaders(token))
+        .timeout(_timeout);
   }
 
-  // ========== Specific API Calls ==========
+  // =========================================================
+  // Auth: Register/Login/OTP
+  // =========================================================
 
-  // Register new user
+  /// (Legacy) Direct registration WITHOUT OTP.
   static Future<Map<String, dynamic>> registerUser({
     required String name,
     required String email,
     required String password,
     required String passwordConfirmation,
   }) async {
-    final response = await postRequest('/register', {
-      "name": name,
-      "email": email,
+    final resp = await _post('/register', {
+      "name": name.trim(),
+      "email": _normEmail(email),
       "password": password,
       "password_confirmation": passwordConfirmation,
     });
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to register user: ${response.body}');
+    if (resp.statusCode == 200 || resp.statusCode == 201) {
+      return _decodeMap(resp.body);
     }
+    throw Exception('Failed to register user: ${resp.body}');
   }
 
+  /// Step 1 (REGISTER): Send OTP to email (backend requires GET).
+  static Future<Map<String, dynamic>> sendRegisterOtp({required String email}) async {
+    final resp = await _get('/register/send-otp', {'email': _normEmail(email)});
+    // 🔎 add logging
+    // ignore: avoid_print
+    print('sendRegisterOtp -> ${resp.statusCode} ${resp.body}');
+    final data = _decodeMap(resp.body);
 
-  // Login user
+    // Some APIs return 200 even when throttled (“OTP already sent, wait Xs”)
+    if (resp.statusCode == 200) return data;
+
+    final msg = (data['message'] ?? data['error'] ?? 'Failed to send OTP') as String;
+    throw Exception('$msg (HTTP ${resp.statusCode})');
+  }
+
+  /// Verify OTP (shared by REGISTER + RESET). Returns short-lived token.
+  static Future<String> verifyOtp({
+    required String email,
+    required String otp,
+  }) async {
+    final resp = await _post('/verify-otp', {
+      "email": _normEmail(email),
+      "otp": otp.trim(),
+    });
+    final data = _decodeMap(resp.body);
+    if (resp.statusCode == 200 && data['token'] != null) {
+      return data['token'].toString();
+    }
+    throw Exception(data['message'] ?? 'Invalid or expired OTP');
+  }
+
+  /// Step 2 (REGISTER): Complete signup using the token from verifyOtp.
+  static Future<Map<String, dynamic>> completeRegistration({
+    required String name,
+    required String email,
+    required String password,
+    required String token,
+  }) async {
+    final resp = await _post('/register/complete', {
+      "name": name.trim(),
+      "email": _normEmail(email),
+      "password": password,
+      "password_confirmation": password,
+      "token": token,
+    });
+    final data = _decodeMap(resp.body);
+    if (resp.statusCode == 200) return data;
+    throw Exception(data['message'] ?? 'Registration failed');
+  }
+
+  /// Optional: resend during registration
+  static Future<void> resendRegisterOtp({required String email}) async {
+    await sendRegisterOtp(email: email);
+  }
+
+  // ---------- Login / Logout ----------
   static Future<Map<String, dynamic>> loginUser({
     required String email,
     required String password,
   }) async {
-    final response = await postRequest('/login', {
-      "email": email,
+    final resp = await _post('/login', {
+      "email": _normEmail(email),
       "password": password,
     });
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Login failed: ${response.body}');
-    }
+    if (resp.statusCode == 200) return _decodeMap(resp.body);
+    throw Exception('Login failed: ${resp.body}');
   }
 
-  // Logout user
   static Future<void> logoutUser(String token) async {
-    final response = await Dio().post(
-      'https://akarat.com/api/logout',
-      options: Options(
-        headers: {'Authorization': 'Bearer $token'},
-      ),
-    );
-    if (response.statusCode == 200) {
-      print('Logout successful');
-    } else {
-      throw Exception('Logout failed');
-    }
+    final dio = Dio(BaseOptions(
+      baseUrl: baseUrl,
+      headers: {'Authorization': 'Bearer $token'},
+      connectTimeout: const Duration(seconds: 20),
+      receiveTimeout: const Duration(seconds: 20),
+    ));
+    final r = await dio.post('/logout');
+    if (r.statusCode != 200) throw Exception('Logout failed');
   }
 
-  // Get saved properties
+  // =========================================================
+  // Forgot / Reset Password (OTP)
+  // =========================================================
+
+  /// Step 1 (RESET): trigger OTP
+  static Future<bool> forgotPassword(String email) async {
+    final resp = await _post('/forgot-password', {"email": _normEmail(email)});
+    return resp.statusCode == 200;
+  }
+
+  /// Step 2 (RESET): after verifyOtp -> token, then call this to set new password
+  static Future<bool> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    final resp = await _post('/reset-password', {
+      "email": _normEmail(email),
+      "token": token,
+      "password": password,
+      "password_confirmation": passwordConfirmation,
+    });
+
+    final data = _decodeMap(resp.body);
+    if (resp.statusCode == 200) {
+      if (data['success'] == true ||
+          data['status'] == 'success' ||
+          data['message'] == 'Password reset successful.') {
+        return true;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  // =========================================================
+  // Properties & other existing calls
+  // =========================================================
+
   static Future<List<Property>> getSavedProperties(String token) async {
-    final response = await getRequestAuth('/saved-property-list', token);
-    if (response.statusCode == 200) {
-      final decoded = jsonDecode(response.body);
-      // Check and extract the nested list based on your API response
-      final List<dynamic> propertyList = decoded['data'] != null && decoded['data']['data'] != null
-          ? decoded['data']['data']
-          : [];
-      return propertyList.map((item) => Property.fromJson(item)).toList();
-    } else {
-      throw Exception('Failed to get saved properties');
+    final resp = await _getAuth('/saved-property-list', token);
+    if (resp.statusCode == 200) {
+      final decoded = _decodeMap(resp.body);
+      final list = (decoded['data'] != null && decoded['data']['data'] != null)
+          ? (decoded['data']['data'] as List<dynamic>)
+          : <dynamic>[];
+      return list.map((e) => Property.fromJson(e)).toList();
     }
+    throw Exception('Failed to get saved properties');
   }
 
-  // Toggle saved property (add/remove)
   static Future<bool> toggleSavedProperty(String token, int propertyId) async {
-    final response = await postRequestAuth(
-      '/toggle-saved-property',
-      token,
-      {"property_id": propertyId},
-    );
-
-    print('✅ toggleSavedProperty status: ${response.statusCode}');
-    print('✅ toggleSavedProperty body: ${response.body}');
-
-    return response.statusCode == 200;
+    final resp = await _postAuth('/toggle-saved-property', token, {"property_id": propertyId});
+    return resp.statusCode == 200;
   }
 
-
-
-
-
-  // Get agent list (with pagination)
   static Future<List<dynamic>> getAgents({int page = 1}) async {
-    final response = await getRequest('/agents', {"page": page.toString()});
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to get agents');
-    }
+    final resp = await _get('/agents', {"page": page.toString()});
+    if (resp.statusCode == 200) return _decodeList(resp.body);
+    throw Exception('Failed to get agents');
   }
 
-  // Get agent details
   static Future<Map<String, dynamic>> getAgentDetails(int id) async {
-    final response = await getRequest('/agent/$id');
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to get agent details');
-    }
+    final resp = await _get('/agent/$id');
+    if (resp.statusCode == 200) return _decodeMap(resp.body);
+    throw Exception('Failed to get agent details');
   }
 
-  // Get featured properties
   static Future<List<dynamic>> getFeaturedProperties({int page = 1}) async {
-    final response = await getRequest(
-      '/featured-properties',
-      {"page": page.toString()},
-    );
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to get featured properties');
-    }
+    final resp = await _get('/featured-properties', {"page": page.toString()});
+    if (resp.statusCode == 200) return _decodeList(resp.body);
+    throw Exception('Failed to get featured properties');
   }
 
-  // Get filtered properties using filters
   static Future<List<dynamic>> getFilteredProperties(Map<String, String> filters) async {
-    final response = await getRequest('/filters', filters);
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to get filtered properties');
-    }
+    final resp = await _get('/filters', filters);
+    if (resp.statusCode == 200) return _decodeList(resp.body);
+    throw Exception('Failed to get filtered properties');
   }
 
-  // Contact form submission
   static Future<bool> submitContactForm({
     required String name,
     required String email,
@@ -260,59 +287,13 @@ class ApiService {
     required String subject,
     required String message,
   }) async {
-    final response = await postRequest('/contact', {
-      "name": name,
-      "email": email,
-      "phone": phone,
-      "subject": subject,
-      "message": message,
+    final resp = await _post('/contact', {
+      "name": name.trim(),
+      "email": _normEmail(email),
+      "phone": phone.trim(),
+      "subject": subject.trim(),
+      "message": message.trim(),
     });
-
-    return response.statusCode == 200 || response.statusCode == 201;
+    return resp.statusCode == 200 || resp.statusCode == 201;
   }
-
-  // Forgot Password - send reset link
-  static Future<bool> forgotPassword(String email) async {
-    final response = await postRequest('/forgot-password', {"email": email});
-
-    // API returns 200 if email exists and email sent, but may always return 200 for security.
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      print('Forgot password failed: ${response.body}');
-      return false;
-    }
-  }
-
-// Reset Password - set new password
-  static Future<bool> resetPassword({
-    required String email,
-    required String token,
-    required String password,
-    required String passwordConfirmation,
-  }) async {
-    final response = await postRequest('/reset-password', {
-      "email": email,
-      "token": token,
-      "password": password,
-      "password_confirmation": passwordConfirmation,
-    });
-
-    if (response.statusCode == 200) {
-      // Optionally parse response for a success flag/message
-      final data = jsonDecode(response.body);
-      if (data['success'] == true || data['status'] == 'success') {
-        return true;
-      } else {
-        print('Reset password response indicates failure: ${response.body}');
-        return false;
-      }
-    } else {
-      print('Reset password failed with status ${response.statusCode}: ${response.body}');
-      return false;
-    }
-  }
-
 }
-
-

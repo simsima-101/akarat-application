@@ -1,7 +1,8 @@
 name: Akarat
 description: "A new Flutter project."
 publish_to: 'none'
-version: 1.0.8+15
+version: 1.0.9+20
+
 
 environment:
   sdk: ^3.6.1
@@ -80,3 +81,10 @@ flutter:
     - assets/images/not_found.png
     - assets/images/profile.png
     - assets/images/dummy.jpg
+    - assets/images/building.png
+    - assets/images/Bulk-Unit.png
+    - assets/images/Factory.png
+    - assets/images/floor.png
+    - assets/images/hotel-apartment.png
+    - assets/images/Industrial-Land.png
+    - assets/images/Mixed-Use-Land.png

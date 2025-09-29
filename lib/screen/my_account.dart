@@ -72,33 +72,72 @@ class _My_AccountState extends State<My_Account> {
     }
   }
 
+  // ===================== DELETE ACCOUNT FUNCTION =====================
   Future<void> deleteAccount() async {
     try {
-      String? token = await SecureStorage.getToken();
-      if (token == null) throw Exception("No token found.");
+      final token = await SecureStorage.getToken();
+      if (token == null || token.isEmpty) {
+        throw Exception("No token found.");
+      }
 
-      final response = await http.delete(
-        Uri.parse('https://akarat.com/api/delete'),
-        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      final uri = Uri.parse('https://akarat.com/api/delete');
+
+      // Try DELETE first
+      http.Response resp = await http.delete(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
       );
 
-      if (response.statusCode == 200 || response.statusCode == 204) {
+      // Some backends require POST + _method override
+      if (resp.statusCode == 405 || resp.statusCode == 404) {
+        resp = await http.post(
+          uri,
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode({'_method': 'DELETE'}),
+        );
+      }
+
+      debugPrint('Delete account -> ${resp.statusCode}: ${resp.body}');
+
+      if (resp.statusCode == 200 || resp.statusCode == 204) {
+        // clear local auth/profile
         await SecureStorage.deleteToken();
         await SecureStorage.delete('user_name');
+        await SecureStorage.delete('user_image');
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Account deleted successfully")),
+        );
 
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => RegisterScreen()),
+          MaterialPageRoute(builder: (_) => const RegisterScreen()),
               (route) => false,
         );
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Account deleted successfully")));
+      } else if (resp.statusCode == 401) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Session expired. Please login again.")),
+        );
       } else {
-        throw Exception("Failed to delete account: ${response.statusCode}");
+        throw Exception("Failed with status ${resp.statusCode}");
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Account deletion failed: $e")));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Account deletion failed: $e")),
+      );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -322,22 +361,32 @@ class _My_AccountState extends State<My_Account> {
                   (route) => false,
             );
           }),
+          // ===================== DELETE ACCOUNT TILE =====================
           _settingsTile("Delete your Account", "", () async {
-            bool? confirm = await showDialog(
+            final bool? confirmed = await showDialog<bool>(
               context: context,
-              builder: (_) => AlertDialog(
+              barrierDismissible: false,
+              builder: (dialogCtx) => AlertDialog(
                 title: const Text("Delete Account"),
                 content: const Text("Are you sure you want to delete your account?"),
                 actions: [
-                  TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
                   TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text("Delete", style: TextStyle(color: Colors.red))),
+                    onPressed: () => Navigator.of(dialogCtx).pop(false), // just close
+                    child: const Text("Cancel"),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogCtx).pop(true),
+                    child: const Text("Delete", style: TextStyle(color: Colors.red)),
+                  ),
                 ],
               ),
             );
-            if (confirm == true) await deleteAccount();
+
+            if (confirmed == true) {
+              await deleteAccount(); // call function below
+            }
           }),
+
         ]
             : [
           _settingsTile("Login", "", () {
