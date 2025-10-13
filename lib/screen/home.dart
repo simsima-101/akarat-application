@@ -51,6 +51,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../model/filtermodel.dart' as filterModel;
 import '../model/filtermodel.dart' as filter;
 import '../services/favorite_service.dart';
+import 'ContactFormScreen.dart';
 import 'filter_list.dart';
 
 
@@ -2157,43 +2158,59 @@ class _MyHomePageState extends State<HomeDemo> {
 
 
 
+          // IconButton(
+          //   tooltip: "Email",
+          //   icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+          //   onPressed: () async {
+          //     final Uri emailUri = Uri.parse(
+          //       'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+          //     );
+          //
+          //     if (await canLaunchUrl(emailUri)) {
+          //       await launchUrl(emailUri);
+          //     } else {
+          //       showDialog(
+          //         context: context,
+          //         builder: (context) => AlertDialog(
+          //           backgroundColor: Colors.white, // White dialog container
+          //           title: const Text(
+          //             'Email not available',
+          //             style: TextStyle(color: Colors.black), // Title in black
+          //           ),
+          //           content: const Text(
+          //             'No email app is configured on this device. Please add a mail account first.',
+          //             style: TextStyle(color: Colors.black), // Content in black
+          //           ),
+          //           actions: [
+          //             TextButton(
+          //               onPressed: () => Navigator.pop(context),
+          //               child: const Text(
+          //                 'OK',
+          //                 style: TextStyle(color: Colors.red), // Red "OK" text
+          //               ),
+          //             ),
+          //           ],
+          //         ),
+          //       );
+          //     }
+          //   },
+          // ),
+
+
+
           IconButton(
             tooltip: "Email",
             icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
-            onPressed: () async {
-              final Uri emailUri = Uri.parse(
-                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+            onPressed: () {
+              showEmailAgentDialog(
+                context,
+                subtitle: 'Low Floor | Ready to Move-in | Available October 2025',
+                initialMessage:
+                'Hi, I found your property with ref: P20250910-RPQY on Akarat. Please contact me. Thank you.',
               );
-
-              if (await canLaunchUrl(emailUri)) {
-                await launchUrl(emailUri);
-              } else {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white, // White dialog container
-                    title: const Text(
-                      'Email not available',
-                      style: TextStyle(color: Colors.black), // Title in black
-                    ),
-                    content: const Text(
-                      'No email app is configured on this device. Please add a mail account first.',
-                      style: TextStyle(color: Colors.black), // Content in black
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          'OK',
-                          style: TextStyle(color: Colors.red), // Red "OK" text
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
             },
           ),
+
 
           Padding(
             padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge

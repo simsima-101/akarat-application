@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-// ⭐ ADDED: use your ApiService for resend
+
+// Your app's API helpers
 import 'package:Akarat/services/api_service.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
@@ -14,14 +16,16 @@ class OtpVerificationScreen extends StatefulWidget {
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final TextEditingController otpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
   bool _isVerifying = false;
 
-  // ⭐ ADDED: resend state
+  // Resend state
   bool _isResending = false;
-  int _cooldown = 0; // seconds until next resend allowed
+  int _cooldown = 0; // seconds remaining for resend cooldown
 
-  // ⭐ ADDED: support both flows (register / reset)
-  String mode = 'reset'; // 'register' or 'reset'
+  // Flow + payload passed from previous screen
+  // mode: 'register' or 'reset'
+  String mode = 'reset';
   String email = '';
   String name = '';
   String password = '';
@@ -32,8 +36,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
     if (args != null) {
-      email = (args['email'] as String?) ?? '';
-      mode = (args['mode'] as String?) ?? 'reset'; // default to reset
+      email = (args['email'] as String?)?.trim().toLowerCase() ?? '';
+      mode = (args['mode'] as String?) ?? 'reset';
       name = (args['name'] as String?) ?? '';
       password = (args['password'] as String?) ?? '';
     }
@@ -43,93 +47,129 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isVerifying = true);
-
     final otp = otpController.text.trim();
 
     try {
+      final uri = Uri.parse('${ApiService.baseUrl}/verify-otp');
+
       final response = await http.post(
-        Uri.parse('https://akarat.com/api/verify-otp'),
-        headers: {'Content-Type': 'application/json'},
+        uri,
+        headers: const {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
+        },
         body: jsonEncode({'email': email, 'otp': otp}),
       );
 
-      final data = jsonDecode(response.body);
+      final Map<String, dynamic> body =
+      response.body.isNotEmpty ? (jsonDecode(response.body) as Map<String, dynamic>) : {};
+
       setState(() => _isVerifying = false);
 
-      if (response.statusCode == 200 && data['token'] != null) {
-        final token = data['token']?.toString() ?? '';
+      if (response.statusCode == 200) {
+        // ✅ Treat 200 as success even if there's no {success:true} or {token}
+        final token = (body['token'] ?? '').toString();
+        final hasToken = token.isNotEmpty;
+
         if (!mounted) return;
 
-        // If you’re using this screen for registration,
-        // you can complete the signup here instead of going to reset-password.
         if (mode == 'register') {
-          // Option 1 (recommended): complete registration then go home
-          // await ApiService.completeRegistration(
-          //   name: name, email: email, password: password, token: token,
-          // );
-          // Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+          // Try auto-login (if your backend supports it)
+          try {
+            final loginResp = await ApiService.loginUser(email: email, password: password);
+            final loginToken = (loginResp['token'] ?? '').toString();
+            if (loginToken.isNotEmpty) {
+              // TODO: persist loginToken if you store auth
+              Navigator.of(context).pushNamedAndRemoveUntil('/home', (_) => false);
+              return;
+            }
+          } catch (_) {
+            // ignore and fall back to login screen
+          }
 
-          // Option 2 (your current behavior is for reset-password)
-          Navigator.pushReplacementNamed(
-            context,
-            '/reset-password',
-            arguments: {'email': email, 'token': token},
+          // No token / auto-login failed → go to Login
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('OTP verified. Please log in.')),
           );
+          Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
         } else {
-          // forgot-password flow
-          Navigator.pushReplacementNamed(
-            context,
-            '/reset-password',
-            arguments: {'email': email, 'token': token},
-          );
+          // reset/forgot flow
+          if (hasToken) {
+            Navigator.of(context).pushReplacementNamed(
+              '/reset-password',
+              arguments: {'email': email, 'token': token},
+            );
+          } else {
+            Navigator.of(context).pushReplacementNamed(
+              '/reset-password',
+              arguments: {'email': email},
+            );
+          }
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Invalid OTP. Please try again.')),
-        );
+        final msg = (body['message'] ?? body['error'] ?? 'Invalid or expired OTP.').toString();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        }
       }
     } catch (e) {
       setState(() => _isVerifying = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Something went wrong. Please try again.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Something went wrong: $e')),
+        );
+      }
     }
   }
 
-  // ⭐ ADDED: real resend implementation
+
   Future<void> _resendOtp() async {
-    if (_isResending || email.isEmpty) return;
+    if (_isResending || _cooldown > 0 || email.isEmpty) return;
 
     setState(() => _isResending = true);
+
     try {
-      Map<String, dynamic> res = const {}; // for message & optional cooldown
+      Map<String, dynamic> res = const {};
 
       if (mode == 'register') {
-        // For registration, your backend expects GET /register/send-otp
-        res = await ApiService.sendRegisterOtp(email: email);
+        // One canonical resend for register flow
+        res = await ApiService.resendOtp(email: email);
       } else {
-        // For forgot-password flow, trigger another reset email
+        // Start/reset flow: trigger the backend to send code for password reset
         final ok = await ApiService.forgotPassword(email);
         res = {
+          'success': ok,
           'message': ok
               ? 'If the email exists, we sent a new code.'
-              : 'Could not resend code. Try again shortly.'
+              : 'Could not resend code. Try again soon.'
         };
       }
 
       if (!mounted) return;
 
+      // Friendly message
       final msg = (res['message'] as String?) ??
           (mode == 'register'
-              ? 'We’ve sent a new code (if the previous expired).'
+              ? 'We’ve sent a new code.'
               : 'If the email exists, we sent a new code.');
+      final attemptsLeft = res['attempts_left'];
+      final extra = attemptsLeft is int ? ' (Attempts left: $attemptsLeft)' : '';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$msg$extra')));
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      // Show DEV OTP if backend includes it (only in local/dev)
+      final devOtp = ((res['otp'] ?? '') as String).trim();
+      if (devOtp.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('DEV OTP: $devOtp')));
+      }
 
-      // Optional cooldown UI (API may return resend_after)
-      final wait = (res['resend_after'] is int) ? res['resend_after'] as int : 45;
+      // Cooldown (server value wins; default 60s)
+      final wait = (res['resend_after'] is int) ? res['resend_after'] as int : 60;
       setState(() => _cooldown = wait);
 
+      // Optional: could also read expires_in if you display a timer somewhere
+      // final expiresIn = (res['expires_in'] is int) ? res['expires_in'] as int : 300;
+
+      // Countdown
       while (_cooldown > 0 && mounted) {
         await Future.delayed(const Duration(seconds: 1));
         if (!mounted) break;
@@ -137,11 +177,19 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+
+      final text = e.toString().toLowerCase().contains('429') ||
+          e.toString().toLowerCase().contains('too many')
+          ? 'Too many attempts. Please wait and try again.'
+          : e.toString();
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
     } finally {
       if (mounted) setState(() => _isResending = false);
     }
   }
+
+
 
   @override
   void dispose() {
@@ -151,12 +199,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final resendLabel = _cooldown > 0
-        ? 'Resend in $_cooldown s'
-        : "Didn't receive the code? Resend";
+    final resendLabel = _cooldown > 0 ? 'Resend in $_cooldown s' : "Didn't receive the code? Resend";
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Verify OTP")),
+      appBar: AppBar(title: const Text('Verify OTP')),
       backgroundColor: const Color(0xFFF3F3F3),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -166,32 +212,42 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 40),
+                const SizedBox(height: 32),
                 const Text(
-                  "Enter the 6-digit code sent to your email",
+                  'Enter the 4-digit code sent to your email',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
-                const SizedBox(height: 10),
-                Text(email, style: const TextStyle(fontSize: 16, color: Colors.black54)),
-                const SizedBox(height: 30),
+                const SizedBox(height: 8),
+                Text(
+                  email,
+                  style: const TextStyle(fontSize: 16, color: Colors.black54),
+                ),
+                const SizedBox(height: 24),
 
+                // OTP input
                 TextFormField(
                   controller: otpController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'OTP',
-                    prefixIcon: Icon(Icons.key),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.length < 4) {
-                      return 'Enter valid OTP';
-                    }
+                  autofillHints: const [AutofillHints.oneTimeCode],
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(6),
+                  ],
+                  validator: (v) {
+                    final s = (v ?? '').trim();
+                    if (s.length < 4 || s.length > 6) return 'Enter the 4–6 digit code';
                     return null;
+                  },
+
+                  onChanged: (value) {
+                    if (value.length == 4) {
+                      // Optional: auto-submit on 4 digits
+                      FocusScope.of(context).unfocus();
+                    }
                   },
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 24),
 
                 SizedBox(
                   width: double.infinity,
@@ -200,26 +256,49 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     onPressed: _isVerifying ? null : _verifyOtp,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     child: _isVerifying
-                        ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
-                        : const Text("Verify OTP", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        ? const SizedBox(
+                      height: 22, width: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                        : const Text(
+                      'Verify OTP',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
-                // ⭐ ADDED: real resend button with cooldown/disable
-                TextButton(
-                  onPressed: (_isResending || _cooldown > 0) ? null : _resendOtp,
-                  child: _isResending
-                      ? const SizedBox(
-                    height: 18,
-                    width: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                      : Text(resendLabel, style: const TextStyle(color: Colors.blueAccent)),
+                Center(
+                  child: TextButton(
+                    onPressed: (_isResending || _cooldown > 0) ? null : _resendOtp,
+                    child: _isResending
+                        ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                        : Text(
+                      resendLabel,
+                      style: const TextStyle(color: Colors.blueAccent),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+                const Center(
+                  child: Text(
+                    'Check Spam/Promotions if you don’t see the email.',
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
                 ),
               ],
             ),

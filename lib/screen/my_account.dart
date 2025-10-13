@@ -175,52 +175,16 @@ class _My_AccountState extends State<My_Account> {
                       children: [
                         Stack(
                           children: [
-                            CircleAvatar(
+                            const CircleAvatar(
                               radius: 30,
-                              backgroundColor: Colors.grey[200],
-                              backgroundImage: (isLoggedIn && profileImageUrl != null && profileImageUrl!.isNotEmpty)
-                                  ? NetworkImage(profileImageUrl!) // Load image from API
-                                  : null,
-                              child: (isLoggedIn && profileImageUrl != null && profileImageUrl!.isNotEmpty)
-                                  ? null
-                                  : Padding(
-                                padding: const EdgeInsets.all(6),
-                                child: Image.asset('assets/images/app_icon.png', fit: BoxFit.contain),
-                              ),
+                              backgroundColor: Colors.transparent,
+                              backgroundImage: AssetImage('assets/images/avatar.png'),
                             ),
-
-                            // Positioned(
-                            //   bottom: -12,
-                            //   right: -9,
-                            //   child: PopupMenuButton<String>(
-                            //     color: Colors.white,
-                            //     icon: const CircleAvatar(
-                            //       radius: 10,
-                            //       backgroundColor: Colors.white,
-                            //       child: Icon(Icons.edit, size: 14, color: Colors.grey),
-                            //     ),
-                            //     itemBuilder: (context) => [
-                            //       const PopupMenuItem(value: 'upload', child: Text('Upload Image')),
-                            //       if (profileProvider.image != null)
-                            //         const PopupMenuItem(value: 'delete', child: Text('Remove Image')),
-                            //     ],
-                            //     onSelected: (value) async {
-                            //       final token = await SecureStorage.getToken();
-                            //       if (value == 'upload') {
-                            //         if (token == null || token.isEmpty) {
-                            //           _showLoginDialog(context);
-                            //         } else {
-                            //           await context.read<ProfileImageProvider>().pickImage();
-                            //         }
-                            //       } else if (value == 'delete') {
-                            //         await context.read<ProfileImageProvider>().deleteImage();
-                            //       }
-                            //     },
-                            //
-                            //   ),
-                            // )
                           ],
                         ),
+
+
+
                         const SizedBox(width: 16),
                         Expanded(
                           child: isLoggedIn
@@ -330,6 +294,9 @@ class _My_AccountState extends State<My_Account> {
     return Column(
       children: [
         _settingsContainer([
+          _settingsTile("My Account", "assets/images/my-account-profile.png", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => FindAgentDemo()));
+          }),
           _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
             Navigator.push(context, MaterialPageRoute(builder: (_) => FindAgentDemo()));
           }),

@@ -30,11 +30,13 @@ import '../secure_storage.dart';
 import '../services/favorite_service.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
+import 'CreateAlertScreen.dart';
 import 'featured_detail.dart';
 import 'filter.dart';
 import 'login.dart';
 import 'my_account.dart';
 import 'package:provider/provider.dart';
+
 
 
 
@@ -62,6 +64,10 @@ class FliterListDemo extends StatefulWidget {
   @override
   _FliterListDemoState createState() => _FliterListDemoState();
 }
+
+
+
+
 class _FliterListDemoState extends State<FliterListDemo> {
   late  fm.FilterModel filterModel;
   int pageIndex = 0;
@@ -72,6 +78,11 @@ class _FliterListDemoState extends State<FliterListDemo> {
   ToggleModel? toggleModel;
   bool isDataRead = false;
   bool isFavorited = false;
+
+  bool _alertCreated = false;
+
+
+
 
   bool get isLoggedIn => token.isNotEmpty;
 
@@ -146,6 +157,118 @@ class _FliterListDemoState extends State<FliterListDemo> {
       }
     });
   }
+
+  Future<void> _onCreateAlert() async {
+    if (!isLoggedIn) {
+      // 🔒 Show login prompt (your existing dialog)
+      showDialog(
+        context: context,
+        builder: (ctx) => Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.zero,
+          child: Container(
+            height: 70,
+            margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  top: -14,
+                  right: -10,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: 12,
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Login required to create alerts.',
+                          style: TextStyle(color: Colors.white, fontSize: 13),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          Navigator.of(ctx).pushNamed('/login');
+                        },
+                        child: const Text(
+                          'Login',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                            decorationColor: Colors.white,
+                            decorationThickness: 1.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Navigate to CreateAlertScreen and wait for result
+    final saved = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CreateAlertScreen(
+          // pass whatever initial filters you want
+          initialPurpose: (purpose.isEmpty ? 'Rent' : purpose),
+          initialPropertyType: (property_type.isEmpty || property_type.toLowerCase() == 'all residential')
+              ? 'Apartment'
+              : property_type,
+          availablePropertyTypes: (propertyTypeModel?.data ?? [])
+              .map((e) => (e.name ?? '').trim())
+              .where((s) => s.isNotEmpty)
+              .toSet()
+              .toList(),
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (saved == true) {
+      setState(() => _alertCreated = true);
+
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.hideCurrentSnackBar(); // optional
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Alert created'),
+          duration: Duration(milliseconds: 1200), // ← shorter time
+        ),
+      );
+    }
+
+  }
+
+
+
+
+
 
 
 
@@ -694,12 +817,14 @@ class _FliterListDemoState extends State<FliterListDemo> {
     return Scaffold(
        bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
+      body: Stack(
+        children: [
+        // Scroll content
+        SingleChildScrollView(
         controller: _scrollController,
         child: Column(
-          // mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              const SizedBox(height: 10,),
+              const SizedBox(height: 10),
               Stack(
                 children: <Widget>[
                   Padding(
@@ -2284,8 +2409,36 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
             ]),
       ),
-    );
+
+
+
+          Positioned.fill(
+            bottom: 30,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox(
+                width: 180, // <-- reduce width here
+                child: CreateAlertButton(
+                  disabled: _alertCreated,   // true after saving the alert
+                  onTap: _onCreateAlert,     // normal handler
+                )
+
+              ),
+            ),
+          )
+
+
+
+
+        ],
+      ),);
+
+
   }
+
+
+
+
   Container buildMyNavBar(BuildContext context) {
     return Container(
       height: 50,
@@ -2427,6 +2580,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
     );
   }
 }
+
+
 BoxDecoration _iconBoxDecoration() {
   return BoxDecoration(
     borderRadius: BorderRadius.circular(20),
@@ -2465,6 +2620,87 @@ Widget _rangeDisplayBox(String value) {
     child: Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
   );
 }
+
+class CreateAlertButton extends StatelessWidget {
+  final VoidCallback? onTap;
+  final bool disabled;
+
+  const CreateAlertButton({
+    super.key,
+    this.onTap,
+    this.disabled = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // keep the same visuals always
+    const gradient = LinearGradient(
+      begin: Alignment.centerRight,
+      end: Alignment.centerLeft,
+      colors: [Color(0xFFFFA3A3), Color(0xFFFFFFFF)],
+    );
+
+    return AbsorbPointer( // blocks taps but keeps semantics hit-test for parent
+      absorbing: disabled,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(28),
+          // don't trigger ripple when disabled
+          onTap: disabled ? null : onTap,
+          splashColor: disabled ? Colors.transparent : null,
+          highlightColor: disabled ? Colors.transparent : null,
+          child: Container(
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: Colors.red, width: 1),
+              gradient: gradient,
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/bell-red.png',
+                  height: 18,
+                  width: 18,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.notifications_none,
+                    size: 18,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Text(
+                  'Create Alert',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+
 class SwitchExample extends StatefulWidget {
   const SwitchExample({super.key});
 
@@ -2506,3 +2742,5 @@ String whatsAppNumber(String number) {
   }
   return number;
 }
+
+

@@ -59,6 +59,16 @@ class _FilterDemoState extends State<FilterDemo> {
   double end = 5000;
   int _selected = 0;
   final List<String> _completion = const ['All', 'Ready', 'Off-Plan'];
+
+  final List<String> _handoverOptions = const [
+    'Any',
+    'Q3 2025','Q4 2025',
+    'Q1 2026','Q2 2026','Q3 2026','Q4 2026',
+    '2027','2028','2029','2030','2031',
+  ];
+
+  int selectedHandover = 0;   // index within _handoverOptions
+  String handoverBy = '';     // '' means Any
   int selectedCompletion = 0;
   final List<String> _propTypes = const ['Residential', 'Commercial'];
   int selectedPropType = 0; // 0 = Residential, 1 = Commercial
@@ -67,6 +77,12 @@ class _FilterDemoState extends State<FilterDemo> {
   bool get isNewProjects => _selected == 1;
 
 
+// %Completion options
+  final List<String> _percentCompletionOptions = const [
+    'Any', '0-25%', '25-50%', '50-75%', '75-100%',
+  ];
+  int selectedPercentCompletion = 0; // index
+  String percentCompletion = '';     // '' means Any
 
 
 
@@ -734,12 +750,22 @@ class _FilterDemoState extends State<FilterDemo> {
     Size screenSize = MediaQuery.sizeOf(context);
 
     final int rentIndex = _product.indexOf('Rent');
-    final bool isNewProjects = _selected == 1;
+    final int buyIndex  = _product.indexOf('Buy');
 
-    final bool showProductPills = !isNewProjects;                          // Properties only
-    final bool showCompletion  = !isNewProjects;                          // Properties only
-    final bool showRentPaid    = !isNewProjects && selectedproduct == rentIndex; // Properties + Rent only
-    final bool showHandoverBy  = isNewProjects;                           // New Projects only ✅
+    final bool isNewProjects = _selected == 1;
+    final bool isProperties  = _selected == 0;
+    final bool isOffPlan     = _completion.elementAt(selectedCompletion) == 'Off-Plan';
+
+    final bool showProductPills = isProperties;                           // Properties only
+    final bool showCompletion  = isProperties;                             // Properties only
+    final bool showRentPaid    = isProperties && (selectedproduct == rentIndex); // Properties + Rent only
+    final bool showHandoverBy  = isNewProjects                              // New Projects
+        || (isProperties && selectedproduct == buyIndex && isOffPlan);        // Properties → Buy → Off-Plan
+    final bool showAmenities   = true;
+
+    final bool isBuyMode = isProperties && selectedproduct == buyIndex;
+
+
 
 
     return Scaffold(
@@ -785,6 +811,8 @@ class _FilterDemoState extends State<FilterDemo> {
                 max_price = '';
                 min_sqrfeet = '';
                 max_sqrfeet = '';
+                handoverBy = '';
+                percentCompletion = '';
 
                 // Reset selected indexes and lists
                 selectedIndex = null;
@@ -795,6 +823,8 @@ class _FilterDemoState extends State<FilterDemo> {
                 selectedBathrooms.clear();
                 selectedrent = null;
                 selectedIndexes.clear();
+                selectedHandover = 0;
+                selectedPercentCompletion = 0;
 
                 // Reset sliders to full range
                 _priceRangeController.start = 500;
@@ -1305,7 +1335,11 @@ class _FilterDemoState extends State<FilterDemo> {
                             final bool isSelected = selectedCompletion == i;
 
                             return GestureDetector(
-                              onTap: () => setState(() => selectedCompletion = i),
+                              onTap: () async {
+                                setState(() => selectedCompletion = i);
+                                await updateFilterCount(); // keep the live count in sync
+                              },
+
                               child: Container(
                                 // auto width based on label
                                 constraints: const BoxConstraints(minHeight: 34),
@@ -2030,7 +2064,7 @@ class _FilterDemoState extends State<FilterDemo> {
               // --- Completion Status ---
               if (showHandoverBy) ...[
                 Padding(
-                  padding: const EdgeInsets.only(right: 100),
+                  padding: const EdgeInsets.only(left: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -2040,204 +2074,187 @@ class _FilterDemoState extends State<FilterDemo> {
                       ),
                       const SizedBox(height: 15),
 
-                      // Pills row (scrollable if needed)
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: List.generate(_completion.length, (i) {
-                            final bool isSelected = selectedCompletion == i;
+                      // ✅ Handover By chips (4 visible + scrollable)
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          const double spacing = 10;
+                          final double chipWidth =
+                              (constraints.maxWidth - (spacing * 3)) / 4; // 4 per viewport
 
-                            return GestureDetector(
-                              onTap: () => setState(() => selectedCompletion = i),
-                              child: Container(
-                                // auto width based on label
-                                constraints: const BoxConstraints(minHeight: 34),
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                margin: const EdgeInsets.only(right: 10),
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFFF5F4F9) : Colors.white,
-                                  border: Border.all(
-                                    color: isSelected ? Colors.black : const Color(0xFFE6E4EE),
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.15),
-                                      offset: const Offset(0, 2),
-                                      blurRadius: 4,
-                                      spreadRadius: 0,
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: List.generate(_handoverOptions.length, (i) {
+                                final bool isSelected = selectedHandover == i;
+
+                                return Container(
+                                  width: chipWidth,
+                                  margin: EdgeInsets.only(
+                                      right: i == _handoverOptions.length - 1 ? 0 : spacing),
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      setState(() {
+                                        selectedHandover = i;
+                                        handoverBy = (_handoverOptions[i] == 'Any')
+                                            ? ''
+                                            : _handoverOptions[i];
+                                      });
+                                      await updateFilterCount();
+                                    },
+                                    child: Container(
+                                      constraints: const BoxConstraints(minHeight: 34),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? const Color(0xFFF5F4F9)
+                                            : Colors.white,
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? Colors.black
+                                              : const Color(0xFFE6E4EE),
+                                          width: 1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.15),
+                                            offset: const Offset(0, 2),
+                                            blurRadius: 4,
+                                            spreadRadius: 0,
+                                          ),
+                                          BoxShadow(
+                                            color: Colors.white.withOpacity(0.9),
+                                            offset: const Offset(-2, -2),
+                                            blurRadius: 6,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        _handoverOptions[i],
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          letterSpacing: 0.2,
+                                          color: Colors.black,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
                                     ),
-                                    BoxShadow(
-                                      color: Colors.white.withOpacity(0.9),
-                                      offset: const Offset(-2, -2),
-                                      blurRadius: 6,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  _completion[i],
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    letterSpacing: 0.2,
-                                    color: Colors.black,
                                   ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
+                                );
+                              }),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
                 ),
 
-                SizedBox(height: 10,),
-                //Amenities
-                Row(
-                  children: [
-                    Padding(padding: const EdgeInsets.only(left: 20),
-                      child:  Text("Amenities",
-                        style: TextStyle(
-                          color: Colors.black,fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                        textAlign: TextAlign.left,),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: GridView.builder(
-                        itemCount: _showAllAmenities ? amenities.length : 5,
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 4,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                        ),
-                        itemBuilder: (context, index) {
-                          final isSelected = selectedIndexes.contains(index);
-                          return GestureDetector(
-                            onTap: () async {
-                              setState(() {
-                                isSelected
-                                    ? selectedIndexes.remove(index)
-                                    : selectedIndexes.add(index);
-                              });
-                              await updateFilterCount(); // ✅ call API to update count
-                            },
 
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(
-                                  color: isSelected ? Colors.black87 : Colors.grey.shade300,
-                                  width: isSelected ? 2 : 1,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 3,
-                                    offset: const Offset(0, 1),
+                SizedBox(height: 20,),
+
+
+
+
+// % Completion (under Handover By)
+                Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '% Completion',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 15),
+
+                      // 4 visible + scrollable, same as Handover By
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          const double spacing = 10;
+                          final double chipWidth =
+                              (constraints.maxWidth - (spacing * 3)) / 4; // 4 per viewport
+
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: List.generate(_percentCompletionOptions.length, (i) {
+                                final bool isSelected = selectedPercentCompletion == i;
+
+                                return Container(
+                                  width: chipWidth,
+                                  margin: EdgeInsets.only(
+                                    right: i == _percentCompletionOptions.length - 1 ? 0 : spacing,
                                   ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              child: Row(
-                                children: [
-                                  CachedNetworkImage(
-                                    imageUrl: amenities[index].icon ?? '',
-                                    width: 18,
-                                    height: 18,
-                                    placeholder: (context, url) => const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    ),
-                                    errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 18),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      amenities[index].title ?? '',
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      setState(() {
+                                        selectedPercentCompletion = i;
+                                        percentCompletion = (_percentCompletionOptions[i] == 'Any')
+                                            ? ''
+                                            : _percentCompletionOptions[i];
+                                      });
+                                      await updateFilterCount();
+                                    },
+                                    child: Container(
+                                      constraints: const BoxConstraints(minHeight: 34),
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: isSelected ? const Color(0xFFF5F4F9) : Colors.white,
+                                        border: Border.all(
+                                          color: isSelected ? Colors.black : const Color(0xFFE6E4EE),
+                                          width: 1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.15),
+                                            offset: const Offset(0, 2),
+                                            blurRadius: 4,
+                                            spreadRadius: 0,
+                                          ),
+                                          BoxShadow(
+                                            color: Colors.white.withOpacity(0.9),
+                                            offset: const Offset(-2, -2),
+                                            blurRadius: 6,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        _percentCompletionOptions[i],
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          letterSpacing: 0.2,
+                                          color: Colors.black,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
-
+                                );
+                              }),
                             ),
                           );
                         },
                       ),
-                    ),
-
-                    if (amenities.length > 6)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10.0),
-                        child: TextButton(
-                          onPressed: () async {
-                            // Wait for all amenities icons to be cached completely
-                            await Future.wait(
-                              amenities.map((amenity) async {
-                                final url = amenity.icon;
-                                if (url != null && url.isNotEmpty) {
-                                  try {
-                                    final imageProvider = CachedNetworkImageProvider(url);
-                                    await precacheImage(imageProvider, context); // Await each cache
-                                  } catch (e) {
-                                    // Handle any failed image silently
-                                  }
-                                }
-                              }),
-                            );
-
-                            // Navigate only AFTER all images are cached
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => FullAmenitiesScreen(
-                                  allAmenities: amenities,
-                                  selectedIndexes: selectedIndexes,
-                                  onDone: (selected) async{
-                                    setState(() {
-                                      selectedIndexes = selected;
-                                    });
-                                    await updateFilterCount();
-                                  },
-                                ),
-                              ),
-                            );
-                          },
-
-
-
-
-                          child: Text(
-                            _showAllAmenities ? "Show less amenities" : "Show more amenities",
-                            style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold,fontSize: 16),
-                          ),
-                        ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 10),
-                const Divider(height: 1,indent: 15,endIndent: 15,),
-                const SizedBox(height: 20),
+
+
+                SizedBox(height: 15,),
+                //Amenities
+
+
 
 
 
@@ -2372,6 +2389,153 @@ class _FilterDemoState extends State<FilterDemo> {
 
               ],
 
+
+              // --- Amenities (always for Properties) ---
+              if (showAmenities) ...[
+                const SizedBox(height: 15),
+                Row(
+                  children: const [
+                    Padding(
+                      padding: EdgeInsets.only(left: 20),
+                      child: Text(
+                        "Amenities",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: GridView.builder(
+                    itemCount: _showAllAmenities ? amenities.length : 5,
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 4,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                    ),
+                    itemBuilder: (context, index) {
+                      final isSelected = selectedIndexes.contains(index);
+
+                      return GestureDetector(
+                        onTap: () async {
+                          setState(() {
+                            isSelected
+                                ? selectedIndexes.remove(index)
+                                : selectedIndexes.add(index);
+                          });
+                          await updateFilterCount();
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(
+                              color: isSelected ? Colors.black87 : Colors.grey.shade300,
+                              width: isSelected ? 2 : 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 3,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Row(
+                            children: [
+                              CachedNetworkImage(
+                                imageUrl: amenities[index].icon ?? '',
+                                width: 18,
+                                height: 18,
+                                placeholder: (context, url) => const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                                errorWidget: (context, url, error) =>
+                                const Icon(Icons.broken_image, size: 18),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  amenities[index].title ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                if (amenities.length > 6)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0),
+                    child: TextButton(
+                      onPressed: () async {
+                        await Future.wait(
+                          amenities.map((a) async {
+                            final url = a.icon;
+                            if (url != null && url.isNotEmpty) {
+                              try {
+                                final provider = CachedNetworkImageProvider(url);
+                                await precacheImage(provider, context);
+                              } catch (_) {}
+                            }
+                          }),
+                        );
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FullAmenitiesScreen(
+                              allAmenities: amenities,
+                              selectedIndexes: selectedIndexes,
+                              onDone: (selected) async {
+                                setState(() => selectedIndexes = selected);
+                                await updateFilterCount();
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        _showAllAmenities ? "Show less amenities" : "Show more amenities",
+                        style: const TextStyle(
+                          color: Colors.blueAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                if (!isBuyMode) ...[
+                  const SizedBox(height: 10),
+                  const Divider(height: 1, indent: 15, endIndent: 15),
+                  const SizedBox(height: 20),
+                ],
+              ],
+
+
               //real estate
               if (showRentPaid) ...[
                 Row(
@@ -2463,10 +2627,17 @@ class _FilterDemoState extends State<FilterDemo> {
               ],
 
 
-              const Divider(height: 1, indent: 15, endIndent: 15),
+              if (showRentPaid) ...[
+                const Divider(height: 1, indent: 15, endIndent: 15),
+                const SizedBox(height: 8),
+              ],
+
+
+              // ✅ always show the CTA (not inside any condition)
               const SizedBox(height: 8),
               _showResultsButton(context, screenSize),
-              const SizedBox(height: 10),
+              const SizedBox(height: 90),
+
 
               Container(
                 height: 10,
