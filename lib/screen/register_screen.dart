@@ -82,18 +82,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
     FocusScope.of(context).unfocus();
     setState(() => _isLoading = true);
 
-    final first = firstController.text.trim();
-    final last  = lastController.text.trim();
-    final email = emailController.text.trim().toLowerCase();
-    final phone = phoneController.text.trim();
+    final first   = firstController.text.trim();
+    final last    = lastController.text.trim();
+    final email   = emailController.text.trim().toLowerCase();
+    final phone   = phoneController.text.trim();
     const phoneCode = '971';
-    final pwd   = passwordController.text.trim();
+    final pwd     = passwordController.text.trim();
     final confirm = confirmController.text.trim();
 
     bool _isInt(v) => v is int;
     int _asInt(dynamic v, int fallback) => _isInt(v) ? (v as int) : fallback;
 
     try {
+      // 0) 🔎 Check if this email is already registered
+      try {
+        final exists = await ApiService.checkUserExistsByEmail(email);
+        if (exists) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('This email is already registered. Please log in.')),
+          );
+          // Prefill the email on Login screen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => LoginDemo(initialEmail: email)),
+          );
+          return; // stop register flow
+        }
+      } catch (e) {
+        // If the check fails (network/etc), you can choose to proceed or block.
+        // We'll proceed to register to avoid blocking the user.
+        debugPrint('checkUserExistsByEmail failed: $e');
+      }
+
       // 1) Create user — backend should also generate+store OTP here
       final reg = await ApiService.registerStart(
         firstName: first,
@@ -106,7 +127,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       debugPrint('REGISTER RESP: $reg');
 
-      // 2) DO NOT resend here — this used to overwrite the first OTP
+      // 2) DO NOT resend here — avoid overwriting first OTP
 
       // timers from server if present
       final expiresIn   = _asInt(reg['expires_in'], 300);
@@ -142,6 +163,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final low = friendly.toLowerCase();
       if (low.contains('already been taken') || low.contains('already exists') || low.contains('conflict')) {
         friendly = 'This email is already registered. Please Login or use Forgot Password.';
+        // Optional: jump to Login with prefilled email when backend returns conflict
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => LoginDemo(initialEmail: email)),
+        );
       } else if (low.contains('too many') || low.contains('throttle') || low.contains('rate limit')) {
         friendly = 'Too many attempts. Please wait a minute and try again.';
       }
@@ -150,6 +176,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
 
   // Future<void> _submit() async {
   //   ApiService.debugPrintBaseUrl();

@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/profile_image_provider.dart';
 import '../secure_storage.dart';
 import '../services/favorite_service.dart';
-import 'secure_storage.dart';
+// import 'secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/services/api_service.dart';
@@ -16,6 +16,8 @@ import 'package:provider/provider.dart';
 
 
 import 'package:http/http.dart' as http;
+
+import '../utils/constants.dart';
 
 class Login extends StatelessWidget {
   const Login({Key? key}) : super(key: key);
@@ -27,7 +29,8 @@ class Login extends StatelessWidget {
 }
 
 class LoginDemo extends StatefulWidget {
-  const LoginDemo({Key? key}) : super(key: key);
+  final String? initialEmail;
+  const LoginDemo({Key? key, this.initialEmail}) : super(key: key);
 
   @override
   State<LoginDemo> createState() => _LoginDemoState();
@@ -157,79 +160,90 @@ class _LoginDemoState extends State<LoginDemo> {
 
     setState(() {
       isLoading = true;
-      errorMessage = null; // clear previous error
+      errorMessage = null;
     });
 
     try {
-      final result = await ApiService.loginUser(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+      // If you have ApiService.loginUser, keep using it.
+      // But make sure it returns full response or bubble up status/message.
+      final res = await http.post(
+        Uri.parse('${ApiService.baseUrl}/login'), // ensure baseUrl correct
+        headers: {'Accept': 'application/json'},
+        body: {
+          'email': emailController.text.trim(),
+          'password': passwordController.text.trim(),
+        },
       );
 
-      if (result is Map<String, dynamic>) {
-        final token = result['token'];
-        if (token != null && token.toString().isNotEmpty) {
-          // Save token
+      debugPrint('LOGIN status=${res.statusCode}');
+      debugPrint('LOGIN body=${res.body}');
+
+      Map<String, dynamic> body = {};
+      try {
+        body = jsonDecode(res.body) as Map<String, dynamic>;
+      } catch (_) {}
+
+      if (res.statusCode == 200) {
+        final token = body['token']?.toString();
+        if (token == null || token.isEmpty) {
+          setState(() => errorMessage = 'Login succeeded but token missing.');
+        } else {
           await SecureStorage.writeToken(token);
 
-          // Save username & load profile image
-          final username = (result['name'] ?? '').toString().trim();
-          if (username.isNotEmpty) {
-            await SecureStorage.write('user_name', username);
-            await SecureStorage.write('user_image', result['image'] ?? '');  // <-- ADD THIS
-            await context.read<ProfileImageProvider>().loadImageForUser(username);
-            debugPrint("✅ Loaded profile image for user: $username");
-          } else {
-            debugPrint("⚠️ Username missing in login response.");
+          // Optional user fields
+          final name = (body['name'] ?? body['user']?['name'] ?? '').toString();
+          final image = (body['image'] ?? body['user']?['image'] ?? '').toString();
+          if (name.isNotEmpty) {
+            await SecureStorage.write('user_name', name);
+            await SecureStorage.write('user_image', image);
+            await context.read<ProfileImageProvider>().loadImageForUser(name);
           }
 
-          // Fetch and sync favorites
+          // Sync favorites (non-blocking)
           try {
-            final apiFavorites = await FavoriteService.fetchApiFavorites(token);
+            final favs = await FavoriteService.fetchApiFavorites(token);
             await FavoriteService.saveFavorites({});
-            FavoriteService.loggedInFavorites = apiFavorites;
-            debugPrint("✅ Favorites synced. Count: ${apiFavorites.length}");
+            FavoriteService.loggedInFavorites = favs;
           } catch (e) {
-            debugPrint("❌ Failed to fetch favorites: $e");
+            debugPrint('Favorites sync failed: $e');
           }
 
-          // Navigate to Home
           if (!mounted) return;
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const Home()),
-                (route) => false,
+                (_) => false,
           );
-        } else {
-          // Handle backend errors
-          String error = 'Unable to login. Please try again.';
-          if (result.containsKey('message')) {
-            error = result['message'];
-          } else if (result.containsKey('errors')) {
-            final errors = result['errors'];
-            if (errors is Map && errors.isNotEmpty) {
-              final firstError = errors.values.first;
-              if (firstError is List && firstError.isNotEmpty) {
-                error = firstError.first;
-              }
-            }
-          }
-          setState(() => errorMessage = error);
         }
-      }
-      else {
-        setState(() => errorMessage = 'Unexpected response from server');
+      } else if (res.statusCode == 401) {
+        // invalid credentials or not verified depending on backend
+        setState(() => errorMessage =
+            body['message']?.toString() ?? 'Invalid email or password.');
+      } else if (res.statusCode == 403) {
+        setState(() => errorMessage =
+            body['message']?.toString() ?? 'Account not verified. Please verify OTP.');
+      } else if (res.statusCode == 422) {
+        // validation errors
+        String msg = 'Validation error.';
+        if (body['errors'] is Map && (body['errors'] as Map).isNotEmpty) {
+          final first = (body['errors'] as Map).values.first;
+          if (first is List && first.isNotEmpty) msg = first.first.toString();
+        } else if (body['message'] != null) {
+          msg = body['message'].toString();
+        }
+        setState(() => errorMessage = msg);
+      } else {
+        setState(() => errorMessage =
+            body['message']?.toString() ?? 'Server error (${res.statusCode}). Try again.');
       }
     } catch (e) {
-      debugPrint("❌ Login error: $e");
+      debugPrint('LOGIN error: $e');
       if (!mounted) return;
-      setState(() => errorMessage = 'Unable to login. Please try again.');
-      Future.delayed(const Duration(seconds: 10), () {
-        if (mounted) setState(() => errorMessage = null);
-      });
+      setState(() => errorMessage = 'Network error. Check internet / BASE_URL.');
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
   }
+
 
 
   @override

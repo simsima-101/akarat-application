@@ -1,5 +1,6 @@
 // lib/services/api_service.dart
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
@@ -7,19 +8,43 @@ import 'package:http/http.dart' as http;
 import '../model/agencypropertiesmodel.dart';
 
 class ApiService {
-  /// Base URL is overridable at build time:
-  ///   flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8000/api
-  /// If not provided, it falls back to PROD.
-  static final String baseUrl = const String.fromEnvironment(
+  /// Overridable at build time:
+  ///   flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8020/api
+  /// Falls back to PROD if not provided.
+  static final String _rawBaseUrl = const String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'https://akarat.com/api',
   ).replaceFirst(RegExp(r'/+$'), '');
 
-  // Call this once (e.g., in main()) if you want a startup log.
+  /// Effective base URL:
+  /// - iOS Simulator: uses 127.0.0.1 / localhost as-is (perfect for local dev)
+  /// - Android Emulator: rewrites localhost/127.0.0.1 → 10.0.2.2
+  static String get _effectiveBaseUrl {
+    var url = _rawBaseUrl;
+    if (!kIsWeb && Platform.isAndroid &&
+        (url.contains('127.0.0.1') || url.contains('localhost'))) {
+      try {
+        final u = Uri.parse(url);
+        final host = (u.host == 'localhost' || u.host == '127.0.0.1')
+            ? '10.0.2.2'
+            : u.host;
+        url = u.replace(host: host).toString();
+      } catch (_) {
+        url = url
+            .replaceFirst('127.0.0.1', '10.0.2.2')
+            .replaceFirst('localhost', '10.0.2.2');
+      }
+    }
+    return url;
+  }
+
+  static String get baseUrl => _effectiveBaseUrl;
+
+  // Call once (e.g., in main()) to confirm what URL is used.
   static void debugPrintBaseUrl() {
     if (kDebugMode) {
-      // ignore: avoid_print
-      print('BASE URL: $baseUrl');
+      print('BASE URL (raw):       $_rawBaseUrl');
+      print('BASE URL (effective): $_effectiveBaseUrl');
     }
   }
 
@@ -38,7 +63,7 @@ class ApiService {
   static Uri _buildUri(String endpoint, [Map<String, String>? queryParams]) {
     final cleanEndpoint =
     endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
-    var uri = Uri.parse('$baseUrl/$cleanEndpoint');
+    var uri = Uri.parse('$_effectiveBaseUrl/$cleanEndpoint');
     if (queryParams != null) uri = uri.replace(queryParameters: queryParams);
     return uri;
   }
@@ -77,71 +102,24 @@ class ApiService {
   // Timeouts for all http.* calls
   static const _timeout = Duration(seconds: 25);
 
-  // ---------- Generic HTTP ----------
-  static Future<http.Response> _post(
-      String endpoint,
-      Map<String, dynamic> body,
-      ) async {
-    final url = _buildUri(endpoint);
-    final resp = await http
-        .post(url, headers: _jsonHeaders, body: jsonEncode(body))
-        .timeout(_timeout);
-    if (kDebugMode) {
-      // ignore: avoid_print
-      print('[POST] $url -> ${resp.statusCode} ${resp.body}');
-    }
-    return resp;
-  }
-
-  static Future<http.Response> _postAuth(
-      String endpoint,
-      String token,
-      Map<String, dynamic> body,
-      ) async {
-    final url = _buildUri(endpoint);
-    final resp = await http
-        .post(url, headers: _authHeaders(token), body: jsonEncode(body))
-        .timeout(_timeout);
-    if (kDebugMode) {
-      // ignore: avoid_print
-      print('[POST*] $url -> ${resp.statusCode} ${resp.body}');
-    }
-    return resp;
-  }
-
-  static Future<http.Response> _get(
-      String endpoint, [
-        Map<String, String>? qs,
-      ]) async {
-    final url = _buildUri(endpoint, qs);
-    final resp =
-    await http.get(url, headers: _jsonHeaders).timeout(_timeout);
-    if (kDebugMode) {
-      // ignore: avoid_print
-      print('[GET]  $url -> ${resp.statusCode} ${resp.body}');
-    }
-    return resp;
-  }
-
-  static Future<http.Response> _getAuth(
-      String endpoint,
-      String token, [
-        Map<String, String>? qs,
-      ]) async {
-    final url = _buildUri(endpoint, qs);
-    final resp = await http
-        .get(url, headers: _authHeaders(token))
-        .timeout(_timeout);
-    if (kDebugMode) {
-      // ignore: avoid_print
-      print('[GET*] $url -> ${resp.statusCode} ${resp.body}');
-    }
-    return resp;
-  }
-
   // =========================================================
   // Auth: Register/Login/OTP
   // =========================================================
+
+  // Check if a user exists by email (GET /api/users/check?email=...)
+  static Future<bool> checkUserExistsByEmail(String email) async {
+    final resp = await _get('/users/check', {'email': _normEmail(email)});
+    if (resp.statusCode == 200) {
+      final j = _decodeMap(resp.body);
+      final v = j['exists'];
+      if (v is bool) return v;
+      if (v is num) return v != 0;
+      if (v is String) return v.toLowerCase() == 'true' || v == '1';
+      return false;
+    }
+    if (resp.statusCode == 422) return false; // invalid/missing email
+    throw Exception('Check failed: ${resp.statusCode} ${resp.body}');
+  }
 
   /// (Legacy) Direct registration WITHOUT OTP.
   static Future<Map<String, dynamic>> registerUser({
@@ -170,7 +148,6 @@ class ApiService {
     final resp = await _post('/resend-otp', {"email": _normEmail(email)});
     final data = _decodeMap(resp.body);
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
-      // e.g. { message, resend_after, expires_in, otp_sent: true/false }
       return data;
     }
     throw Exception(data['message'] ?? 'Resend OTP failed (${resp.statusCode})');
@@ -181,7 +158,6 @@ class ApiService {
   static Future<Map<String, dynamic>> sendRegisterOtp({
     required String email,
   }) async {
-    // Keep this shim so existing UI doesn’t break; call the new endpoint.
     return resendOtp(email: email);
   }
 
@@ -237,7 +213,7 @@ class ApiService {
   static Future<void> logoutUser(String token) async {
     final dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
+        baseUrl: _effectiveBaseUrl, // use effective base for Dio too
         headers: {'Authorization': 'Bearer $token'},
         connectTimeout: const Duration(seconds: 20),
         receiveTimeout: const Duration(seconds: 20),
@@ -251,14 +227,11 @@ class ApiService {
   // Forgot / Reset Password (OTP)
   // =========================================================
 
-  /// Step 1 (RESET): trigger OTP
   static Future<bool> forgotPassword(String email) async {
-    final resp =
-    await _post('/forgot-password', {"email": _normEmail(email)});
+    final resp = await _post('/forgot-password', {"email": _normEmail(email)});
     return resp.statusCode == 200;
   }
 
-  /// Step 2 (RESET): after verifyOtp -> token, then call this to set new password
   static Future<bool> resetPassword({
     required String email,
     required String token,
@@ -288,21 +261,19 @@ class ApiService {
   // Registration (with OTP kick-off)
   // =========================================================
 
-  /// Starts registration AND (backend should) send OTP (POST /api/register)
-  /// Returns whatever the backend returns; we only normalize timers.
   static Future<Map<String, dynamic>> registerStart({
     required String firstName,
     required String lastName,
     required String email,
-    required String phoneCountryCode, // e.g. "971"
-    required String phone, // e.g. "565356435"
+    required String phoneCountryCode, // "971"
+    required String phone,            // "565356435"
     required String password,
     required String passwordConfirmation,
   }) async {
     final payload = {
       "name": '${firstName.trim()} ${lastName.trim()}'.trim(),
-      "first_name": firstName.trim(), // ok if backend ignores
-      "last_name": lastName.trim(), // ok if backend ignores
+      "first_name": firstName.trim(),
+      "last_name": lastName.trim(),
       "email": _normEmail(email),
       "phone_country_code": phoneCountryCode.trim(),
       "phone": phone.trim(),
@@ -313,32 +284,26 @@ class ApiService {
     final resp = await _post('/register', payload);
     final data = _decodeMap(resp.body);
 
-    // 422 validation
     if (resp.statusCode == 422 && data['errors'] is Map) {
       final errorsMap = data['errors'] as Map;
       final msg = errorsMap.values
           .where((v) => v is List && v.isNotEmpty)
           .map((v) => (v as List).first.toString())
           .join('\n');
-      throw Exception(
-          msg.isEmpty ? (data['message'] ?? 'Validation failed') : msg);
+      throw Exception(msg.isEmpty ? (data['message'] ?? 'Validation failed') : msg);
     }
 
-    // 409 conflict (email exists, etc.)
     if (resp.statusCode == 409) {
-      throw Exception(
-          data['message'] ?? 'This email is already registered.');
+      throw Exception(data['message'] ?? 'This email is already registered.');
     }
 
-    // Success range: trust the backend's flags. DO NOT invent otp_sent.
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
-      data['expires_in'] ??= 300; // 5 min default
-      data['resend_after'] ??= 60; // 60s default
+      data['expires_in'] ??= 300;   // 5 min default
+      data['resend_after'] ??= 60;  // 60s default
       return data;
     }
 
-    throw Exception(
-        data['message'] ?? 'Registration failed (${resp.statusCode})');
+    throw Exception(data['message'] ?? 'Registration failed (${resp.statusCode})');
   }
 
   // =========================================================
@@ -349,8 +314,7 @@ class ApiService {
     final resp = await _getAuth('/saved-property-list', token);
     if (resp.statusCode == 200) {
       final decoded = _decodeMap(resp.body);
-      final list = (decoded['data'] != null &&
-          decoded['data']['data'] != null)
+      final list = (decoded['data'] != null && decoded['data']['data'] != null)
           ? (decoded['data']['data'] as List<dynamic>)
           : <dynamic>[];
       return list.map((e) => Property.fromJson(e)).toList();
@@ -362,8 +326,7 @@ class ApiService {
       String token,
       int propertyId,
       ) async {
-    final resp = await _postAuth(
-        '/toggle-saved-property', token, {"property_id": propertyId});
+    final resp = await _postAuth('/toggle-saved-property', token, {"property_id": propertyId});
     return resp.statusCode == 200;
   }
 
@@ -380,8 +343,7 @@ class ApiService {
   }
 
   static Future<List<dynamic>> getFeaturedProperties({int page = 1}) async {
-    final resp =
-    await _get('/featured-properties', {"page": page.toString()});
+    final resp = await _get('/featured-properties', {"page": page.toString()});
     if (resp.statusCode == 200) return _decodeList(resp.body);
     throw Exception('Failed to get featured properties');
   }
@@ -408,5 +370,56 @@ class ApiService {
       "message": message.trim(),
     });
     return resp.statusCode == 200 || resp.statusCode == 201;
+  }
+
+  // ---------- Generic HTTP ----------
+  static Future<http.Response> _post(
+      String endpoint,
+      Map<String, dynamic> body,
+      ) async {
+    final url = _buildUri(endpoint);
+    final resp = await http.post(url, headers: _jsonHeaders, body: jsonEncode(body)).timeout(_timeout);
+    if (kDebugMode) {
+      print('[POST] $url -> ${resp.statusCode} ${resp.body}');
+    }
+    return resp;
+  }
+
+  static Future<http.Response> _postAuth(
+      String endpoint,
+      String token,
+      Map<String, dynamic> body,
+      ) async {
+    final url = _buildUri(endpoint);
+    final resp = await http.post(url, headers: _authHeaders(token), body: jsonEncode(body)).timeout(_timeout);
+    if (kDebugMode) {
+      print('[POST*] $url -> ${resp.statusCode} ${resp.body}');
+    }
+    return resp;
+  }
+
+  static Future<http.Response> _get(
+      String endpoint, [
+        Map<String, String>? qs,
+      ]) async {
+    final url = _buildUri(endpoint, qs);
+    final resp = await http.get(url, headers: _jsonHeaders).timeout(_timeout);
+    if (kDebugMode) {
+      print('[GET]  $url -> ${resp.statusCode} ${resp.body}');
+    }
+    return resp;
+  }
+
+  static Future<http.Response> _getAuth(
+      String endpoint,
+      String token, [
+        Map<String, String>? qs,
+      ]) async {
+    final url = _buildUri(endpoint, qs);
+    final resp = await http.get(url, headers: _authHeaders(token)).timeout(_timeout);
+    if (kDebugMode) {
+      print('[GET*] $url -> ${resp.statusCode} ${resp.body}');
+    }
+    return resp;
   }
 }
