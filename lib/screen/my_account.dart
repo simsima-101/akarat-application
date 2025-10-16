@@ -16,6 +16,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../model/agencypropertiesmodel.dart';
 import '../providers/profile_image_provider.dart';
 import '../secure_storage.dart';
+import 'PersonalInformationScreen.dart';
 import 'favorite.dart';
 import 'login.dart';
 import 'login_page.dart';
