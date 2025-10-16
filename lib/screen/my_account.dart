@@ -31,6 +31,7 @@ class _My_AccountState extends State<My_Account> {
   int pageIndex = 0;
   String? userName;
   String? profileImageUrl;
+  String? userEmail;
 
   @override
   void initState() {
@@ -41,9 +42,11 @@ class _My_AccountState extends State<My_Account> {
 
   Future<void> _loadUserName() async {
     final name = await SecureStorage.read('user_name');
+    final email = await SecureStorage.read('user_email');
     final imageUrl = await SecureStorage.read('user_image'); // Load image URL
     setState(() {
       userName = name ?? '';
+      userEmail = email ?? '';
       profileImageUrl = imageUrl ?? ''; // Store it in a new variable
     });
   }
@@ -162,7 +165,7 @@ class _My_AccountState extends State<My_Account> {
                 const Text('My Account', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
 
                 /// Profile Card
-                Padding(
+                  Padding(
                   padding: const EdgeInsets.only(top: 40.0, bottom: 16),
                   child: Container(
                     padding: const EdgeInsets.all(16),
@@ -173,19 +176,37 @@ class _My_AccountState extends State<My_Account> {
                     ),
                     child: Row(
                       children: [
-                        Stack(
-                          children: [
-                            const CircleAvatar(
-                              radius: 30,
-                              backgroundColor: Colors.transparent,
-                              backgroundImage: AssetImage('assets/images/avatar.png'),
-                            ),
-                          ],
+                        // 👇 Make avatar tappable to open Personal Information
+                        GestureDetector(
+                          onTap: () async {
+                            final token = await SecureStorage.getToken();
+                            if (token == null || token.isEmpty) {
+                              if (!mounted) return;
+                              _showLoginDialog(context);
+                              return;
+                            }
+                            if (!mounted) return;
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => PersonalInformationScreen(
+                                  name: (userName ?? '').isNotEmpty ? userName! : '—',
+                                  email: (userEmail ?? ''), // make sure you load this in _loadUserName()
+                                  onDeleteAccount: deleteAccount,
+                                ),
+                              ),
+                            );
+                          },
+                          child: const CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Colors.transparent,
+                            backgroundImage: AssetImage('assets/images/avatar.png'),
+                          ),
                         ),
 
-
-
                         const SizedBox(width: 16),
+
                         Expanded(
                           child: isLoggedIn
                               ? Column(
@@ -207,16 +228,18 @@ class _My_AccountState extends State<My_Account> {
                             child: const Text(
                               "Login / Sign up",
                               style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red,
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: Colors.red),
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.red,
+                              ),
                             ),
                           ),
-                        )
+                        ),
                       ],
                     ),
+
                   ),
                 ),
 
@@ -295,7 +318,7 @@ class _My_AccountState extends State<My_Account> {
       children: [
         _settingsContainer([
           _settingsTile("My Account", "assets/images/my-account-profile.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => FindAgentDemo()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterScreen()));
           }),
           _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
             Navigator.push(context, MaterialPageRoute(builder: (_) => FindAgentDemo()));
@@ -324,7 +347,7 @@ class _My_AccountState extends State<My_Account> {
             context.read<ProfileImageProvider>().clear(); // ✅ clear profile image
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (_) => RegisterScreen()),
+              MaterialPageRoute(builder: (_) => LoginDemo()),
                   (route) => false,
             );
           }),

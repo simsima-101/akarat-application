@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:Akarat/services/api_service.dart';
@@ -11,6 +13,10 @@ class RegisterScreen extends StatefulWidget {
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
+
+
+const double _designWidth = 380.0; // was your maxW design
+double _targetWidth = 320.0; // <- pick a smaller width (e.g., 320, 300, 280)
 
 class _RegisterScreenState extends State<RegisterScreen> {
   // Controllers
@@ -93,29 +99,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
     bool _isInt(v) => v is int;
     int _asInt(dynamic v, int fallback) => _isInt(v) ? (v as int) : fallback;
 
+    final swAll = Stopwatch()..start();
+
     try {
-      // 0) 🔎 Check if this email is already registered
+      // A) QUICK email-exists check (2s UI timeout). If it times out or fails, proceed.
       try {
-        final exists = await ApiService.checkUserExistsByEmail(email);
+        final sw = Stopwatch()..start();
+        debugPrint('checkUserExistsByEmail: begin @ ${DateTime.now()} email=$email');
+        final exists = await ApiService
+            .checkUserExistsByEmail(email)
+            .timeout(const Duration(seconds: 2));
+        debugPrint('checkUserExistsByEmail: done in ${sw.elapsed} (exists=$exists)');
         if (exists) {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('This email is already registered. Please log in.')),
           );
-          // Prefill the email on Login screen
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => LoginDemo(initialEmail: email)),
           );
-          return; // stop register flow
+          return;
         }
+      } on TimeoutException {
+        debugPrint('checkUserExistsByEmail: UI timeout (2s). Proceeding to register...');
       } catch (e) {
-        // If the check fails (network/etc), you can choose to proceed or block.
-        // We'll proceed to register to avoid blocking the user.
-        debugPrint('checkUserExistsByEmail failed: $e');
+        debugPrint('checkUserExistsByEmail failed: $e (proceeding)');
       }
 
-      // 1) Create user — backend should also generate+store OTP here
+      // B) REGISTER (12s UI timeout). This is the main call that was "buffering".
+      final swReg = Stopwatch()..start();
+      debugPrint('registerStart: begin @ ${DateTime.now()} base=${ApiService.baseUrl}');
       final reg = await ApiService.registerStart(
         firstName: first,
         lastName:  last,
@@ -124,27 +138,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
         phone: phone,
         password: pwd,
         passwordConfirmation: confirm,
-      );
-      debugPrint('REGISTER RESP: $reg');
+      ).timeout(const Duration(seconds: 12));
+      debugPrint('registerStart: success in ${swReg.elapsed} resp=$reg');
 
-      // 2) DO NOT resend here — avoid overwriting first OTP
-
-      // timers from server if present
+      final devOtp      = ((reg['otp'])?.toString() ?? '').trim();
       final expiresIn   = _asInt(reg['expires_in'], 300);
       final resendAfter = _asInt(reg['resend_after'], 60);
-
-      // surface DEV OTP if backend returns it (dev only)
-      final devOtp = ((reg['otp'])?.toString() ?? '').trim();
-      if (devOtp.isNotEmpty && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('DEV OTP: $devOtp')));
-      }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('OTP sent. Please check your email.')),
       );
 
-      // 3) Go to Verify OTP
+      // C) NAVIGATE to Verify OTP (keep your Map arguments)
       Navigator.of(context, rootNavigator: true).pushNamed(
         '/verify-otp',
         arguments: {
@@ -155,15 +161,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'phone': '$phoneCode$phone',
           'expiresIn': expiresIn,
           'resendAfter': resendAfter,
+          if (devOtp.isNotEmpty) 'devOtp': devOtp,
         },
+      );
+    } on TimeoutException {
+      if (!mounted) return;
+      debugPrint('register flow: UI timeout. total=${swAll.elapsed}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Registration is taking too long. Check API URL/port or mail/queue config.'),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
+      debugPrint('register flow: error after ${swAll.elapsed}: $e');
       String friendly = e.toString();
       final low = friendly.toLowerCase();
       if (low.contains('already been taken') || low.contains('already exists') || low.contains('conflict')) {
         friendly = 'This email is already registered. Please Login or use Forgot Password.';
-        // Optional: jump to Login with prefilled email when backend returns conflict
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => LoginDemo(initialEmail: email)),
@@ -176,6 +191,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
 
 
   // Future<void> _submit() async {
@@ -293,48 +309,64 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
-    final maxW = 380.0;
+    // Compute a uniform scale factor relative to your original design width.
+    final scale = (_targetWidth / _designWidth).clamp(0.6, 1.0);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF4F4F4),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(12),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: maxW),
-              child: Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-                    decoration: BoxDecoration(
-                      gradient: _cardGradient,
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x2A000000),
-                          offset: Offset(0, 8),
-                          blurRadius: 18,
-                          spreadRadius: 0,
+            padding: const EdgeInsets.fromLTRB(12, 48, 12, 12),
+            child: Transform.scale(
+              scale: scale,
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                // We keep the internal layout built for the original design width,
+                // then scale the whole thing down uniformly.
+                width: _designWidth,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                        decoration: BoxDecoration(
+                          gradient: _cardGradient,
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x2A000000),
+                              offset: Offset(0, 8),
+                              blurRadius: 18,
+                              spreadRadius: 0,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: _buildFormContent(context),
-                  ),
-                  Positioned(
-                    right: 16,
-                    top: 16,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const Home()),
+                        child: _buildFormContent(context),
                       ),
-                      child: const Icon(Icons.close, color: Colors.red, size: 28),
-                    ),
+                      Positioned(
+                        right: 16,
+                        top: 16,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () => Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (_) => const Home()),
+                          ),
+                          child: Icon(
+                            Icons.close,
+                            color: Colors.red,
+                            size: 28 * scale, // scale the close icon too
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -342,6 +374,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
+
 
   Widget _buildFormContent(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
