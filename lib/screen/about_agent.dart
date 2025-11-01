@@ -997,92 +997,92 @@ class _AboutAgentState extends State<AboutAgent> {
                                                                 isSaved ? Icons.favorite : Icons.favorite_border,
                                                                 color: isSaved ? Colors.red : Colors.grey,
                                                               ),
-                                                              onPressed: () async {
-                                                                final token = await SecureStorage.getToken();
+                                                                onPressed: () async {
+                                                                  final token = await SecureStorage.getToken();
 
-                                                                if (token == null || token.isEmpty) {
-                                                                  // 🔒 Show login-required dialog
-                                                                  showDialog(
-                                                                    context: context,
-                                                                    builder: (ctx) => Dialog(
-                                                                      backgroundColor: Colors.transparent,
-                                                                      insetPadding: EdgeInsets.zero,
-                                                                      child: Container(
-                                                                        height: 70,
-                                                                        margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
-                                                                        decoration: BoxDecoration(
-                                                                          color: Colors.red,
-                                                                          borderRadius: BorderRadius.circular(10),
-                                                                        ),
-                                                                        child: Stack(
-                                                                          clipBehavior: Clip.none,
-                                                                          children: [
-                                                                            Positioned(
-                                                                              top: -14,
-                                                                              right: -10,
-                                                                              child: IconButton(
-                                                                                icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                                                                                onPressed: () => Navigator.of(ctx).pop(),
-                                                                                padding: EdgeInsets.zero,
-                                                                                constraints: const BoxConstraints(),
+                                                                  if (token == null || token.isEmpty) {
+                                                                    // 🔒 Show login-required dialog
+                                                                    showDialog(
+                                                                      context: context,
+                                                                      builder: (ctx) => Dialog(
+                                                                        backgroundColor: Colors.transparent,
+                                                                        insetPadding: EdgeInsets.zero,
+                                                                        child: Container(
+                                                                          height: 70,
+                                                                          margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+                                                                          decoration: BoxDecoration(
+                                                                            color: Colors.red,
+                                                                            borderRadius: BorderRadius.circular(10),
+                                                                          ),
+                                                                          child: Stack(
+                                                                            clipBehavior: Clip.none,
+                                                                            children: [
+                                                                              Positioned(
+                                                                                top: -14,
+                                                                                right: -10,
+                                                                                child: IconButton(
+                                                                                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                                                  onPressed: () => Navigator.of(ctx).pop(),
+                                                                                  padding: EdgeInsets.zero,
+                                                                                  constraints: const BoxConstraints(),
+                                                                                ),
                                                                               ),
-                                                                            ),
-                                                                            Positioned(
-                                                                              left: 16,
-                                                                              right: 16,
-                                                                              bottom: 12,
-                                                                              child: Row(
-                                                                                children: [
-                                                                                  const Expanded(
-                                                                                    child: Text(
-                                                                                      'Login required to add favorites.',
-                                                                                      style: TextStyle(color: Colors.white, fontSize: 13),
-                                                                                    ),
-                                                                                  ),
-                                                                                  const SizedBox(width: 12),
-                                                                                  GestureDetector(
-                                                                                    onTap: () {
-                                                                                      Navigator.of(ctx).pop();
-                                                                                      Navigator.of(ctx).pushNamed('/login');
-                                                                                    },
-                                                                                    child: const Text(
-                                                                                      'Login',
-                                                                                      style: TextStyle(
-                                                                                        color: Colors.white,
-                                                                                        fontWeight: FontWeight.bold,
-                                                                                        decoration: TextDecoration.underline,
-                                                                                        decorationColor: Colors.white,
-                                                                                        decorationThickness: 1.5,
+                                                                              Positioned(
+                                                                                left: 16,
+                                                                                right: 16,
+                                                                                bottom: 12,
+                                                                                child: Row(
+                                                                                  children: [
+                                                                                    const Expanded(
+                                                                                      child: Text(
+                                                                                        'Login required to add favorites.',
+                                                                                        style: TextStyle(color: Colors.white, fontSize: 13),
                                                                                       ),
                                                                                     ),
-                                                                                  ),
-                                                                                ],
+                                                                                    const SizedBox(width: 12),
+                                                                                    GestureDetector(
+                                                                                      onTap: () {
+                                                                                        Navigator.of(ctx).pop();
+                                                                                        Navigator.of(ctx).pushNamed('/login');
+                                                                                      },
+                                                                                      child: const Text(
+                                                                                        'Login',
+                                                                                        style: TextStyle(
+                                                                                          color: Colors.white,
+                                                                                          fontWeight: FontWeight.bold,
+                                                                                          decoration: TextDecoration.underline,
+                                                                                          decorationColor: Colors.white,
+                                                                                          decorationThickness: 1.5,
+                                                                                        ),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
                                                                               ),
-                                                                            ),
-                                                                          ],
+                                                                            ],
+                                                                          ),
                                                                         ),
                                                                       ),
-                                                                    ),
-                                                                  );
-                                                                  return;
+                                                                    );
+                                                                    return;
+                                                                  }
+
+                                                                  // ✅ Use the provider's API method (optimistic + revert handled inside)
+                                                                  final propertyId = property.id; // or the int you computed earlier
+                                                                  if (propertyId == null) {
+                                                                    debugPrint('⚠️ property.id is null; cannot toggle favorite.');
+                                                                    return;
+                                                                  }
+
+                                                                  final ok = await favProvider.toggleFavoriteWithApi(propertyId, token, context);
+
+                                                                  if (!ok) {
+                                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                                      const SnackBar(content: Text("Failed to update favorite.")),
+                                                                    );
+                                                                  }
                                                                 }
 
-                                                                // 🌀 Toggle via API + Provider
-                                                                favProvider.toggleFavorite(propertyId, context);
-                                                                property.saved = !isSaved;
-
-                                                                final success = await toggledApi(token, property.id!);
-
-                                                                if (!success) {
-                                                                  // ❌ Revert toggle on failure
-                                                                  favProvider.toggleFavorite(propertyId,context);
-                                                                  property.saved = isSaved;
-
-                                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                                    const SnackBar(content: Text("Failed to update favorite.")),
-                                                                  );
-                                                                }
-                                                              },
                                                             ),
                                                           );
                                                         },

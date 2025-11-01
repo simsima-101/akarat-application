@@ -52,6 +52,7 @@ class ApiService {
   static const Map<String, String> _jsonHeaders = {
     'Accept': 'application/json',
     'Content-Type': 'application/json; charset=UTF-8',
+    'X-Requested-With': 'XMLHttpRequest',
   };
 
   static Map<String, String> _authHeaders(String token) => {
@@ -153,7 +154,7 @@ class ApiService {
     throw Exception(data['message'] ?? 'Resend OTP failed (${resp.statusCode})');
   }
 
-  /// (Old flow some backends exposed) GET /register/send-otp
+  /// (Old flow) Just keep for compatibility.
   @Deprecated('Use resendOtp(email: ...) instead.')
   static Future<Map<String, dynamic>> sendRegisterOtp({
     required String email,
@@ -177,20 +178,32 @@ class ApiService {
     throw Exception(data['message'] ?? 'Invalid or expired OTP');
   }
 
-  /// Step 2 (REGISTER): Complete signup using the token from verifyOtp.
+  /// ✅ Step 2 (REGISTER): Complete signup using the token from verifyOtp.
+  /// Include first_name / last_name so backend stores them.
   static Future<Map<String, dynamic>> completeRegistration({
-    required String name,
+    required String firstName,
+    required String lastName,
+    required String name, // full name (legacy)
     required String email,
     required String password,
     required String token,
+    String? phoneCountryCode,
+    String? phone,
   }) async {
-    final resp = await _post('/register/complete', {
-      "name": name.trim(),
+    final body = <String, dynamic>{
+      "first_name": firstName.trim(),
+      "last_name": lastName.trim(),
+      "name": name.trim(), // keep for backends still reading `name`
       "email": _normEmail(email),
       "password": password,
       "password_confirmation": password,
       "token": token,
-    });
+      if ((phoneCountryCode ?? '').trim().isNotEmpty)
+        "phone_country_code": phoneCountryCode!.trim(),
+      if ((phone ?? '').trim().isNotEmpty) "phone": phone!.trim(),
+    };
+
+    final resp = await _post('/register/complete', body);
     final data = _decodeMap(resp.body);
     if (resp.statusCode == 200) return data;
     throw Exception(data['message'] ?? 'Registration failed');
@@ -213,7 +226,7 @@ class ApiService {
   static Future<void> logoutUser(String token) async {
     final dio = Dio(
       BaseOptions(
-        baseUrl: _effectiveBaseUrl, // use effective base for Dio too
+        baseUrl: _effectiveBaseUrl,
         headers: {'Authorization': 'Bearer $token'},
         connectTimeout: const Duration(seconds: 20),
         receiveTimeout: const Duration(seconds: 20),
@@ -258,7 +271,7 @@ class ApiService {
   }
 
   // =========================================================
-  // Registration (with OTP kick-off)
+  // Registration (OTP kick-off)
   // =========================================================
 
   static Future<Map<String, dynamic>> registerStart({
@@ -266,7 +279,7 @@ class ApiService {
     required String lastName,
     required String email,
     required String phoneCountryCode, // "971"
-    required String phone,            // "565356435"
+    required String phone, // "565356435"
     required String password,
     required String passwordConfirmation,
   }) async {
@@ -298,12 +311,100 @@ class ApiService {
     }
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
-      data['expires_in'] ??= 300;   // 5 min default
-      data['resend_after'] ??= 60;  // 60s default
+      data['expires_in'] ??= 300; // 5 min default
+      data['resend_after'] ??= 60; // 60s default
       return data;
     }
 
     throw Exception(data['message'] ?? 'Registration failed (${resp.statusCode})');
+  }
+
+  // =========================================================
+  // Profile helpers
+  // =========================================================
+
+  /// ✅ Fetch current user profile. Normalizes the most common shapes.
+  static Future<Map<String, dynamic>> getMe(String token) async {
+    final resp = await _getAuth('/me', token);
+    if (resp.statusCode != 200) {
+      throw Exception('Failed to fetch profile: ${resp.statusCode}');
+    }
+    final data = _decodeMap(resp.body);
+
+    dynamic _pick(List<List<String>> paths) {
+      for (final p in paths) {
+        dynamic cur = data;
+        for (final k in p) {
+          if (cur is Map && cur.containsKey(k)) {
+            cur = cur[k];
+          } else {
+            cur = null;
+            break;
+          }
+        }
+        if (cur != null) return cur;
+      }
+      return null;
+    }
+
+    final first = (_pick([
+      ['first_name'],
+      ['data', 'first_name'],
+      ['user', 'first_name'],
+      ['data', 'user', 'first_name'],
+    ]) ??
+        '')
+        .toString()
+        .trim();
+
+    final last = (_pick([
+      ['last_name'],
+      ['data', 'last_name'],
+      ['user', 'last_name'],
+      ['data', 'user', 'last_name'],
+    ]) ??
+        '')
+        .toString()
+        .trim();
+
+    String name = (_pick([
+      ['name'],
+      ['data', 'name'],
+      ['user', 'name'],
+      ['data', 'user', 'name'],
+    ]) ??
+        '')
+        .toString()
+        .trim();
+
+    final email = (_pick([
+      ['email'],
+      ['data', 'email'],
+      ['user', 'email'],
+      ['data', 'user', 'email'],
+    ]) ??
+        '')
+        .toString()
+        .trim();
+
+    // If backend only returns `name`, synthesize first/last
+    String f = first, l = last;
+    if ((f.isEmpty || l.isEmpty) && name.isNotEmpty) {
+      final parts = name.split(RegExp(r'\s+'));
+      f = f.isEmpty ? (parts.isNotEmpty ? parts.first : '') : f;
+      l = l.isEmpty ? (parts.length > 1 ? parts.sublist(1).join(' ') : '') : l;
+    }
+    if (name.isEmpty) {
+      name = [f, l].where((s) => s.isNotEmpty).join(' ').trim();
+    }
+
+    return {
+      'first_name': f,
+      'last_name': l,
+      'name': name,
+      'email': email,
+      'raw': data,
+    };
   }
 
   // =========================================================
@@ -319,14 +420,16 @@ class ApiService {
           : <dynamic>[];
       return list.map((e) => Property.fromJson(e)).toList();
     }
-    throw Exception('Failed to get saved properties');
+    throw Exception(
+        'Failed to get saved properties: ${resp.statusCode} ${resp.body}');
   }
 
   static Future<bool> toggleSavedProperty(
       String token,
       int propertyId,
       ) async {
-    final resp = await _postAuth('/toggle-saved-property', token, {"property_id": propertyId});
+    final resp = await _postAuth(
+        '/toggle-saved-property', token, {"property_id": propertyId});
     return resp.statusCode == 200;
   }
 
@@ -378,7 +481,8 @@ class ApiService {
       Map<String, dynamic> body,
       ) async {
     final url = _buildUri(endpoint);
-    final resp = await http.post(url, headers: _jsonHeaders, body: jsonEncode(body)).timeout(_timeout);
+    final resp =
+    await http.post(url, headers: _jsonHeaders, body: jsonEncode(body)).timeout(_timeout);
     if (kDebugMode) {
       print('[POST] $url -> ${resp.statusCode} ${resp.body}');
     }
@@ -390,10 +494,38 @@ class ApiService {
       String token,
       Map<String, dynamic> body,
       ) async {
+    if (token.isEmpty) {
+      throw Exception('No auth token present for $_effectiveBaseUrl$endpoint');
+    }
     final url = _buildUri(endpoint);
-    final resp = await http.post(url, headers: _authHeaders(token), body: jsonEncode(body)).timeout(_timeout);
+    final resp = await http
+        .post(url, headers: _authHeaders(token), body: jsonEncode(body))
+        .timeout(_timeout);
     if (kDebugMode) {
       print('[POST*] $url -> ${resp.statusCode} ${resp.body}');
+    }
+    if (resp.statusCode == 401) {
+      throw Exception('Unauthorized (401) on $url');
+    }
+    return resp;
+  }
+
+  static Future<http.Response> _getAuth(
+      String endpoint,
+      String token, [
+        Map<String, String>? qs,
+      ]) async {
+    if (token.isEmpty) {
+      throw Exception('No auth token present for $_effectiveBaseUrl$endpoint');
+    }
+    final url = _buildUri(endpoint, qs);
+    final resp =
+    await http.get(url, headers: _authHeaders(token)).timeout(_timeout);
+    if (kDebugMode) {
+      print('[GET*] $url -> ${resp.statusCode} ${resp.body}');
+    }
+    if (resp.statusCode == 401) {
+      throw Exception('Unauthorized (401) on $url');
     }
     return resp;
   }
@@ -410,16 +542,45 @@ class ApiService {
     return resp;
   }
 
-  static Future<http.Response> _getAuth(
-      String endpoint,
-      String token, [
-        Map<String, String>? qs,
-      ]) async {
-    final url = _buildUri(endpoint, qs);
-    final resp = await http.get(url, headers: _authHeaders(token)).timeout(_timeout);
-    if (kDebugMode) {
-      print('[GET*] $url -> ${resp.statusCode} ${resp.body}');
+  // ===== Alerts/Saved Searches =====
+  static Future<Map<String, dynamic>> createAlert(
+      String token, {
+        required String name,
+        required String frequency,
+        required String purpose,
+        required String propertyType,
+        Map<String, dynamic>? extra, // min_price, max_price, etc.
+      }) async {
+    final body = {
+      "name": name.trim(),
+      "frequency": frequency.trim(),
+      "purpose": purpose.trim(),
+      "property_type": propertyType.trim(),
+      if (extra != null) ...extra,
+    };
+    final resp = await _postAuth('/alerts', token, body);
+    final data = _decodeMap(resp.body);
+    if (resp.statusCode >= 200 && resp.statusCode < 300) return data;
+    throw Exception(
+        data['message'] ?? 'Failed to create alert (${resp.statusCode})');
+  }
+
+  static Future<List<dynamic>> getSavedSearches(String token) async {
+    final resp = await _getAuth('/saved-searches', token);
+    if (resp.statusCode >= 200 && resp.statusCode < 300) {
+      final decoded = jsonDecode(resp.body);
+      if (decoded is List) return decoded;
+      if (decoded is Map) {
+        if (decoded['data'] is List) return decoded['data'];
+        if (decoded['data'] is Map && decoded['data']['data'] is List) {
+          return decoded['data']['data'];
+        }
+        if (decoded['saved_searches'] is List) return decoded['saved_searches'];
+      }
+      return <dynamic>[];
     }
-    return resp;
+    final body = _decodeMap(resp.body);
+    throw Exception(
+        body['message'] ?? 'Failed to fetch saved alerts (${resp.statusCode})');
   }
 }

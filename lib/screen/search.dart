@@ -421,8 +421,21 @@ class _SearchState extends State<Search> {
 
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => FliterList(filterModel: filterModel)),
+          MaterialPageRoute(
+            builder: (context) => FliterList(
+              filterModel: filterModel,
+              // ✅ pass the required args
+              selectedPurpose: (purpose.isEmpty ? 'Rent' : purpose),
+              selectedPropertyType: (
+                  property_type.trim().isEmpty ||
+                      property_type.trim().toLowerCase() == 'all residential'
+              )
+                  ? ''                          // treat "All Residential" / empty as "any type"
+                  : property_type.trim(),
+            ),
+          ),
         );
+
       } else {
         print('❌ Error fetching filters: ${response.statusCode}');
       }

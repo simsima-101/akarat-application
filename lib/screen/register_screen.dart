@@ -1,11 +1,11 @@
 import 'dart:async';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:Akarat/services/api_service.dart';
 
 import 'home.dart';
 import 'login.dart';
+import '../secure_storage.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -13,7 +13,6 @@ class RegisterScreen extends StatefulWidget {
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
-
 
 const double _designWidth = 380.0; // was your maxW design
 double _targetWidth = 320.0; // <- pick a smaller width (e.g., 320, 300, 280)
@@ -33,6 +32,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _hidePwd = true;
   bool _hideConfirm = true;
   bool _agree = false;
+
+
 
   // Password rules
   bool get _ruleLen => passwordController.text.trim().length >= 8;
@@ -54,7 +55,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     filled: true,
     fillColor: Colors.white,
     enabledBorder: _fieldBorder,
-    focusedBorder: _fieldBorder.copyWith(borderSide: const BorderSide(color: Color(0xFFDADADA))),
+    focusedBorder:
+    _fieldBorder.copyWith(borderSide: const BorderSide(color: Color(0xFFDADADA))),
     prefixIconConstraints: const BoxConstraints(minWidth: 0),
     prefixIcon: prefix != null
         ? Padding(padding: const EdgeInsets.only(left: 12, right: 8), child: prefix)
@@ -73,7 +75,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   );
 
   // ---------- SUBMIT ----------
-
   Future<void> _submit() async {
     ApiService.debugPrintBaseUrl();
 
@@ -85,15 +86,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    // 🚫 Make sure we are not “half logged-in” from old data
+    try {
+      await SecureStorage.signOutLocal();
+    } catch (_) {}
+
     FocusScope.of(context).unfocus();
     setState(() => _isLoading = true);
 
-    final first   = firstController.text.trim();
-    final last    = lastController.text.trim();
-    final email   = emailController.text.trim().toLowerCase();
-    final phone   = phoneController.text.trim();
+    final first = firstController.text.trim();
+    final last = lastController.text.trim();
+    final email = emailController.text.trim().toLowerCase();
+    final phone = phoneController.text.trim();
     const phoneCode = '971';
-    final pwd     = passwordController.text.trim();
+    final pwd = passwordController.text.trim();
     final confirm = confirmController.text.trim();
 
     bool _isInt(v) => v is int;
@@ -130,19 +136,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // B) REGISTER (12s UI timeout). This is the main call that was "buffering".
       final swReg = Stopwatch()..start();
       debugPrint('registerStart: begin @ ${DateTime.now()} base=${ApiService.baseUrl}');
-      final reg = await ApiService.registerStart(
+      final reg = await ApiService
+          .registerStart(
         firstName: first,
-        lastName:  last,
+        lastName: last,
         email: email,
         phoneCountryCode: phoneCode,
         phone: phone,
         password: pwd,
         passwordConfirmation: confirm,
-      ).timeout(const Duration(seconds: 12));
+      )
+          .timeout(const Duration(seconds: 12));
       debugPrint('registerStart: success in ${swReg.elapsed} resp=$reg');
 
-      final devOtp      = ((reg['otp'])?.toString() ?? '').trim();
-      final expiresIn   = _asInt(reg['expires_in'], 300);
+      // --- Save user basics locally (now includes first/last) ---
+      final String nameFromApi = (reg['user'] ?? reg['name'] ?? '').toString().trim();
+      final String emailFromApi = (reg['email'] ?? reg['data']?['email'] ?? '').toString().trim();
+
+      final String nameToSave = nameFromApi.isNotEmpty ? nameFromApi : '$first $last';
+      final String emailToSave = emailFromApi.isNotEmpty ? emailFromApi : email;
+
+      try {
+        await SecureStorage.write('user_first_name', first);
+        await SecureStorage.write('user_last_name', last);
+        await SecureStorage.write('user_name', nameToSave);
+        await SecureStorage.write('user_email', emailToSave);
+        debugPrint(
+            'REGISTER → saved first="$first", last="$last", name="$nameToSave", email="$emailToSave"');
+      } catch (e) {
+        debugPrint('REGISTER → SecureStorage write failed: $e');
+      }
+
+      final devOtp = ((reg['otp'])?.toString() ?? '').trim();
+      final expiresIn = _asInt(reg['expires_in'], 300);
       final resendAfter = _asInt(reg['resend_after'], 60);
 
       if (!mounted) return;
@@ -150,15 +176,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         const SnackBar(content: Text('OTP sent. Please check your email.')),
       );
 
-      // C) NAVIGATE to Verify OTP (keep your Map arguments)
+      // C) NAVIGATE to Verify OTP (send everything needed to finish signup)
       Navigator.of(context, rootNavigator: true).pushNamed(
         '/verify-otp',
         arguments: {
           'mode': 'register',
-          'name': '$first $last',
-          'email': email,
+          'firstName': first,                // ✅ needed for completeRegistration
+          'lastName': last,                  // ✅ needed for completeRegistration
+          'name': '$first $last',            // legacy/full name
+          'email': email,                    // must be the same email that got the OTP
           'password': pwd,
-          'phone': '$phoneCode$phone',
+          'phone': phone,                    // pass raw phone
+          'phoneCode': phoneCode,            // pass code separately
           'expiresIn': expiresIn,
           'resendAfter': resendAfter,
           if (devOtp.isNotEmpty) 'devOtp': devOtp,
@@ -169,7 +198,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       debugPrint('register flow: UI timeout. total=${swAll.elapsed}');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Registration is taking too long. Check API URL/port or mail/queue config.'),
+          content:
+          Text('Registration is taking too long. Check API URL/port or mail/queue config.'),
         ),
       );
     } catch (e) {
@@ -177,13 +207,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       debugPrint('register flow: error after ${swAll.elapsed}: $e');
       String friendly = e.toString();
       final low = friendly.toLowerCase();
-      if (low.contains('already been taken') || low.contains('already exists') || low.contains('conflict')) {
+      if (low.contains('already been taken') ||
+          low.contains('already exists') ||
+          low.contains('conflict')) {
         friendly = 'This email is already registered. Please Login or use Forgot Password.';
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => LoginDemo(initialEmail: email)),
         );
-      } else if (low.contains('too many') || low.contains('throttle') || low.contains('rate limit')) {
+      } else if (low.contains('too many') ||
+          low.contains('throttle') ||
+          low.contains('rate limit')) {
         friendly = 'Too many attempts. Please wait a minute and try again.';
       }
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendly)));
@@ -191,105 +225,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
-
-
-
-  // Future<void> _submit() async {
-  //   ApiService.debugPrintBaseUrl();
-  //
-  //   if (!_formKey.currentState!.validate()) return;
-  //   if (!_agree) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Please agree to the Terms and Conditions')),
-  //     );
-  //     return;
-  //   }
-  //
-  //   FocusScope.of(context).unfocus();
-  //   setState(() => _isLoading = true);
-  //
-  //   final first = firstController.text.trim();
-  //   final last  = lastController.text.trim();
-  //   final email = emailController.text.trim().toLowerCase();
-  //   final phone = phoneController.text.trim();
-  //   const phoneCode = '971';
-  //   final pwd   = passwordController.text.trim();
-  //   final confirm = confirmController.text.trim();
-  //
-  //   // tiny helpers
-  //   bool _isInt(v) => v is int;
-  //   int _asInt(dynamic v, int fallback) => _isInt(v) ? (v as int) : fallback;
-  //
-  //   try {
-  //     // 1) Hit /api/register (create/validate user)
-  //     final reg = await ApiService.registerStart(
-  //       firstName: first,
-  //       lastName:  last,
-  //       email: email,
-  //       phoneCountryCode: phoneCode,
-  //       phone: phone,
-  //       password: pwd,
-  //       passwordConfirmation: confirm,
-  //     );
-  //     debugPrint('REGISTER RESP: $reg');
-  //
-  //     // IMPORTANT: Ignore any token returned by /register for the register flow.
-  //     // We ALWAYS go through OTP to verify the email/owner.
-  //     // (Do NOT early-return to /home even if reg['token'] exists.)
-  //
-  //     // 2) Force an OTP send (Mailtrap in local, real email otherwise)
-  //     Map<String, dynamic> otpMeta = const {};
-  //     try {
-  //       otpMeta = await ApiService.resendOtp(email: email);
-  //       debugPrint('RESEND OTP RESP: $otpMeta');
-  //     } catch (e) {
-  //       // If resend endpoint fails, still try to continue if backend already sent one
-  //       debugPrint('RESEND OTP failed: $e');
-  //     }
-  //
-  //     // prefer server-provided timers; fall back to sane defaults
-  //     final expiresIn   = _asInt(otpMeta['expires_in'] ?? reg['expires_in'], 300);
-  //     final resendAfter = _asInt(otpMeta['resend_after'] ?? reg['resend_after'], 60);
-  //
-  //     // surface DEV OTP if backend returns it in local env
-  //     final devOtp = ((otpMeta['otp'] ?? reg['otp'])?.toString() ?? '').trim();
-  //     if (devOtp.isNotEmpty && mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('DEV OTP: $devOtp')));
-  //     }
-  //
-  //     if (!mounted) return;
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('OTP sent. Please check your email.')),
-  //     );
-  //
-  //     // 3) Navigate to Verify OTP (always)
-  //     Navigator.of(context, rootNavigator: true).pushNamed(
-  //       '/verify-otp',
-  //       arguments: {
-  //         'mode': 'register',
-  //         'name': '$first $last',
-  //         'email': email,
-  //         'password': pwd,
-  //         'phone': '$phoneCode$phone',
-  //         'expiresIn': expiresIn,
-  //         'resendAfter': resendAfter,
-  //       },
-  //     );
-  //   } catch (e) {
-  //     if (!mounted) return;
-  //     String friendly = e.toString();
-  //     final low = friendly.toLowerCase();
-  //     if (low.contains('already been taken') || low.contains('already exists') || low.contains('conflict')) {
-  //       friendly = 'This email is already registered. Please Login or use Forgot Password.';
-  //     } else if (low.contains('too many') || low.contains('throttle') || low.contains('rate limit')) {
-  //       friendly = 'Too many attempts. Please wait a minute and try again.';
-  //     }
-  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendly)));
-  //   } finally {
-  //     if (mounted) setState(() => _isLoading = false);
-  //   }
-  // }
-  // ---------- /SUBMIT ----------
 
   @override
   void initState() {
@@ -309,7 +244,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     // Compute a uniform scale factor relative to your original design width.
     final scale = (_targetWidth / _designWidth).clamp(0.6, 1.0);
@@ -324,8 +258,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               scale: scale,
               alignment: Alignment.topCenter,
               child: SizedBox(
-                // We keep the internal layout built for the original design width,
-                // then scale the whole thing down uniformly.
                 width: _designWidth,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 20),
@@ -375,14 +307,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-
   Widget _buildFormContent(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 8),
-        const Text('Create Your Account', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
+        const Text('Create Your Account',
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
         const SizedBox(height: 20),
 
         SizedBox(
@@ -404,10 +336,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     'assets/images/google.png',
                     height: 22,
                     width: 22,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.g_mobiledata, size: 28),
+                    errorBuilder: (_, __, ___) =>
+                    const Icon(Icons.g_mobiledata, size: 28),
                   ),
                   const SizedBox(width: 8),
-                  const Text('Continue with Google', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  const Text('Continue with Google',
+                      style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -437,14 +372,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: firstController,
                 textInputAction: TextInputAction.next,
                 decoration: _dec('First Name'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter first name' : null,
+                validator: (v) =>
+                (v == null || v.trim().isEmpty) ? 'Please enter first name' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: lastController,
                 textInputAction: TextInputAction.next,
                 decoration: _dec('Last Name'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter last name' : null,
+                validator: (v) =>
+                (v == null || v.trim().isEmpty) ? 'Please enter last name' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -454,7 +391,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 decoration: _dec('E-mail'),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Please enter email';
-                  if (!RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(v)) return 'Invalid email';
+                  if (!RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(v)) {
+                    return 'Invalid email';
+                  }
                   return null;
                 },
               ),
@@ -488,7 +427,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       validator: (v) {
                         final s = (v ?? '').trim();
                         if (s.isEmpty) return 'Please enter phone';
-                        if (!RegExp(r'^[0-9]{7,12}$').hasMatch(s)) return 'Enter a valid number';
+                        if (!RegExp(r'^[0-9]{7,12}$').hasMatch(s)) {
+                          return 'Enter a valid number';
+                        }
                         return null;
                       },
                     ),
@@ -538,7 +479,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 validator: (v) {
                   final s = (v ?? '').trim();
                   if (s.isEmpty) return 'Please confirm password';
-                  if (s != passwordController.text.trim()) return 'Passwords do not match';
+                  if (s != passwordController.text.trim()) {
+                    return 'Passwords do not match';
+                  }
                   return null;
                 },
               ),
@@ -546,7 +489,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               FormField<bool>(
                 initialValue: _agree,
-                validator: (v) => (v ?? false) ? null : 'Please agree to the Terms and Conditions',
+                validator: (v) =>
+                (v ?? false) ? null : 'Please agree to the Terms and Conditions',
                 builder: (state) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -564,7 +508,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Expanded(
                           child: RichText(
                             text: TextSpan(
-                              style: const TextStyle(color: Colors.black, fontSize: 16),
+                              style:
+                              const TextStyle(color: Colors.black, fontSize: 16),
                               children: [
                                 const TextSpan(text: 'I agree '),
                                 TextSpan(
@@ -573,7 +518,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     color: Color(0xFF2F6FE4),
                                     decoration: TextDecoration.underline,
                                   ),
-                                  recognizer: TapGestureRecognizer()..onTap = () {/* open T&C */},
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () {/* open T&C */},
                                 ),
                               ],
                             ),
@@ -584,7 +530,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     if (state.hasError)
                       Padding(
                         padding: const EdgeInsets.only(left: 12),
-                        child: Text(state.errorText!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                        child: Text(state.errorText!,
+                            style:
+                            const TextStyle(color: Colors.red, fontSize: 12)),
                       ),
                   ],
                 ),
@@ -595,17 +543,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 width: w > 380 ? 320 : double.infinity,
                 height: 54,
                 child: DecoratedBox(
-                  decoration: BoxDecoration(gradient: _ctaGradient, borderRadius: BorderRadius.circular(18)),
+                  decoration: BoxDecoration(
+                      gradient: _ctaGradient,
+                      borderRadius: BorderRadius.circular(18)),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18)),
                     ),
                     onPressed: _isLoading ? null : _submit,
                     child: _isLoading
-                        ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('Register', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                        ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white))
+                        : const Text('Register',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w700)),
                   ),
                 ),
               ),
@@ -613,9 +570,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               Row(
                 children: [
-                  const Text('Already have an account?  ', style: TextStyle(color: Color(0xFF616161), fontSize: 16)),
+                  const Text('Already have an account?  ',
+                      style: TextStyle(color: Color(0xFF616161), fontSize: 16)),
                   GestureDetector(
-                    onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginDemo())),
+                    onTap: () => Navigator.pushReplacement(
+                        context, MaterialPageRoute(builder: (_) => LoginDemo())),
                     child: const Text('Login Here',
                         style: TextStyle(
                           color: Color(0xFF2F6FE4),
@@ -634,7 +593,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget _ruleRow(bool ok, String text) => Row(
     children: [
-      Icon(ok ? Icons.check_circle : Icons.circle, size: 14, color: ok ? Colors.green : Colors.red),
+      Icon(ok ? Icons.check_circle : Icons.circle,
+          size: 14, color: ok ? Colors.green : Colors.red),
       const SizedBox(width: 8),
       Text(text, style: const TextStyle(fontSize: 13.5)),
     ],

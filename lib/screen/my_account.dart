@@ -6,6 +6,7 @@ import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/privacy.dart';
 import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/screen/register_screen.dart';
+import 'package:Akarat/screen/saved_alert_screen.dart';
 import 'package:Akarat/screen/support.dart';
 import 'package:Akarat/screen/terms_condition.dart';
 import 'package:Akarat/utils/fav_logout.dart';
@@ -16,7 +17,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../model/agencypropertiesmodel.dart';
 import '../providers/profile_image_provider.dart';
 import '../secure_storage.dart';
-import 'PersonalInformationScreen.dart';
+import '../services/account_service.dart';
+import '../services/api_service.dart';
+import 'personal_information.dart';
 import 'favorite.dart';
 import 'login.dart';
 import 'login_page.dart';
@@ -34,23 +37,222 @@ class _My_AccountState extends State<My_Account> {
   String? profileImageUrl;
   String? userEmail;
 
+  String? firstName;
+  String? lastName;
+
+
   @override
   void initState() {
     super.initState();
     _loadUserName();
+    _ensureProfileLoaded();
 
+  }
+
+
+  Future<void> _ensureProfileLoaded() async {
+    // 1) Fast path from cache
+    final cachedEmail = (await SecureStorage.getUserEmail())?.trim() ?? '';
+    final cachedName  = (await SecureStorage.getUserName())?.trim() ?? '';
+    final cachedFirst = (await SecureStorage.read('user_first_name'))?.trim() ?? '';
+    final cachedLast  = (await SecureStorage.read('user_last_name'))?.trim() ?? '';
+
+    if (mounted) {
+      setState(() {
+        if (cachedEmail.isNotEmpty) userEmail = cachedEmail;
+        if (cachedName.isNotEmpty)  userName  = cachedName;
+        if (cachedFirst.isNotEmpty) firstName = cachedFirst;
+        if (cachedLast.isNotEmpty)  lastName  = cachedLast;
+      });
+    }
+
+    // If we already have an email, we're done (no server call).
+    if (cachedEmail.isNotEmpty) return;
+
+    // 2) No cached email → fetch /me only if token exists
+    final token = await SecureStorage.getToken();
+    if (token == null || token.isEmpty) {
+      await SecureStorage.signOutLocal(); // ensure no ghost user
+      if (mounted) {
+        setState(() {
+          userEmail = '';
+          userName  = '';
+          firstName = '';
+          lastName  = '';
+        });
+      }
+      return;
+    }
+
+    try {
+      final resp = await http.get(
+        Uri.parse('${ApiService.baseUrl}/me'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      // Auth expired/invalid
+      if (resp.statusCode == 401 || resp.statusCode == 403) {
+        await SecureStorage.signOutLocal();
+        if (mounted) {
+          setState(() {
+            userEmail = '';
+            userName  = '';
+            firstName = '';
+            lastName  = '';
+          });
+        }
+        return;
+      }
+
+      if (resp.statusCode == 200) {
+        final raw  = utf8.decode(resp.bodyBytes);
+        final data = json.decode(raw);
+
+        // ---- helpers ----
+        String firstNonEmpty(Iterable<String?> vals) {
+          for (final v in vals) {
+            if (v != null && v.trim().isNotEmpty) return v.trim();
+          }
+          return '';
+        }
+
+        String getByPath(dynamic obj, List<String> path) {
+          dynamic cur = obj;
+          for (final key in path) {
+            if (cur is Map && cur.containsKey(key)) {
+              cur = cur[key];
+            } else {
+              return '';
+            }
+          }
+          final s = (cur is String) ? cur : cur?.toString();
+          return (s ?? '').trim();
+        }
+
+        String findStringByKey(dynamic obj, String key) {
+          if (obj is Map) {
+            for (final e in obj.entries) {
+              if (e.key == key) {
+                final v = e.value;
+                final s = (v is String) ? v : v?.toString();
+                if (s != null && s.trim().isNotEmpty) return s.trim();
+              }
+              final found = findStringByKey(e.value, key);
+              if (found.isNotEmpty) return found;
+            }
+          } else if (obj is List) {
+            for (final item in obj) {
+              final found = findStringByKey(item, key);
+              if (found.isNotEmpty) return found;
+            }
+          }
+          return '';
+        }
+        // ---- end helpers ----
+
+        // Possible payload shapes
+        final namePaths = <List<String>>[
+          ['name'],
+          ['data','name'],
+          ['user','name'],
+          ['data','user','name'],
+          ['result','name'],
+        ];
+        final emailPaths = <List<String>>[
+          ['email'],
+          ['data','email'],
+          ['user','email'],
+          ['data','user','email'],
+          ['result','email'],
+        ];
+        final imagePaths = <List<String>>[
+          ['image'], ['data','image'], ['user','image'], ['data','user','image'],
+          ['result','image'], ['avatar'], ['profile','image'],
+        ];
+        final firstPaths = <List<String>>[
+          ['first_name'], ['data','first_name'], ['user','first_name'],
+          ['data','user','first_name'], ['result','first_name'],
+        ];
+        final lastPaths = <List<String>>[
+          ['last_name'], ['data','last_name'], ['user','last_name'],
+          ['data','user','last_name'], ['result','last_name'],
+        ];
+
+        final fetchedName   = firstNonEmpty(namePaths.map((p) => getByPath(data, p)));
+        String fetchedEmail = firstNonEmpty(emailPaths.map((p) => getByPath(data, p)));
+        final fetchedImage  = firstNonEmpty(imagePaths.map((p) => getByPath(data, p)));
+        String fetchedFirst = firstNonEmpty(firstPaths.map((p) => getByPath(data, p)));
+        String fetchedLast  = firstNonEmpty(lastPaths.map((p) => getByPath(data, p)));
+
+        // Fill first/last from full name if needed (one-time split)
+        if (fetchedFirst.isEmpty && fetchedLast.isEmpty && fetchedName.isNotEmpty) {
+          final parts = fetchedName.split(RegExp(r'\s+'));
+          fetchedFirst = parts.isNotEmpty ? parts.first : '';
+          fetchedLast  = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+        }
+
+        // Last resort: scan nested
+        if (fetchedEmail.isEmpty) fetchedEmail = findStringByKey(data, 'email');
+
+        // 3) Persist locally (so other screens can use it immediately)
+        if (fetchedFirst.isNotEmpty) await SecureStorage.write('user_first_name', fetchedFirst);
+        if (fetchedLast.isNotEmpty)  await SecureStorage.write('user_last_name',  fetchedLast);
+        if (fetchedName.isNotEmpty)  await SecureStorage.write('user_name',       fetchedName);
+        if (fetchedEmail.isNotEmpty) await SecureStorage.write('user_email',      fetchedEmail);
+        if (fetchedImage.isNotEmpty) await SecureStorage.write('user_image',      fetchedImage);
+
+        // 4) Reflect in UI
+        if (mounted) {
+          setState(() {
+            if (fetchedFirst.isNotEmpty) firstName = fetchedFirst;
+            if (fetchedLast.isNotEmpty)  lastName  = fetchedLast;
+            if (fetchedName.isNotEmpty)  userName  = fetchedName;
+            if (fetchedEmail.isNotEmpty) userEmail = fetchedEmail;
+          });
+        }
+      } else {
+        debugPrint('GET /me failed: ${resp.statusCode} ${resp.body}');
+      }
+    } catch (e) {
+      debugPrint('Profile fetch error: $e');
+      // keep whatever we had locally
+    }
+  }
+
+
+  Future<bool> _hasSession() async {
+    final t = await SecureStorage.getToken();
+    return t != null && t.isNotEmpty;
+  }
+
+
+  String get _displayName {
+    final f = (firstName ?? '').trim();
+    final l = (lastName  ?? '').trim();
+    if (f.isNotEmpty || l.isNotEmpty) return [f, l].where((s) => s.isNotEmpty).join(' ');
+    final n = (userName ?? '').trim();
+    return n; // legacy fallback (split logic already handled above)
   }
 
   Future<void> _loadUserName() async {
-    final name = await SecureStorage.read('user_name');
-    final email = await SecureStorage.read('user_email');
-    final imageUrl = await SecureStorage.read('user_image'); // Load image URL
+    final name     = await SecureStorage.read('user_name');
+    final email    = await SecureStorage.read('user_email');
+    final imageUrl = await SecureStorage.read('user_image');
+    final f        = await SecureStorage.read('user_first_name');
+    final l        = await SecureStorage.read('user_last_name');
+
     setState(() {
-      userName = name ?? '';
-      userEmail = email ?? '';
-      profileImageUrl = imageUrl ?? ''; // Store it in a new variable
+      userName        = name ?? '';
+      userEmail       = email ?? '';
+      profileImageUrl = imageUrl ?? '';
+      firstName       = (f ?? '').trim();
+      lastName        = (l ?? '').trim();
     });
   }
+
 
   Future<List<Property>> fetchSavedProperties() async {
     try {
@@ -77,6 +279,7 @@ class _My_AccountState extends State<My_Account> {
   }
 
   // ===================== DELETE ACCOUNT FUNCTION =====================
+  // In My_Account State class
   Future<void> deleteAccount() async {
     try {
       final token = await SecureStorage.getToken();
@@ -85,8 +288,6 @@ class _My_AccountState extends State<My_Account> {
       }
 
       final uri = Uri.parse('https://akarat.com/api/delete');
-
-      // Try DELETE first
       http.Response resp = await http.delete(
         uri,
         headers: {
@@ -95,7 +296,6 @@ class _My_AccountState extends State<My_Account> {
         },
       );
 
-      // Some backends require POST + _method override
       if (resp.statusCode == 405 || resp.statusCode == 404) {
         resp = await http.post(
           uri,
@@ -108,12 +308,11 @@ class _My_AccountState extends State<My_Account> {
         );
       }
 
-      debugPrint('Delete account -> ${resp.statusCode}: ${resp.body}');
-
       if (resp.statusCode == 200 || resp.statusCode == 204) {
-        // clear local auth/profile
+        // Clear local auth/profile
         await SecureStorage.deleteToken();
         await SecureStorage.delete('user_name');
+        await SecureStorage.delete('user_email');
         await SecureStorage.delete('user_image');
 
         if (!mounted) return;
@@ -121,9 +320,10 @@ class _My_AccountState extends State<My_Account> {
           const SnackBar(content: Text("Account deleted successfully")),
         );
 
+        // 👉 Navigate to LOGIN (not Register)
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const RegisterScreen()),
+          MaterialPageRoute(builder: (_) => const LoginDemo()),
               (route) => false,
         );
       } else if (resp.statusCode == 401) {
@@ -143,6 +343,7 @@ class _My_AccountState extends State<My_Account> {
   }
 
 
+
   @override
   Widget build(BuildContext context) {
     final profileProvider = context.watch<ProfileImageProvider>();
@@ -151,11 +352,16 @@ class _My_AccountState extends State<My_Account> {
     return Scaffold(
       bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
       backgroundColor: Colors.white,
-      body: FutureBuilder<String?>(
-        future: SecureStorage.getToken(),
-        builder: (context, snapshot) {
-          final token = snapshot.data ?? '';
-          final isLoggedIn = token.isNotEmpty;
+      body: FutureBuilder<bool>(
+        // Logged-in means: token exists AND a non-empty email is cached
+        future: SecureStorage.isLoggedIn(),
+        builder: (context, snap) {
+          final waiting = snap.connectionState == ConnectionState.waiting;
+          final isLoggedIn = snap.data ?? false;
+
+          if (waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -163,41 +369,47 @@ class _My_AccountState extends State<My_Account> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 70),
-                const Text('My Account', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                const Text('My Account',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
 
-                /// Profile Card
-                  Padding(
+                // Profile Card
+                Padding(
                   padding: const EdgeInsets.only(top: 40.0, bottom: 16),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
+                      boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
                     ),
                     child: Row(
                       children: [
-                        // 👇 Make avatar tappable to open Personal Information
+                        // Avatar → open Personal Information if logged in
                         GestureDetector(
                           onTap: () async {
                             final token = await SecureStorage.getToken();
                             if (token == null || token.isEmpty) {
-                              if (!mounted) return;
                               _showLoginDialog(context);
                               return;
                             }
-                            if (!mounted) return;
 
-                            Navigator.push(
-                              context,
+                            // Make sure local profile is fresh
+                            await _ensureProfileLoaded();
+
+                            final changed = await Navigator.of(context).push<bool>(
                               MaterialPageRoute(
                                 builder: (_) => PersonalInformationScreen(
-                                  name: (userName ?? '').isNotEmpty ? userName! : '—',
-                                  email: (userEmail ?? ''), // make sure you load this in _loadUserName()
+                                  name: (userName ?? ''),
+                                  email: (userEmail ?? ''),
                                   onDeleteAccount: deleteAccount,
                                 ),
                               ),
                             );
+
+                            if (changed == true && mounted) {
+                              await _ensureProfileLoaded();
+                              setState(() {}); // rebuild header
+                            }
                           },
                           child: const CircleAvatar(
                             radius: 30,
@@ -214,20 +426,32 @@ class _My_AccountState extends State<My_Account> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                (userName != null && userName!.isNotEmpty) ? userName! : 'Welcome!',
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                _displayName.isNotEmpty ? _displayName : 'User',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               const SizedBox(height: 4),
-                              const Text("Registered User", style: TextStyle(fontSize: 13, color: Colors.grey)),
+                              const Text(
+                                "Registered User",
+                                style: TextStyle(fontSize: 13, color: Colors.grey),
+                              ),
                             ],
                           )
                               : GestureDetector(
                             onTap: () async {
-                              await Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
-                              _loadUserName();
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const LoginDemo()),
+                              );
+
+                              setState(() {});
+                              await _ensureProfileLoaded();
+                              if (mounted) setState(() {});
                             },
                             child: const Text(
-                              "Login / Sign up",
+                              "Welcome!  Login / Sign up",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -238,21 +462,22 @@ class _My_AccountState extends State<My_Account> {
                             ),
                           ),
                         ),
+
                       ],
                     ),
-
                   ),
                 ),
 
                 const SizedBox(height: 10),
 
-                /// Settings
+                // Settings (make sure your _buildSettings refreshes UI after logout)
                 _buildSettings(isLoggedIn),
               ],
             ),
           );
         },
       ),
+
     );
   }
 
@@ -315,78 +540,96 @@ class _My_AccountState extends State<My_Account> {
   }
 
   Widget _buildSettings(bool isLoggedIn) {
+    // Build the first group dynamically so "My Account" only shows for guests.
+    final List<Widget> primaryTiles = [];
+
+    // ✅ Only show this when NOT logged in (guest users)
+    if (!isLoggedIn) {
+      primaryTiles.add(
+        _settingsTile("My Account", "assets/images/my-account-profile.png", () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterScreen()));
+        }),
+      );
+    }
+
+    // Always show these (both logged-in & guest)
+    primaryTiles.addAll([
+      _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => FindAgentDemo()));
+      }),
+      _settingsTile("Favorites", "assets/images/favourites.png", () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => Favorite()));
+      }),
+      _settingsTile("Saved Alerts", "assets/images/favourites.png", () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => SavedAlertsScreen()));
+      }),
+      _settingsTile("About Us", "assets/images/about.png", () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => About_Us()));
+      }),
+      _settingsTile("Support", "assets/images/support.png", () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => Support()));
+      }),
+      _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => Privacy()));
+      }),
+      _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => TermsCondition()));
+      }),
+    ]);
+
     return Column(
       children: [
-        _settingsContainer([
-          _settingsTile("My Account", "assets/images/my-account-profile.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterScreen()));
-          }),
-          _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => FindAgentDemo()));
-          }),
-          _settingsTile("Favorites", "assets/images/favourites.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => Favorite()));
-          }),
-          _settingsTile("About Us", "assets/images/about.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => About_Us()));
-          }),
-          _settingsTile("Support", "assets/images/support.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => Support()));
-          }),
-          _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => Privacy()));
-          }),
-          _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => TermsCondition()));
-          }),
-        ]),
-        _settingsContainer(isLoggedIn
-            ? [
-          _settingsTile("Logout", "", () async {
-            await SecureStorage.deleteToken();
-            await SecureStorage.delete('user_name');
-            context.read<ProfileImageProvider>().clear(); // ✅ clear profile image
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => LoginDemo()),
-                  (route) => false,
-            );
-          }),
-          // ===================== DELETE ACCOUNT TILE =====================
-          _settingsTile("Delete your Account", "", () async {
-            final bool? confirmed = await showDialog<bool>(
-              context: context,
-              barrierDismissible: false,
-              builder: (dialogCtx) => AlertDialog(
-                title: const Text("Delete Account"),
-                content: const Text("Are you sure you want to delete your account?"),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(dialogCtx).pop(false), // just close
-                    child: const Text("Cancel"),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(dialogCtx).pop(true),
-                    child: const Text("Delete", style: TextStyle(color: Colors.red)),
-                  ),
-                ],
-              ),
-            );
+        _settingsContainer(primaryTiles),
 
-            if (confirmed == true) {
-              await deleteAccount(); // call function below
-            }
-          }),
-
-        ]
-            : [
-          _settingsTile("Login", "", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
-          }),
-        ]),
+        // Second group: auth actions depend on login state
+        _settingsContainer(
+          isLoggedIn
+              ? [
+            _settingsTile("Logout", "", () async {
+              await SecureStorage.deleteToken();
+              await SecureStorage.delete('user_name');
+              context.read<ProfileImageProvider>().clear(); // clear profile image
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginDemo()),
+                    (route) => false,
+              );
+            }),
+            _settingsTile("Delete your Account", "", () async {
+              await AccountService.confirmAndDelete(context);
+              final bool? confirmed = await showDialog<bool>(
+                context: context,
+                barrierDismissible: false,
+                builder: (dialogCtx) => AlertDialog(
+                  title: const Text("Delete Account"),
+                  content: const Text("Are you sure you want to delete your account?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogCtx).pop(false),
+                      child: const Text("Cancel"),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogCtx).pop(true),
+                      child: const Text("Delete", style: TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) {
+                await deleteAccount();
+              }
+            }),
+          ]
+              : [
+            _settingsTile("Login", "", () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
+            }),
+          ],
+        ),
       ],
     );
   }
+
 
   Widget _settingsContainer(List<Widget> children) {
     return Padding(

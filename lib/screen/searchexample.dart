@@ -152,10 +152,18 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
                     return GestureDetector(
                       onTap: () {
                         _searchController.text = location;
+                        // 1) Inside the suggestions Wrap (onTap:)
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => FliterList(location: location)),
+                          MaterialPageRoute(
+                            builder: (_) => FliterList(
+                              location: location,
+                              selectedPurpose: 'Rent',          // or whatever default you prefer
+                              selectedPropertyType: '',         // '' = any type
+                            ),
+                          ),
                         );
+
 
                       },
                       child: Chip(
@@ -217,10 +225,18 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   Widget _buildChip(String label, BuildContext context) {
     return GestureDetector(
       onTap: () {
+        // 2) Inside _buildChip (onTap:)
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => FliterList(location: label)),
+          MaterialPageRoute(
+            builder: (_) => FliterList(
+              location: label,
+              selectedPurpose: 'Rent',
+              selectedPropertyType: '',
+            ),
+          ),
         );
+
       }
       ,
       child: Chip(

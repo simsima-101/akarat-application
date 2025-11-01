@@ -85,7 +85,7 @@ class _TermsConditionState extends State<TermsCondition> {
                           padding: const EdgeInsets.all(3.0),
                           child: Image.asset("assets/images/app_icon.png",height: 22,alignment: Alignment.center,),
                         ),
-                         Padding(
+                        Padding(
                           padding: const EdgeInsets.all(3.0),
                           child: Image.asset("assets/images/logo-text.png",height: 22,alignment: Alignment.center,),
                         ),
@@ -107,7 +107,7 @@ class _TermsConditionState extends State<TermsCondition> {
                   const SizedBox(height: 6),
                   const Text(
                     "Welcome to the Akarat website. By accessing or using our website, you agree to comply with and be bound by the following terms and conditions. Please review them carefully. If you do not agree to these terms and conditions, you should not use this website.",
-                  style: TextStyle(fontSize: 16,letterSpacing: 0.4),),
+                    style: TextStyle(fontSize: 16,letterSpacing: 0.4),),
 
                   const SizedBox(height: 16),
                   const Text(
@@ -116,13 +116,13 @@ class _TermsConditionState extends State<TermsCondition> {
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                      "1. Eligibility: You must be at least 18 years of age to use this website. By using this website, you represent and warrant that you are at least 18 years old."
-                      ,style: TextStyle(fontSize: 16,letterSpacing: 0.4),),
+                    "1. Eligibility: You must be at least 18 years of age to use this website. By using this website, you represent and warrant that you are at least 18 years old."
+                    ,style: TextStyle(fontSize: 16,letterSpacing: 0.4),),
                   const SizedBox(height: 6),
                   const Text(
-                      "2. License: Akarat grants you a limited, non-exclusive, "
-                          "non-transferable, and revocable license to use our website"
-                          " for personal, non-commercial use.",style: TextStyle(fontSize: 16,letterSpacing: 0.4),),
+                    "2. License: Akarat grants you a limited, non-exclusive, "
+                        "non-transferable, and revocable license to use our website"
+                        " for personal, non-commercial use.",style: TextStyle(fontSize: 16,letterSpacing: 0.4),),
 
                   const SizedBox(height: 16),
                   const Text(
@@ -150,10 +150,10 @@ class _TermsConditionState extends State<TermsCondition> {
                   const Text(
                       "User Responsibilities",
                       style: TextStyle(
-                      fontSize: 17,
-                      letterSpacing: 0.5,
-                      fontWeight: FontWeight.bold
-                  ) ),
+                          fontSize: 17,
+                          letterSpacing: 0.5,
+                          fontWeight: FontWeight.bold
+                      ) ),
                   const SizedBox(height: 6),
                   const Text(
                     "1.Prohibited Activities:You agree not to use the website for any "

@@ -127,369 +127,369 @@ class _SupportState extends State<Support> {
     Size screenSize = MediaQuery.sizeOf(context);
 
     return WillPopScope(
-        onWillPop: () async {
-      if (token == '') {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-      } else {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-      }
-      return false; // prevent default pop
-    },
-    child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
+      onWillPop: () async {
+        if (token == '') {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+        } else {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+        }
+        return false; // prevent default pop
+      },
+      child: Scaffold(
           backgroundColor: Colors.white,
-          elevation: 1,
-          iconTheme: const IconThemeData(color: Colors.red),
-          title: const Text(
-            "Contact Us",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-              color: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 1,
+            iconTheme: const IconThemeData(color: Colors.red),
+            title: const Text(
+              "Contact Us",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Colors.black,
+              ),
             ),
+            centerTitle: true,
           ),
-          centerTitle: true,
-        ),
-        bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
-        body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Ask us anything?",
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
+          bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
+          body: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Ask us anything?",
+                      style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
                     ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(left: 10,right: 10,top: 10),
-                    // color: Colors.grey,
-                    height: screenSize.height*0.75,
-                    width: screenSize.width*0.9,
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
-                              child: Text("Name",textAlign: TextAlign.left,style: TextStyle(
-                                  fontSize: 15,letterSpacing: 0.5
-                              ),),
-                            ),
-                            Text("")
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
-                          child: Container(
-                            padding: const EdgeInsets.only(left: 10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(10.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],
-                            ),
-                            child: TextFormField(
-                              validator: (value) {
-                                if (value!.isEmpty || value == null) {
-                                  return 'Please Enter Your Name';
-                                }
-                                else {
+                    Container(
+                      margin: const EdgeInsets.only(left: 10,right: 10,top: 10),
+                      // color: Colors.grey,
+                      height: screenSize.height*0.75,
+                      width: screenSize.width*0.9,
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
+                                child: Text("Name",textAlign: TextAlign.left,style: TextStyle(
+                                    fontSize: 15,letterSpacing: 0.5
+                                ),),
+                              ),
+                              Text("")
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
+                            child: Container(
+                              padding: const EdgeInsets.only(left: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadiusDirectional.circular(10.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey,
+                                    offset: const Offset(
+                                      0.3,
+                                      0.3,
+                                    ),
+                                    blurRadius: 0.3,
+                                    spreadRadius: 0.3,
+                                  ), //BoxShadow
+                                  BoxShadow(
+                                    color: Colors.white,
+                                    offset: const Offset(0.0, 0.0),
+                                    blurRadius: 0.0,
+                                    spreadRadius: 0.0,
+                                  ), //BoxShadow
+                                ],
+                              ),
+                              child: TextFormField(
+                                validator: (value) {
+                                  if (value!.isEmpty || value == null) {
+                                    return 'Please Enter Your Name';
+                                  }
+                                  else {
 
-                                }
-                                return null;
-                              },
-                              controller: nameController,
-                              keyboardType: TextInputType.name,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                // hintText: 'Email',
+                                  }
+                                  return null;
+                                },
+                                controller: nameController,
+                                keyboardType: TextInputType.name,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  // hintText: 'Email',
+                                ),
+                                textAlign: TextAlign.left,
                               ),
-                              textAlign: TextAlign.left,
                             ),
                           ),
-                        ),
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
-                              child: Text("Email Address",textAlign: TextAlign.left,style: TextStyle(
-                                  fontSize: 15,letterSpacing: 0.5
-                              ),),
-                            ),
-                            Text("")
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
-                          child: Container(
-                            padding: const EdgeInsets.only(left: 10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(10.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],
-                            ),
-                            child: TextFormField(
-                              validator: (value) {
-                                if (value!.isEmpty || value == null) {
-                                  return 'Please Enter EmailId';
-                                }
-                                else {
-                                  value.toString().contains('email') == true &&
-                                      RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value) == false;
-                                  //  return 'This is not a valid email address.';
-                                }
-                                return null;
-                              },
-                              controller: emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                // hintText: 'Email',
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
+                                child: Text("Email Address",textAlign: TextAlign.left,style: TextStyle(
+                                    fontSize: 15,letterSpacing: 0.5
+                                ),),
                               ),
-                              textAlign: TextAlign.left,
+                              Text("")
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
+                            child: Container(
+                              padding: const EdgeInsets.only(left: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadiusDirectional.circular(10.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey,
+                                    offset: const Offset(
+                                      0.3,
+                                      0.3,
+                                    ),
+                                    blurRadius: 0.3,
+                                    spreadRadius: 0.3,
+                                  ), //BoxShadow
+                                  BoxShadow(
+                                    color: Colors.white,
+                                    offset: const Offset(0.0, 0.0),
+                                    blurRadius: 0.0,
+                                    spreadRadius: 0.0,
+                                  ), //BoxShadow
+                                ],
+                              ),
+                              child: TextFormField(
+                                validator: (value) {
+                                  if (value!.isEmpty || value == null) {
+                                    return 'Please Enter EmailId';
+                                  }
+                                  else {
+                                    value.toString().contains('email') == true &&
+                                        RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value) == false;
+                                    //  return 'This is not a valid email address.';
+                                  }
+                                  return null;
+                                },
+                                controller: emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  // hintText: 'Email',
+                                ),
+                                textAlign: TextAlign.left,
+                              ),
                             ),
                           ),
-                        ),
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
-                              child: Text("Phone Number",textAlign: TextAlign.left,style: TextStyle(
-                                  fontSize: 15,letterSpacing: 0.5
-                              ),),
-                            ),
-                            Text("")
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
-                          child: Container(
-                            padding: const EdgeInsets.only(left: 10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(10.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],
-                            ),
-                            child: TextFormField(
-                              validator: (value) {
-                                if (value!.isEmpty || value == null) {
-                                  return 'Please Enter Phone Number';
-                                }
-                                else {
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
+                                child: Text("Phone Number",textAlign: TextAlign.left,style: TextStyle(
+                                    fontSize: 15,letterSpacing: 0.5
+                                ),),
+                              ),
+                              Text("")
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
+                            child: Container(
+                              padding: const EdgeInsets.only(left: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadiusDirectional.circular(10.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey,
+                                    offset: const Offset(
+                                      0.3,
+                                      0.3,
+                                    ),
+                                    blurRadius: 0.3,
+                                    spreadRadius: 0.3,
+                                  ), //BoxShadow
+                                  BoxShadow(
+                                    color: Colors.white,
+                                    offset: const Offset(0.0, 0.0),
+                                    blurRadius: 0.0,
+                                    spreadRadius: 0.0,
+                                  ), //BoxShadow
+                                ],
+                              ),
+                              child: TextFormField(
+                                validator: (value) {
+                                  if (value!.isEmpty || value == null) {
+                                    return 'Please Enter Phone Number';
+                                  }
+                                  else {
 
-                                }
-                                return null;
-                              },
-                              controller: phoneController,
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                // hintText: 'Email',
+                                  }
+                                  return null;
+                                },
+                                controller: phoneController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  // hintText: 'Email',
+                                ),
+                                textAlign: TextAlign.left,
                               ),
-                              textAlign: TextAlign.left,
                             ),
                           ),
-                        ),
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
-                              child: Text("Subject",textAlign: TextAlign.left,style: TextStyle(
-                                  fontSize: 15,letterSpacing: 0.5
-                              ),),
-                            ),
-                            Text("")
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
-                          child: Container(
-                            padding: const EdgeInsets.only(left: 10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(10.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],
-                            ),
-                            child: TextFormField(
-                              validator: (value) {
-                                if (value!.isEmpty || value == null) {
-                                  return 'Please Enter Subject';
-                                }
-                                else {
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
+                                child: Text("Subject",textAlign: TextAlign.left,style: TextStyle(
+                                    fontSize: 15,letterSpacing: 0.5
+                                ),),
+                              ),
+                              Text("")
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
+                            child: Container(
+                              padding: const EdgeInsets.only(left: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadiusDirectional.circular(10.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey,
+                                    offset: const Offset(
+                                      0.3,
+                                      0.3,
+                                    ),
+                                    blurRadius: 0.3,
+                                    spreadRadius: 0.3,
+                                  ), //BoxShadow
+                                  BoxShadow(
+                                    color: Colors.white,
+                                    offset: const Offset(0.0, 0.0),
+                                    blurRadius: 0.0,
+                                    spreadRadius: 0.0,
+                                  ), //BoxShadow
+                                ],
+                              ),
+                              child: TextFormField(
+                                validator: (value) {
+                                  if (value!.isEmpty || value == null) {
+                                    return 'Please Enter Subject';
+                                  }
+                                  else {
 
-                                }
-                                return null;
-                              },
-                              controller: subjectController,
-                              keyboardType: TextInputType.text,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                // hintText: 'Email',
+                                  }
+                                  return null;
+                                },
+                                controller: subjectController,
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  // hintText: 'Email',
+                                ),
+                                textAlign: TextAlign.left,
                               ),
-                              textAlign: TextAlign.left,
                             ),
                           ),
-                        ),
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
-                              child: Text("Message",textAlign: TextAlign.left,style: TextStyle(
-                                  fontSize: 15,letterSpacing: 0.5
-                              ),),
-                            ),
-                            Text("")
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
-                          child: Container(
-                            padding: const EdgeInsets.only(left: 10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadiusDirectional.circular(10.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  offset: const Offset(
-                                    0.3,
-                                    0.3,
-                                  ),
-                                  blurRadius: 0.3,
-                                  spreadRadius: 0.3,
-                                ), //BoxShadow
-                                BoxShadow(
-                                  color: Colors.white,
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 0.0,
-                                  spreadRadius: 0.0,
-                                ), //BoxShadow
-                              ],
-                            ),
-                            /* child: TextField(
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10.0,right: 0,top: 8,bottom: 8),
+                                child: Text("Message",textAlign: TextAlign.left,style: TextStyle(
+                                    fontSize: 15,letterSpacing: 0.5
+                                ),),
+                              ),
+                              Text("")
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 4),
+                            child: Container(
+                              padding: const EdgeInsets.only(left: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadiusDirectional.circular(10.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey,
+                                    offset: const Offset(
+                                      0.3,
+                                      0.3,
+                                    ),
+                                    blurRadius: 0.3,
+                                    spreadRadius: 0.3,
+                                  ), //BoxShadow
+                                  BoxShadow(
+                                    color: Colors.white,
+                                    offset: const Offset(0.0, 0.0),
+                                    blurRadius: 0.0,
+                                    spreadRadius: 0.0,
+                                  ), //BoxShadow
+                                ],
+                              ),
+                              /* child: TextField(
                               maxLines: 3,
                               decoration: InputDecoration(
                                 border: InputBorder.none,
                               ),
                               textAlign: TextAlign.left,
                             ),*/
-                            child: TextFormField(
-                              maxLines: 3,
-                              validator: (value) {
-                                if (value!.isEmpty || value == null) {
-                                  return 'Please Enter Message Here';
-                                }
-                                else {
+                              child: TextFormField(
+                                maxLines: 3,
+                                validator: (value) {
+                                  if (value!.isEmpty || value == null) {
+                                    return 'Please Enter Message Here';
+                                  }
+                                  else {
 
-                                }
-                                return null;
-                              },
-                              controller: messageController,
-                              keyboardType: TextInputType.multiline,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                // hintText: 'Email',
+                                  }
+                                  return null;
+                                },
+                                controller: messageController,
+                                keyboardType: TextInputType.multiline,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  // hintText: 'Email',
+                                ),
+                                textAlign: TextAlign.left,
                               ),
-                              textAlign: TextAlign.left,
                             ),
                           ),
-                        ),
-                        Container(
-                          width: screenSize.width * 0.9,
-                          height: screenSize.height * 0.1,
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 40, left: 10, right: 20),
-                           child: ElevatedButton(
-                              onPressed: () async {
-                                await sendMessage();
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                          Container(
+                            width: screenSize.width * 0.9,
+                            height: screenSize.height * 0.1,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 40, left: 10, right: 20),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  await sendMessage();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                                  ),
+                                ),
+                                child: _isLoading
+                                    ? CircularProgressIndicator(color: Colors.white)
+                                    : Text(
+                                  "Send Email",
+                                  style: TextStyle(color: Colors.white, fontSize: 15),
                                 ),
                               ),
-                              child: _isLoading
-                                  ? CircularProgressIndicator(color: Colors.white)
-                                  : Text(
-                                "Send Email",
-                                style: TextStyle(color: Colors.white, fontSize: 15),
-                              ),
+
                             ),
-
                           ),
-                        ),
 
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ]
-            )
-        )
-    ),);
+                  ]
+              )
+          )
+      ),);
   }
   Container buildMyNavBar(BuildContext context) {
     return Container(

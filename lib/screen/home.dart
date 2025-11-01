@@ -113,6 +113,9 @@ class _MyHomePageState extends State<HomeDemo> {
 
   final ScrollController _scrollController = ScrollController();
 
+  String purpose = '';
+  String propertyType = ''; // <— add this
+
   // Persist the selected API sort across requests/pages
   String _currentSortKey = 'featured'; // 'featured' | 'newest' | 'price_asc' | 'price_desc'
 
@@ -355,7 +358,7 @@ class _MyHomePageState extends State<HomeDemo> {
   ToggleModel? toggleModel;
   bool isDataRead = false;
   int? property_id ;
-  String purpose = '';
+
   // Create an object of SharedPreferencesManager class
   SharedPreferencesManager prefManager = SharedPreferencesManager();
   // Method to read data from shared preferences
@@ -827,12 +830,21 @@ class _MyHomePageState extends State<HomeDemo> {
                                   final loc = _searchController.text.trim();
                                   if (loc.isNotEmpty) {
                                     final filterModelData = await fetchFilterData(loc);  // ⬅️ this function you will add (explained below)
+                                    // 1) Search icon onPressed
                                     Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => FliterList(location: loc, filterModel: filterModelData),
+                                        builder: (_) => FliterList(
+                                          location: loc,
+                                          filterModel: filterModelData,
+                                          selectedPurpose: (purpose.isNotEmpty ? purpose : 'Rent'),
+
+
+                                          selectedPropertyType: (propertyType.isNotEmpty ? propertyType : ''),
+                                        ),
                                       ),
                                     );
+
 
                                   }
                                 },
@@ -856,15 +868,19 @@ class _MyHomePageState extends State<HomeDemo> {
                                   onSubmitted: (value) async {
                                     if (value.isNotEmpty) {
                                       final filterModelData = await fetchFilterData(value);
+                                      // 2) onSubmitted in TextField
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => FliterList(
                                             location: value,
                                             filterModel: filterModelData,
+                                            selectedPurpose: (purpose.isNotEmpty ? purpose : 'Rent'),
+                                            selectedPropertyType: (propertyType.isNotEmpty ? propertyType : ''),
                                           ),
                                         ),
                                       );
+
                                     }
                                   },
 

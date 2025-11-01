@@ -23,6 +23,7 @@ import '../secure_storage.dart';
 import '../utils/fav_login.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
+import 'CreateAlertScreen.dart';
 import 'filter_list.dart';
 import 'full_amenities_screen.dart';
 import 'locationsearch.dart';
@@ -134,6 +135,57 @@ class _FilterDemoState extends State<FilterDemo> {
   SharedPreferencesManager prefManager = SharedPreferencesManager();
   // Method to read data from shared preferences
 
+
+  // == In _FilterDemoState ==
+
+// Helper: current UI purpose label
+
+
+  // /filters expects hyphen format (for-sale / to-rent / new-projects)
+  String _purposeForFilters() {
+    if (_selected == 1) return 'new-projects'; // New Projects tab
+    switch (purpose.trim().toLowerCase()) {
+      case 'buy':  return 'for-sale';
+      case 'rent': return 'to-rent';
+      default:     return '';
+    }
+  }
+
+  String get _currentUiPurpose {
+    if (_selected == 1) return 'New Projects';     // your New Projects toggle
+    return (purpose.isNotEmpty ? purpose : '');     // 'Buy' | 'Rent'
+  }
+
+// Helper: current property type label
+  String get _currentPropertyType {
+    // If user tapped a chip, you already set `property_type`
+    if (property_type.trim().isNotEmpty) return property_type.trim();
+
+    // Otherwise, fall back to first type for the current purpose (if exists)
+    final first = propertyTypeModel?.data?.isNotEmpty == true
+        ? propertyTypeModel!.data!.first.name ?? ''
+        : '';
+    return first;
+  }
+
+// Call this from your “Create Alert” button in Filter screen
+  void _goToCreateAlert() {
+    final types = (propertyTypeModel?.data ?? [])
+        .map((e) => e.name ?? '')
+        .where((e) => e.isNotEmpty)
+        .toList();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CreateAlertScreen(
+          initialPurpose: _currentUiPurpose,                 // 'Buy' | 'Rent' | 'New Projects'
+          initialPropertyType: _currentPropertyType,         // 'Apartment' | 'Villa' | 'Studio' | 'Offices' | 'Commercials'
+          availablePropertyTypes: types,                     // for dropdown on alert screen
+        ),
+      ),
+    );
+  }
 
 
   Widget _showResultsButton(BuildContext context, Size screenSize) {
@@ -572,10 +624,14 @@ class _FilterDemoState extends State<FilterDemo> {
             settings: const RouteSettings(name: 'FliterList'),
             builder: (context) => FliterList(
               filterModel: filterModel,
-              forceRefresh: true,  // 👈 tell results screen to reset paging
+              forceRefresh: true,
+              // 👇 send the exact UI selections forward
+              selectedPurpose: _currentUiPurpose,          // "Buy" | "Rent" | "New Projects"
+              selectedPropertyType: _currentPropertyType,  // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
             ),
           ),
         );
+
 
       }
     }
@@ -604,7 +660,8 @@ class _FilterDemoState extends State<FilterDemo> {
         paymentPeriod: rent.trim(),
         minSquareFeet: min_sqrfeet.trim(),
         maxSquareFeet: max_sqrfeet.trim(),
-        purpose: _productApiMap[purpose]?.trim() ?? '',
+        purpose: _purposeForFilters(),
+
         amenities: amenitiesList,
       );
 
@@ -967,6 +1024,8 @@ class _FilterDemoState extends State<FilterDemo> {
                               purpose = '';
                               selectedrent = null;
                               rent = '';
+                              selectedtype = null;
+                              property_type = '';
                             });
 
                             updateFilterCount();

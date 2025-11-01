@@ -6,7 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:Akarat/model/propertymodel.dart';
 import 'package:Akarat/secure_storage.dart';
-import 'package:Akarat/screen/product_detail.dart';
 
 import '../providers/favorite_provider.dart';
 import '../screen/featured_detail.dart';
@@ -14,7 +13,7 @@ import '../screen/login.dart';
 import '../screen/my_account.dart';
 import '../services/favorite_service.dart';
 import 'package:provider/provider.dart';
-
+import '../env.dart';
 
 
 class Fav_Logout extends StatefulWidget {
@@ -24,36 +23,21 @@ class Fav_Logout extends StatefulWidget {
   State<Fav_Logout> createState() => _Fav_LogoutState();
 }
 
-
-
-
 class _Fav_LogoutState extends State<Fav_Logout> {
   List<Property> savedProperties = [];
   bool isLoading = true;
-
   int pageIndex = 0; // For bottom nav icon state
-
-
-
-
-
   String? token;
 
-
-
   final Map<int, int> _carouselPageIndex = {};
-
 
   String getFullImageUrl(String? url) {
     if (url == null || url.isEmpty) {
       return 'https://via.placeholder.com/400x300.png?text=No+Image';
     }
-
-    // 🛠️ Fix: ensure full URL
     if (!url.startsWith('http')) {
       return 'https://akarat.com/$url';
     }
-
     return url;
   }
 
@@ -61,7 +45,6 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     if (mediaList == null || mediaList.isEmpty) {
       return ['https://via.placeholder.com/400x300.png?text=No+Image'];
     }
-
     return mediaList.map<String>((mediaItem) {
       final rawUrl = mediaItem.originalUrl;
       if (rawUrl == null || rawUrl.isEmpty) {
@@ -74,8 +57,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     }).toList();
   }
 
-
-
+  // ✅ Clear ALL favorites (server + provider + local UI)
   void _clearAllFavorites() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -86,14 +68,12 @@ class _Fav_LogoutState extends State<Fav_Logout> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("Cancel",
-              style: TextStyle(color: Colors.red),),
+            child: const Text("Cancel", style: TextStyle(color: Colors.red)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Clear",
-              style: TextStyle(color: Colors.red),
-            ),),
+            child: const Text("Clear", style: TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );
@@ -103,27 +83,27 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     final token = await SecureStorage.getToken();
     if (token == null || token.isEmpty) return;
 
+    final base = FavoriteProvider.apiBase; // ✅ same env as provider
     try {
       final response = await http.delete(
-        Uri.parse('https://akarat.com/api/saved-properties/delete-all'),
+        Uri.parse('$base/saved-properties/delete-all'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
       );
 
       if (response.statusCode == 200) {
+        // Clear provider first so hearts everywhere update
+        context.read<FavoriteProvider>().clearFavorites();
+
         setState(() {
-          // ✅ Mark each property as not saved
           for (var item in savedProperties) {
             item.saved = false;
           }
-          savedProperties.clear(); // ✅ clear the list afterward
+          savedProperties.clear();
         });
-
-        // ✅ Clear memory + shared prefs
-        Provider.of<FavoriteProvider>(context, listen: false).clearFavorites();
-
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("All favorites cleared successfully.")),
@@ -140,25 +120,19 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     }
   }
 
-
-
-
-
-
   @override
   void initState() {
     super.initState();
     _fetchSavedProperties();
   }
 
-
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    refreshFavorites();  // 🔄 auto-refresh when screen is revisited
+    refreshFavorites(); // 🔄 auto-refresh when screen is revisited
   }
 
+  // ✅ Fetch server list → bulk-sync provider → update UI list
   Future<void> _fetchSavedProperties() async {
     token = await SecureStorage.getToken();
 
@@ -169,30 +143,43 @@ class _Fav_LogoutState extends State<Fav_Logout> {
 
     setState(() => isLoading = true);
 
+    final base = FavoriteProvider.apiBase; // ✅ same env as provider
     try {
       final response = await http.get(
-        Uri.parse('https://akarat.com/api/saved-property-list'),
-        headers: {'Authorization': 'Bearer $token'},
+        Uri.parse('$base/saved-property-list'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        final favProvider = Provider.of<FavoriteProvider>(context, listen: false);
-        favProvider.clearFavorites(); // ✅ clear old before syncing new
-
+        // Build the UI list and mark saved from server truth
         final List<Property> props = (data['data']['data'] as List).map((e) {
-          final property = Property.fromJson(e);
-          final intId = int.tryParse(property.id ?? '');
-          if (intId != null) {
-            favProvider.addFavorite(intId, context, showSnackBar: false);
-
-            // ✅ sync with provider
-            property.saved = true;                // ✅ update local model
-          }
-          return property;
+          final p = Property.fromJson(e);
+          p.saved = true;
+          return p;
         }).toList();
 
+        // Convert response ids to ints (supports id or property_id)
+        int? toInt(dynamic v) {
+          if (v == null) return null;
+          if (v is int) return v;
+          if (v is String) return int.tryParse(v);
+          return null;
+        }
+
+        final ids = (data['data']['data'] as List)
+            .map((e) => toInt(e['id']) ?? toInt(e['property_id']))
+            .whereType<int>();
+
+        // ✅ Bulk replace provider favorites (no snackbars, no loops)
+        await context.read<FavoriteProvider>().replaceFavoritesFromIds(ids);
+
+        // Update screen list
         setState(() => savedProperties = props);
       } else {
         debugPrint('❌ Failed to fetch saved properties: ${response.statusCode}');
@@ -204,12 +191,9 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     setState(() => isLoading = false);
   }
 
-
   Future<void> refreshFavorites() async {
     await _fetchSavedProperties();
   }
-
-
 
   Future<bool> _urlExists(String url) async {
     try {
@@ -235,7 +219,6 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     return 'https://via.placeholder.com/400x300.png?text=No+Image';
   }
 
-
   Container buildMyNavBar(BuildContext context) {
     return Container(
       height: 120,
@@ -247,20 +230,18 @@ class _Fav_LogoutState extends State<Fav_Logout> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
             onTap: () {
               Navigator.popUntil(context, (route) => route.isFirst);
             },
-
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Image.asset("assets/images/home.png", height: 25),
             ),
           ),
-
           IconButton(
             enableFeedback: false,
             onPressed: () async {
@@ -270,16 +251,13 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white, // white container
+                    backgroundColor: Colors.white,
                     title: const Text("Login Required", style: TextStyle(color: Colors.black)),
                     content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          "Cancel",
-                          style: TextStyle(color: Colors.red), // red text
-                        ),
+                        child: const Text("Cancel", style: TextStyle(color: Colors.red)),
                       ),
                       TextButton(
                         onPressed: () {
@@ -289,48 +267,35 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                             MaterialPageRoute(builder: (_) => const LoginDemo()),
                           );
                         },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(color: Colors.red), // red text
-                        ),
+                        child: const Text("Login", style: TextStyle(color: Colors.red)),
                       ),
                     ],
                   ),
                 );
-              }
-              else {
+              } else {
                 // ✅ Logged in – go to favorites
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const Fav_Logout()),
                 ).then((_) async {
-                  // 🔁 Re-sync when coming back
                   final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
                   setState(() {
                     FavoriteService.loggedInFavorites = updatedFavorites;
                   });
                 });
-
               }
             },
             icon: pageIndex == 2
                 ? const Icon(Icons.favorite, color: Colors.red, size: 30)
                 : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
           ),
-
-
-
           IconButton(
             tooltip: "Email",
-
-            icon: const Icon(Icons.email_outlined, color: Colors.red,
-              size: 28,),
-
+            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
             onPressed: () async {
               final Uri emailUri = Uri.parse(
                 'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
               );
-
               if (await canLaunchUrl(emailUri)) {
                 await launchUrl(emailUri);
               } else {
@@ -338,12 +303,12 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                   context: context,
                   builder: (context) => Dialog(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16), // Rounded corners
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white, // White background
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
@@ -351,10 +316,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                         children: [
                           const Text(
                             'Email not available',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 12),
                           const Text(
@@ -367,13 +329,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                             alignment: Alignment.centerRight,
                             child: TextButton(
                               onPressed: () => Navigator.pop(context),
-                              child: const Text(
-                                'OK',
-                                style: TextStyle(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              child: const Text('OK',
+                                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                             ),
                           ),
                         ],
@@ -381,25 +338,20 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                     ),
                   ),
                 );
-
               }
             },
           ),
           Padding(
-            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            padding: const EdgeInsets.only(right: 20.0),
             child: IconButton(
               enableFeedback: false,
               onPressed: () {
-                setState(() {
-                  if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  } else {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  }
-                });
+                if (token == '') {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                } else {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                }
               },
-
-
               icon: pageIndex == 3
                   ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
                   : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
@@ -407,7 +359,6 @@ class _Fav_LogoutState extends State<Fav_Logout> {
           ),
         ],
       ),
-
     );
   }
 
@@ -416,78 +367,34 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.red),
         title: const Text("Favorites", style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
-
         actions: [
           if (savedProperties.isNotEmpty)
             TextButton(
               onPressed: _clearAllFavorites,
-              child: const Text(
-                "Clear All",
-                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-              ),
+              child: const Text("Clear All",
+                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
             )
         ],
-
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : token == null
-          ? Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.lock_outline, size: 80, color: Colors.grey),
-              const SizedBox(height: 20),
-              const Text(
-                "You need to log in to view your favorite properties.",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const Login()),
-                  );
-                },
-                icon: const Icon(Icons.login),
-                label: const Text("Login"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      )
+          ? _loginPrompt(context)
           : savedProperties.isEmpty
           ? const Center(child: Text("No favorite properties found."))
           : ListView.builder(
         itemCount: savedProperties.length,
         itemBuilder: (context, index) {
           final item = savedProperties[index];
-          final favProvider = Provider.of<FavoriteProvider>(context);
           final propertyId = int.tryParse(item.id ?? '') ?? 0;
-          final isSaved = favProvider.isFavorite(propertyId);
 
-
-          print('🏷️ Property ${item.id} using URL → "${item.image}"');
           return Padding(
             padding: const EdgeInsets.all(8.0),
-            child:Card(
+            child: Card(
               elevation: 5,
               color: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -499,13 +406,13 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        // ✅ Tapping the image opens Product_Detail
                         GestureDetector(
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => Featured_Detail(data: item.id.toString()),
+                                builder: (context) =>
+                                    Featured_Detail(data: item.id.toString()),
                               ),
                             );
                           },
@@ -525,52 +432,60 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                         child: Stack(
                                           children: [
                                             PageView.builder(
-                                                itemCount: (item.media?.isNotEmpty ?? false) ? item.media!.length : 1,
-
-                                                onPageChanged: (index) {
-                                                  final propertyId = int.tryParse(item.id ?? '') ?? index;
-                                                  setState(() {
-                                                    _carouselPageIndex[propertyId] = index;
-                                                  });
-                                                },
-                                                itemBuilder: (context, pageIndex) {
-                                                  String imageUrl;
-                                                  if (item.media != null && item.media!.isNotEmpty) {
-                                                    imageUrl = item.media![pageIndex].originalUrl ?? '';
-                                                  } else {
-                                                    imageUrl = item.image ?? 'https://via.placeholder.com/400x300.png?text=No+Image';
-                                                  }
-
-                                                  if (!imageUrl.startsWith('http')) {
-                                                    imageUrl = 'https://akarat.com/$imageUrl';
-                                                  }
-
-                                                  return CachedNetworkImage(
-                                                    imageUrl: imageUrl,
-                                                    fit: BoxFit.cover,
-                                                    placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                                                    errorWidget: (context, url, error) => const Icon(Icons.broken_image),
-                                                  );
+                                              itemCount: (item.media?.isNotEmpty ?? false)
+                                                  ? item.media!.length
+                                                  : 1,
+                                              onPageChanged: (index) {
+                                                final pid = int.tryParse(item.id ?? '') ?? index;
+                                                setState(() {
+                                                  _carouselPageIndex[pid] = index;
+                                                });
+                                              },
+                                              itemBuilder: (context, pageIndex) {
+                                                String imageUrl;
+                                                if (item.media != null &&
+                                                    item.media!.isNotEmpty) {
+                                                  imageUrl = item.media![pageIndex].originalUrl ?? '';
+                                                } else {
+                                                  imageUrl = item.image ??
+                                                      'https://via.placeholder.com/400x300.png?text=No+Image';
                                                 }
-
+                                                if (!imageUrl.startsWith('http')) {
+                                                  imageUrl = 'https://akarat.com/$imageUrl';
+                                                }
+                                                return CachedNetworkImage(
+                                                  imageUrl: imageUrl,
+                                                  fit: BoxFit.cover,
+                                                  placeholder: (context, url) =>
+                                                  const Center(
+                                                      child: CircularProgressIndicator()),
+                                                  errorWidget: (context, url, error) =>
+                                                  const Icon(Icons.broken_image),
+                                                );
+                                              },
                                             ),
-
                                             if (item.media != null && item.media!.length > 1)
                                               Positioned(
                                                 bottom: 10,
                                                 left: 0,
                                                 right: 0,
                                                 child: Row(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: List.generate(item.media!.length, (dotIndex) {
-                                                    final propertyId = int.tryParse(item.id ?? '') ?? dotIndex;
-                                                    final currentIndex = _carouselPageIndex[propertyId] ?? 0;
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                                  children: List.generate(
+                                                      item.media!.length, (dotIndex) {
+                                                    final pid = int.tryParse(item.id ?? '') ?? dotIndex;
+                                                    final currentIndex =
+                                                        _carouselPageIndex[pid] ?? 0;
                                                     return Container(
-                                                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                                                      margin: const EdgeInsets.symmetric(
+                                                          horizontal: 3),
                                                       width: currentIndex == dotIndex ? 10 : 6,
                                                       height: currentIndex == dotIndex ? 10 : 6,
                                                       decoration: BoxDecoration(
-                                                        color: currentIndex == dotIndex ? Colors.white : Colors.white60,
+                                                        color: currentIndex == dotIndex
+                                                            ? Colors.white
+                                                            : Colors.white60,
                                                         shape: BoxShape.circle,
                                                       ),
                                                     );
@@ -582,10 +497,51 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                       ),
                                     ),
 
+                                    // ✅ FAVORITE HEART (top-right over image)
+                                    Positioned(
+                                      top: 12,
+                                      right: 12,
+                                      child: IconButton(
+                                        padding: const EdgeInsets.all(6),
+                                        style: IconButton.styleFrom(
+                                          backgroundColor:
+                                          Colors.white.withOpacity(0.85),
+                                        ),
+                                        icon: Icon(
+                                          context
+                                              .watch<FavoriteProvider>()
+                                              .isFavorite(propertyId) ||
+                                              (item.saved == true)
+                                              ? Icons.favorite
+                                              : Icons.favorite_border_outlined,
+                                          color: Colors.red,
+                                          size: 22,
+                                        ),
+                                        onPressed: () async {
+                                          final ok = await context
+                                              .read<FavoriteProvider>()
+                                              .toggleFavoriteUnified(
+                                              propertyId, context);
+                                          if (!ok) return;
 
+                                          final stillSaved = context
+                                              .read<FavoriteProvider>()
+                                              .isFavorite(propertyId);
 
-
-
+                                          setState(() {
+                                            item.saved = stillSaved;
+                                            // ✅ if removed, drop the card immediately
+                                            if (!stillSaved) {
+                                              savedProperties.removeWhere(
+                                                    (p) =>
+                                                int.tryParse(p.id ?? '') ==
+                                                    propertyId,
+                                              );
+                                            }
+                                          });
+                                        },
+                                      ),
+                                    ),
 
                                     // Agent avatar section (unchanged)
                                     Positioned(
@@ -596,18 +552,24 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => Featured_Detail(data: item.id.toString()),
+                                              builder: (context) => Featured_Detail(
+                                                  data: item.id.toString()),
                                             ),
                                           );
                                         },
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                           children: [
                                             CircleAvatar(
                                               radius: 28,
-                                              backgroundImage: (item.agentImage != null && item.agentImage!.isNotEmpty)
-                                                  ? CachedNetworkImageProvider(item.agentImage!)
-                                                  : const AssetImage("assets/images/dummy.jpg") as ImageProvider,
+                                              backgroundImage: (item.agentImage != null &&
+                                                  item.agentImage!.isNotEmpty)
+                                                  ? CachedNetworkImageProvider(
+                                                  item.agentImage!)
+                                                  : const AssetImage(
+                                                  "assets/images/dummy.jpg")
+                                              as ImageProvider,
                                             ),
                                             const SizedBox(height: 6),
                                             Transform.translate(
@@ -629,20 +591,21 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                   ],
                                 ),
 
-
-                                // 🔽 Spacer so that the overlapping image is not clipped
                                 const SizedBox(height: 15),
 
+                                // … the rest of your card content (unchanged)
                                 Padding(
-                                  padding: const EdgeInsets.only(left: 0, right: 0, top: 4, bottom: 4),
+                                  padding: const EdgeInsets.only(
+                                      left: 0, right: 0, top: 4, bottom: 4),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      // Agent Name
                                       Expanded(
                                         child: Padding(
-                                          padding: const EdgeInsets.only(left: 10),
+                                          padding:
+                                          const EdgeInsets.only(left: 10),
                                           child: Text(
                                             item.agent ?? 'Agent',
                                             style: const TextStyle(
@@ -654,11 +617,10 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                           ),
                                         ),
                                       ),
-
-                                      // Listed text + agency logo
                                       Row(
                                         children: [
-                                          if (item.postedOn != null && item.postedOn!.isNotEmpty)
+                                          if (item.postedOn != null &&
+                                              item.postedOn!.isNotEmpty)
                                             Text(
                                               'Listed ${item.postedOn}',
                                               style: const TextStyle(
@@ -667,16 +629,21 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                               ),
                                             ),
                                           const SizedBox(width: 4),
-                                          if (item.agencyLogo != null && item.agencyLogo!.isNotEmpty)
+                                          if (item.agencyLogo != null &&
+                                              item.agencyLogo!.isNotEmpty)
                                             Padding(
-                                              padding: const EdgeInsets.all(8.0),
+                                              padding:
+                                              const EdgeInsets.all(8.0),
                                               child: Container(
                                                 height: 30,
                                                 width: 60,
                                                 decoration: BoxDecoration(
-                                                  borderRadius: BorderRadius.circular(4),
+                                                  borderRadius:
+                                                  BorderRadius.circular(4),
                                                   image: DecorationImage(
-                                                    image: CachedNetworkImageProvider(item.agencyLogo!),
+                                                    image:
+                                                    CachedNetworkImageProvider(
+                                                        item.agencyLogo!),
                                                     fit: BoxFit.contain,
                                                   ),
                                                 ),
@@ -687,23 +654,16 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                     ],
                                   ),
                                 ),
-
-                                SizedBox(height: 5,),
-
+                                const SizedBox(height: 5),
                                 const Divider(
-                                  color: Colors.grey,
-                                  thickness: 0.3,
-                                  height: 6,
-                                ),
-
-
-
-                                SizedBox(height: 8,),
-
-                                // 🏷️ Title and Price
+                                    color: Colors.grey,
+                                    thickness: 0.3,
+                                    height: 6),
+                                const SizedBox(height: 8),
                                 Text(
                                   item.title,
-                                  style: const TextStyle(fontSize: 16, height: 1.4),
+                                  style: const TextStyle(
+                                      fontSize: 16, height: 1.4),
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
                                 ),
@@ -716,13 +676,11 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                     height: 1.4,
                                   ),
                                 ),
-
                                 const SizedBox(height: 5),
-
-                                // 📍 Location
                                 Row(
                                   children: [
-                                    Image.asset("assets/images/map.png", height: 14),
+                                    Image.asset("assets/images/map.png",
+                                        height: 14),
                                     const SizedBox(width: 5),
                                     Expanded(
                                       child: Text(
@@ -734,47 +692,48 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                     ),
                                   ],
                                 ),
-
                                 const SizedBox(height: 8),
-
-                                // 🛏️ Specs Row
                                 Row(
                                   children: [
-                                    Image.asset("assets/images/bed.png", height: 13),
+                                    Image.asset("assets/images/bed.png",
+                                        height: 13),
                                     const SizedBox(width: 5),
                                     Text(item.bedrooms.toString()),
                                     const SizedBox(width: 10),
-                                    Image.asset("assets/images/bath.png", height: 13),
+                                    Image.asset("assets/images/bath.png",
+                                        height: 13),
                                     const SizedBox(width: 5),
                                     Text(item.bathrooms.toString()),
                                     const SizedBox(width: 10),
-                                    Image.asset("assets/images/messure.png", height: 13),
+                                    Image.asset("assets/images/messure.png",
+                                        height: 13),
                                     const SizedBox(width: 5),
                                     Text(item.squareFeet),
                                   ],
                                 ),
-
                                 const SizedBox(height: 5),
-
-
-
-
-
-                                // 📞 Call / WhatsApp Buttons
                                 Row(
                                   children: [
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: ElevatedButton.icon(
                                         onPressed: () async {
-                                          final phone = 'tel:${item.phoneNumber}';
-                                          await launchUrlString(phone, mode: LaunchMode.externalApplication);
+                                          final phone =
+                                              'tel:${item.phoneNumber}';
+                                          await launchUrlString(phone,
+                                              mode:
+                                              LaunchMode.externalApplication);
                                         },
-                                        icon: const Icon(Icons.call, color: Colors.red),
-                                        label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                        icon: const Icon(Icons.call,
+                                            color: Colors.red),
+                                        label: const Text("Call",
+                                            style: TextStyle(
+                                                color: Colors.black)),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.grey[100],
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                              BorderRadius.circular(10)),
                                         ),
                                       ),
                                     ),
@@ -782,14 +741,23 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                     Expanded(
                                       child: ElevatedButton.icon(
                                         onPressed: () async {
-                                          final link = 'https://wa.me/${item.whatsapp}';
-                                          await launchUrlString(link, mode: LaunchMode.externalApplication);
+                                          final link =
+                                              'https://wa.me/${item.whatsapp}';
+                                          await launchUrlString(link,
+                                              mode:
+                                              LaunchMode.externalApplication);
                                         },
-                                        icon: Image.asset("assets/images/whats.png", height: 20),
-                                        label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                        icon: Image.asset(
+                                            "assets/images/whats.png",
+                                            height: 20),
+                                        label: const Text("WhatsApp",
+                                            style: TextStyle(
+                                                color: Colors.black)),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.grey[100],
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                              BorderRadius.circular(10)),
                                         ),
                                       ),
                                     ),
@@ -801,27 +769,58 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                             ),
                           ),
                         ),
-                      ], ),
-
-                  ],),),),);
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
         },
       ),
-
       bottomNavigationBar: buildMyNavBar(context),
-
     );
-
-
-
-
-
   }
 
-
+  Widget _loginPrompt(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.lock_outline, size: 80, color: Colors.grey),
+            const SizedBox(height: 20),
+            const Text(
+              "You need to log in to view your favorite properties.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const Login()),
+                );
+              },
+              icon: const Icon(Icons.login),
+              label: const Text("Login"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-
-
+// ------------ helpers ------------
 Future<bool> _urlExists(String url) async {
   try {
     final resp = await http.head(Uri.parse(url));
@@ -835,20 +834,10 @@ Future<String> resolveImageUrl(String? rawUrl) async {
   if (rawUrl == null || rawUrl.isEmpty) {
     return 'https://via.placeholder.com/400x300.png?text=No+Image';
   }
-
-  // Prefer rawUrl if it exists
   if (await _urlExists(rawUrl)) return rawUrl;
-
-  // Fallback: prepend domain if needed
   if (!rawUrl.startsWith('http')) {
     final full = 'https://akarat.com/$rawUrl';
     if (await _urlExists(full)) return full;
   }
-
-  // As last resort, placeholder
   return 'https://via.placeholder.com/400x300.png?text=No+Image';
 }
-
-
-
-
