@@ -1,21 +1,18 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/my_account.dart';
-import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../secure_storage.dart';
 import '../services/favorite_service.dart';
-import '../utils/fav_login.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'login.dart';
 
 class About_Us extends StatefulWidget {
 
-  About_Us({super.key,});
+  const About_Us({super.key,});
   @override
   State<About_Us> createState() => _About_UsState();
 }

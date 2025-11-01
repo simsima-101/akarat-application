@@ -1,10 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:Akarat/screen/about_us.dart';
 import 'package:Akarat/screen/findagent.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/privacy.dart';
-import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/screen/register_screen.dart';
 import 'package:Akarat/screen/saved_alert_screen.dart';
 import 'package:Akarat/screen/support.dart';
@@ -22,7 +20,6 @@ import '../services/api_service.dart';
 import 'personal_information.dart';
 import 'favorite.dart';
 import 'login.dart';
-import 'login_page.dart';
 
 class My_Account extends StatefulWidget {
   const My_Account({super.key});

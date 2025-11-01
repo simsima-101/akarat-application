@@ -4,14 +4,10 @@ import 'package:Akarat/model/agencymodel.dart';
 import 'package:Akarat/model/agentsmodel.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/my_account.dart';
-import 'package:Akarat/screen/profile_login.dart';
-import 'package:Akarat/screen/shimmer.dart';
 import 'package:Akarat/utils/agencyCardScreen.dart';
 import 'package:Akarat/utils/agentcardscreen.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../model/language.dart';
 import '../model/nationality.dart';
@@ -32,6 +28,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -44,6 +42,8 @@ class MyApp extends StatelessWidget {
 
 
 class FindAgentDemo extends StatefulWidget {
+  const FindAgentDemo({super.key});
+
   @override
   _FindAgentDemoState createState() => _FindAgentDemoState();
 }
@@ -252,12 +252,12 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
 // ✅ De-dupe by String key (works for int or string IDs)
       final seenAgentKeys = agentsmodel
-          .map((a) => a.id == null ? null : a.id.toString())
+          .map((a) => a.id.toString())
           .whereType<String>()
           .toSet();
 
       final newAgentOnes = fetched
-          .where((a) => a.id != null && !seenAgentKeys.contains(a.id.toString()))
+          .where((a) => !seenAgentKeys.contains(a.id.toString()))
           .toList();
 
       setState(() {
@@ -360,7 +360,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
 // ✅ De-dupe by String key
       final seenAgencyKeys = agencyList
-          .map((a) => a.id == null ? null : a.id.toString())
+          .map((a) => a.id?.toString())
           .whereType<String>()
           .toSet();
 

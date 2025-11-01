@@ -46,11 +46,11 @@ class BlogPaginatedData {
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
-    if (this.links != null) {
-      data['links'] = this.links!.toJson();
+    if (links != null) {
+      data['links'] = links!.toJson();
     }
-    if (this.meta != null) {
-      data['meta'] = this.meta!.toJson();
+    if (meta != null) {
+      data['meta'] = meta!.toJson();
     }
     return data;
   }

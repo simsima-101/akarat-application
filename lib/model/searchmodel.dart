@@ -11,15 +11,15 @@ class SearchModel {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['success'] = this.success;
-    data['message'] = this.message;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['success'] = success;
+    data['message'] = message;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
@@ -80,22 +80,22 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['title'] = this.title;
-    data['featured'] = this.featured;
-    data['price'] = this.price;
-    data['address'] = this.address;
-    data['bedrooms'] = this.bedrooms;
-    data['bathrooms'] = this.bathrooms;
-    data['square_feet'] = this.squareFeet;
-    data['location'] = this.location;
-    data['location_id'] = this.locationId;
-    data['verified'] = this.verified;
-    data['project_type'] = this.projectType;
-    data['image'] = this.image;
-    data['phone'] = this.phone;
-    data['whatsapp'] = this.whatsapp;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['title'] = title;
+    data['featured'] = featured;
+    data['price'] = price;
+    data['address'] = address;
+    data['bedrooms'] = bedrooms;
+    data['bathrooms'] = bathrooms;
+    data['square_feet'] = squareFeet;
+    data['location'] = location;
+    data['location_id'] = locationId;
+    data['verified'] = verified;
+    data['project_type'] = projectType;
+    data['image'] = image;
+    data['phone'] = phone;
+    data['whatsapp'] = whatsapp;
     return data;
   }
 }

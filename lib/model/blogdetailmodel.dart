@@ -4,11 +4,11 @@ class BlogDetailModel {
   BlogDetailModel({this.data});
 
   BlogDetailModel.fromJson(Map<String, dynamic> json) {
-    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
+    data = json['data'] != null ? Data.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.toJson();
     }
@@ -39,19 +39,19 @@ class Data {
     thumbnail = json['thumbnail'];
     readingTime = json['reading_time'];
     translations = json['translations'] != null
-        ? new Translations.fromJson(json['translations'])
+        ? Translations.fromJson(json['translations'])
         : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['published_date'] = this.publishedDate;
-    data['image'] = this.image;
-    data['thumbnail'] = this.thumbnail;
-    data['reading_time'] = this.readingTime;
-    if (this.translations != null) {
-      data['translations'] = this.translations!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['published_date'] = publishedDate;
+    data['image'] = image;
+    data['thumbnail'] = thumbnail;
+    data['reading_time'] = readingTime;
+    if (translations != null) {
+      data['translations'] = translations!.toJson();
     }
     return data;
   }
@@ -64,17 +64,17 @@ class Translations {
   Translations({this.en, this.ar});
 
   Translations.fromJson(Map<String, dynamic> json) {
-    en = json['en'] != null ? new En.fromJson(json['en']) : null;
-    ar = json['ar'] != null ? new En.fromJson(json['ar']) : null;
+    en = json['en'] != null ? En.fromJson(json['en']) : null;
+    ar = json['ar'] != null ? En.fromJson(json['ar']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.en != null) {
-      data['en'] = this.en!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (en != null) {
+      data['en'] = en!.toJson();
     }
-    if (this.ar != null) {
-      data['ar'] = this.ar!.toJson();
+    if (ar != null) {
+      data['ar'] = ar!.toJson();
     }
     return data;
   }
@@ -92,9 +92,9 @@ class En {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['title'] = this.title;
-    data['description'] = this.description;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['title'] = title;
+    data['description'] = description;
     return data;
   }
 }

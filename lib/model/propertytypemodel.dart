@@ -13,7 +13,7 @@ class PropertyTypeModel {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
     availability = json['availability'].cast<String>();
@@ -21,14 +21,14 @@ class PropertyTypeModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['success'] = this.success;
-    data['message'] = this.message;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['success'] = success;
+    data['message'] = message;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
-    data['availability'] = this.availability;
-    data['total_featured_properties'] = this.totalFeaturedProperties;
+    data['availability'] = availability;
+    data['total_featured_properties'] = totalFeaturedProperties;
     return data;
   }
 }
@@ -59,13 +59,13 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['icon'] = this.icon;
-    data['purpose'] = this.purpose;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = name;
+    data['icon'] = icon;
+    data['purpose'] = purpose;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
     return data;
   }
 }

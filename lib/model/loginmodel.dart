@@ -20,12 +20,12 @@ class LoginModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['email'] = this.email;
-    data['message'] = this.message;
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['role'] = this.role;
-    data['token'] = this.token;
+    data['email'] = email;
+    data['message'] = message;
+    data['id'] = id;
+    data['name'] = name;
+    data['role'] = role;
+    data['token'] = token;
     return data;
   }
 }

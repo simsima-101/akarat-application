@@ -1,16 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:Akarat/model/propertytypemodel.dart';
-import 'package:Akarat/screen/settingstile.dart';
-import 'package:Akarat/screen/search.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/amenities.dart';
 import 'package:Akarat/model/filtermodel.dart';
 import 'package:Akarat/screen/home.dart';
-import 'package:Akarat/screen/profile_login.dart';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -20,16 +15,13 @@ import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import '../secure_storage.dart';
-import '../utils/fav_login.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'CreateAlertScreen.dart';
 import 'filter_list.dart';
 import 'full_amenities_screen.dart';
-import 'locationsearch.dart';
 import 'login.dart';
 import 'my_account.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 
 class Filter extends StatelessWidget {
@@ -114,7 +106,7 @@ class _FilterDemoState extends State<FilterDemo> {
   late RangeController _rangeControllerarea;
   final agenciesController = TextEditingController();
 
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   int currentPage = 1;
   bool isLoading = false;
   bool hasMore = true;
@@ -122,7 +114,7 @@ class _FilterDemoState extends State<FilterDemo> {
 
   int filterResultCount = 0;
 
-  Map<String, PropertyTypeModel> _propertyTypeCache = {};
+  final Map<String, PropertyTypeModel> _propertyTypeCache = {};
 
 
 
@@ -793,7 +785,7 @@ class _FilterDemoState extends State<FilterDemo> {
   }
 
 // Inside your State class:
-  bool _showAllAmenities = false;
+  final bool _showAllAmenities = false;
   final TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {

@@ -1,20 +1,13 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:async';
 
 import 'package:Akarat/model/propertymodel.dart' as propertyModel;
-import 'package:Akarat/model/projectmodel.dart' as projectDetail;
-import 'package:Akarat/model/productmodel.dart' as productModel;
-import 'package:Akarat/model/propertytypemodel.dart' as propertyType;
 import 'package:Akarat/model/searchmodel.dart' as search;
 import 'package:Akarat/model/featuredmodel.dart' as featured;
 import 'package:Akarat/model/togglemodel.dart';
-import 'package:Akarat/model/agencypropertiesmodel.dart' as agencyModel;
 
-import 'package:Akarat/model/togglemodel.dart' as toggleModel;
 
 import 'package:Akarat/model/filtermodel.dart' as filterModel;
-import 'package:Akarat/model/featuredmodel.dart' as featured;
 
 import 'package:http/http.dart' as http;
 
@@ -25,14 +18,10 @@ import 'package:Akarat/services/api_service.dart';
 import 'package:Akarat/secure_storage.dart';
 import 'package:Akarat/utils/shared_preference_manager.dart';
 import 'package:Akarat/utils/fav_logout.dart';
-import 'package:Akarat/utils/fav_login.dart';
 import 'package:Akarat/screen/filter.dart' as filter;
-import 'package:Akarat/screen/search.dart' as searchScreen;
 import 'package:Akarat/screen/featured_detail.dart';
-import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/screen/login.dart';
 import 'package:Akarat/screen/my_account.dart';
-import 'package:Akarat/screen/searchexample.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:Akarat/screen/new_projects.dart';
 
@@ -40,15 +29,11 @@ import 'package:Akarat/screen/new_projects.dart';
 
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../model/filtermodel.dart' as filterModel;
 import '../model/filtermodel.dart' as filter;
 import '../services/favorite_service.dart';
 import 'ContactFormScreen.dart';
@@ -97,7 +82,7 @@ class Home extends StatelessWidget {
 }
 class HomeDemo extends StatefulWidget {
 
-  const HomeDemo({Key? key}) : super(key: key);
+  const HomeDemo({super.key});
 
 
 
@@ -192,8 +177,9 @@ class _MyHomePageState extends State<HomeDemo> {
     if (input.startsWith('+971')) return input;
     if (input.startsWith('00971')) return '+971${input.substring(5)}';
     if (input.startsWith('971')) return '+971${input.substring(3)}';
-    if (input.startsWith('0') && input.length == 10)
+    if (input.startsWith('0') && input.length == 10) {
       return '+971${input.substring(1)}';
+    }
     if (input.length == 9) return '+971$input';
     return input; // fallback
   }
@@ -204,8 +190,9 @@ class _MyHomePageState extends State<HomeDemo> {
     if (input.startsWith('971')) return input;
     if (input.startsWith('00971')) return input.substring(2);
     if (input.startsWith('+971')) return input.substring(1);
-    if (input.startsWith('0') && input.length == 10)
+    if (input.startsWith('0') && input.length == 10) {
       return '971${input.substring(1)}';
+    }
     if (input.length == 9) return '971$input';
     return input; // fallback
   }
@@ -319,7 +306,7 @@ class _MyHomePageState extends State<HomeDemo> {
     });
 
     try {
-      final List<Property> properties = (await ApiService.getSavedProperties(token!)).cast<Property>();
+      final List<Property> properties = (await ApiService.getSavedProperties(token)).cast<Property>();
       setState(() {
         savedProperties = properties;
       });
@@ -454,19 +441,19 @@ class _MyHomePageState extends State<HomeDemo> {
   Future<bool> _onWillPop() async {
     return (await showDialog(
       context: context,
-      builder: (context) => new AlertDialog(
+      builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
-        title: new Text('Are you sure?'),
-        content: new Text('Do you want to exit an App'),
+        title: Text('Are you sure?'),
+        content: Text('Do you want to exit an App'),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: new Text('No',style: TextStyle(color: Colors.black,
+            child: Text('No',style: TextStyle(color: Colors.black,
                 fontWeight: FontWeight.bold),),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: new Text('Yes',style: TextStyle(color: Colors.black,
+            child: Text('Yes',style: TextStyle(color: Colors.black,
                 fontWeight: FontWeight.bold),),
           ),
         ],
@@ -2008,8 +1995,10 @@ class _MyHomePageState extends State<HomeDemo> {
                                                             phone,
                                                             mode: LaunchMode.externalApplication,
                                                           );
-                                                          if (!launched) print(
+                                                          if (!launched) {
+                                                            print(
                                                               "❌ Could not launch dialer");
+                                                          }
                                                         } catch (e) {
                                                           print("❌ Exception: $e");
                                                         }
@@ -2042,8 +2031,10 @@ class _MyHomePageState extends State<HomeDemo> {
                                                           try {
                                                             final launched = await launchUrl(url,
                                                                 mode: LaunchMode.externalApplication);
-                                                            if (!launched) print(
+                                                            if (!launched) {
+                                                              print(
                                                                 "❌ Could not launch WhatsApp");
+                                                            }
                                                           } catch (e) {
                                                             print("❌ Exception: $e");
                                                           }

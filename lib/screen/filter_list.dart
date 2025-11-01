@@ -1,20 +1,14 @@
 import 'dart:convert';
 
-import 'package:Akarat/screen/product_detail.dart';
-import 'package:Akarat/screen/search.dart';
-import 'package:Akarat/screen/searchexample.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/filtermodel.dart' as fm;
 
-import 'package:Akarat/screen/blog.dart';
 import 'package:Akarat/screen/home.dart';
-import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sliding_switch/sliding_switch.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_core/core.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
@@ -50,7 +44,7 @@ class FliterList extends StatelessWidget {
 
 
 
-  FliterList({super.key, this.filterModel, this.location, this.forceRefresh = false, required this.selectedPurpose,
+  const FliterList({super.key, this.filterModel, this.location, this.forceRefresh = false, required this.selectedPurpose,
     required this.selectedPropertyType,
 
 
@@ -133,7 +127,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
   bool _isLoading = true;   // ✅ add this
 
 
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
 
   List<String> locationList = [];
   String? selectedLocation;
@@ -984,7 +978,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                   //filter
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 15),
-                    child: Container(
+                    child: SizedBox(
                       // margin: const EdgeInsets.symmetric(vertical: 1),
                       height: 50,
                       // color: Colors.grey,
@@ -1607,7 +1601,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                             // Bedroom list
                                             Padding(
                                               padding: const EdgeInsets.only(top: 5, left: 15, right: 10),
-                                              child: Container(
+                                              child: SizedBox(
                                                 height: 60,
                                                 child: ListView.builder(
                                                   scrollDirection: Axis.horizontal,

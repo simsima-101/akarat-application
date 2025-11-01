@@ -3,8 +3,6 @@ import 'package:Akarat/model/registermodel.dart';
 import 'package:Akarat/screen/emai_login.dart';
 import 'package:Akarat/screen/login.dart';
 import 'package:Akarat/screen/my_account.dart';
-import 'package:Akarat/screen/profile_login.dart';
-import 'package:Akarat/utils/Validator.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 

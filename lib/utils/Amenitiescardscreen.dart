@@ -9,11 +9,6 @@ class Amenitiescardscreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
-    if (amenities == null) {
-      return Scaffold(
-        body: Center(child: CircularProgressIndicator()), // Show loading state
-      );
-    }
     return SingleChildScrollView(
         child: GestureDetector(
             onTap: () {

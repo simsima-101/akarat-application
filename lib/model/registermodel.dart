@@ -23,10 +23,10 @@ class RegisterModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['message'] = this.message;
-    data['name'] = this.name;
-    data['email'] = this.email;
-    data['token'] = this.token;
+    data['message'] = message;
+    data['name'] = name;
+    data['email'] = email;
+    data['token'] = token;
     return data;
   }
 }

@@ -8,8 +8,8 @@ class Language {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['languages'] = this.languages;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['languages'] = languages;
     return data;
   }
 }

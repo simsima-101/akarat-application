@@ -66,7 +66,7 @@ Container buildMyNavBar(
     BuildContext context, {
       required int currentIndex, // 0: Home, 1: Fav, 2: Email, 3: Menu
     }) {
-  Future<void> _openFavorites() async {
+  Future<void> openFavorites() async {
     final token = await SecureStorage.read('token');
 
     if (token == null || token.isEmpty) {
@@ -123,7 +123,7 @@ Container buildMyNavBar(
         // Favorites
         IconButton(
           tooltip: "Favorites",
-          onPressed: _openFavorites,
+          onPressed: openFavorites,
           icon: Icon(
             currentIndex == 1 ? Icons.favorite : Icons.favorite_border_outlined,
             color: Colors.red,
@@ -252,7 +252,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
 
   // UI state
   List<SavedAlert> _all = [];
-  Set<int> _selected = {};
+  final Set<int> _selected = {};
   bool _selectAll = false;
 
   // Simple client-side pagination
@@ -374,7 +374,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
         'X-Requested-With': 'XMLHttpRequest',
       });
 
-      Future<void> _applyLocalDelete() async {
+      Future<void> applyLocalDelete() async {
         setState(() {
           _all.removeWhere((x) => x.id == a.id);
           _selected.remove(a.id);
@@ -386,7 +386,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       }
 
       if (res.statusCode >= 200 && res.statusCode < 300) {
-        await _applyLocalDelete();
+        await applyLocalDelete();
       } else {
         final fallback = Uri.parse('${ApiService.baseUrl}/saved-searches/${a.id}');
         final res2 = await http.delete(fallback, headers: {
@@ -395,7 +395,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
           'X-Requested-With': 'XMLHttpRequest',
         });
         if (res2.statusCode >= 200 && res2.statusCode < 300) {
-          await _applyLocalDelete();
+          await applyLocalDelete();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Failed to delete alert')),
@@ -515,7 +515,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
   List<SavedAlert> get _pageItems {
     if (_all.isEmpty) return const [];
     final start = (_page - 1) * _pageSize;
-    final int end = ((_page * _pageSize).clamp(0, _all.length)) as int;
+    final int end = ((_page * _pageSize).clamp(0, _all.length));
     if (start >= _all.length) return const [];
     return _all.sublist(start, end);
   }
@@ -798,29 +798,29 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                                           ),
                                           style: ButtonStyle(
                                             // Same compact layout
-                                            padding: MaterialStatePropertyAll(
+                                            padding: WidgetStatePropertyAll(
                                               EdgeInsets.symmetric(
                                                 horizontal: narrow ? 8 : 12,
                                                 vertical: narrow ? 6 : 8,
                                               ),
                                             ),
-                                            minimumSize: const MaterialStatePropertyAll(Size.zero),
+                                            minimumSize: const WidgetStatePropertyAll(Size.zero),
                                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                             visualDensity: VisualDensity.compact,
 
                                             // Red when enabled, dimmed when disabled
-                                            foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
-                                              if (states.contains(MaterialState.disabled)) {
+                                            foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                                              if (states.contains(WidgetState.disabled)) {
                                                 return Colors.red.withOpacity(0.38); // M3 disabled foreground
                                               }
                                               return Colors.red;
                                             }),
 
                                             // Remove any background/border
-                                            backgroundColor: const MaterialStatePropertyAll(Colors.transparent),
-                                            overlayColor: MaterialStatePropertyAll(Colors.red.withOpacity(0.08)),
-                                            side: const MaterialStatePropertyAll(BorderSide.none),
-                                            shape: const MaterialStatePropertyAll(StadiumBorder()),
+                                            backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
+                                            overlayColor: WidgetStatePropertyAll(Colors.red.withOpacity(0.08)),
+                                            side: const WidgetStatePropertyAll(BorderSide.none),
+                                            shape: const WidgetStatePropertyAll(StadiumBorder()),
                                           ),
                                         ),
 
@@ -1112,7 +1112,6 @@ class _HeaderCell extends StatelessWidget {
       this.text, {
         this.flex = 1,
         this.fontSize = _headerFontSize,
-        super.key,
       });
 
   @override
@@ -1152,8 +1151,6 @@ class _CellText extends StatelessWidget {
 
   const _CellText(
       this.text, {
-        super.key,
-        this.textAlign = TextAlign.left,
         this.fontWeight = FontWeight.w400,
         this.fontSize = 13,
         // defaults keep previous behavior
@@ -1186,11 +1183,7 @@ class _HeaderCheckboxPlaceholder extends StatelessWidget {
   final double width;
   final double height;
 
-  const _HeaderCheckboxPlaceholder({
-    this.width = 24,
-    this.height = 20,
-    super.key,
-  });
+  const _HeaderCheckboxPlaceholder();
 
   @override
   Widget build(BuildContext context) {
@@ -1236,14 +1229,7 @@ class _ShrinkText extends StatelessWidget {
   final Color? color;
 
   const _ShrinkText(
-      this.text, {
-        Key? key,
-        this.baseSize = 13,
-        this.minSize = 11,
-        this.textAlign,
-        this.fontWeight = FontWeight.w400,
-        this.color,
-      }) : super(key: key);
+      this.text);
 
   @override
   Widget build(BuildContext context) {

@@ -1,30 +1,23 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:Akarat/model/fdetailmodel.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/shimmer.dart';
-import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/screen/full_map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../model/featuredmodel.dart';
-import '../services/favorite_service.dart';
 import '../utils/shared_preference_manager.dart';
 import 'about_agent.dart';
-import 'agent_detail.dart';
 import 'filter_list.dart';
 import 'htmlEpandableText.dart';
-import 'package:Akarat/utils/whatsapp_button.dart';
 
 class Featured_Detail extends StatefulWidget {
 

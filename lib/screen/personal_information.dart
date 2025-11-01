@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../secure_storage.dart';
-import '../services/account_service.dart';
 import '../services/api_service.dart';
 import 'login.dart';
 
@@ -17,12 +16,12 @@ class PersonalInformationScreen extends StatefulWidget {
   final String? afterSaveRouteName;
 
   const PersonalInformationScreen({
-    Key? key,
+    super.key,
     this.name,
     this.email,
     required this.onDeleteAccount,
     this.afterSaveRouteName,
-  }) : super(key: key);
+  });
 
   @override
   State<PersonalInformationScreen> createState() => _PersonalInformationScreenState();
@@ -76,7 +75,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   String _joinName(String first, String last) {
     final f = first.trim();
     final l = last.trim();
-    return (f.isEmpty || l.isEmpty) ? (f + ' ' + l).trim() : '$f $l';
+    return (f.isEmpty || l.isEmpty) ? ('$f $l').trim() : '$f $l';
   }
 
   @override

@@ -331,7 +331,7 @@ class ApiService {
     }
     final data = _decodeMap(resp.body);
 
-    dynamic _pick(List<List<String>> paths) {
+    dynamic pick(List<List<String>> paths) {
       for (final p in paths) {
         dynamic cur = data;
         for (final k in p) {
@@ -347,7 +347,7 @@ class ApiService {
       return null;
     }
 
-    final first = (_pick([
+    final first = (pick([
       ['first_name'],
       ['data', 'first_name'],
       ['user', 'first_name'],
@@ -357,7 +357,7 @@ class ApiService {
         .toString()
         .trim();
 
-    final last = (_pick([
+    final last = (pick([
       ['last_name'],
       ['data', 'last_name'],
       ['user', 'last_name'],
@@ -367,7 +367,7 @@ class ApiService {
         .toString()
         .trim();
 
-    String name = (_pick([
+    String name = (pick([
       ['name'],
       ['data', 'name'],
       ['user', 'name'],
@@ -377,7 +377,7 @@ class ApiService {
         .toString()
         .trim();
 
-    final email = (_pick([
+    final email = (pick([
       ['email'],
       ['data', 'email'],
       ['user', 'email'],

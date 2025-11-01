@@ -4,8 +4,6 @@ import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/propertymodel.dart';
 import 'package:Akarat/screen/home.dart';
-import 'package:Akarat/screen/new_projects.dart';
-import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -14,11 +12,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/shared_preference_manager.dart';
 import 'htmlEpandableText.dart';
 import 'my_account.dart';
-import 'package:Akarat/utils/property_type_image_mapper.dart';
 
 
 class Property_Detail extends StatefulWidget {
-  Property_Detail({super.key, required this.data});
+  const Property_Detail({super.key, required this.data});
   final String data;
 
   @override

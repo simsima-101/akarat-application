@@ -1,6 +1,5 @@
 
 
-import '../screen/locationsearch.dart' hide Property;
 import '../model/propertymodel.dart';
 
 

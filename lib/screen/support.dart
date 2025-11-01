@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:Akarat/model/contactmodel.dart';
 import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/utils/shared_preference_manager.dart';
 import 'package:Akarat/screen/home.dart';
-import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
@@ -209,7 +206,7 @@ class _SupportState extends State<Support> {
                               ),
                               child: TextFormField(
                                 validator: (value) {
-                                  if (value!.isEmpty || value == null) {
+                                  if (value!.isEmpty) {
                                     return 'Please Enter Your Name';
                                   }
                                   else {
@@ -264,7 +261,7 @@ class _SupportState extends State<Support> {
                               ),
                               child: TextFormField(
                                 validator: (value) {
-                                  if (value!.isEmpty || value == null) {
+                                  if (value!.isEmpty) {
                                     return 'Please Enter EmailId';
                                   }
                                   else {
@@ -321,7 +318,7 @@ class _SupportState extends State<Support> {
                               ),
                               child: TextFormField(
                                 validator: (value) {
-                                  if (value!.isEmpty || value == null) {
+                                  if (value!.isEmpty) {
                                     return 'Please Enter Phone Number';
                                   }
                                   else {
@@ -376,7 +373,7 @@ class _SupportState extends State<Support> {
                               ),
                               child: TextFormField(
                                 validator: (value) {
-                                  if (value!.isEmpty || value == null) {
+                                  if (value!.isEmpty) {
                                     return 'Please Enter Subject';
                                   }
                                   else {
@@ -439,7 +436,7 @@ class _SupportState extends State<Support> {
                               child: TextFormField(
                                 maxLines: 3,
                                 validator: (value) {
-                                  if (value!.isEmpty || value == null) {
+                                  if (value!.isEmpty) {
                                     return 'Please Enter Message Here';
                                   }
                                   else {
@@ -457,7 +454,7 @@ class _SupportState extends State<Support> {
                               ),
                             ),
                           ),
-                          Container(
+                          SizedBox(
                             width: screenSize.width * 0.9,
                             height: screenSize.height * 0.1,
                             child: Padding(

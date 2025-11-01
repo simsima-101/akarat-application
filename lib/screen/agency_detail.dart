@@ -4,23 +4,18 @@ import 'dart:io';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/screen/home.dart';
-import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import '../model/productmodel.dart';
-import '../services/favorite_service.dart';
 import '../utils/shared_preference_manager.dart';
 import 'about_agent.dart';
 import 'full_map_screen.dart';
 import 'htmlEpandableText.dart';
 import 'my_account.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
-import 'package:Akarat/utils/whatsapp_button.dart';
 
 
 
@@ -41,8 +36,9 @@ class _Agency_DetailState extends State<Agency_Detail> {
     if (input.startsWith('+971')) return input;
     if (input.startsWith('00971')) return '+971${input.substring(5)}';
     if (input.startsWith('971')) return '+971${input.substring(3)}';
-    if (input.startsWith('0') && input.length == 10)
+    if (input.startsWith('0') && input.length == 10) {
       return '+971${input.substring(1)}';
+    }
     if (input.length == 9) return '+971$input';
     return input; // fallback
   }
@@ -52,8 +48,9 @@ class _Agency_DetailState extends State<Agency_Detail> {
     if (input.startsWith('971')) return input;
     if (input.startsWith('00971')) return input.substring(2);
     if (input.startsWith('+971')) return input.substring(1);
-    if (input.startsWith('0') && input.length == 10)
+    if (input.startsWith('0') && input.length == 10) {
       return '971${input.substring(1)}';
+    }
     if (input.length == 9) return '971$input';
     return input; // fallback
   }

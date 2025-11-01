@@ -6,18 +6,19 @@ class WhatsAppButton extends StatelessWidget {
   final String message;
 
   const WhatsAppButton({
-    Key? key,
+    super.key,
     required this.phoneNumber,
     this.message = "Hello",
-  }) : super(key: key);
+  });
 
   String formatWhatsAppNumber(String input) {
     input = input.replaceAll(RegExp(r'[^\d]'), '');
     if (input.startsWith('971')) return input;
     if (input.startsWith('00971')) return input.substring(2);
     if (input.startsWith('+971')) return input.substring(1);
-    if (input.startsWith('0') && input.length == 10)
+    if (input.startsWith('0') && input.length == 10) {
       return '971${input.substring(1)}';
+    }
     if (input.length == 9) return '971$input';
     return input; // fallback
   }

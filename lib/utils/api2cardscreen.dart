@@ -7,11 +7,6 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if(filterModel == null){
-      return Scaffold(
-        body: Center(child: CircularProgressIndicator()), // Show loading state
-      );
-    }
     return SingleChildScrollView(
       child: GestureDetector(
         onTap: (){

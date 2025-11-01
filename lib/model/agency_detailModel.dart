@@ -51,22 +51,22 @@ class AgencyDetailmodel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['user_name'] = this.userName;
-    data['name'] = this.name;
-    data['description'] = this.description;
-    data['website'] = this.website;
-    data['email'] = this.email;
-    data['phone'] = this.phone;
-    data['whatsapp'] = this.whatsapp;
-    data['address'] = this.address;
-    data['location'] = this.location;
-    data['status_id'] = this.statusId;
-    data['ded'] = this.ded;
-    data['rera'] = this.rera;
-    data['image'] = this.image;
-    data['properties_count'] = this.propertiesCount;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['user_name'] = userName;
+    data['name'] = name;
+    data['description'] = description;
+    data['website'] = website;
+    data['email'] = email;
+    data['phone'] = phone;
+    data['whatsapp'] = whatsapp;
+    data['address'] = address;
+    data['location'] = location;
+    data['status_id'] = statusId;
+    data['ded'] = ded;
+    data['rera'] = rera;
+    data['image'] = image;
+    data['properties_count'] = propertiesCount;
     return data;
   }
 }

@@ -200,11 +200,11 @@ class ProjectDetailModel {
   ProjectDetailModel({this.data});
 
   ProjectDetailModel.fromJson(Map<String, dynamic> json) {
-    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
+    data = json['data'] != null ? Data.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.toJson();
     }
@@ -228,10 +228,10 @@ class Data {
   String? agentImage;
   String? deliveryDate;
   int? paymentPlan;
-  Null? governmentFee;
-  Null? downPayment;
-  Null? duringConstruction;
-  Null? onHandover;
+  Null governmentFee;
+  Null downPayment;
+  Null duringConstruction;
+  Null onHandover;
   String? projectAnnouncement;
   String? constructionStarted;
   String? expectedCompletion;
@@ -304,33 +304,33 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['title'] = this.title;
-    data['price'] = this.price;
-    data['phone_number'] = this.phoneNumber;
-    data['whatsapp'] = this.whatsapp;
-    data['description'] = this.description;
-    data['payment_period'] = this.paymentPeriod;
-    data['bedrooms'] = this.bedrooms;
-    data['bathrooms'] = this.bathrooms;
-    data['property_type'] = this.propertyType;
-    data['agent'] = this.agent;
-    data['agent_id'] = this.agentId;
-    data['agent_image'] = this.agentImage;
-    data['delivery_date'] = this.deliveryDate;
-    data['payment_plan'] = this.paymentPlan;
-    data['government_fee'] = this.governmentFee;
-    data['down_payment'] = this.downPayment;
-    data['during_construction'] = this.duringConstruction;
-    data['on_handover'] = this.onHandover;
-    data['project_announcement'] = this.projectAnnouncement;
-    data['construction_started'] = this.constructionStarted;
-    data['expected_completion'] = this.expectedCompletion;
-    data['location'] = this.location;
-    data['square_feet'] = this.squareFeet;
-    if (this.media != null) {
-      data['media'] = this.media!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['title'] = title;
+    data['price'] = price;
+    data['phone_number'] = phoneNumber;
+    data['whatsapp'] = whatsapp;
+    data['description'] = description;
+    data['payment_period'] = paymentPeriod;
+    data['bedrooms'] = bedrooms;
+    data['bathrooms'] = bathrooms;
+    data['property_type'] = propertyType;
+    data['agent'] = agent;
+    data['agent_id'] = agentId;
+    data['agent_image'] = agentImage;
+    data['delivery_date'] = deliveryDate;
+    data['payment_plan'] = paymentPlan;
+    data['government_fee'] = governmentFee;
+    data['down_payment'] = downPayment;
+    data['during_construction'] = duringConstruction;
+    data['on_handover'] = onHandover;
+    data['project_announcement'] = projectAnnouncement;
+    data['construction_started'] = constructionStarted;
+    data['expected_completion'] = expectedCompletion;
+    data['location'] = location;
+    data['square_feet'] = squareFeet;
+    if (media != null) {
+      data['media'] = media!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -348,7 +348,7 @@ class Media {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {};
-    data['original_url'] = this.originalUrl;
+    data['original_url'] = originalUrl;
     return data;
   }
 }

@@ -1,5 +1,4 @@
 import 'package:Akarat/screen/home.dart';
-import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/utils/fav_login.dart';
 import 'package:Akarat/utils/fav_logout.dart';
 import 'package:flutter/material.dart';
@@ -10,11 +9,11 @@ import 'my_account.dart';
 class Favorite extends StatefulWidget {
   final dynamic productData; // Accept product data (Map or model)
 
-  Favorite({super.key, this.productData});
+  const Favorite({super.key, this.productData});
 
 
   @override
-  State<Favorite> createState() => new _FavoriteState();
+  State<Favorite> createState() => _FavoriteState();
 }
 
 class _FavoriteState extends State<Favorite> {

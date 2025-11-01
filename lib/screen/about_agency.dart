@@ -2,18 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:Akarat/model/agencyagentmodel.dart';
 import 'package:Akarat/model/agencypropertiesmodel.dart' as propertyModel;
-import 'package:Akarat/screen/agency_detail.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/agency_detailModel.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/my_account.dart';
-import 'package:Akarat/screen/profile_login.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import '../model/togglemodel.dart';
 import '../secure_storage.dart';
 import '../utils/fav_logout.dart';
@@ -22,7 +19,6 @@ import 'featured_detail.dart';
 import 'findagent.dart';
 import 'htmlEpandableText.dart';
 import 'login.dart';
-import 'package:Akarat/utils/whatsapp_button.dart';
 
 
 // Force HTTPS so iOS hardware doesn't block http:// images/redirects
@@ -272,7 +268,7 @@ class _About_AgencyState extends State<About_Agency> {
     }
   }
 
-  int _currentImageIndex = 0;
+  final int _currentImageIndex = 0;
 
 // Make sure to dispose the controller
   @override

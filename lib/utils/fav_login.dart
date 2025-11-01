@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../model/favoritemodel.dart' as favModel;
-import '../model/propertymodel.dart'as propModel;
 import '../model/togglemodel.dart';
 import '../screen/home.dart';
 import '../screen/login.dart';
@@ -17,10 +16,10 @@ import '../screen/product_detail.dart';
 import '../services/favorite_service.dart';
 
 class Fav_Login extends StatefulWidget {
-  Fav_Login({super.key});
+  const Fav_Login({super.key});
 
   @override
-  State<Fav_Login> createState() => new _Fav_LoginState();
+  State<Fav_Login> createState() => _Fav_LoginState();
 }
 
 class _Fav_LoginState extends State<Fav_Login> {
@@ -45,8 +44,9 @@ class _Fav_LoginState extends State<Fav_Login> {
     if (input.startsWith('+971')) return input;
     if (input.startsWith('00971')) return '+971${input.substring(5)}';
     if (input.startsWith('971')) return '+971${input.substring(3)}';
-    if (input.startsWith('0') && input.length == 10)
+    if (input.startsWith('0') && input.length == 10) {
       return '+971${input.substring(1)}';
+    }
     if (input.length == 9) return '+971$input';
     return input; // fallback
   }
@@ -57,8 +57,9 @@ class _Fav_LoginState extends State<Fav_Login> {
     if (input.startsWith('971')) return input;
     if (input.startsWith('00971')) return input.substring(2);
     if (input.startsWith('+971')) return input.substring(1);
-    if (input.startsWith('0') && input.length == 10)
+    if (input.startsWith('0') && input.length == 10) {
       return '971${input.substring(1)}';
+    }
     if (input.length == 9) return '971$input';
     return input; // fallback
   }
@@ -81,7 +82,7 @@ class _Fav_LoginState extends State<Fav_Login> {
   }
 
   bool isFavorited = false;
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   int currentPage = 1;
   bool isLoading = false;
   bool hasMore = true;
@@ -287,7 +288,7 @@ class _Fav_LoginState extends State<Fav_Login> {
                 child: Stack(children: <Widget>[
                   Padding(
                     padding: EdgeInsets.only(top: 25, left: 10),
-                    child: Container(
+                    child: SizedBox(
                       height: screenSize.height * 0.07,
                       width: double.infinity,
                       child: Row(

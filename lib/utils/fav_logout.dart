@@ -13,7 +13,6 @@ import '../screen/login.dart';
 import '../screen/my_account.dart';
 import '../services/favorite_service.dart';
 import 'package:provider/provider.dart';
-import '../env.dart';
 
 
 class Fav_Logout extends StatefulWidget {

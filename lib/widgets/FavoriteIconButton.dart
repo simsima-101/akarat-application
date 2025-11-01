@@ -9,10 +9,10 @@ class FavoriteIconButton extends StatelessWidget {
   final VoidCallback? onLoginRequired;
 
   const FavoriteIconButton({
-    Key? key,
+    super.key,
     required this.propertyId,
     this.onLoginRequired,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

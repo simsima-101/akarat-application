@@ -9,7 +9,7 @@ class Agentcardscreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String imageUrl = agentsModel.image?.trim() ?? '';
+    String imageUrl = agentsModel.image.trim() ?? '';
     if (imageUrl.isNotEmpty && !imageUrl.startsWith('http')) {
       imageUrl = 'https://akarat.com$imageUrl';
     }

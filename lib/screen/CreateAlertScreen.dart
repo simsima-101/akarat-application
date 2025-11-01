@@ -71,7 +71,7 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
 
     // default alert name reflects the combo
     final labelType = _propertyType.isEmpty ? 'Any' : _propertyType;
-    _nameCtrl.text = '${_purpose} • $labelType';
+    _nameCtrl.text = '$_purpose • $labelType';
   }
 
   @override
@@ -194,8 +194,9 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
       list = body;
     } else if (body is Map) {
       final data = body['data'];
-      if (data is List) list = data;
-      else if (data is Map && data['data'] is List) list = data['data']; // paginator
+      if (data is List) {
+        list = data;
+      } else if (data is Map && data['data'] is List) list = data['data']; // paginator
       else if (body['saved_searches'] is List) list = body['saved_searches'];
       else list = const [];
     } else {
@@ -237,8 +238,9 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
         list = body;
       } else if (body is Map) {
         final data = body['data'];
-        if (data is List) list = data;
-        else if (data is Map && data['data'] is List) list = data['data'];
+        if (data is List) {
+          list = data;
+        } else if (data is Map && data['data'] is List) list = data['data'];
         else if (body['saved_searches'] is List) list = body['saved_searches'];
         else list = const [];
       } else {
@@ -246,7 +248,7 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
       }
 
       final existing = list
-          .map((e) => ((e as Map)['alert_name'] ?? (e as Map)['name'] ?? '')
+          .map((e) => ((e as Map)['alert_name'] ?? (e)['name'] ?? '')
           .toString()
           .trim()
           .toLowerCase())

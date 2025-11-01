@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:Akarat/screen/home.dart';
-import 'package:Akarat/screen/search.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -17,6 +15,8 @@ void main() {
 }
 
 class LocationSearchScreen extends StatefulWidget {
+  const LocationSearchScreen({super.key});
+
   @override
   _LocationSearchScreenState createState() => _LocationSearchScreenState();
 }
@@ -253,7 +253,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 class PropertyListScreen extends StatelessWidget {
   final String location;
 
-  PropertyListScreen({required this.location});
+  PropertyListScreen({super.key, required this.location});
 
   final List<String> dummyProperties = [
     "2BHK Apartment with Pool",

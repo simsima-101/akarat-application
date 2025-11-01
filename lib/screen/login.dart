@@ -2,23 +2,17 @@ import 'dart:convert';
 
 import 'package:Akarat/screen/register_screen.dart';
 import 'package:Akarat/screen/forgot_password.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../providers/profile_image_provider.dart';
 import '../secure_storage.dart';
-import '../services/favorite_service.dart';
 import 'package:flutter/material.dart';
-import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/services/api_service.dart';
 import 'package:Akarat/screen/home.dart';
-import 'package:provider/provider.dart';
 
 import 'package:http/http.dart' as http;
 
-import '../utils/constants.dart';
 
 class Login extends StatelessWidget {
-  const Login({Key? key}) : super(key: key);
+  const Login({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +22,7 @@ class Login extends StatelessWidget {
 
 class LoginDemo extends StatefulWidget {
   final String? initialEmail;
-  const LoginDemo({Key? key, this.initialEmail}) : super(key: key);
+  const LoginDemo({super.key, this.initialEmail});
 
   @override
   State<LoginDemo> createState() => _LoginDemoState();
@@ -123,7 +117,7 @@ class _LoginDemoState extends State<LoginDemo> {
         final raw = utf8.decode(resp.bodyBytes);
         final data = json.decode(raw);
 
-        String _path(dynamic o, List<String> p) {
+        String path(dynamic o, List<String> p) {
           dynamic cur = o;
           for (final k in p) {
             if (cur is Map && cur.containsKey(k)) {
@@ -143,33 +137,33 @@ class _LoginDemoState extends State<LoginDemo> {
         }
 
         final first = firstNonEmpty([
-          _path(data, ['first_name']),
-          _path(data, ['data', 'first_name']),
-          _path(data, ['user', 'first_name']),
-          _path(data, ['data', 'user', 'first_name']),
+          path(data, ['first_name']),
+          path(data, ['data', 'first_name']),
+          path(data, ['user', 'first_name']),
+          path(data, ['data', 'user', 'first_name']),
         ]);
 
         final last = firstNonEmpty([
-          _path(data, ['last_name']),
-          _path(data, ['data', 'last_name']),
-          _path(data, ['user', 'last_name']),
-          _path(data, ['data', 'user', 'last_name']),
+          path(data, ['last_name']),
+          path(data, ['data', 'last_name']),
+          path(data, ['user', 'last_name']),
+          path(data, ['data', 'user', 'last_name']),
         ]);
 
         final full = firstNonEmpty([
-          _path(data, ['name']),
-          _path(data, ['data', 'name']),
-          _path(data, ['user', 'name']),
-          _path(data, ['data', 'user', 'name']),
+          path(data, ['name']),
+          path(data, ['data', 'name']),
+          path(data, ['user', 'name']),
+          path(data, ['data', 'user', 'name']),
           // fallback: join first + last
           [first, last].where((s) => s.isNotEmpty).join(' ')
         ]);
 
         String email = firstNonEmpty([
-          _path(data, ['email']),
-          _path(data, ['data', 'email']),
-          _path(data, ['user', 'email']),
-          _path(data, ['data', 'user', 'email']),
+          path(data, ['email']),
+          path(data, ['data', 'email']),
+          path(data, ['user', 'email']),
+          path(data, ['data', 'user', 'email']),
         ]);
 
         // last resort: scan for any "email" key

@@ -11,15 +11,15 @@ class AgencyAgentsModel {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['success'] = this.success;
-    data['message'] = this.message;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['success'] = success;
+    data['message'] = message;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
@@ -69,16 +69,16 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['email'] = this.email;
-    data['phone'] = this.phone;
-    data['whatsapp'] = this.whatsapp;
-    data['languages'] = this.languages;
-    data['sale'] = this.sale;
-    data['rent'] = this.rent;
-    data['image'] = this.image;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = name;
+    data['email'] = email;
+    data['phone'] = phone;
+    data['whatsapp'] = whatsapp;
+    data['languages'] = languages;
+    data['sale'] = sale;
+    data['rent'] = rent;
+    data['image'] = image;
     data['bio'] = bio; // ✅ add this if needed
     data['total_properties'] = propertiesCount;
     return data;

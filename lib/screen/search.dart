@@ -4,9 +4,6 @@ import 'dart:convert';
 
 import 'package:Akarat/screen/filter.dart';
 import 'package:Akarat/screen/product_detail.dart';
-import 'package:Akarat/screen/profile_login.dart';
-import 'package:Akarat/screen/searchexample.dart';
-import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -23,9 +20,7 @@ import '../model/searchmodel.dart';
 import '../model/togglemodel.dart';
 import '../utils/shared_preference_manager.dart';
 import 'filter_list.dart';
-import 'home.dart';
 import 'login.dart';
-import 'my_account.dart';
 
 class Search extends StatefulWidget {
   const Search({super.key, required this.data});
@@ -647,7 +642,7 @@ class _SearchState extends State<Search> {
                   //filter
                   Padding(
                     padding: const EdgeInsets.only(top: 20,left: 10,right: 0),
-                    child: Container(
+                    child: SizedBox(
                       // margin: const EdgeInsets.symmetric(vertical: 1),
                       height: 50,
                       // color: Colors.grey,
@@ -1134,7 +1129,7 @@ class _SearchState extends State<Search> {
                                             //studio
                                             Padding(
                                                 padding: const EdgeInsets.only(top: 5,left: 15,right: 10),
-                                                child: Container(
+                                                child: SizedBox(
                                                   //color: Colors.grey,
                                                   // width: 60,
                                                   height: 50,

@@ -121,7 +121,7 @@ class FavoriteProvider with ChangeNotifier {
   // Old signature shim (keeps old call sites compiling)
   Future<bool> toggleFavoriteWithApi(
       int id,
-      String _unusedToken,
+      String unusedToken,
       BuildContext context, {
         bool showSnackBar = true,
       }) async {

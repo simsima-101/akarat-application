@@ -13,8 +13,8 @@
 
     Map<String, dynamic> toJson() {
       final Map<String, dynamic> data = {};
-      data['status'] = this.status;
-      data['message'] = this.message;
+      data['status'] = status;
+      data['message'] = message;
       if (this.data != null) {
         data['data'] = this.data!.toJson();
       }
@@ -48,13 +48,13 @@
       if (this.data != null) {
         data['data'] = this.data!.map((v) => v.toJson()).toList();
       }
-      if (this.links != null) {
-        data['links'] = this.links!.toJson();
+      if (links != null) {
+        data['links'] = links!.toJson();
       }
-      if (this.meta != null) {
-        data['meta'] = this.meta!.toJson();
+      if (meta != null) {
+        data['meta'] = meta!.toJson();
       }
-      data['total_properties'] = this.totalProperties;
+      data['total_properties'] = totalProperties;
       return data;
     }
   }
@@ -128,25 +128,25 @@
 
     Map<String, dynamic> toJson() {
       final Map<String, dynamic> data = {};
-      data['id'] = this.id;
-      data['title'] = this.title;
-      data['price'] = this.price;
-      data['address'] = this.address;
-      data['location'] = this.location;
-      data['phone_number'] = this.phoneNumber;
-      data['whatsapp'] = this.whatsapp;
-      data['payment_period'] = this.paymentPeriod;
-      data['bedrooms'] = this.bedrooms;
-      data['bathrooms'] = this.bathrooms;
-      data['square_feet'] = this.squareFeet;
-      data['saved'] = this.saved;
+      data['id'] = id;
+      data['title'] = title;
+      data['price'] = price;
+      data['address'] = address;
+      data['location'] = location;
+      data['phone_number'] = phoneNumber;
+      data['whatsapp'] = whatsapp;
+      data['payment_period'] = paymentPeriod;
+      data['bedrooms'] = bedrooms;
+      data['bathrooms'] = bathrooms;
+      data['square_feet'] = squareFeet;
+      data['saved'] = saved;
       data['agent_image'] = agentImage;
       data['agent'] = agentName;
       data['agency_logo'] = agencyLogo;
       data['posted_on'] = postedOn;
 
-      if (this.media != null) {
-        data['media'] = this.media!.map((v) => v.toJson()).toList();
+      if (media != null) {
+        data['media'] = media!.map((v) => v.toJson()).toList();
       }
       return data;
     }
@@ -163,7 +163,7 @@
 
     Map<String, dynamic> toJson() {
       final Map<String, dynamic> data = {};
-      data['original_url'] = this.originalUrl;
+      data['original_url'] = originalUrl;
       return data;
     }
   }
@@ -185,10 +185,10 @@
 
     Map<String, dynamic> toJson() {
       final Map<String, dynamic> data = {};
-      data['first'] = this.first;
-      data['last'] = this.last;
-      data['prev'] = this.prev;
-      data['next'] = this.next;
+      data['first'] = first;
+      data['last'] = last;
+      data['prev'] = prev;
+      data['next'] = next;
       return data;
     }
   }
@@ -232,16 +232,16 @@
 
     Map<String, dynamic> toJson() {
       final Map<String, dynamic> data = {};
-      data['current_page'] = this.currentPage;
-      data['from'] = this.from;
-      data['last_page'] = this.lastPage;
-      if (this.links != null) {
-        data['links'] = this.links!.map((v) => v.toJson()).toList();
+      data['current_page'] = currentPage;
+      data['from'] = from;
+      data['last_page'] = lastPage;
+      if (links != null) {
+        data['links'] = links!.map((v) => v.toJson()).toList();
       }
-      data['path'] = this.path;
-      data['per_page'] = this.perPage;
-      data['to'] = this.to;
-      data['total'] = this.total;
+      data['path'] = path;
+      data['per_page'] = perPage;
+      data['to'] = to;
+      data['total'] = total;
       return data;
     }
   }
@@ -261,9 +261,9 @@
 
     Map<String, dynamic> toJson() {
       final Map<String, dynamic> data = {};
-      data['url'] = this.url;
-      data['label'] = this.label;
-      data['active'] = this.active;
+      data['url'] = url;
+      data['label'] = label;
+      data['active'] = active;
       return data;
     }
   }

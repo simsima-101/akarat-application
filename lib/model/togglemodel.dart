@@ -11,17 +11,17 @@ class ToggleModel {
     message = json['message'];
     saved = json['saved'];
     property = json['property'] != null
-        ? new Property.fromJson(json['property'])
+        ? Property.fromJson(json['property'])
         : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['success'] = this.success;
-    data['message'] = this.message;
-    data['saved'] = this.saved;
-    if (this.property != null) {
-      data['property'] = this.property!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['success'] = success;
+    data['message'] = message;
+    data['saved'] = saved;
+    if (property != null) {
+      data['property'] = property!.toJson();
     }
     return data;
   }
@@ -68,18 +68,18 @@ class Property {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['title'] = this.title;
-    data['purpose'] = this.purpose;
-    data['address'] = this.address;
-    data['bedrooms'] = this.bedrooms;
-    data['bathrooms'] = this.bathrooms;
-    data['square_feet'] = this.squareFeet;
-    data['created_at'] = this.createdAt;
-    data['price'] = this.price;
-    data['payment_period'] = this.paymentPeriod;
-    data['image'] = this.image;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['title'] = title;
+    data['purpose'] = purpose;
+    data['address'] = address;
+    data['bedrooms'] = bedrooms;
+    data['bathrooms'] = bathrooms;
+    data['square_feet'] = squareFeet;
+    data['created_at'] = createdAt;
+    data['price'] = price;
+    data['payment_period'] = paymentPeriod;
+    data['image'] = image;
     return data;
   }
 }

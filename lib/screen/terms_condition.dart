@@ -1,6 +1,5 @@
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/my_account.dart';
-import 'package:Akarat/screen/profile_login.dart';
 import 'package:Akarat/utils/shared_preference_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,16 +7,15 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../secure_storage.dart';
 import '../services/favorite_service.dart';
-import '../utils/fav_login.dart';
 import '../utils/fav_logout.dart';
 import 'login.dart';
 
 class TermsCondition extends StatefulWidget {
-  TermsCondition({super.key,});
+  const TermsCondition({super.key,});
 
 
   @override
-  State<StatefulWidget> createState() => new _TermsConditionState();
+  State<StatefulWidget> createState() => _TermsConditionState();
 }
 
 class _TermsConditionState extends State<TermsCondition> {
@@ -407,7 +405,7 @@ class _TermsConditionState extends State<TermsCondition> {
   }
 }
 class Page1 extends StatelessWidget {
-  const Page1({Key? key}) : super(key: key);
+  const Page1({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -428,7 +426,7 @@ class Page1 extends StatelessWidget {
 }
 
 class Page2 extends StatelessWidget {
-  const Page2({Key? key}) : super(key: key);
+  const Page2({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -449,7 +447,7 @@ class Page2 extends StatelessWidget {
 }
 
 class Page3 extends StatelessWidget {
-  const Page3({Key? key}) : super(key: key);
+  const Page3({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -470,7 +468,7 @@ class Page3 extends StatelessWidget {
 }
 
 class Page4 extends StatelessWidget {
-  const Page4({Key? key}) : super(key: key);
+  const Page4({super.key});
 
   @override
   Widget build(BuildContext context) {

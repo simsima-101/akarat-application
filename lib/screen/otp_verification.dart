@@ -8,7 +8,7 @@ import '../secure_storage.dart';
 import 'login.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
-  const OtpVerificationScreen({Key? key}) : super(key: key);
+  const OtpVerificationScreen({super.key});
 
   @override
   State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();

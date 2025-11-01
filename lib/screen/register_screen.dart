@@ -8,7 +8,7 @@ import 'login.dart';
 import '../secure_storage.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -102,8 +102,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final pwd = passwordController.text.trim();
     final confirm = confirmController.text.trim();
 
-    bool _isInt(v) => v is int;
-    int _asInt(dynamic v, int fallback) => _isInt(v) ? (v as int) : fallback;
+    bool isInt(v) => v is int;
+    int asInt(dynamic v, int fallback) => isInt(v) ? (v as int) : fallback;
 
     final swAll = Stopwatch()..start();
 
@@ -168,8 +168,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
 
       final devOtp = ((reg['otp'])?.toString() ?? '').trim();
-      final expiresIn = _asInt(reg['expires_in'], 300);
-      final resendAfter = _asInt(reg['resend_after'], 60);
+      final expiresIn = asInt(reg['expires_in'], 300);
+      final resendAfter = asInt(reg['resend_after'], 60);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

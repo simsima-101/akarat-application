@@ -5,8 +5,6 @@ import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:Akarat/model/projectmodel.dart';
 import 'package:Akarat/screen/home.dart';
-import 'package:Akarat/screen/profile_login.dart';
-import 'package:Akarat/screen/property_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
@@ -17,14 +15,11 @@ import '../secure_storage.dart';
 
 import '../services/favorite_service.dart';
 import '../utils/fav_logout.dart';
-import 'featured_detail.dart';
 import 'login.dart';
 import 'my_account.dart';
-import 'package:Akarat/utils/whatsapp_button.dart';
 
 import 'package:provider/provider.dart';
 import '../providers/favorite_provider.dart';
-import '../screen/my_nav_bar.dart';
 
 import 'package:Akarat/screen/new_project_detail.dart';
 
@@ -49,6 +44,8 @@ class New_Projects extends StatelessWidget {
 }
 
 class New_ProjectsDemo extends StatefulWidget {
+  const New_ProjectsDemo({super.key});
+
   @override
   _New_ProjectsDemoState createState() => _New_ProjectsDemoState();
 }
@@ -70,7 +67,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
 
 
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   int currentPage = 1;
   bool isLoading = false;
   bool hasMore = true;
@@ -94,8 +91,9 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
     if (input.startsWith('+971')) return input;
     if (input.startsWith('00971')) return '+971${input.substring(5)}';
     if (input.startsWith('971')) return '+971${input.substring(3)}';
-    if (input.startsWith('0') && input.length == 10)
+    if (input.startsWith('0') && input.length == 10) {
       return '+971${input.substring(1)}';
+    }
     if (input.length == 9) return '+971$input';
     return input; // fallback
   }
@@ -105,8 +103,9 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
     if (input.startsWith('971')) return input;
     if (input.startsWith('00971')) return input.substring(2);
     if (input.startsWith('+971')) return input.substring(1);
-    if (input.startsWith('0') && input.length == 10)
+    if (input.startsWith('0') && input.length == 10) {
       return '971${input.substring(1)}';
+    }
     if (input.length == 9) return '971$input';
     return input; // fallback
   }

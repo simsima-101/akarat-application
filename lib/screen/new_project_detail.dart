@@ -15,7 +15,6 @@ import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/screen/full_map_screen.dart';
 import 'package:Akarat/screen/about_agent.dart';
-import 'package:Akarat/utils/whatsapp_button.dart';
 import 'htmlEpandableText.dart';
 
 class NewProjectDetail extends StatefulWidget {
