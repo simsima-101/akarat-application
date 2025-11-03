@@ -45,6 +45,9 @@ dependencies:
   flutter_typeahead: ^5.2.0
   image_picker: ^1.0.4
   path_provider: ^2.1.2
+  firebase_core: ^4.2.0
+  firebase_auth: ^6.1.1
+  google_sign_in: ^7.2.0
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +58,7 @@ dev_dependencies:
 
 flutter_launcher_icons:
   ios: true
+  android: false
   image_path_ios: "assets/images/app-icon_new.png"
   remove_alpha_ios: true
 

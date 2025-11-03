@@ -25,10 +25,8 @@ const double _gapBeforePurposeRow    = 10; // a bit tighter between Time & Purpo
 
 const double _minTableWidth          = 860;
 
-
 // unified spacing for both header & rows
 const double _gapCheckboxToName = 8;
-
 
 // --- header-only gaps ---
 const double _hGapNameToTime     = 10;
@@ -40,16 +38,10 @@ const double _rGapNameToTime     = 18;
 const double _rGapTimeToPurpose  = 18;   // <- different from header
 const double _rGapPurposeToType  = 10;
 
-
 const double _checkColW = 42.0;
-
 
 const double _trashIconW = 32;       // matches IconButton constraint
 const double _gapTypeToTrash = 5;    // ⬅️ gap you want to see
-
-
-
-
 
 /// Read the auth token from your secure storage.
 Future<String?> readToken() async {
@@ -260,25 +252,21 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
   int _page = 1;
   int _lastCount = 0;
 
-
   @override
   void initState() {
     super.initState();
     _future = _fetchSavedAlerts(initial: true);
     _future.then((list) {
       if (!mounted) return;
-      setState(() {                 // ✅ trigger rebuild with new data
+      setState(() {
         _all = list;
       });
     });
   }
 
-
-
   Future<void> _reload({bool goToLast = false}) async {
     setState(() {
       _future = _fetchSavedAlerts().then((list) {
-        final oldLen = _all.length;
         _all = list;
 
         final totalPages = _totalPages;
@@ -295,8 +283,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
     });
     await _future;
   }
-
-
 
   Future<List<SavedAlert>> _fetchSavedAlerts({bool initial = false}) async {
     _token ??= widget.token ?? await readToken();
@@ -379,7 +365,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
           _all.removeWhere((x) => x.id == a.id);
           _selected.remove(a.id);
         });
-        // if current page is now empty but there are previous pages, go back one
         if (_page > 1 && _pageItems.isEmpty) {
           _setPage(_page - 1);
         }
@@ -408,7 +393,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       );
     }
   }
-
 
   bool _deletingAll = false;
 
@@ -449,7 +433,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       if (!mounted) return;
 
       if (ok) {
-        // Always re-fetch from server to guarantee it’s really empty
         await _reload();
         if (!mounted) return;
 
@@ -471,7 +454,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       _deletingAll = false;
     }
   }
-
 
   Future<void> _deleteSelected() async {
     final ids = _selected.toList();
@@ -520,9 +502,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
     return _all.sublist(start, end);
   }
 
-
-// Replace your helpers with these
-
   void _setPage(int p, {bool resetSelection = false}) {
     final total = _totalPages;
     final newPage = total <= 1 ? 1 : p.clamp(1, total);
@@ -547,8 +526,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
     }
   }
 
-
-
   void _toggleSelectAllOnPage(bool value) {
     setState(() {
       _selectAll = value;
@@ -561,14 +538,10 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
     });
   }
 
-
-
   void _handleBack() {
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
     } else {
-      // Fallback if this is the first route (optional: go home or filter)
-      // Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const Filter()));
       Navigator.of(context).pop(); // or do nothing
     }
   }
@@ -577,9 +550,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8F7F7),
       body: SafeArea(
@@ -602,7 +572,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
               children: [
                 const SizedBox(height: 8),
 
-// ─── Back arrow row (before title & subtitle) ───────────────────────────────
+                // Back arrow row
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Row(
@@ -613,22 +583,16 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                           borderRadius: BorderRadius.circular(24),
                           onTap: _handleBack,
                           child: const Padding(
-                            padding: EdgeInsets.all(8.0), // bigger tap target
+                            padding: EdgeInsets.all(8.0),
                             child: Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.black87),
                           ),
                         ),
                       ),
-                      // const SizedBox(width: 4),
-                      // const Text(
-                      //   'Back',
-                      //   style: TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w600),
-                      // ),
                     ],
                   ),
                 ),
 
                 const SizedBox(height: 6),
-
 
                 // Title
                 Padding(
@@ -751,7 +715,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                                       spacing: 8,
                                       runSpacing: 6,
                                       children: [
-                                        // ✅ Select all on this page (make this WRAP, not Row)
+                                        // ✅ Select all on this page
                                         Wrap(
                                           spacing: 6,
                                           crossAxisAlignment: WrapCrossAlignment.center,
@@ -772,7 +736,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                                         ),
 
                                         // 🗑 Delete selected
-                                        // ✅ Delete selected (unchanged)
                                         TextButton.icon(
                                           onPressed: _selected.isEmpty ? null : _deleteSelected,
                                           icon: Icon(Icons.delete_outline, size: narrow ? 16 : 20),
@@ -788,7 +751,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                                           ),
                                         ),
 
-// ✅ Delete all alerts — now matches "Delete selected" (no border)
+                                        // ✅ Delete all alerts — like "Delete selected" (no border)
                                         TextButton.icon(
                                           onPressed: (_all.isEmpty || _deletingAll) ? null : _deleteAllAlerts,
                                           icon: Icon(Icons.delete_forever_outlined, size: narrow ? 16 : 20),
@@ -797,7 +760,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                                             style: TextStyle(fontSize: txt),
                                           ),
                                           style: ButtonStyle(
-                                            // Same compact layout
                                             padding: WidgetStatePropertyAll(
                                               EdgeInsets.symmetric(
                                                 horizontal: narrow ? 8 : 12,
@@ -807,24 +769,18 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                                             minimumSize: const WidgetStatePropertyAll(Size.zero),
                                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                             visualDensity: VisualDensity.compact,
-
-                                            // Red when enabled, dimmed when disabled
                                             foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
                                               if (states.contains(WidgetState.disabled)) {
-                                                return Colors.red.withOpacity(0.38); // M3 disabled foreground
+                                                return Colors.red.withOpacity(0.38);
                                               }
                                               return Colors.red;
                                             }),
-
-                                            // Remove any background/border
                                             backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
                                             overlayColor: WidgetStatePropertyAll(Colors.red.withOpacity(0.08)),
                                             side: const WidgetStatePropertyAll(BorderSide.none),
                                             shape: const WidgetStatePropertyAll(StadiumBorder()),
                                           ),
                                         ),
-
-
                                       ],
                                     ),
                                   ),
@@ -849,10 +805,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                                   ),
                                 ],
                               );
-
                             },
                           )
-
                         ],
                       ),
                     ),
@@ -866,7 +820,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
         ),
       ),
 
-      // 🔻 Global bottom navigator (replaces old gradient bar)
+      // 🔻 Global bottom navigator
       bottomNavigationBar: buildMyNavBar(context, currentIndex: 1),
     );
   }
@@ -911,13 +865,10 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
           const SizedBox(width: _hGapPurposeToType),
 
           const _HeaderCell('Property Type', flex: 4, fontSize: _headerFontSize),
-
         ],
       ),
     );
   }
-
-
 
   Widget _dataRow({
     required SavedAlert alert,
@@ -931,7 +882,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       decoration: const BoxDecoration(color: Colors.white),
       child: Column(
         children: [
-          // ── TOP GRID ROW (no delete icon here) ────────────────────────────────
+          // ── TOP GRID ROW (no delete icon here)
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1003,7 +954,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
             ],
           ),
 
-          // ── BOTTOM ROW: Created label + Delete icon on the SAME line ─────────
+          // ── BOTTOM ROW: Created label + Delete icon on the SAME line
           Padding(
             padding: const EdgeInsets.only(top: 6),
             child: Row(
@@ -1039,8 +990,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       ),
     );
   }
-
-
 
   // Pagination controls
   Widget _pager() {
@@ -1098,7 +1047,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       ],
     );
   }
-
 }
 
 /// -------------------------------- UI bits --------------------------------
@@ -1110,6 +1058,7 @@ class _HeaderCell extends StatelessWidget {
 
   const _HeaderCell(
       this.text, {
+        super.key,
         this.flex = 1,
         this.fontSize = _headerFontSize,
       });
@@ -1136,27 +1085,26 @@ class _HeaderCell extends StatelessWidget {
   }
 }
 
-
-
 class _CellText extends StatelessWidget {
   final String text;
   final TextAlign textAlign;
   final FontWeight fontWeight;
   final double fontSize;
 
-  // NEW:
+  // Options:
   final int? maxLines;                 // null = unlimited
   final bool softWrap;                 // whether to wrap lines
   final TextOverflow overflow;         // how to overflow
 
   const _CellText(
       this.text, {
+        super.key,
         this.fontWeight = FontWeight.w400,
         this.fontSize = 13,
-        // defaults keep previous behavior
         this.maxLines,
         this.softWrap = true,
         this.overflow = TextOverflow.visible,
+        this.textAlign = TextAlign.left, // ✅ default provided
       });
 
   @override
@@ -1177,13 +1125,16 @@ class _CellText extends StatelessWidget {
   }
 }
 
-
 // Placeholder to align with row checkbox space
 class _HeaderCheckboxPlaceholder extends StatelessWidget {
   final double width;
   final double height;
 
-  const _HeaderCheckboxPlaceholder();
+  const _HeaderCheckboxPlaceholder({
+    super.key,
+    this.width = _checkColW, // ✅ default to checkbox column width
+    this.height = 0,         // ✅ safe default
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1191,11 +1142,10 @@ class _HeaderCheckboxPlaceholder extends StatelessWidget {
   }
 }
 
-
 class _ErrorView extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
-  const _ErrorView({required this.message, required this.onRetry});
+  const _ErrorView({super.key, required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -1219,36 +1169,45 @@ class _ErrorView extends StatelessWidget {
   }
 }
 
-/// Kept in case you want it later (currently unused)
+/// Optional shrinking text helper (kept simple & const-friendly)
 class _ShrinkText extends StatelessWidget {
   final String text;
   final double baseSize;
   final double minSize;
-  final TextAlign? textAlign;
+  final TextAlign textAlign;
   final FontWeight fontWeight;
-  final Color? color;
+  final Color color;
 
   const _ShrinkText(
-      this.text);
+      this.text, {
+        super.key,
+        this.baseSize = 14,                // ✅ initialized
+        this.minSize = 10,                 // ✅ initialized (kept for API compat)
+        this.textAlign = TextAlign.left,   // ✅ initialized
+        this.fontWeight = FontWeight.w600, // ✅ initialized
+        this.color = const Color(0xFF000000), // ✅ const-friendly black
+      });
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (_, __) => FittedBox(
-        alignment: Alignment.centerLeft,
-        fit: BoxFit.scaleDown,
-        child: Text(
-          text,
-          maxLines: 1,
-          softWrap: false,
-          overflow: TextOverflow.visible,
-          textAlign: textAlign,
-          style: TextStyle(
-            fontSize: baseSize,
-            fontWeight: fontWeight,
-            color: color ?? Colors.black87,
-            height: 1.2,
-          ),
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: textAlign == TextAlign.right
+          ? Alignment.centerRight
+          : textAlign == TextAlign.center
+          ? Alignment.center
+          : Alignment.centerLeft,
+      child: Text(
+        text,
+        maxLines: 1,
+        softWrap: false,
+        overflow: TextOverflow.ellipsis,
+        textAlign: textAlign,
+        style: TextStyle(
+          fontSize: baseSize,
+          fontWeight: fontWeight,
+          color: color,
+          height: 1.2,
         ),
       ),
     );

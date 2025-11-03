@@ -1,12 +1,12 @@
-import 'package:Akarat/screen/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 // Screens
-import 'package:Akarat/screen/login.dart';                 // NOTE: elsewhere you sometimes use LoginDemo
+import 'package:Akarat/screen/splash_screen.dart';
+import 'package:Akarat/screen/login.dart';
 import 'package:Akarat/screen/register_screen.dart';
 import 'package:Akarat/screen/my_account.dart';
-import 'package:Akarat/screen/home.dart';                  // contains HomeDemo
+import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/forgot_password.dart';
 import 'package:Akarat/screen/otp_verification.dart';
 import 'package:Akarat/screen/reset_password.dart';
@@ -19,19 +19,37 @@ import 'providers/profile_image_provider.dart';
 // Utils
 import 'package:Akarat/services/api_service.dart';
 
+// Firebase
+import 'package:firebase_core/firebase_core.dart';
+// If you used `flutterfire configure`, uncomment the next line and use the options in _initFirebase():
+// import 'firebase_options.dart';
 
+// Dotenv (for API_BASE_URL, etc.)
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Global keys
 final GlobalKey<NavigatorState> _navKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> _smKey = GlobalKey<ScaffoldMessengerState>();
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Log effective base URL once at startup
+  // 1) Load environment variables first so ApiService / others can read them
+  // Try to load .env if it exists, but don’t crash if it doesn’t.
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (_) {
+    // No .env on device – that's fine when using --dart-define
+  }
+
+
+  // 2) Initialize Firebase (required for Google Sign-In)
+  await _initFirebase();
+
+  // 3) Optional: log effective base URL once at startup (reads from your ApiService)
   ApiService.debugPrintBaseUrl();
 
-  // Create ONE instance of ProfileImageProvider and init before runApp
+  // 4) Create ONE instance of ProfileImageProvider and init before runApp
   final profileProvider = ProfileImageProvider();
   await profileProvider.initialize();
 
@@ -54,6 +72,21 @@ void main() async {
   );
 }
 
+/// Isolated Firebase init with graceful fallback if `firebase_options.dart` isn’t present.
+Future<void> _initFirebase() async {
+  try {
+    // If you configured via `flutterfire configure`, prefer:
+    // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+    // Otherwise, this uses native config files (GoogleService-Info.plist / google-services.json)
+    await Firebase.initializeApp();
+  } catch (e) {
+    // Don’t crash the app; log so you can diagnose init issues.
+    // ignore: avoid_print
+    print('⚠️ Firebase initialization failed: $e');
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -66,15 +99,15 @@ class MyApp extends StatelessWidget {
       navigatorKey: _navKey,
       scaffoldMessengerKey: _smKey,
 
-      // 🚀 Start with animated splash (routes to HomeDemo afterward)
+      // 🚀 Start with animated splash (route to Home/Login based on your logic)
       home: const SplashScreen(),
 
-      // Simple static routes
+      // Static routes
       routes: {
-        '/login': (context) => const Login(),                 // NOTE: if you use LoginDemo elsewhere, align names
+        '/login': (context) => const Login(),
         '/register': (context) => const RegisterScreen(),
         '/my_accounts': (context) => const My_Account(),
-        '/home': (context) => const Home(),                   // wraps HomeDemo inside
+        '/home': (context) => const Home(),
         '/forgot-password': (context) => const ForgotPasswordScreen(),
         '/new-projects': (context) => const New_Projects(),
       },
@@ -84,13 +117,11 @@ class MyApp extends StatelessWidget {
         final name = settings.name ?? '';
 
         if (name == '/verify-otp') {
-          // Expect a Map but handle anything gracefully
           final raw = settings.arguments;
           final Map<String, dynamic> args =
           (raw is Map) ? Map<String, dynamic>.from(raw) : const {};
-
           return MaterialPageRoute(
-            builder: (_) => const OtpVerificationScreen(), // reads args via ModalRoute
+            builder: (_) => const OtpVerificationScreen(), // read args via ModalRoute.of(context)
             settings: RouteSettings(name: name, arguments: args),
           );
         }
@@ -112,10 +143,9 @@ class MyApp extends StatelessWidget {
           );
         }
 
-        // Fall back to routes: map (or return an "unknown" page if you prefer)
+        // Fall back to default routes map
         return null;
       },
-
 
       // Friendly fallback
       onUnknownRoute: (_) => MaterialPageRoute(

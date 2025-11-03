@@ -1,15 +1,23 @@
+// lib/screen/login.dart
+import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+// Screens
+import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/register_screen.dart';
 import 'package:Akarat/screen/forgot_password.dart';
 
-import '../secure_storage.dart';
-import 'package:flutter/material.dart';
+// Utils
 import 'package:Akarat/services/api_service.dart';
-import 'package:Akarat/screen/home.dart';
+import '../secure_storage.dart';
 
-import 'package:http/http.dart' as http;
-
+// 🔐 Firebase + Google Sign-In (v7)
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart' as gsi;
 
 class Login extends StatelessWidget {
   const Login({super.key});
@@ -33,27 +41,46 @@ class _LoginDemoState extends State<LoginDemo> {
   final passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   bool isLoading = false;
-  bool showClose = true;
   bool obscurePassword = true;
+
+  // ✅ v7 uses the singleton
+  final gsi.GoogleSignIn _googleSignIn = gsi.GoogleSignIn.instance;
 
   String? errorMessage;
 
   @override
   void initState() {
     super.initState();
+    _initGoogle();
     _ensureCleanIfLoggedOut();
     if ((widget.initialEmail ?? '').isNotEmpty) {
       emailController.text = widget.initialEmail!.trim();
     }
   }
 
+  Future<void> _initGoogle() async {
+    // If needed on iOS/macOS: pass clientId/serverClientId here.
+    await _googleSignIn.initialize(
+      // clientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com',
+      // serverClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+    );
+
+    // Optional: try lightweight restore if available
+    try {
+      await _googleSignIn.attemptLightweightAuthentication();
+    } catch (_) {
+      // normal on first run
+    }
+  }
+
   Future<void> _ensureCleanIfLoggedOut() async {
     final ok = await SecureStorage.isLoggedIn(); // token + non-empty email
     if (!ok) {
-      // Make sure nothing stale shows up on Login screen
       await SecureStorage.clearProfile();
     }
   }
+
+  // ============== Helpers for /me and profile cache ==============
 
   Future<bool> _isAccountActive(String token) async {
     try {
@@ -155,7 +182,6 @@ class _LoginDemoState extends State<LoginDemo> {
           path(data, ['data', 'name']),
           path(data, ['user', 'name']),
           path(data, ['data', 'user', 'name']),
-          // fallback: join first + last
           [first, last].where((s) => s.isNotEmpty).join(' ')
         ]);
 
@@ -166,7 +192,6 @@ class _LoginDemoState extends State<LoginDemo> {
           path(data, ['data', 'user', 'email']),
         ]);
 
-        // last resort: scan for any "email" key
         if (email.isEmpty) {
           String findEmail(dynamic obj) {
             if (obj is Map) {
@@ -202,16 +227,13 @@ class _LoginDemoState extends State<LoginDemo> {
     }
   }
 
-  /// If backend doesn’t give first/last, derive/calc from a full name and cache.
   Future<void> _ensureFirstLastFromBestNameFallback({
     required String nameFromLogin,
   }) async {
     String? first = await SecureStorage.read('user_first_name');
     String? last = await SecureStorage.read('user_last_name');
     if ((first ?? '').trim().isEmpty && (last ?? '').trim().isEmpty) {
-      // choose the best full name available
-      final cachedFull =
-          (await SecureStorage.read('user_name'))?.trim() ?? '';
+      final cachedFull = (await SecureStorage.read('user_name'))?.trim() ?? '';
       final full = cachedFull.isNotEmpty ? cachedFull : nameFromLogin;
 
       if (full.isNotEmpty) {
@@ -231,58 +253,9 @@ class _LoginDemoState extends State<LoginDemo> {
     super.dispose();
   }
 
-  void showCustomMessage(String message, {Color bgColor = Colors.redAccent}) {
-    final overlay = Overlay.of(context);
-    late OverlayEntry entry;
-
-    entry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: 80,
-        left: 20,
-        right: 20,
-        child: Material(
-          color: Colors.transparent,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: const [
-                BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(2, 2)),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    message,
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                  onPressed: () => entry.remove(),
-                )
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
-    overlay.insert(entry);
-
-    Future.delayed(const Duration(seconds: 3), () {
-      if (overlay.mounted) entry.remove();
-    });
-  }
+  // ============== Email/password login ==============
 
   void _login() async {
-    // Debounce & validate
     if (isLoading) return;
     if (!formKey.currentState!.validate()) return;
 
@@ -298,64 +271,46 @@ class _LoginDemoState extends State<LoginDemo> {
       final res = await http.post(
         Uri.parse('${ApiService.baseUrl}/login'),
         headers: {'Accept': 'application/json'},
-        body: {'email': email, 'password': password},
+        body: {'email': email, 'password': password}, // Laravel-friendly form
       );
 
-      debugPrint('LOGIN status=${res.statusCode}');
-      debugPrint('LOGIN body=${res.body}');
+      Map<String, dynamic> body = _tryDecode(res.body);
 
-      Map<String, dynamic> body = {};
-      try {
-        body = jsonDecode(res.body) as Map<String, dynamic>;
-      } catch (_) {}
-
-      // ----- Interpret status codes -----
       if (res.statusCode == 200) {
-        final token = (body['token'] ?? '').toString().trim();
-        if (token.isEmpty) {
-          await SecureStorage.signOutLocal(); // clears token + profile
+        final token = _extractTokenFromAny(body);
+        if (token == null || token.isEmpty) {
+          await SecureStorage.signOutLocal();
           setState(() => errorMessage = 'Login succeeded but token missing.');
           return;
         }
 
-        // Save token first
         await SecureStorage.setToken(token);
 
-        // Extract whatever user fields the /login response gives
-        final dynamic userObj =
-            body['user'] ?? body['data'] ?? const {};
-        final nameFromApi = (userObj is Map && userObj['name'] != null
-            ? userObj['name']
-            : '')
+        final dynamic userObj = body['user'] ?? body['data'] ?? const {};
+        final nameFromApi =
+        (userObj is Map && userObj['name'] != null ? userObj['name'] : '')
             .toString()
             .trim();
-        final emailFromApi = (userObj is Map && userObj['email'] != null
-            ? userObj['email']
-            : email)
+        final emailFromApi =
+        (userObj is Map && userObj['email'] != null ? userObj['email'] : email)
             .toString()
             .trim();
-        final imageFromApi = (userObj is Map && userObj['image'] != null
-            ? userObj['image']
-            : '')
+        final imageFromApi =
+        (userObj is Map && userObj['image'] != null ? userObj['image'] : '')
             .toString()
             .trim();
 
-        // Store profile (keeps UI stable)
         await SecureStorage.setUserProfile(
           name: nameFromApi,
           email: emailFromApi,
           image: imageFromApi.isEmpty ? null : imageFromApi,
         );
 
-        // Hydrate from /me (now also writes first_name/last_name)
         try {
           await _fetchAndCacheMe(token);
         } catch (_) {}
 
-        // If backend didn’t provide first/last, derive from best full name
-        await _ensureFirstLastFromBestNameFallback(
-          nameFromLogin: nameFromApi,
-        );
+        await _ensureFirstLastFromBestNameFallback(nameFromLogin: nameFromApi);
 
         if (!mounted) return;
         Navigator.of(context).pushAndRemoveUntil(
@@ -365,27 +320,20 @@ class _LoginDemoState extends State<LoginDemo> {
         return;
       }
 
-      // ----- Soft-deleted account -----
       if (res.statusCode == 410) {
         await SecureStorage.signOutLocal();
         setState(() => errorMessage = 'This account has been deleted.');
         return;
       }
 
-      // ----- Disabled / not verified -----
       if (res.statusCode == 403) {
         await SecureStorage.signOutLocal();
-
-        final serverMsg =
-        (body['message'] ?? '').toString().toLowerCase();
-        final isUnverified = serverMsg.contains('verify') ||
-            serverMsg.contains('inactive') ||
-            serverMsg.contains('not verified');
-
-        setState(() =>
-        errorMessage = body['message']?.toString() ??
-            'Your account is not allowed to log in.');
-
+        final isUnverified = (body['message'] ?? '')
+            .toString()
+            .toLowerCase()
+            .contains(RegExp(r'verify|inactive|not verified'));
+        setState(() => errorMessage =
+            body['message']?.toString() ?? 'Your account is not allowed to log in.');
         if (isUnverified) {
           Navigator.of(context).pushNamed(
             '/verify-otp',
@@ -399,23 +347,19 @@ class _LoginDemoState extends State<LoginDemo> {
         return;
       }
 
-      // ----- Invalid creds -----
       if (res.statusCode == 401) {
         await SecureStorage.signOutLocal();
-        setState(() => errorMessage =
-            body['message']?.toString() ?? 'Invalid email or password.');
+        setState(() =>
+        errorMessage = body['message']?.toString() ?? 'Invalid email or password.');
         return;
       }
 
-      // ----- Validation errors -----
       if (res.statusCode == 422) {
         await SecureStorage.signOutLocal();
         String msg = 'Validation error.';
         if (body['errors'] is Map && (body['errors'] as Map).isNotEmpty) {
           final first = (body['errors'] as Map).values.first;
-          if (first is List && first.isNotEmpty) {
-            msg = first.first.toString();
-          }
+          if (first is List && first.isNotEmpty) msg = first.first.toString();
         } else if (body['message'] != null) {
           msg = body['message'].toString();
         }
@@ -423,25 +367,190 @@ class _LoginDemoState extends State<LoginDemo> {
         return;
       }
 
-      // ----- Other server errors -----
       await SecureStorage.signOutLocal();
-      setState(() => errorMessage = body['message']?.toString() ??
-          'Server error (${res.statusCode}). Try again.');
+      setState(() => errorMessage =
+          body['message']?.toString() ?? 'Server error (${res.statusCode}). Try again.');
     } catch (e) {
-      debugPrint('LOGIN error: $e');
       await SecureStorage.signOutLocal();
       if (!mounted) return;
-      setState(() =>
-      errorMessage = 'Network error. Check internet / BASE_URL.');
+      setState(() => errorMessage = 'Network error. Check internet / BASE_URL.');
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
   }
 
+  // ============== GOOGLE SIGN-IN (v7 authenticate + robust backend exchange) ==============
+
+  Future<void> _signInWithGoogle() async {
+    if (isLoading) return;
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    StreamSubscription? sub;
+    try {
+      // 1) Wait for the sign-in event (v7 pattern)
+      final completer = Completer<gsi.GoogleSignInAccount>();
+      sub = _googleSignIn.authenticationEvents.listen((event) {
+        if (event is gsi.GoogleSignInAuthenticationEventSignIn && !completer.isCompleted) {
+          completer.complete(event.user);
+        }
+      });
+
+      // 2) Start auth flow
+      if (_googleSignIn.supportsAuthenticate()) {
+        await _googleSignIn.authenticate(); // add scopeHint if you need more scopes
+      } else {
+        throw Exception('This platform does not support authenticate().');
+      }
+
+      // 3) Get account and Google idToken (may be null depending on flow)
+      final gsi.GoogleSignInAccount account = await completer.future;
+      await sub.cancel();
+
+      final gsi.GoogleSignInAuthentication googleAuth = await account.authentication;
+      final String? googleIdTokenMaybe = googleAuth.idToken; // may be null on some iOS flows
+
+      // 4) Sign in to Firebase using whichever token is available
+      // Prefer Google idToken if present; otherwise we'll rely on Firebase ID token after sign-in.
+      if (googleIdTokenMaybe != null && googleIdTokenMaybe.isNotEmpty) {
+        final cred = GoogleAuthProvider.credential(idToken: googleIdTokenMaybe);
+        await FirebaseAuth.instance.signInWithCredential(cred);
+      } else {
+        // If google idToken was not provided, do the normal sign-in path anyway:
+        // (authenticate() has already done the account selection; Firebase will restore it)
+        // On iOS v7 this is typically fine after authenticate().
+        // If you want a stronger fallback, you can add serverClientId/clientId in _initGoogle().
+        // We still proceed to fetch Firebase token below.
+      }
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('Firebase user is null after sign-in');
+
+      // ✅ Get a DEFINITIVELY non-null Firebase ID token
+      final String? tokenMaybe = await user.getIdToken(true);
+      if (tokenMaybe == null || tokenMaybe.isEmpty) {
+        throw Exception('Failed to get Firebase ID token.');
+      }
+      final String firebaseIdToken = tokenMaybe; // <-- non-nullable from here on
+
+      final displayName = (user.displayName ?? '').trim();
+      final email       = (user.email ?? '').trim();
+      final photoUrl    = (user.photoURL ?? '').trim();
+      final uid         = user.uid;
+
+      // ======== 🔁 Backend exchange attempts (using ApiService helpers) ========
+
+      // 1) Try /login-google
+      String? backendToken = await ApiService.tryLoginGoogle(firebaseIdToken);
+
+      // 2) Try /social-auth/google
+      backendToken ??= await ApiService.trySocialAuthGoogle(
+        idToken: firebaseIdToken,
+        email: email,
+        name: displayName,
+        photo: photoUrl,
+        providerUid: uid,
+      );
+
+      // 3) Fallback: register shadow user with deterministic password, then login
+      if (backendToken == null || backendToken.isEmpty) {
+        final deterministicPwd = 'GGL_${uid}_AKARAT';
+
+        // ok even if 409/422 (already exists)
+        await ApiService.tryRegisterGoogleShadow(
+          name: displayName.isEmpty
+              ? (email.isNotEmpty ? email.split('@').first : 'Google User')
+              : displayName,
+          email: email,
+          password: deterministicPwd,
+          providerUid: uid,
+        );
+
+        backendToken = await ApiService.tryPasswordLoginBothEncodings(
+          email: email,
+          password: deterministicPwd,
+        );
+      }
+
+      if (backendToken == null || backendToken.isEmpty) {
+        throw Exception('Could not obtain backend token after Google sign-in.');
+      }
+
+      // Cache session + profile
+      await SecureStorage.setToken(backendToken);
+      await SecureStorage.setUserProfile(
+        name: displayName,
+        email: email,
+        image: photoUrl.isEmpty ? null : photoUrl, // make image nullable in SecureStorage
+      );
+      try {
+        await _fetchAndCacheMe(backendToken);
+      } catch (_) {}
+      await _ensureFirstLastFromBestNameFallback(nameFromLogin: displayName);
+
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const Home()),
+            (_) => false,
+      );
+    } catch (e) {
+      await SecureStorage.signOutLocal();
+      if (mounted) {
+        setState(() {
+          errorMessage = 'Google sign-in failed. ${e.toString()}';
+        });
+      }
+    } finally {
+      await sub?.cancel();
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+
+  // ============== Small helpers ==============
+
+  Map<String, dynamic> _tryDecode(String s) {
+    try {
+      final m = jsonDecode(s);
+      if (m is Map<String, dynamic>) return m;
+      return {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  /// Supports these shapes:
+  /// {token:".."}, {access_token:".."}, {data:{token:".."}}, {data:{access_token:".."}}
+  String? _extractTokenFromAny(Map<String, dynamic> m) {
+    final t1 = (m['token'] ?? '').toString().trim();
+    if (t1.isNotEmpty) return t1;
+
+    final t2 = (m['access_token'] ?? '').toString().trim();
+    if (t2.isNotEmpty) return t2;
+
+    final d = m['data'];
+    if (d is Map<String, dynamic>) {
+      final t3 = (d['token'] ?? '').toString().trim();
+      if (t3.isNotEmpty) return t3;
+      final t4 = (d['access_token'] ?? '').toString().trim();
+      if (t4.isNotEmpty) return t4;
+    }
+    return null;
+  }
+
+  String _randomPassword({int length = 24}) {
+    const chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#%^*()-_=+[]{}';
+    final rnd = Random.secure();
+    return List.generate(length, (_) => chars[rnd.nextInt(chars.length)]).join();
+  }
+
+  // ============== UI ==============
+
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -449,15 +558,13 @@ class _LoginDemoState extends State<LoginDemo> {
           builder: (context, constraints) {
             return SingleChildScrollView(
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
 
-                    // Close button
+                    // Close
                     Padding(
                       padding: const EdgeInsets.only(right: 20),
                       child: Align(
@@ -469,7 +576,8 @@ class _LoginDemoState extends State<LoginDemo> {
                                   (route) => false,
                             );
                           },
-                          child: const Icon(Icons.close, size: 28, color: Colors.black),
+                          child:
+                          const Icon(Icons.close, size: 28, color: Colors.black),
                         ),
                       ),
                     ),
@@ -495,7 +603,8 @@ class _LoginDemoState extends State<LoginDemo> {
                       key: formKey,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 30),
                         padding: const EdgeInsets.only(top: 15),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
@@ -510,14 +619,17 @@ class _LoginDemoState extends State<LoginDemo> {
                         ),
                         child: Column(
                           children: [
-                            const Text("Welcome to Akarat!", style: TextStyle(fontSize: 20)),
+                            const Text("Welcome to Akarat!",
+                                style: TextStyle(fontSize: 20)),
                             const SizedBox(height: 15),
 
+                            // EMAIL
                             Container(
                               width: MediaQuery.of(context).size.width * 0.8,
                               height: 50,
                               decoration: _boxDecoration(),
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              padding:
+                              const EdgeInsets.symmetric(horizontal: 10),
                               child: TextFormField(
                                 controller: emailController,
                                 keyboardType: TextInputType.emailAddress,
@@ -541,6 +653,7 @@ class _LoginDemoState extends State<LoginDemo> {
 
                             const SizedBox(height: 6),
 
+                            // PASSWORD
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
@@ -548,7 +661,8 @@ class _LoginDemoState extends State<LoginDemo> {
                                   width: MediaQuery.of(context).size.width * 0.8,
                                   height: 50,
                                   decoration: _boxDecoration(),
-                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
                                   child: Center(
                                     child: TextFormField(
                                       controller: passwordController,
@@ -565,7 +679,8 @@ class _LoginDemoState extends State<LoginDemo> {
                                               ? Icons.visibility_off
                                               : Icons.visibility),
                                           onPressed: () => setState(() =>
-                                          obscurePassword = !obscurePassword),
+                                          obscurePassword =
+                                          !obscurePassword),
                                         ),
                                       ),
                                       validator: (value) {
@@ -578,8 +693,8 @@ class _LoginDemoState extends State<LoginDemo> {
                                   ),
                                 ),
                                 Padding(
-                                  padding:
-                                  const EdgeInsets.only(right: 10, top: 4),
+                                  padding: const EdgeInsets.only(
+                                      right: 10, top: 4),
                                   child: InkWell(
                                     onTap: () {
                                       Navigator.push(
@@ -605,6 +720,7 @@ class _LoginDemoState extends State<LoginDemo> {
 
                             const SizedBox(height: 15),
 
+                            // Email Login button
                             isLoading
                                 ? const CircularProgressIndicator()
                                 : ElevatedButton(
@@ -614,7 +730,8 @@ class _LoginDemoState extends State<LoginDemo> {
                                     MediaQuery.of(context).size.width *
                                         0.8,
                                     50),
-                                backgroundColor: const Color(0xFFF1F1F1),
+                                backgroundColor:
+                                const Color(0xFFF1F1F1),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -629,14 +746,75 @@ class _LoginDemoState extends State<LoginDemo> {
                               ),
                             ),
 
+                            const SizedBox(height: 14),
+
+                            // ---- Divider OR ----
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 20),
+                                    height: 1,
+                                    color: Colors.black12,
+                                  ),
+                                ),
+                                const Text('  or  ',
+                                    style:
+                                    TextStyle(color: Colors.black54)),
+                                Expanded(
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 20),
+                                    height: 1,
+                                    color: Colors.black12,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 14),
+
+                            // Google Sign-In button
+                            SizedBox(
+                              width:
+                              MediaQuery.of(context).size.width * 0.8,
+                              height: 50,
+                              child: OutlinedButton.icon(
+                                onPressed: _signInWithGoogle,
+                                icon: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: Image.asset(
+                                      'assets/images/google.png'),
+                                ),
+                                label: const Text(
+                                  'Continue with Google',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                      color: Colors.black12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(10)),
+                                  foregroundColor: Colors.black87,
+                                  backgroundColor: Colors.white,
+                                ),
+                              ),
+                            ),
+
                             const SizedBox(height: 15),
 
+                            // Register
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Text('Not registered yet? ',
-                                    style:
-                                    TextStyle(color: Color(0xFF424242))),
+                                    style: TextStyle(
+                                        color: Color(0xFF424242))),
                                 InkWell(
                                   onTap: () => Navigator.push(
                                     context,
@@ -674,7 +852,8 @@ class _LoginDemoState extends State<LoginDemo> {
                           ),
                           child: Text(
                             errorMessage!,
-                            style: const TextStyle(color: Colors.white),
+                            style:
+                            const TextStyle(color: Colors.white),
                           ),
                         ),
                       ),

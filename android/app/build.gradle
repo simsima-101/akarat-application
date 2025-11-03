@@ -1,10 +1,11 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    // The Flutter Gradle Plugin must be applied after the Androifd and Kotlin Gradle plugins.
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
+    // ✅ Add Google Services plugin
+    id "com.google.gms.google-services"
 }
-
 
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
@@ -12,10 +13,10 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
-
 android {
-//    namespace 'dev.fluttercommunity.plus.androidintent'
-    namespace = "com.akarat.drawerdemo"
+    // ✅ Make sure this matches the package you register in Firebase
+    namespace = "com.akarat.drawerdemo"      // ← change to com.akarat.app if you prefer
+
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -37,13 +38,10 @@ android {
         }
     }
 
-
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.akarat.drawerdemo"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // ✅ This must match your Firebase Android package name exactly
+        applicationId "com.akarat.drawerdemo" // ← change to com.akarat.app if you prefer
+        minSdk = flutter.minSdkVersion        // ensure this resolves to ≥ 21
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -57,11 +55,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
-
-
-
-
 }
 
 flutter {

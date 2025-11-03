@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "370139668712",
+    "project_id": "akarat-fd6f4",
+    "storage_bucket": "akarat-fd6f4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:370139668712:android:d3ea6fcc42d516d1a7295d",
+        "android_client_info": {
+          "package_name": "com.akarat.drawerdemo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAw-CJCyZydu1e3NLGLao7ZdLkX6u8gchg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
