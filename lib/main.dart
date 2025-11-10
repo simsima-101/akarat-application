@@ -1,55 +1,60 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-// Screens
-import 'package:Akarat/screen/splash_screen.dart';
-import 'package:Akarat/screen/login.dart';
-import 'package:Akarat/screen/register_screen.dart';
-import 'package:Akarat/screen/my_account.dart';
-import 'package:Akarat/screen/home.dart';
-import 'package:Akarat/screen/forgot_password.dart';
-import 'package:Akarat/screen/otp_verification.dart';
-import 'package:Akarat/screen/reset_password.dart';
-import 'package:Akarat/screen/new_projects.dart';
-
+// Dart / Flutter
 // Providers
 import 'package:Akarat/providers/favorite_provider.dart';
-import 'package:Akarat/providers/profile_image_provider.dart';
 
-// Utils
+import 'package:Akarat/providers/search_amenities_provider.dart';
+import 'package:Akarat/screen/forgot_password.dart';
+import 'package:Akarat/screen/home.dart'; // wraps HomeDemo inside
+import 'package:Akarat/screen/login.dart';
+import 'package:Akarat/screen/my_account.dart';
+import 'package:Akarat/screen/new_projects.dart';
+import 'package:Akarat/screen/otp_verification.dart';
+import 'package:Akarat/screen/register_screen.dart';
+import 'package:Akarat/screen/reset_password.dart';
+// Screens
+import 'package:Akarat/screen/splash_screen.dart';
+// Utils / Services
 import 'package:Akarat/services/api_service.dart';
-
 // Firebase
 import 'package:firebase_core/firebase_core.dart';
-// If you used `flutterfire configure`, prefer initializing with options in _initFirebase():
+import 'package:flutter/material.dart';
+// If you used `flutterfire configure`, consider:
 // import 'firebase_options.dart';
 
-// Dotenv (for API_BASE_URL, etc.)
+// Env (for API_BASE_URL, etc.)
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+// State management
+import 'package:provider/provider.dart';
 
+import 'providers/profile_image_provider.dart';
+
+// -------------------------------------------------------
 // Global keys
+// -------------------------------------------------------
 final GlobalKey<NavigatorState> _navKey = GlobalKey<NavigatorState>();
-final GlobalKey<ScaffoldMessengerState> _smKey = GlobalKey<ScaffoldMessengerState>();
+final GlobalKey<ScaffoldMessengerState> _smKey =
+GlobalKey<ScaffoldMessengerState>();
 
+// -------------------------------------------------------
+// Entry point
+// -------------------------------------------------------
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1) Load environment variables (ok if file is absent — CI/Release can use --dart-define)
+  // 1) Load environment variables (safe if .env missing; you may use --dart-define instead)
   try {
     await dotenv.load(fileName: ".env");
   } catch (_) {
-    // No .env on device — fine when using --dart-define
+    // It's fine if .env isn't present on device / CI
   }
 
-  // 2) Initialize Firebase (required for Google Sign-In)
+  // 2) Initialize Firebase (required for Google Sign-In, FCM, etc.)
   await _initFirebase();
 
-  // 3) Optional: log effective base URL (guarded so it never crashes a build)
-  try {
-    ApiService.debugPrintBaseUrl();
-  } catch (_) {}
+  // 3) Optional: log effective base URL once at startup
+  ApiService.debugPrintBaseUrl();
 
-  // 4) Create ONE instance of ProfileImageProvider and init before runApp
+  // 4) Initialize providers that need async setup before runApp
   final profileProvider = ProfileImageProvider();
   await profileProvider.initialize();
 
@@ -60,40 +65,39 @@ Future<void> main() async {
           lazy: false,
           create: (_) {
             final p = FavoriteProvider();
-            // Optional preload; guard in case you haven't implemented this yet
-            try {
-              // fire-and-forget (no await so startup stays snappy)
-              // implement inside FavoriteProvider if you want cached restore
-              // e.g., read SharedPreferences or fetch bulk favorites and call replaceFavoritesFromIds
-              // ignore: discarded_futures
-              p.loadFavorites();
-            } catch (_) {}
+            p.loadFavorites(); // fire-and-forget
             return p;
           },
         ),
-        // Provide the already-created profile provider instance
         ChangeNotifierProvider.value(value: profileProvider),
+
+        ChangeNotifierProvider(create: (_) => SearchAmenitiesProvider()),
       ],
       child: const MyApp(),
     ),
   );
 }
 
-/// Isolated Firebase init with graceful fallback if `firebase_options.dart` isn’t present.
+// -------------------------------------------------------
+// Firebase init with graceful fallback
+// -------------------------------------------------------
 Future<void> _initFirebase() async {
   try {
-    // If you configured via `flutterfire configure`, prefer:
+    // Prefer this if you have firebase_options.dart:
     // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-    // Otherwise, this uses native config files (GoogleService-Info.plist / google-services.json)
+    // Otherwise, rely on native config files (GoogleService-Info.plist / google-services.json)
     await Firebase.initializeApp();
   } catch (e) {
-    // Don’t crash the app; log so you can diagnose init issues.
+    // Don't crash; log and allow the app to continue (non-Firebase features still work)
     // ignore: avoid_print
     print('⚠️ Firebase initialization failed: $e');
   }
 }
 
+// -------------------------------------------------------
+// App
+// -------------------------------------------------------
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -106,10 +110,10 @@ class MyApp extends StatelessWidget {
       navigatorKey: _navKey,
       scaffoldMessengerKey: _smKey,
 
-      // 🚀 Start with animated splash (route to Home/Login based on your logic)
+      // Start on splash; it decides where to go next
       home: const SplashScreen(),
 
-      // Static routes
+      // Static routes (no arguments)
       routes: {
         '/login': (context) => const Login(),
         '/register': (context) => const RegisterScreen(),
@@ -119,16 +123,20 @@ class MyApp extends StatelessWidget {
         '/new-projects': (context) => New_Projects(),
       },
 
-      // Routes that expect arguments
+      // Routes that may expect arguments
       onGenerateRoute: (settings) {
         final name = settings.name ?? '';
 
         if (name == '/verify-otp') {
+          // You can pass args when pushing:
+          // Navigator.pushNamed(context, '/verify-otp', arguments: {'email': 'x@y.com'});
           final raw = settings.arguments;
           final Map<String, dynamic> args =
           (raw is Map) ? Map<String, dynamic>.from(raw) : const {};
+
           return MaterialPageRoute(
-            builder: (_) => const OtpVerificationScreen(), // Read args via ModalRoute inside screen
+            builder: (_) =>
+            const OtpVerificationScreen(), // reads args via ModalRoute
             settings: RouteSettings(name: name, arguments: args),
           );
         }
@@ -143,18 +151,20 @@ class MyApp extends StatelessWidget {
           return MaterialPageRoute(
             builder: (_) => (email.isEmpty || token.isEmpty)
                 ? const Scaffold(
-              body: Center(child: Text('Missing arguments for reset password.')),
+              body: Center(
+                child: Text('Missing arguments for reset password.'),
+              ),
             )
                 : ResetPasswordScreen(email: email, token: token),
             settings: RouteSettings(name: name, arguments: args),
           );
         }
 
-        // Fall back to default routes map
+        // Fall back to default
         return null;
       },
 
-      // Friendly fallback
+      // Friendly fallback if an unknown route is hit
       onUnknownRoute: (_) => MaterialPageRoute(
         builder: (_) => const Scaffold(
           body: Center(child: Text('Unknown route')),

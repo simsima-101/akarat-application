@@ -9,8 +9,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import 'package:Akarat/widgets/read_more_text.dart';
-
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,6 +19,7 @@ import '../secure_storage.dart';
 import '../services/api_service.dart';
 import '../services/favorite_service.dart';
 import '../utils/shared_preference_manager.dart';
+import '../widgets/read_more_text.dart';
 import 'featured_detail.dart';
 
 class AboutAgent extends StatefulWidget {
@@ -111,7 +110,6 @@ class _AboutAgentState extends State<AboutAgent> {
   bool hasMore = true;
   final ScrollController _scrollController = ScrollController();
   Timer? _debounce;
-
   @override
   void initState() {
     super.initState();
@@ -124,13 +122,15 @@ class _AboutAgentState extends State<AboutAgent> {
       getFilesApi(agentId, loadMore: false);
     });
     fetchProducts(widget.data); // Initial data fetch
-    getFilesApi(widget.data, loadMore: false); // Load first page of agent properties
+    getFilesApi(widget.data,
+        loadMore: false); // Load first page of agent properties
     readData(); // Other setups
     _loadFavorites();
     _searchController.addListener(_onSearchChanged);
 
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent &&
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent &&
           hasMore &&
           !isLoading) {
         getFilesApi(widget.data, loadMore: true); // Load next page
@@ -181,9 +181,9 @@ class _AboutAgentState extends State<AboutAgent> {
 
     // 🛰 API fallback
     try {
-      final response = await http.get(
-        ApiService.buildUri('agent/$data'),
-      );
+      final uri = ApiService.buildUri('agent/$data');
+      final response = await http.get(uri);
+
       debugPrint("Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
@@ -233,21 +233,18 @@ class _AboutAgentState extends State<AboutAgent> {
 
     // 🔍 Fetch from API
     final uri = ApiService.buildUri(
-      'filters',
-      query: {
-        'search': query,
-        'amenities': '',
-        'property_type': '',
-        'furnished_status': '',
-        'bedrooms': '',
-        'min_price': '',
-        'max_price': '',
-        'payment_period': '',
-        'min_square_feet': '',
-        'max_square_feet': '',
-        'bathrooms': '',
-        'purpose': '', // stays empty like your original
-      },
+        'filters?search=$query'
+            '&amenities='
+            '&property_type='
+            '&furnished_status='
+            '&bedrooms='
+            '&min_price='
+            '&max_price='
+            '&payment_period='
+            '&min_square_feet='
+            '&max_square_feet='
+            '&bathrooms='
+            '&purpose='
     );
 
 
@@ -284,12 +281,7 @@ class _AboutAgentState extends State<AboutAgent> {
     final now = DateTime.now().millisecondsSinceEpoch;
     final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    final uri = ApiService.buildUri(
-      'agent/properties/$user',
-      query: {
-        'page': '$currentPage',
-      },
-    );
+    final uri = ApiService.buildUri('agent/properties/$user?page=$currentPage');
 
 
     // ✅ Load from cache if valid and not loading more
@@ -301,7 +293,8 @@ class _AboutAgentState extends State<AboutAgent> {
           final model = AgentProperties.fromJson(jsonData);
           setState(() {
             agentProperties = model;
-            hasMore = (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
+            hasMore =
+                (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
             if (hasMore) {
               currentPage = (model.meta?.currentPage ?? 1) + 1;
             }
@@ -338,7 +331,8 @@ class _AboutAgentState extends State<AboutAgent> {
               agentProperties = model;
             }
 
-            hasMore = (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
+            hasMore =
+                (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
             if (hasMore) {
               currentPage = (model.meta?.currentPage ?? 1) + 1;
             }
@@ -367,15 +361,14 @@ class _AboutAgentState extends State<AboutAgent> {
 
   Future<bool> toggledApi(String token, int propertyId) async {
     try {
+      final uri = ApiService.buildUri('toggle-saved-property');
       final response = await http.post(
-        ApiService.buildUri('toggle-saved-property'),
+        uri,
         headers: <String, String>{
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
         },
-        body: jsonEncode({
+        body: jsonEncode(<String, dynamic>{
           "property_id": propertyId,
         }),
       );
@@ -441,6 +434,9 @@ class _AboutAgentState extends State<AboutAgent> {
     bool isValidImage = imageUrl.isNotEmpty &&
         imageUrl.toLowerCase() != 'n/a' &&
         imageUrl.toLowerCase() != 'null';
+    // &&
+    // imageUrl.toLowerCase().contains('.jpg') &&
+    // !imageUrl.toLowerCase().contains('default-image.jpg');
 
     // ✅ Now check if agentDetail is null
     if (agentDetail == null) {
@@ -452,6 +448,20 @@ class _AboutAgentState extends State<AboutAgent> {
       );
     }
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFEEEEEE),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.red),
+          onPressed: () {
+            Navigator.pop(context);
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => FindAgentDemo()),
+            // );
+          },
+        ),
+      ),
       // bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
       backgroundColor: Colors.white,
       body: DefaultTabController(
@@ -463,30 +473,31 @@ class _AboutAgentState extends State<AboutAgent> {
               children: [
                 // Background header bar
                 Container(
-                  height: screenSize.height * 0.19,
+                  height: screenSize.height * 0.12,
                   width: double.infinity,
                   color: const Color(0xFFEEEEEE),
                 ),
 
                 // 🔙 Clean Back Button (no circle container)
-                Positioned(
-                  top: 35,
-                  left: 8,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back,
-                        color: Colors.red, size: 26),
-                    padding: const EdgeInsets.all(12),
-                    constraints: const BoxConstraints(),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
+                // Positioned(
+                //   top: 35,
+                //   left: 8,
+                //   child: IconButton(
+                //     icon: const Icon(Icons.arrow_back,
+                //         color: Colors.red, size: 26),
+                //     padding: const EdgeInsets.all(12), // Ensures large tap area
+                //     constraints:
+                //         const BoxConstraints(), // Removes default 48x48 min size if needed
+                //     onPressed: () {
+                //       Navigator.pop(context);
+                //     },
+                //   ),
+                // ),
 
                 // Big Avatar
                 Positioned(
                   left: 20,
-                  top: 70,
+                  top: 0,
                   child: Container(
                     width: 100,
                     height: 100,
@@ -549,8 +560,11 @@ class _AboutAgentState extends State<AboutAgent> {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  buildTag("Prime Agent", Icons.check_circle, Colors.blueAccent, Colors.white),
-                  buildTag("Quality Listener", Icons.stars, const Color(0xFFEAD893), Colors.black),
+                  buildTag("Prime Agent", Icons.check_circle, Colors.blueAccent,
+                      Colors.white),
+                  buildTag("Quality Listener", Icons.stars, Color(0xFFEAD893),
+                      Colors.black),
+                  // buildTag("Responsive Broker", Icons.call_outlined, Colors.white, Colors.black, border: true),
                 ],
               ),
             ),

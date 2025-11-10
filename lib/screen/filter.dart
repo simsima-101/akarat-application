@@ -1,19 +1,22 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:Akarat/model/propertytypemodel.dart';
-import 'package:Akarat/screen/shimmer.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:developer';
+
 import 'package:Akarat/model/amenities.dart';
 import 'package:Akarat/model/filtermodel.dart';
+import 'package:Akarat/model/propertytypemodel.dart';
 import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/screen/shimmer.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_core/core.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
-import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+
 import '../secure_storage.dart';
 import '../services/api_service.dart';
 import '../utils/fav_logout.dart';
@@ -24,28 +27,42 @@ import 'full_amenities_screen.dart';
 import 'login.dart';
 import 'my_account.dart';
 
-
 class Filter extends StatelessWidget {
   final dynamic data;
-  const Filter({super.key, required this.data});
-
+  final int propertyType;
+  final String? propertyCategoryType;
+  const Filter(
+      {super.key,
+        required this.data,
+        this.propertyType = 0,
+        this.propertyCategoryType});
 
   @override
   Widget build(BuildContext context) {
-    return FilterDemo(data: data);  // ✅ No MaterialApp — just return the screen
+    return FilterDemo(
+      data: data,
+      propertyType: propertyType,
+      propertyCategoryType: propertyCategoryType,
+    ); // ✅ No MaterialApp — just return the screen
   }
 }
 
 class FilterDemo extends StatefulWidget {
   final dynamic data;
+  final int propertyType;
+  final String? propertyCategoryType;
 
-  const FilterDemo({super.key,required this.data});
+  const FilterDemo(
+      {super.key,
+        required this.data,
+        required this.propertyType,
+        this.propertyCategoryType});
 
   @override
   _FilterDemoState createState() => _FilterDemoState();
 }
-class _FilterDemoState extends State<FilterDemo> {
 
+class _FilterDemoState extends State<FilterDemo> {
   int displayedFilterResultCount = 0;
   late bool isSelected = true;
   double start = 3000;
@@ -57,47 +74,49 @@ class _FilterDemoState extends State<FilterDemo> {
 
   final List<String> _handoverOptions = const [
     'Any',
-    'Q3 2025','Q4 2025',
-    'Q1 2026','Q2 2026','Q3 2026','Q4 2026',
-    '2027','2028','2029','2030','2031',
+    'Q3 2025',
+    'Q4 2025',
+    'Q1 2026',
+    'Q2 2026',
+    'Q3 2026',
+    'Q4 2026',
+    '2027',
+    '2028',
+    '2029',
+    '2030',
+    '2031',
   ];
 
-  int selectedHandover = 0;   // index within _handoverOptions
-  String handoverBy = '';     // '' means Any
+  int selectedHandover = 0; // index within _handoverOptions
+  String handoverBy = ''; // '' means Any
   int selectedCompletion = 0;
   final List<String> _propTypes = const ['Residential', 'Commercial'];
   int selectedPropType = 0; // 0 = Residential, 1 = Commercial
 
-
   bool get isNewProjects => _selected == 1;
-
 
 // %Completion options
   final List<String> _percentCompletionOptions = const [
-    'Any', '0-25%', '25-50%', '50-75%', '75-100%',
+    'Any',
+    '0-25%',
+    '25-50%',
+    '50-75%',
+    '75-100%',
   ];
   int selectedPercentCompletion = 0; // index
-  String percentCompletion = '';     // '' means Any
+  String percentCompletion = ''; // '' means Any
 
-
-
-  SfRangeValues _values = SfRangeValues(500.0, 300000.0); // full range internally
+  SfRangeValues _values =
+  SfRangeValues(500.0, 300000.0); // full range internally
 
   final TextEditingController minPriceController = TextEditingController();
   final TextEditingController maxPriceController = TextEditingController();
-
-
-
-
-
-
 
   bool isMinTyping = false;
   bool isMaxTyping = false;
 
   late RangeController _priceRangeController;
   late RangeController _areaRangeController;
-
 
   SfRangeValues _valuesArea = SfRangeValues(0.0, 0.0);
   TextEditingController minAreaController = TextEditingController();
@@ -120,9 +139,6 @@ class _FilterDemoState extends State<FilterDemo> {
 
   final Map<String, PropertyTypeModel> _propertyTypeCache = {};
 
-
-
-
   String token = '';
   String email = '';
   String result = '';
@@ -131,25 +147,26 @@ class _FilterDemoState extends State<FilterDemo> {
   SharedPreferencesManager prefManager = SharedPreferencesManager();
   // Method to read data from shared preferences
 
-
   // == In _FilterDemoState ==
 
 // Helper: current UI purpose label
-
 
   // /filters expects hyphen format (for-sale / to-rent / new-projects)
   String _purposeForFilters() {
     if (_selected == 1) return 'new-projects'; // New Projects tab
     switch (purpose.trim().toLowerCase()) {
-      case 'buy':  return 'for-sale';
-      case 'rent': return 'to-rent';
-      default:     return '';
+      case 'buy':
+        return 'for-sale';
+      case 'rent':
+        return 'to-rent';
+      default:
+        return '';
     }
   }
 
   String get _currentUiPurpose {
-    if (_selected == 1) return 'New Projects';     // your New Projects toggle
-    return (purpose.isNotEmpty ? purpose : '');     // 'Buy' | 'Rent'
+    if (_selected == 1) return 'New Projects'; // your New Projects toggle
+    return (purpose.isNotEmpty ? purpose : ''); // 'Buy' | 'Rent'
   }
 
 // Helper: current property type label
@@ -175,20 +192,21 @@ class _FilterDemoState extends State<FilterDemo> {
       context,
       MaterialPageRoute(
         builder: (_) => CreateAlertScreen(
-          initialPurpose: _currentUiPurpose,                 // 'Buy' | 'Rent' | 'New Projects'
-          initialPropertyType: _currentPropertyType,         // 'Apartment' | 'Villa' | 'Studio' | 'Offices' | 'Commercials'
-          availablePropertyTypes: types,                     // for dropdown on alert screen
+          initialPurpose: _currentUiPurpose, // 'Buy' | 'Rent' | 'New Projects'
+          initialPropertyType:
+          _currentPropertyType, // 'Apartment' | 'Villa' | 'Studio' | 'Offices' | 'Commercials'
+          availablePropertyTypes: types, // for dropdown on alert screen
         ),
       ),
     );
   }
 
-
   Widget _showResultsButton(BuildContext context, Size screenSize) {
     return GestureDetector(
       onTap: () => showResult(),
       child: Padding(
-        padding: const EdgeInsets.only(top: 25.0, left: 15, bottom: 15, right: 15),
+        padding:
+        const EdgeInsets.only(top: 25.0, left: 15, bottom: 15, right: 15),
         child: Container(
           width: screenSize.width * 0.9,
           height: 45,
@@ -196,8 +214,16 @@ class _FilterDemoState extends State<FilterDemo> {
             color: Colors.red,
             borderRadius: BorderRadiusDirectional.circular(6.0),
             boxShadow: const [
-              BoxShadow(color: Colors.grey, offset: Offset(0.3, 0.3), blurRadius: 0.3, spreadRadius: 0.3),
-              BoxShadow(color: Colors.white, offset: Offset(0, 0), blurRadius: 0, spreadRadius: 0),
+              BoxShadow(
+                  color: Colors.grey,
+                  offset: Offset(0.3, 0.3),
+                  blurRadius: 0.3,
+                  spreadRadius: 0.3),
+              BoxShadow(
+                  color: Colors.white,
+                  offset: Offset(0, 0),
+                  blurRadius: 0,
+                  spreadRadius: 0),
             ],
           ),
           child: Center(
@@ -217,8 +243,6 @@ class _FilterDemoState extends State<FilterDemo> {
     );
   }
 
-
-
   void readData() async {
     token = await prefManager.readStringFromPref();
     email = await prefManager.readStringFromPrefemail();
@@ -230,7 +254,6 @@ class _FilterDemoState extends State<FilterDemo> {
 
   List<Amenities> selectedAmenities = [];
 
-
   @override
   void initState() {
     super.initState();
@@ -240,29 +263,56 @@ class _FilterDemoState extends State<FilterDemo> {
 
     // Set selected product index and purpose
     selectedproduct = _product.indexOf(widget.data);
+
+    selectedPropType = widget.propertyType;
     purpose = widget.data;
 
     // Initially property_type empty
     property_type = '';
 
     // Initialize range controllers
-    _rangeController = RangeController(start: start.toString(), end: end.toString());
-    _rangeControllerarea = RangeController(start: startarea.toString(), end: endarea.toString());
+    _rangeController =
+        RangeController(start: start.toString(), end: end.toString());
+    _rangeControllerarea =
+        RangeController(start: startarea.toString(), end: endarea.toString());
 
     // Build chart data
     chartData = List.generate(
       96,
-          (index) => Data(500 + index * 100.0, yValues[index % yValues.length].toDouble()),
+          (index) =>
+          Data(500 + index * 100.0, yValues[index % yValues.length].toDouble()),
     );
 
     // Now load initial data (property types + amenities)
     loadInitialData().then((_) {
       // After loading property types → set first type
-      if (propertyTypeModel != null && propertyTypeModel!.data != null && propertyTypeModel!.data!.isNotEmpty) {
+      if (widget.propertyCategoryType != null) {
+        log('11111111111111111111111');
+        final index = propertyTypeModel!.data!.indexWhere(
+              (item) =>
+          item.name?.trim().toLowerCase() ==
+              widget.propertyCategoryType?.trim().toLowerCase(),
+        );
+
         setState(() {
-          // Set first property type name
-          property_type = propertyTypeModel!.data!.first.name ?? '';
+          if (index != -1) {
+            log('22222222222222');
+
+            selectedtype = index;
+            property_type = propertyTypeModel!.data![index].name ?? '';
+          } else {
+            log('33333333333333333');
+
+            selectedtype = 0;
+            property_type = propertyTypeModel!.data!.first.name ?? '';
+          }
+        });
+      } else {
+        log('4444444444444');
+
+        setState(() {
           selectedtype = 0;
+          property_type = propertyTypeModel!.data!.first.name ?? '';
         });
       }
 
@@ -270,8 +320,6 @@ class _FilterDemoState extends State<FilterDemo> {
       updateFilterCount();
     });
   }
-
-
 
   Future<void> loadInitialData() async {
     try {
@@ -292,8 +340,10 @@ class _FilterDemoState extends State<FilterDemo> {
           amenities = jsonData.map((e) => Amenities.fromJson(e)).toList();
         }
       } else {
+        final uri = ApiService.buildUri('amenities');
+
         final response = await http
-            .get(ApiService.buildUri('amenities'))
+            .get(uri)
             .timeout(const Duration(seconds: 8));
 
         if (response.statusCode == 200) {
@@ -317,7 +367,9 @@ class _FilterDemoState extends State<FilterDemo> {
         }
       } else {
         final uri = ApiService.buildUri('property-types/$purpose');
-        final response = await http.get(uri).timeout(const Duration(seconds: 10));
+
+        final response =
+        await http.get(uri).timeout(const Duration(seconds: 10));
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           propertyTypeModel = PropertyTypeModel.fromJson(data);
@@ -335,7 +387,6 @@ class _FilterDemoState extends State<FilterDemo> {
     }
   }
 
-
   List<Amenities> amenities = [];
   @override
   void dispose() {
@@ -346,22 +397,18 @@ class _FilterDemoState extends State<FilterDemo> {
     maxPriceController.dispose();
     minAreaController.dispose();
     maxAreaController.dispose();
-
   }
 
 // Product list (UI display)
   final List<String> _product = [
     'Buy',
     'Rent',
-
   ];
 
 // Product API map (to send correct "purpose" to API)
   final Map<String, String> _productApiMap = {
-
     'Buy': 'for-sale',
     'Rent': 'to-rent',
-
   };
 
 // Category list
@@ -374,42 +421,42 @@ class _FilterDemoState extends State<FilterDemo> {
 
 // Bedroom options
   final List<String> _bedroom = [
-    'Studio', '1', '2', '3', '4', '5', '6', '7', '8', '9+'
+    'Studio',
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9+'
   ];
 
 // Bathroom options
-  final List<String> _bathroom = [
-    '1', '2', '3', '4', '5', '6+'
-  ];
+  final List<String> _bathroom = ['1', '2', '3', '4', '5', '6+'];
 
 // Furnished type
-  final List<String> _ftype = [
-    'All', 'Furnished', 'Unfurnished'
-  ];
+  final List<String> _ftype = ['All', 'Furnished', 'Unfurnished'];
 
 // Rent payment period
-  final List<String> _rent = [
-    'Yearly', 'Monthly', 'Weekly', 'Daily'
-  ];
+  final List<String> _rent = ['Yearly', 'Monthly', 'Weekly', 'Daily'];
 
 // Chart Y values
-  final List<int> yValues = [
-    5000, 3000, 9000, 7000, 10000, 1500, 4000
-  ];
+  final List<int> yValues = [5000, 3000, 9000, 7000, 10000, 1500, 4000];
 
 // Chart data
   late List<Data> chartData;
-
 
   final List<Dataarea> chartDataarea = <Dataarea>[
     Dataarea(x: 500, y: 5000),
     Dataarea(x: 600, y: 3000),
     Dataarea(x: 700, y: 6000),
     Dataarea(x: 800, y: 2000),
-    Dataarea(x: 900, y:8000),
-    Dataarea(x: 1000, y:1000),
-    Dataarea(x: 1100, y:3000),
-    Dataarea(x: 1200, y:5000),
+    Dataarea(x: 900, y: 8000),
+    Dataarea(x: 1000, y: 1000),
+    Dataarea(x: 1100, y: 3000),
+    Dataarea(x: 1200, y: 5000),
     Dataarea(x: 1300, y: 9000),
     Dataarea(x: 1400, y: 4000),
     Dataarea(x: 1500, y: 1500),
@@ -503,7 +550,7 @@ class _FilterDemoState extends State<FilterDemo> {
   int pageIndex = 0;
   int? selectedIndex; // Holds the index of the selected container
   int? selectedtype; // Holds the index of the selected container
-  int? selectedproduct ; // Holds the index of the selected container
+  int? selectedproduct; // Holds the index of the selected container
   int? selectedcategory; // Holds the index of the selected container
   Set<int> selectedBedrooms = {};
   Set<int> selectedBathrooms = {};
@@ -517,12 +564,12 @@ class _FilterDemoState extends State<FilterDemo> {
   String bathroom = ' ';
   String ftype = ' ';
   String amnities = ' ';
-  String property_type= ' ';
+  String property_type = ' ';
   String rent = ' ';
   String min_price = '';
   String max_price = ' ';
 
-  Set<int> selectedIndexes = {};
+  List<int> selectedAmenitiesId = [];
   PropertyTypeModel? propertyTypeModel;
 
   Uri buildFilterUri({
@@ -542,15 +589,24 @@ class _FilterDemoState extends State<FilterDemo> {
     final queryParams = <String, dynamic>{};
 
     if (search != null && search.isNotEmpty) queryParams['search'] = search;
-    if (propertyType != null && propertyType.isNotEmpty) queryParams['property_type'] = propertyType;
-    if (furnishedStatus != null && furnishedStatus.isNotEmpty) queryParams['furnished_status'] = furnishedStatus;
-    if (bedrooms != null && bedrooms.isNotEmpty) queryParams['bedrooms'] = bedrooms;
-    if (bathrooms != null && bathrooms.isNotEmpty) queryParams['bathrooms'] = bathrooms;
-    if (minPrice != null && minPrice.isNotEmpty) queryParams['min_price'] = minPrice;
-    if (maxPrice != null && maxPrice.isNotEmpty) queryParams['max_price'] = maxPrice;
-    if (paymentPeriod != null && paymentPeriod.isNotEmpty) queryParams['payment_period'] = paymentPeriod;
-    if (minSquareFeet != null && minSquareFeet.isNotEmpty) queryParams['min_square_feet'] = minSquareFeet;
-    if (maxSquareFeet != null && maxSquareFeet.isNotEmpty) queryParams['max_square_feet'] = maxSquareFeet;
+    if (propertyType != null && propertyType.isNotEmpty)
+      queryParams['property_type'] = propertyType;
+    if (furnishedStatus != null && furnishedStatus.isNotEmpty)
+      queryParams['furnished_status'] = furnishedStatus;
+    if (bedrooms != null && bedrooms.isNotEmpty)
+      queryParams['bedrooms'] = bedrooms;
+    if (bathrooms != null && bathrooms.isNotEmpty)
+      queryParams['bathrooms'] = bathrooms;
+    if (minPrice != null && minPrice.isNotEmpty)
+      queryParams['min_price'] = minPrice;
+    if (maxPrice != null && maxPrice.isNotEmpty)
+      queryParams['max_price'] = maxPrice;
+    if (paymentPeriod != null && paymentPeriod.isNotEmpty)
+      queryParams['payment_period'] = paymentPeriod;
+    if (minSquareFeet != null && minSquareFeet.isNotEmpty)
+      queryParams['min_square_feet'] = minSquareFeet;
+    if (maxSquareFeet != null && maxSquareFeet.isNotEmpty)
+      queryParams['max_square_feet'] = maxSquareFeet;
     if (purpose != null && purpose.isNotEmpty) queryParams['purpose'] = purpose;
     if (amenities != null && amenities.isNotEmpty) {
       queryParams['amenities'] = amenities.join(',');
@@ -562,7 +618,6 @@ class _FilterDemoState extends State<FilterDemo> {
       queryParams,
     );
   }
-
 
   Future<void> showResult({bool autoUpdate = false}) async {
     if (mounted) {
@@ -590,9 +645,12 @@ class _FilterDemoState extends State<FilterDemo> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.asset("assets/images/not_found.png", width: 50, height: 50),
+                      Image.asset("assets/images/not_found.png",
+                          width: 50, height: 50),
                       SizedBox(height: 20),
-                      Text('No Property Found', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      Text('No Property Found',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold)),
                       SizedBox(height: 10),
                       Text(
                         'Please select other filters to get results.',
@@ -601,11 +659,14 @@ class _FilterDemoState extends State<FilterDemo> {
                       ),
                       SizedBox(height: 30),
                       ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red),
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        child: Text('Back to Filters', style: TextStyle(fontSize: 14, color: Colors.white)),
+                        child: Text('Back to Filters',
+                            style:
+                            TextStyle(fontSize: 14, color: Colors.white)),
                       ),
                     ],
                   ),
@@ -617,24 +678,27 @@ class _FilterDemoState extends State<FilterDemo> {
       } else {
         // ✅ Push Replacement with route name to avoid duplicate FliterList
         // REPLACE your current Navigator call inside the big red button:
+
+        // context
+        //     .read<MainBottomNavBarProvider>()
+        //     .setSelectedItemIndex(ScreenEnum.fliterListScreen);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            settings: const RouteSettings(name: 'FilterList'),
+            settings: const RouteSettings(name: 'FliterList'),
             builder: (context) => FliterList(
               filterModel: filterModel,
-              // send the exact UI selections forward
-              selectedPurpose: _currentUiPurpose,         // "Buy" | "Rent" | "New Projects"
-              selectedPropertyType: _currentPropertyType, // "Apartment" | "Villa" | ...
+              // forceRefresh: true,
+              // 👇 send the exact UI selections forward
+              selectedPurpose:
+              _currentUiPurpose, // "Buy" | "Rent" | "New Projects"
+              selectedPropertyType:
+              _currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
             ),
           ),
         );
-
-
       }
     }
-
-
 
     if (mounted) {
       setState(() {
@@ -645,7 +709,7 @@ class _FilterDemoState extends State<FilterDemo> {
 
   Future<void> updateFilterCount() async {
     try {
-      final amenitiesList = selectedIndexes.toList();
+      final amenitiesList = selectedAmenitiesId;
 
       final uri = buildFilterUri(
         search: '',
@@ -659,7 +723,6 @@ class _FilterDemoState extends State<FilterDemo> {
         minSquareFeet: min_sqrfeet.trim(),
         maxSquareFeet: max_sqrfeet.trim(),
         purpose: _purposeForFilters(),
-
         amenities: amenitiesList,
       );
 
@@ -686,15 +749,6 @@ class _FilterDemoState extends State<FilterDemo> {
       debugPrint("❌ Error in updateFilterCount: $e");
     }
   }
-
-
-
-
-
-
-
-
-
 
   bool _isLoading = false;
 
@@ -758,7 +812,8 @@ class _FilterDemoState extends State<FilterDemo> {
         final List<dynamic> jsonData = json.decode(cachedData);
         if (mounted) {
           setState(() {
-            amenities = jsonData.map((data) => Amenities.fromJson(data)).toList();
+            amenities =
+                jsonData.map((data) => Amenities.fromJson(data)).toList();
           });
         }
         return;
@@ -767,10 +822,11 @@ class _FilterDemoState extends State<FilterDemo> {
 
     // Fetch data from API if not cached or cache has expired
     try {
-      final response = await http
-          .get(ApiService.buildUri('amenities'))
-          .timeout(const Duration(seconds: 8));
+      final uri = ApiService.buildUri('amenities');
 
+      final response = await http
+          .get(uri)
+          .timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
@@ -781,7 +837,8 @@ class _FilterDemoState extends State<FilterDemo> {
 
         if (mounted) {
           setState(() {
-            amenities = jsonData.map((data) => Amenities.fromJson(data)).toList();
+            amenities =
+                jsonData.map((data) => Amenities.fromJson(data)).toList();
           });
         }
       } else {
@@ -801,32 +858,35 @@ class _FilterDemoState extends State<FilterDemo> {
       return Scaffold(
           body: ListView.builder(
             itemCount: 5,
-            itemBuilder: (context, index) => const ShimmerCard(),) // Show loading state
+            itemBuilder: (context, index) => const ShimmerCard(),
+          ) // Show loading state
       );
     }
     Size screenSize = MediaQuery.sizeOf(context);
 
     final int rentIndex = _product.indexOf('Rent');
-    final int buyIndex  = _product.indexOf('Buy');
+    final int buyIndex = _product.indexOf('Buy');
 
     final bool isNewProjects = _selected == 1;
-    final bool isProperties  = _selected == 0;
-    final bool isOffPlan     = _completion.elementAt(selectedCompletion) == 'Off-Plan';
+    final bool isProperties = _selected == 0;
+    final bool isOffPlan =
+        _completion.elementAt(selectedCompletion) == 'Off-Plan';
 
-    final bool showProductPills = isProperties;                           // Properties only
-    final bool showCompletion  = isProperties;                             // Properties only
-    final bool showRentPaid    = isProperties && (selectedproduct == rentIndex); // Properties + Rent only
-    final bool showHandoverBy  = isNewProjects                              // New Projects
-        || (isProperties && selectedproduct == buyIndex && isOffPlan);        // Properties → Buy → Off-Plan
-    final bool showAmenities   = true;
+    final bool showProductPills = isProperties; // Properties only
+    final bool showCompletion = isProperties; // Properties only
+    final bool showRentPaid = isProperties &&
+        (selectedproduct == rentIndex); // Properties + Rent only
+    final bool showHandoverBy = isNewProjects // New Projects
+        ||
+        (isProperties &&
+            selectedproduct == buyIndex &&
+            isOffPlan); // Properties → Buy → Off-Plan
+    final bool showAmenities = true;
 
     final bool isBuyMode = isProperties && selectedproduct == buyIndex;
 
-
-
-
     return Scaffold(
-      bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+      // bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Color(0xFFF9F9F9), // Softer white
@@ -843,14 +903,16 @@ class _FilterDemoState extends State<FilterDemo> {
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.red),
           onPressed: () {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const HomeDemo()),
-                  (route) => false,
-            );
+            Navigator.pop(context);
+            // context.read<MainBottomNavBarProvider>().setSelectedItemIndex(ScreenEnum.homeScreen);
+
+            // Navigator.pushAndRemoveUntil(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => const Home()),
+            //       (route) => false,
+            // );
           },
         ),
-
 
         actions: [
           TextButton(
@@ -879,7 +941,7 @@ class _FilterDemoState extends State<FilterDemo> {
                 selectedBedrooms.clear();
                 selectedBathrooms.clear();
                 selectedrent = null;
-                selectedIndexes.clear();
+                selectedAmenitiesId.clear();
                 selectedHandover = 0;
                 selectedPercentCompletion = 0;
 
@@ -889,7 +951,6 @@ class _FilterDemoState extends State<FilterDemo> {
 
                 _areaRangeController.start = 0;
                 _areaRangeController.end = 10000;
-
 
                 // Clear all text field controllers
                 minPriceController.clear();
@@ -912,765 +973,1154 @@ class _FilterDemoState extends State<FilterDemo> {
             ),
           ),
         ],
-
-
       ),
       body: SingleChildScrollView(
-        child: Column(
-            children: <Widget>[
+        child: Column(children: <Widget>[
+          Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.all(5),
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFF5F4F9), Color(0xFFF5F4F9)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.4),
+                      offset: const Offset(0, 2),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Properties
+                    // ✅ UPDATED: Properties toggle
+                    GestureDetector(
+                      onTap: () async {
+                        setState(() {
+                          _selected = 0;
+                          selectedCompletion = 0; // reset Handover/Completion
+                          selectedproduct ??=
+                          0; // default to "Buy" when coming from New Projects
+                          purpose =
+                          _product[selectedproduct!]; // "Buy" or "Rent"
+                          if (purpose != 'Rent') {
+                            selectedrent = null;
+                            rent = '';
+                          }
+                          _isLoading = true; // hide type chips briefly
+                        });
 
-              Column(
-                children: [
-                  Container(
-                    margin: const EdgeInsets.all(5),
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFFF5F4F9), Color(0xFFF5F4F9)],
+                        // 1) Reload property types for the chosen purpose
+                        await propertyApi(purpose);
+
+                        // 2) Pick the first type safely (if any)
+                        final firstTypeName =
+                        (propertyTypeModel?.data?.isNotEmpty ?? false)
+                            ? (propertyTypeModel!.data!.first.name ?? '')
+                            : '';
+
+                        setState(() {
+                          selectedtype = firstTypeName.isNotEmpty ? 0 : null;
+                          property_type = firstTypeName; // '' if none returned
+                          _isLoading = false;
+                        });
+
+                        // 3) Update the live count → drives "Showing X Results"
+                        await updateFilterCount();
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        width: 180,
+                        height: 45,
+                        alignment: Alignment.center,
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 5),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        decoration: BoxDecoration(
+                          color: _selected == 0
+                              ? const Color(0xFF3A7CED)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              offset: const Offset(0, 2),
+                              blurRadius: 4,
+                              spreadRadius: 0,
+                            ),
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.8),
+                              offset: const Offset(-4, -4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          "Properties",
+                          style: TextStyle(
+                            color: _selected == 0 ? Colors.white : Colors.black,
+                            letterSpacing: 0.5,
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    // New Projects
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selected = 1;
+                          selectedCompletion = 0; // default to “All”
+                          selectedproduct = null;
+                          purpose = '';
+                          selectedrent = null;
+                          rent = '';
+                          selectedtype = null;
+                          property_type = '';
+                        });
+
+                        updateFilterCount();
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        width: 180,
+                        height: 45,
+                        alignment: Alignment.center,
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 5),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        decoration: BoxDecoration(
+                          color: _selected == 1
+                              ? const Color(0xFF3A7CED)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              offset: const Offset(0, 2),
+                              blurRadius: 4,
+                              spreadRadius: 0,
+                            ),
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.8),
+                              offset: const Offset(-4, -4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          "New Projects",
+                          style: TextStyle(
+                            color: _selected == 1 ? Colors.white : Colors.black,
+                            letterSpacing: 0.5,
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+          //properties
+          if (showProductPills) ...[
+            Padding(
+              padding: const EdgeInsets.all(5),
+              child: SizedBox(
+                height: 60,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _product.length,
+                  itemBuilder: (context, index) {
+                    final isSelected = selectedproduct == index;
+                    return GestureDetector(
+                      onTap: () async {
+                        setState(() {
+                          selectedproduct = index;
+                          purpose = _product[index];
+                          _isLoading = true;
+                        });
+
+                        // fetch property types for the selected purpose
+                        await propertyApi(purpose);
+
+                        // pick the first type safely (if any)
+                        final firstTypeName =
+                        (propertyTypeModel?.data?.isNotEmpty ?? false)
+                            ? (propertyTypeModel!.data!.first.name ?? '')
+                            : '';
+
+                        setState(() {
+                          selectedtype = 0; // select first chip
+                          property_type =
+                              firstTypeName; // set its name ('' if none)
+                          _isLoading = false;
+                        });
+
+                        // refresh the live “Showing X Results” count
+                        await updateFilterCount();
+                      },
+                      child: Container(
+                        width: 180,
+                        height: 34,
+                        alignment: Alignment.center,
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 5),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? const Color(0xFFF5F4F9)
+                              : Colors.white,
+                          border: Border.all(
+                            color:
+                            isSelected ? Colors.black : Colors.transparent,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              offset: const Offset(0, 2),
+                              blurRadius: 4,
+                              spreadRadius: 0,
+                            ),
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.8),
+                              offset: const Offset(-4, -4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          _product[index],
+                          style: const TextStyle(
+                            color: Colors.black,
+                            letterSpacing: 0.5,
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 10),
+
+          Row(
+            children: [
+              Padding(
+                  padding: const EdgeInsets.only(left: 18),
+                  // child:  Text(purpose,
+                  child: Text(
+                    "Property Type",
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5),
+                    textAlign: TextAlign.left,
+                  )),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          Row(
+            children: [
+              const SizedBox(width: 12),
+
+              // Residential
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => selectedPropType = 0),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    height: 40,
+                    alignment: Alignment.center,
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      // selected: subtle gray gradient; unselected: white
+                      gradient: selectedPropType == 0
+                          ? const LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [Color(0xFFF5F4F9), Color(0xFFEFEFF3)],
+                      )
+                          : null,
+                      color: selectedPropType == 0 ? null : Colors.white,
+                      border: Border.all(
+                        color: selectedPropType == 0
+                            ? Colors.black
+                            : Color(0xFFE6E4EE),
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.4),
-                          offset: const Offset(0, 2),
+                          color: Colors.black.withOpacity(0.06),
+                          offset: const Offset(0, 3),
                           blurRadius: 6,
-                          spreadRadius: 1,
+                          spreadRadius: 0,
+                        ),
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.9),
+                          offset: const Offset(-2, -2),
+                          blurRadius: 6,
+                          spreadRadius: 2,
                         ),
                       ],
                     ),
-                    child: Row(
-                      children: [
-                        // Properties
-                        // ✅ UPDATED: Properties toggle
-                        GestureDetector(
-                          onTap: () async {
-                            setState(() {
-                              _selected = 0;
-                              selectedCompletion = 0;                  // reset Handover/Completion
-                              selectedproduct ??= 0;                   // default to "Buy" when coming from New Projects
-                              purpose = _product[selectedproduct!];    // "Buy" or "Rent"
-                              if (purpose != 'Rent') {
-                                selectedrent = null;
-                                rent = '';
-                              }
-                              _isLoading = true;                       // hide type chips briefly
-                            });
-
-                            // 1) Reload property types for the chosen purpose
-                            await propertyApi(purpose);
-
-                            // 2) Pick the first type safely (if any)
-                            final firstTypeName = (propertyTypeModel?.data?.isNotEmpty ?? false)
-                                ? (propertyTypeModel!.data!.first.name ?? '')
-                                : '';
-
-                            setState(() {
-                              selectedtype = firstTypeName.isNotEmpty ? 0 : null;
-                              property_type = firstTypeName;           // '' if none returned
-                              _isLoading = false;
-                            });
-
-                            // 3) Update the live count → drives "Showing X Results"
-                            await updateFilterCount();
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            width: 180,
-                            height: 45,
-                            alignment: Alignment.center,
-                            margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            decoration: BoxDecoration(
-                              color: _selected == 0 ? const Color(0xFF3A7CED) : Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: const Offset(0, 2),
-                                  blurRadius: 4,
-                                  spreadRadius: 0,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: const Offset(-4, -4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              "Properties",
-                              style: TextStyle(
-                                color: _selected == 0 ? Colors.white : Colors.black,
-                                letterSpacing: 0.5,
-                                fontSize: 14,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-
-
-
-                        // New Projects
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selected = 1;
-                              selectedCompletion = 0; // default to “All”
-                              selectedproduct = null;
-                              purpose = '';
-                              selectedrent = null;
-                              rent = '';
-                              selectedtype = null;
-                              property_type = '';
-                            });
-
-                            updateFilterCount();
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            width: 180,
-                            height: 45,
-                            alignment: Alignment.center,
-                            margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            decoration: BoxDecoration(
-                              color: _selected == 1 ? const Color(0xFF3A7CED) : Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: const Offset(0, 2),
-                                  blurRadius: 4,
-                                  spreadRadius: 0,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: const Offset(-4, -4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              "New Projects",
-                              style: TextStyle(
-                                color: _selected == 1 ? Colors.white : Colors.black,
-                                letterSpacing: 0.5,
-                                fontSize: 14,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        )
-
-                      ],
+                    child: const Text(
+                      'Residential',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                        letterSpacing: 0.2,
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
 
-              const SizedBox(height: 10),
-              //properties
-              if (showProductPills) ...[
-                Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: SizedBox(
-                    height: 60,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _product.length,
-                      itemBuilder: (context, index) {
-                        final isSelected = selectedproduct == index;
+              // Commercial
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => selectedPropType = 1),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    height: 40,
+                    alignment: Alignment.center,
+                    margin: const EdgeInsets.only(left: 8, right: 12),
+                    decoration: BoxDecoration(
+                      gradient: selectedPropType == 1
+                          ? const LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [Color(0xFFF5F4F9), Color(0xFFEFEFF3)],
+                      )
+                          : null,
+                      color: selectedPropType == 1 ? null : Colors.white,
+                      border: Border.all(
+                        color: selectedPropType == 1
+                            ? Colors.black
+                            : Color(0xFFE6E4EE),
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          offset: const Offset(0, 3),
+                          blurRadius: 6,
+                          spreadRadius: 0,
+                        ),
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.9),
+                          offset: const Offset(-2, -2),
+                          blurRadius: 6,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      'Commercial',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(height: 10),
+
+          AnimatedOpacity(
+            opacity: _isLoading ? 0.0 : 1.0,
+            duration: const Duration(milliseconds: 500),
+            child: Container(
+              margin: const EdgeInsets.all(5),
+              height: screenSize.height * 0.125,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: propertyTypeModel?.data?.length ?? 0,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () async {
+                      setState(() {
+                        selectedtype = index;
+                        property_type =
+                            propertyTypeModel!.data![index].name.toString();
+                      });
+                      await updateFilterCount(); // 👈 add this line
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 15, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: selectedtype == index
+                            ? Color(0xFFEEEEEE)
+                            : Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            offset: Offset(0, 2),
+                            blurRadius: 4,
+                          ),
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.8),
+                            offset: Offset(-4, -4),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: CachedNetworkImage(
+                              imageUrl: propertyTypeModel!.data![index].icon
+                                  .toString(),
+                              height: 35,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Text(
+                              propertyTypeModel!.data![index].name.toString(),
+                              style: TextStyle(
+                                color: selectedtype == index
+                                    ? Colors.black
+                                    : Colors.black,
+                                letterSpacing: 0.5,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          // const Divider(height: 1,indent: 15,endIndent: 15,),
+          const SizedBox(height: 20),
+
+          // --- Completion Status ---
+          if (showCompletion) ...[
+            Padding(
+              padding: const EdgeInsets.only(right: 100),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Completion Status',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Pills row (scrollable if needed)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: List.generate(_completion.length, (i) {
+                        final bool isSelected = selectedCompletion == i;
+
                         return GestureDetector(
                           onTap: () async {
-                            setState(() {
-                              selectedproduct = index;
-                              purpose = _product[index];
-                              _isLoading = true;
-                            });
-
-                            // fetch property types for the selected purpose
-                            await propertyApi(purpose);
-
-                            // pick the first type safely (if any)
-                            final firstTypeName = (propertyTypeModel?.data?.isNotEmpty ?? false)
-                                ? (propertyTypeModel!.data!.first.name ?? '')
-                                : '';
-
-                            setState(() {
-                              selectedtype = 0;                // select first chip
-                              property_type = firstTypeName;   // set its name ('' if none)
-                              _isLoading = false;
-                            });
-
-                            // refresh the live “Showing X Results” count
-                            await updateFilterCount();
+                            setState(() => selectedCompletion = i);
+                            await updateFilterCount(); // keep the live count in sync
                           },
-
                           child: Container(
-                            width: 180,
-                            height: 34,
+                            // auto width based on label
+                            constraints: const BoxConstraints(minHeight: 34),
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            margin: const EdgeInsets.only(right: 10),
                             alignment: Alignment.center,
-                            margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
                             decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFFF5F4F9) : Colors.white,
+                              color: isSelected
+                                  ? const Color(0xFFF5F4F9)
+                                  : Colors.white,
                               border: Border.all(
-                                color: isSelected ? Colors.black : Colors.transparent,
+                                color: isSelected
+                                    ? Colors.black
+                                    : const Color(0xFFE6E4EE),
                                 width: 1,
                               ),
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
+                                  color: Colors.grey.withOpacity(0.15),
                                   offset: const Offset(0, 2),
                                   blurRadius: 4,
                                   spreadRadius: 0,
                                 ),
                                 BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: const Offset(-4, -4),
-                                  blurRadius: 8,
+                                  color: Colors.white.withOpacity(0.9),
+                                  offset: const Offset(-2, -2),
+                                  blurRadius: 6,
                                   spreadRadius: 2,
                                 ),
                               ],
                             ),
                             child: Text(
-                              _product[index],
+                              _completion[i],
                               style: const TextStyle(
-                                color: Colors.black,
-                                letterSpacing: 0.5,
                                 fontSize: 14,
+                                letterSpacing: 0.2,
+                                color: Colors.black,
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           ),
                         );
+                      }),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Divider(
+              height: 1,
+              indent: 15,
+              endIndent: 15,
+            ),
+            const SizedBox(height: 20),
+          ],
+          //text
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 20),
+                child: Text(
+                  "Price range",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+          Padding(
+              padding: const EdgeInsets.only(top: 0, left: 20, right: 10),
+              child: Row(spacing: 15, children: [
+                Container(
+                  width: screenSize.width * 0.38,
+                  height: 40,
+                  padding: const EdgeInsets.only(top: 8, left: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadiusDirectional.circular(6.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey,
+                        offset: const Offset(
+                          0.3,
+                          0.3,
+                        ),
+                        blurRadius: 0.3,
+                        spreadRadius: 0.3,
+                      ), //BoxShadow
+                      BoxShadow(
+                        color: Colors.white,
+                        offset: const Offset(0.0, 0.0),
+                        blurRadius: 0.0,
+                        spreadRadius: 0.0,
+                      ), //BoxShadow
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: TextFormField(
+                      controller: minPriceController,
+                      keyboardType: TextInputType.number,
+                      decoration:
+                      const InputDecoration(border: InputBorder.none),
+                      onTap: () => isMinTyping = true, // 👈 starts typing
+                      onEditingComplete: () =>
+                      isMinTyping = false, // 👈 ends typing (on "done")
+                      onChanged: (val) {
+                        final start = double.tryParse(val) ?? 0;
+                        if (start <= _values.end) {
+                          setState(() {
+                            _values = SfRangeValues(start, _values.end);
+                            min_price = start.toStringAsFixed(0);
+                          });
+                          showResult(autoUpdate: true);
+                        }
                       },
                     ),
                   ),
                 ),
-              ],
-
-
-
-
-
-
-
-              const SizedBox(height: 10),
-
-
-
-
-
-
-
-              Row(
-                children: [
-                  Padding(padding: const EdgeInsets.only(left: 18),
-                      // child:  Text(purpose,
-                      child:  Text("Property Type",
-                        style: TextStyle(
-                            color: Colors.black,fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5),
-                        textAlign: TextAlign.left,)
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              Row(
-                children: [
-                  const SizedBox(width: 12),
-
-                  // Residential
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => selectedPropType = 0),
-
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        height: 40,
-                        alignment: Alignment.center,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          // selected: subtle gray gradient; unselected: white
-                          gradient: selectedPropType == 0
-                              ? const LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [Color(0xFFF5F4F9), Color(0xFFEFEFF3)],
-                          )
-                              : null,
-                          color: selectedPropType == 0 ? null : Colors.white,
-                          border: Border.all(
-                            color: selectedPropType == 0 ? Colors.black : Color(0xFFE6E4EE),
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
-                              offset: const Offset(0, 3),
-                              blurRadius: 6,
-                              spreadRadius: 0,
-                            ),
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.9),
-                              offset: const Offset(-2, -2),
-                              blurRadius: 6,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: const Text(
-                          'Residential',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Commercial
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => selectedPropType = 1),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        height: 40,
-                        alignment: Alignment.center,
-                        margin: const EdgeInsets.only(left: 8, right: 12),
-                        decoration: BoxDecoration(
-                          gradient: selectedPropType == 1
-                              ? const LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [Color(0xFFF5F4F9), Color(0xFFEFEFF3)],
-                          )
-                              : null,
-                          color: selectedPropType == 1 ? null : Colors.white,
-                          border: Border.all(
-                            color: selectedPropType == 1 ? Colors.black : Color(0xFFE6E4EE),
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
-                              offset: const Offset(0, 3),
-                              blurRadius: 6,
-                              spreadRadius: 0,
-                            ),
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.9),
-                              offset: const Offset(-2, -2),
-                              blurRadius: 6,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: const Text(
-                          'Commercial',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height:10),
-
-              AnimatedOpacity(
-                opacity: _isLoading ? 0.0 : 1.0,
-                duration: const Duration(milliseconds: 500),
-                child: Container(
-                  margin: const EdgeInsets.all(5),
-                  height: screenSize.height * 0.125,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: propertyTypeModel?.data?.length ?? 0,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () async {
-                          setState(() {
-                            selectedtype = index;
-                            property_type = propertyTypeModel!.data![index].name.toString();
-                          });
-                          await updateFilterCount();   // 👈 add this line
-                        },
-
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: selectedtype == index ? Color(0xFFEEEEEE) : Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                offset: Offset(0, 2),
-                                blurRadius: 4,
-                              ),
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.8),
-                                offset: Offset(-4, -4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: CachedNetworkImage(
-                                  imageUrl: propertyTypeModel!.data![index].icon.toString(),
-                                  height: 35,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: Text(
-                                  propertyTypeModel!.data![index].name.toString(),
-                                  style: TextStyle(
-                                    color: selectedtype == index ? Colors.black : Colors.black,
-                                    letterSpacing: 0.5,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                Padding(
+                  padding: const EdgeInsets.only(top: 5),
+                  child: Text(
+                    "to",
+                    style: TextStyle(color: Colors.black, fontSize: 15.0),
+                    textAlign: TextAlign.left,
                   ),
                 ),
-              ),
-
-              // const Divider(height: 1,indent: 15,endIndent: 15,),
-              const SizedBox(height: 20),
-
-
-
-              // --- Completion Status ---
-              if (showCompletion) ...[
-                Padding(
-                  padding: const EdgeInsets.only(right: 100),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Completion Status',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 15),
-
-                      // Pills row (scrollable if needed)
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: List.generate(_completion.length, (i) {
-                            final bool isSelected = selectedCompletion == i;
-
-                            return GestureDetector(
-                              onTap: () async {
-                                setState(() => selectedCompletion = i);
-                                await updateFilterCount(); // keep the live count in sync
-                              },
-
-                              child: Container(
-                                // auto width based on label
-                                constraints: const BoxConstraints(minHeight: 34),
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                margin: const EdgeInsets.only(right: 10),
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFFF5F4F9) : Colors.white,
-                                  border: Border.all(
-                                    color: isSelected ? Colors.black : const Color(0xFFE6E4EE),
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.15),
-                                      offset: const Offset(0, 2),
-                                      blurRadius: 4,
-                                      spreadRadius: 0,
-                                    ),
-                                    BoxShadow(
-                                      color: Colors.white.withOpacity(0.9),
-                                      offset: const Offset(-2, -2),
-                                      blurRadius: 6,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  _completion[i],
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    letterSpacing: 0.2,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
+                Container(
+                  width: screenSize.width * 0.38,
+                  height: 40,
+                  padding: const EdgeInsets.only(top: 8, left: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadiusDirectional.circular(6.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey,
+                        offset: const Offset(
+                          0.3,
+                          0.3,
                         ),
+                        blurRadius: 0.3,
+                        spreadRadius: 0.3,
+                      ), //BoxShadow
+                      BoxShadow(
+                        color: Colors.white,
+                        offset: const Offset(0.0, 0.0),
+                        blurRadius: 0.0,
+                        spreadRadius: 0.0,
+                      ), //BoxShadow
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: TextFormField(
+                      controller: maxPriceController,
+                      keyboardType: TextInputType.number,
+                      decoration:
+                      const InputDecoration(border: InputBorder.none),
+                      onTap: () => isMaxTyping = true,
+                      onEditingComplete: () => isMaxTyping = false,
+                      onChanged: (val) {
+                        final end = double.tryParse(val) ?? 0;
+                        if (end >= _values.start) {
+                          setState(() {
+                            _values = SfRangeValues(_values.start, end);
+                            max_price = end.toStringAsFixed(0);
+                          });
+                          showResult(autoUpdate: true);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ])),
+          const SizedBox(height: 20),
+          //rangeslider
+          Padding(
+            padding: const EdgeInsets.all(0),
+            child: SfRangeSelectorTheme(
+              data: SfRangeSelectorThemeData(
+                overlappingTooltipStrokeColor: Color(0x80E0E0E0),
+                tooltipBackgroundColor: Colors.black,
+                activeDividerStrokeWidth: 1,
+                activeDividerRadius: 2,
+                thumbStrokeWidth: 0.5, // Change tooltip background color
+                tooltipTextStyle: TextStyle(
+                  color: Colors.white, // Change tooltip text color
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              child: SfRangeSelector(
+                min: 500,
+                max: 300000,
+                interval: 10000,
+                activeColor: Color(0xFF2575D4), // ✅ blue line
+
+                inactiveColor: Color(0x80F1EEEE),
+                enableTooltip: true,
+                shouldAlwaysShowTooltip: true,
+                controller: _priceRangeController,
+
+                tooltipTextFormatterCallback: (actualValue, _) =>
+                'AED ${actualValue.toInt()}',
+                onChanged: (SfRangeValues value) {
+                  setState(() {
+                    _values = SfRangeValues(value.start, value.end);
+                    min_price = value.start.toStringAsFixed(0);
+                    max_price = value.end.toStringAsFixed(0);
+
+                    // ✅ Force update min only if not currently editing, or if value actually changed
+                    if (!isMinTyping ||
+                        minPriceController.text !=
+                            value.start.toStringAsFixed(0)) {
+                      minPriceController.text = value.start.toStringAsFixed(0);
+                    }
+
+                    if (!isMaxTyping ||
+                        maxPriceController.text !=
+                            value.end.toStringAsFixed(0)) {
+                      maxPriceController.text = value.end.toStringAsFixed(0);
+                    }
+                  });
+
+                  showResult(autoUpdate: true);
+                },
+
+                child: SizedBox(
+                  height: 60,
+                  width: double.infinity,
+                  child: SfCartesianChart(
+                    backgroundColor: Colors.transparent,
+                    plotAreaBorderColor: Colors.transparent,
+                    margin: const EdgeInsets.all(0),
+                    primaryXAxis: NumericAxis(
+                      minimum: 500,
+                      maximum: 10000,
+                      isVisible: false,
+                    ),
+                    primaryYAxis: NumericAxis(isVisible: false),
+                    plotAreaBorderWidth: 0,
+                    plotAreaBackgroundColor: Colors.transparent,
+                    series: <ColumnSeries<Data, double>>[
+                      ColumnSeries<Data, double>(
+                        trackColor: Colors.transparent,
+                        //color: Color.fromARGB(255, 126, 184, 253),
+                        //opacity: 0.5,
+                        dataSource: chartData,
+                        selectionBehavior: SelectionBehavior(
+                          unselectedOpacity: 0.0,
+                          selectedColor: Colors.transparent,
+                          selectedOpacity: 0.0,
+                          unselectedColor: Colors.transparent,
+                          selectionController: _rangeController,
+                        ),
+                        xValueMapper: (Data sales, int index) => sales.x,
+                        yValueMapper: (Data sales, int index) => sales.y,
+                        pointColorMapper: (Data sales, int index) {
+                          return const Color.fromARGB(255, 37, 117, 212);
+                        },
+                        // color: const Color.fromRGBO(255, 255, 255, 0),
+                        dashArray: const <double>[5, 3],
+                        // borderColor: const Color.fromRGBO(194, 194, 194, 1),
+                        animationDuration: 0,
+                        borderWidth: 0,
+                        //opacity: 0.5,
                       ),
                     ],
                   ),
                 ),
-
-
-
-                const SizedBox(height: 20),
-                const Divider(height: 1,indent: 15,endIndent: 15,),
-                const SizedBox(height: 20),
-              ],
-              //text
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(padding: const EdgeInsets.only(left: 20),
-                    child:  Text("Price range",
-                      style: TextStyle(
-                        color: Colors.black,fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                      textAlign: TextAlign.left,),
-                  ),
-                ],
               ),
-
-
-
-
-              const SizedBox(height: 10),
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Divider(
+            height: 1,
+            indent: 15,
+            endIndent: 15,
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
               Padding(
-                  padding: const EdgeInsets.only(top: 0,left: 20,right: 10),
-                  child: Row(
-                      spacing: 15,
-                      children: [
-                        Container(
-                          width: screenSize.width*0.38,
-                          height: 40,
-                          padding: const EdgeInsets.only(top: 8,left: 8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadiusDirectional.circular(6.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey,
-                                offset: const Offset(
-                                  0.3,
-                                  0.3,
-                                ),
-                                blurRadius: 0.3,
-                                spreadRadius: 0.3,
-                              ), //BoxShadow
-                              BoxShadow(
-                                color: Colors.white,
-                                offset: const Offset(0.0, 0.0),
-                                blurRadius: 0.0,
-                                spreadRadius: 0.0,
-                              ), //BoxShadow
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom:8.0),
-                            child: TextFormField(
-                              controller: minPriceController,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(border: InputBorder.none),
-                              onTap: () => isMinTyping = true,              // 👈 starts typing
-                              onEditingComplete: () => isMinTyping = false, // 👈 ends typing (on "done")
-                              onChanged: (val) {
-                                final start = double.tryParse(val) ?? 0;
-                                if (start <= _values.end) {
-                                  setState(() {
-                                    _values = SfRangeValues(start, _values.end);
-                                    min_price = start.toStringAsFixed(0);
-                                  });
-                                  showResult(autoUpdate: true);
-                                }
-                              },
-                            ),
-                          ),
-
-
-
-
-                        ),
-
-                        Padding(padding: const EdgeInsets.only(top: 5),
-                          child:  Text("to",
-                            style: TextStyle(
-                                color: Colors.black,fontSize: 15.0),
-                            textAlign: TextAlign.left,),
-                        ),
-
-                        Container(
-                          width: screenSize.width*0.38,
-                          height: 40,
-                          padding: const EdgeInsets.only(top: 8,left: 8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadiusDirectional.circular(6.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey,
-                                offset: const Offset(
-                                  0.3,
-                                  0.3,
-                                ),
-                                blurRadius: 0.3,
-                                spreadRadius: 0.3,
-                              ), //BoxShadow
-                              BoxShadow(
-                                color: Colors.white,
-                                offset: const Offset(0.0, 0.0),
-                                blurRadius: 0.0,
-                                spreadRadius: 0.0,
-                              ), //BoxShadow
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: TextFormField(
-                              controller: maxPriceController,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(border: InputBorder.none),
-                              onTap: () => isMaxTyping = true,
-                              onEditingComplete: () => isMaxTyping = false,
-                              onChanged: (val) {
-                                final end = double.tryParse(val) ?? 0;
-                                if (end >= _values.start) {
-                                  setState(() {
-                                    _values = SfRangeValues(_values.start, end);
-                                    max_price = end.toStringAsFixed(0);
-                                  });
-                                  showResult(autoUpdate: true);
-                                }
-                              },
-                            ),
-                          ),
-
-
-
-                        ),
-                      ]
-                  )
-              ),
-              const SizedBox(height: 20),
-              //rangeslider
-              Padding(
-                padding: const EdgeInsets.all(0),
-                child: SfRangeSelectorTheme(
-                  data: SfRangeSelectorThemeData(
-                    overlappingTooltipStrokeColor: Color(0x80E0E0E0),
-                    tooltipBackgroundColor: Colors.black,
-                    activeDividerStrokeWidth: 1,
-                    activeDividerRadius: 2,
-                    thumbStrokeWidth: 0.5,// Change tooltip background color
-                    tooltipTextStyle: TextStyle(
-                      color: Colors.white, // Change tooltip text color
-                      fontWeight: FontWeight.bold,
-
-                    ),
+                padding: const EdgeInsets.only(left: 20),
+                // child:  Text(_values.start.toStringAsFixed(2),
+                child: Text(
+                  "Bedrooms",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
                   ),
-                  child: SfRangeSelector(
-                    min: 500,
-                    max: 300000,
-                    interval: 10000,
-                    activeColor: Color(0xFF2575D4), // ✅ blue line
+                  textAlign: TextAlign.left,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 5),
+          //studio
+          Padding(
+            padding: const EdgeInsets.all(5),
+            child: SizedBox(
+              height: 60,
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                scrollDirection: Axis.horizontal,
+                itemCount: _bedroom.length,
+                itemBuilder: (context, index) {
+                  final isSelected = selectedBedrooms.contains(index);
 
-                    inactiveColor: Color(0x80F1EEEE) ,
-                    enableTooltip: true,
-                    shouldAlwaysShowTooltip: true,
-                    controller: _priceRangeController,
-
-                    tooltipTextFormatterCallback: (actualValue, _) =>
-                    'AED ${actualValue.toInt()}',
-                    onChanged: (SfRangeValues value) {
+                  return GestureDetector(
+                    onTap: () async {
                       setState(() {
-                        _values = SfRangeValues(value.start, value.end);
-                        min_price = value.start.toStringAsFixed(0);
-                        max_price = value.end.toStringAsFixed(0);
-
-                        // ✅ Force update min only if not currently editing, or if value actually changed
-                        if (!isMinTyping || minPriceController.text != value.start.toStringAsFixed(0)) {
-                          minPriceController.text = value.start.toStringAsFixed(0);
+                        if (selectedBedrooms.contains(index)) {
+                          selectedBedrooms.remove(index);
+                        } else {
+                          selectedBedrooms.add(index);
                         }
 
-                        if (!isMaxTyping || maxPriceController.text != value.end.toStringAsFixed(0)) {
-                          maxPriceController.text = value.end.toStringAsFixed(0);
-                        }
+                        // Convert selected values into comma-separated string
+                        bedroom =
+                            selectedBedrooms.map((i) => _bedroom[i]).join(',');
                       });
 
-                      showResult(autoUpdate: true);
+                      await updateFilterCount(); // ✅ NOW this will work
                     },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(
+                          color: isSelected
+                              ? Colors.black87
+                              : Colors.grey.shade300,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            offset: Offset(0, 2),
+                            blurRadius: 4,
+                            spreadRadius: 0,
+                          ),
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.8),
+                            offset: Offset(-4, -4),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (isSelected) ...[
+                            Icon(Icons.check, size: 18, color: Colors.green),
+                            SizedBox(width: 4),
+                          ],
+                          Text(
+                            _bedroom[index],
+                            style: TextStyle(
+                              color: Colors.black,
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
 
+          const SizedBox(height: 20),
+          const Divider(
+            height: 1,
+            indent: 15,
+            endIndent: 15,
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 20),
+                // child:  Text(bedroom,
+                child: Text(
+                  "Bathrooms",
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5),
+                  textAlign: TextAlign.left,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 5),
+          Padding(
+            padding: const EdgeInsets.all(5),
+            child: SizedBox(
+              height: 60,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _bathroom.length,
+                itemBuilder: (context, index) {
+                  final isSelected = selectedBathrooms.contains(index);
 
+                  return GestureDetector(
+                    onTap: () async {
+                      setState(() {
+                        if (selectedBathrooms.contains(index)) {
+                          selectedBathrooms.remove(index);
+                        } else {
+                          selectedBathrooms.add(index);
+                        }
 
+                        bathroom = selectedBathrooms
+                            .map((i) => _bathroom[i])
+                            .join(',');
+                      });
+
+                      await updateFilterCount(); // ✅ call API to update count
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(
+                          color: isSelected
+                              ? Colors.black87
+                              : Colors.grey.shade300,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            offset: Offset(4, 4),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                          ),
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.8),
+                            offset: Offset(-4, -4),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (isSelected) ...[
+                            Icon(Icons.check, size: 18, color: Colors.green),
+                            SizedBox(width: 4),
+                          ],
+                          Text(
+                            _bathroom[index],
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+          const Divider(
+            height: 1,
+            indent: 15,
+            endIndent: 15,
+          ),
+          const SizedBox(height: 20),
+          //area
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(left: 20),
+                child: Text(
+                  "Area/Size",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    // Minimum area input
+                    Expanded(
+                      child: Container(
+                        height: 40,
+                        padding: const EdgeInsets.only(left: 8),
+                        decoration: _inputBoxDecoration(),
+                        child: TextFormField(
+                          controller: minAreaController,
+                          keyboardType: TextInputType.number,
+                          decoration:
+                          const InputDecoration(border: InputBorder.none),
+                          onTap: () => isMinAreaTyping = true,
+                          onEditingComplete: () => isMinAreaTyping = false,
+                          onChanged: (val) {
+                            final start = double.tryParse(val) ?? 0;
+                            if (start <= _valuesArea.end) {
+                              setState(() {
+                                _valuesArea =
+                                    SfRangeValues(start, _valuesArea.end);
+                                min_sqrfeet = start.toStringAsFixed(0);
+                              });
+                              updateFilterCount();
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text("to", style: TextStyle(fontSize: 15)),
+                    ),
+                    // Maximum area input
+                    Expanded(
+                      child: Container(
+                        height: 40,
+                        padding: const EdgeInsets.only(left: 8),
+                        decoration: _inputBoxDecoration(),
+                        child: TextFormField(
+                          controller: maxAreaController,
+                          keyboardType: TextInputType.number,
+                          decoration:
+                          const InputDecoration(border: InputBorder.none),
+                          onTap: () => isMaxAreaTyping = true,
+                          onEditingComplete: () => isMaxAreaTyping = false,
+                          onChanged: (val) {
+                            final end = double.tryParse(val) ?? 0;
+                            if (end >= _valuesArea.start) {
+                              setState(() {
+                                _valuesArea =
+                                    SfRangeValues(_valuesArea.start, end);
+                                max_sqrfeet = end.toStringAsFixed(0);
+                              });
+                              updateFilterCount();
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Slider
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                child: SfRangeSelectorTheme(
+                  data: SfRangeSelectorThemeData(
+                    tooltipBackgroundColor: Colors.black,
+                    tooltipTextStyle: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  child: SfRangeSelector(
+                    min: 0,
+                    max: 10000,
+                    interval: 1000,
+                    enableTooltip: true,
+                    shouldAlwaysShowTooltip: true,
+                    activeColor: const Color(0xFF2575D4),
+                    inactiveColor: const Color(0x80F1EEEE),
+                    controller: _areaRangeController,
+                    onChanged: (value) {
+                      setState(() {
+                        _valuesArea = SfRangeValues(value.start, value.end);
+                        min_sqrfeet = value.start.toStringAsFixed(0);
+                        max_sqrfeet = value.end.toStringAsFixed(0);
+
+                        // Sync text fields only if user isn't editing
+                        if (!isMinAreaTyping ||
+                            minAreaController.text !=
+                                value.start.toStringAsFixed(0)) {
+                          minAreaController.text =
+                              value.start.toStringAsFixed(0);
+                        }
+
+                        if (!isMaxAreaTyping ||
+                            maxAreaController.text !=
+                                value.end.toStringAsFixed(0)) {
+                          maxAreaController.text = value.end.toStringAsFixed(0);
+                        }
+                      });
+                      updateFilterCount();
+                    },
                     child: SizedBox(
-                      height: 60,
+                      height: 70,
                       width: double.infinity,
                       child: SfCartesianChart(
-                        backgroundColor: Colors.transparent,
                         plotAreaBorderColor: Colors.transparent,
                         margin: const EdgeInsets.all(0),
                         primaryXAxis: NumericAxis(
-                          minimum: 500,
-                          maximum: 10000,
-                          isVisible: false,),
+                            minimum: 0, maximum: 10000, isVisible: false),
                         primaryYAxis: NumericAxis(isVisible: false),
                         plotAreaBorderWidth: 0,
                         plotAreaBackgroundColor: Colors.transparent,
-                        series: <ColumnSeries<Data, double>>[
-                          ColumnSeries<Data, double>(
-                            trackColor: Colors.transparent,
-                            //color: Color.fromARGB(255, 126, 184, 253),
-                            //opacity: 0.5,
-                            dataSource: chartData,
+                        series: <ColumnSeries<Dataarea, double>>[
+                          ColumnSeries<Dataarea, double>(
+                            dataSource: chartDataarea,
                             selectionBehavior: SelectionBehavior(
-                              unselectedOpacity: 0.0,
-                              selectedColor: Colors.transparent,
-                              selectedOpacity: 0.0,unselectedColor: Colors.transparent,
-                              selectionController: _rangeController,
+                              unselectedOpacity: 0,
+                              selectedOpacity: 0,
+                              unselectedColor: Colors.transparent,
+                              selectionController: _rangeControllerarea,
                             ),
-                            xValueMapper: (Data sales, int index) => sales.x,
-                            yValueMapper: (Data sales, int index) => sales.y,
-                            pointColorMapper: (Data sales, int index) {
-                              return const Color.fromARGB(255, 37, 117, 212);
-                            },
-                            // color: const Color.fromRGBO(255, 255, 255, 0),
+                            xValueMapper: (Dataarea sales, int index) =>
+                            sales.x,
+                            yValueMapper: (Dataarea sales, int index) =>
+                            sales.y,
+                            pointColorMapper: (Dataarea sales, int index) =>
+                            const Color.fromARGB(255, 37, 117, 212),
                             dashArray: const <double>[5, 3],
-                            // borderColor: const Color.fromRGBO(194, 194, 194, 1),
                             animationDuration: 0,
                             borderWidth: 0,
-                            //opacity: 0.5,
                           ),
                         ],
                       ),
@@ -1678,1039 +2128,710 @@ class _FilterDemoState extends State<FilterDemo> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
-              const Divider(height: 1,indent: 15,endIndent: 15,),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Padding(padding: const EdgeInsets.only(left: 20),
-                    // child:  Text(_values.start.toStringAsFixed(2),
-                    child:  Text("Bedrooms",
-                      style: TextStyle(
-                        color: Colors.black,fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,),
-                      textAlign: TextAlign.left,),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              //studio
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Divider(
+            height: 1,
+            indent: 15,
+            endIndent: 15,
+          ),
+          const SizedBox(height: 20),
+          //furnished
+          Row(
+            children: [
               Padding(
-                padding: const EdgeInsets.all(5),
-                child: SizedBox(
-                  height: 60,
-                  child: ListView.builder(
-                    padding: EdgeInsets.zero,
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _bedroom.length,
-                    itemBuilder: (context, index) {
-                      final isSelected = selectedBedrooms.contains(index);
-
-                      return GestureDetector(
-                        onTap: () async {
-                          setState(() {
-                            if (selectedBedrooms.contains(index)) {
-                              selectedBedrooms.remove(index);
-                            } else {
-                              selectedBedrooms.add(index);
-                            }
-
-                            // Convert selected values into comma-separated string
-                            bedroom = selectedBedrooms.map((i) => _bedroom[i]).join(',');
-                          });
-
-
-                          await updateFilterCount(); // ✅ NOW this will work
-                        },
-
-
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(
-                              color: isSelected ? Colors.black87 : Colors.grey.shade300,
-                              width: isSelected ? 2 : 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                offset: Offset(0, 2),
-                                blurRadius: 4,
-                                spreadRadius: 0,
-                              ),
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.8),
-                                offset: Offset(-4, -4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (isSelected) ...[
-                                Icon(Icons.check, size: 18, color: Colors.green),
-                                SizedBox(width: 4),
-                              ],
-                              Text(
-                                _bedroom[index],
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  letterSpacing: 0.5,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                padding: const EdgeInsets.only(left: 20),
+                child: Text(
+                  "Furnished Type",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
                   ),
+                  textAlign: TextAlign.left,
                 ),
               ),
-
-              const SizedBox(height: 20),
-              const Divider(height: 1,indent: 15,endIndent: 15,),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Padding(padding: const EdgeInsets.only(left: 20),
-                    // child:  Text(bedroom,
-                    child:  Text("Bathrooms",
-                      style: TextStyle(
-                          color: Colors.black,fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5),
-                      textAlign: TextAlign.left,),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Padding(
-                padding: const EdgeInsets.all(5),
-                child: SizedBox(
-                  height: 60,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _bathroom.length,
-                    itemBuilder: (context, index) {
-                      final isSelected = selectedBathrooms.contains(index);
-
-                      return GestureDetector(
-                        onTap: () async{
-                          setState(() {
-                            if (selectedBathrooms.contains(index)) {
-                              selectedBathrooms.remove(index);
-                            } else {
-                              selectedBathrooms.add(index);
-                            }
-
-                            bathroom = selectedBathrooms.map((i) => _bathroom[i]).join(',');
-                          });
-
-
-                          await updateFilterCount(); // ✅ call API to update count
-                        },
-
-                        child: Container(
-                          alignment: Alignment.center,
-                          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(
-                              color: isSelected ? Colors.black87 : Colors.grey.shade300,
-                              width: isSelected ? 2 : 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                offset: Offset(4, 4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.8),
-                                offset: Offset(-4, -4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (isSelected) ...[
-                                Icon(Icons.check, size: 18, color: Colors.green),
-                                SizedBox(width: 4),
-                              ],
-                              Text(
-                                _bathroom[index],
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
+            ],
+          ),
+          const SizedBox(height: 5),
+          Padding(
+            padding: const EdgeInsets.all(5),
+            child: SizedBox(
+              height: 60,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const ScrollPhysics(),
+                itemCount: _ftype.length,
+                itemBuilder: (context, index) {
+                  final isSelected = selectedIndex == index;
+                  return GestureDetector(
+                    onTap: () async {
+                      setState(() {
+                        selectedIndex = index;
+                        ftype = _ftype[index];
+                      });
+                      await updateFilterCount(); // ✅ call API to update count
                     },
-                  ),
-                ),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(
+                          color: isSelected
+                              ? Colors.black87
+                              : Colors.grey.shade300,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            offset: Offset(4, 4),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                          ),
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.8),
+                            offset: Offset(-4, -4),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isSelected) ...[
+                            Icon(Icons.check, size: 18, color: Colors.green),
+                            SizedBox(width: 4),
+                          ],
+                          Text(
+                            _ftype[index],
+                            style: TextStyle(
+                              color: Colors.black,
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
+            ),
+          ),
 
-              const SizedBox(height: 20),
-              const Divider(height: 1,indent: 15,endIndent: 15,),
-              const SizedBox(height: 20),
-              //area
-              Column(
+          const SizedBox(height: 20),
+          const Divider(
+            height: 1,
+            indent: 15,
+            endIndent: 15,
+          ),
+          const SizedBox(height: 20),
+
+          // --- Completion Status ---
+          if (showHandoverBy) ...[
+            Padding(
+              padding: const EdgeInsets.only(left: 20),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 20),
-                    child: Text(
-                      "Area/Size",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+                  const Text(
+                    'Handover By',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      children: [
-                        // Minimum area input
-                        Expanded(
-                          child: Container(
-                            height: 40,
-                            padding: const EdgeInsets.only(left: 8),
-                            decoration: _inputBoxDecoration(),
-                            child: TextFormField(
-                              controller: minAreaController,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(border: InputBorder.none),
-                              onTap: () => isMinAreaTyping = true,
-                              onEditingComplete: () => isMinAreaTyping = false,
-                              onChanged: (val) {
-                                final start = double.tryParse(val) ?? 0;
-                                if (start <= _valuesArea.end) {
+                  const SizedBox(height: 15),
+
+                  // ✅ Handover By chips (4 visible + scrollable)
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      const double spacing = 10;
+                      final double chipWidth =
+                          (constraints.maxWidth - (spacing * 3)) /
+                              4; // 4 per viewport
+
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: List.generate(_handoverOptions.length, (i) {
+                            final bool isSelected = selectedHandover == i;
+
+                            return Container(
+                              width: chipWidth,
+                              margin: EdgeInsets.only(
+                                  right: i == _handoverOptions.length - 1
+                                      ? 0
+                                      : spacing),
+                              child: GestureDetector(
+                                onTap: () async {
                                   setState(() {
-                                    _valuesArea = SfRangeValues(start, _valuesArea.end);
-                                    min_sqrfeet = start.toStringAsFixed(0);
+                                    selectedHandover = i;
+                                    handoverBy = (_handoverOptions[i] == 'Any')
+                                        ? ''
+                                        : _handoverOptions[i];
                                   });
-                                  updateFilterCount();
-                                }
-                              },
-                            ),
-                          ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Text("to", style: TextStyle(fontSize: 15)),
-                        ),
-                        // Maximum area input
-                        Expanded(
-                          child: Container(
-                            height: 40,
-                            padding: const EdgeInsets.only(left: 8),
-                            decoration: _inputBoxDecoration(),
-                            child: TextFormField(
-                              controller: maxAreaController,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(border: InputBorder.none),
-                              onTap: () => isMaxAreaTyping = true,
-                              onEditingComplete: () => isMaxAreaTyping = false,
-                              onChanged: (val) {
-                                final end = double.tryParse(val) ?? 0;
-                                if (end >= _valuesArea.start) {
-                                  setState(() {
-                                    _valuesArea = SfRangeValues(_valuesArea.start, end);
-                                    max_sqrfeet = end.toStringAsFixed(0);
-                                  });
-                                  updateFilterCount();
-                                }
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Slider
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 5),
-                    child: SfRangeSelectorTheme(
-                      data: SfRangeSelectorThemeData(
-                        tooltipBackgroundColor: Colors.black,
-                        tooltipTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                      child: SfRangeSelector(
-                        min: 0,
-                        max: 10000,
-                        interval: 1000,
-                        enableTooltip: true,
-                        shouldAlwaysShowTooltip: true,
-                        activeColor: const Color(0xFF2575D4),
-                        inactiveColor: const Color(0x80F1EEEE),
-                        controller: _areaRangeController,
-
-                        onChanged: (value) {
-                          setState(() {
-                            _valuesArea = SfRangeValues(value.start, value.end);
-                            min_sqrfeet = value.start.toStringAsFixed(0);
-                            max_sqrfeet = value.end.toStringAsFixed(0);
-
-                            // Sync text fields only if user isn't editing
-                            if (!isMinAreaTyping || minAreaController.text != value.start.toStringAsFixed(0)) {
-                              minAreaController.text = value.start.toStringAsFixed(0);
-                            }
-
-                            if (!isMaxAreaTyping || maxAreaController.text != value.end.toStringAsFixed(0)) {
-                              maxAreaController.text = value.end.toStringAsFixed(0);
-                            }
-                          });
-                          updateFilterCount();
-                        },
-                        child: SizedBox(
-                          height: 70,
-                          width: double.infinity,
-                          child: SfCartesianChart(
-                            plotAreaBorderColor: Colors.transparent,
-                            margin: const EdgeInsets.all(0),
-                            primaryXAxis: NumericAxis(minimum: 0, maximum: 10000, isVisible: false),
-                            primaryYAxis: NumericAxis(isVisible: false),
-                            plotAreaBorderWidth: 0,
-                            plotAreaBackgroundColor: Colors.transparent,
-                            series: <ColumnSeries<Dataarea, double>>[
-                              ColumnSeries<Dataarea, double>(
-                                dataSource: chartDataarea,
-                                selectionBehavior: SelectionBehavior(
-                                  unselectedOpacity: 0,
-                                  selectedOpacity: 0,
-                                  unselectedColor: Colors.transparent,
-                                  selectionController: _rangeControllerarea,
-                                ),
-                                xValueMapper: (Dataarea sales, int index) => sales.x,
-                                yValueMapper: (Dataarea sales, int index) => sales.y,
-                                pointColorMapper: (Dataarea sales, int index) =>
-                                const Color.fromARGB(255, 37, 117, 212),
-                                dashArray: const <double>[5, 3],
-                                animationDuration: 0,
-                                borderWidth: 0,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              const Divider(height: 1,indent: 15,endIndent: 15,),
-              const SizedBox(height: 20),
-              //furnished
-              Row(
-                children: [
-                  Padding(padding: const EdgeInsets.only(left: 20),
-                    child:  Text("Furnished Type",
-                      style: TextStyle(
-                        color: Colors.black,fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                      textAlign: TextAlign.left,),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Padding(
-                padding: const EdgeInsets.all(5),
-                child: SizedBox(
-                  height: 60,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    physics: const ScrollPhysics(),
-                    itemCount: _ftype.length,
-                    itemBuilder: (context, index) {
-                      final isSelected = selectedIndex == index;
-                      return GestureDetector(
-                        onTap: () async {
-                          setState(() {
-                            selectedIndex = index;
-                            ftype = _ftype[index];
-                          });
-                          await updateFilterCount(); // ✅ call API to update count
-                        },
-
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(
-                              color: isSelected ? Colors.black87 : Colors.grey.shade300,
-                              width: isSelected ? 2 : 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                offset: Offset(4, 4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.8),
-                                offset: Offset(-4, -4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (isSelected) ...[
-                                Icon(Icons.check, size: 18, color: Colors.green),
-                                SizedBox(width: 4),
-                              ],
-                              Text(
-                                _ftype[index],
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  letterSpacing: 0.5,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                                  await updateFilterCount();
+                                },
+                                child: Container(
+                                  constraints:
+                                  const BoxConstraints(minHeight: 34),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? const Color(0xFFF5F4F9)
+                                        : Colors.white,
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? Colors.black
+                                          : const Color(0xFFE6E4EE),
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.15),
+                                        offset: const Offset(0, 2),
+                                        blurRadius: 4,
+                                        spreadRadius: 0,
+                                      ),
+                                      BoxShadow(
+                                        color: Colors.white.withOpacity(0.9),
+                                        offset: const Offset(-2, -2),
+                                        blurRadius: 6,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    _handoverOptions[i],
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      letterSpacing: 0.2,
+                                      color: Colors.black,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
+                            );
+                          }),
                         ),
                       );
                     },
                   ),
-                ),
+                ],
               ),
+            ),
 
-
-              const SizedBox(height: 20),
-              const Divider(height: 1,indent: 15,endIndent: 15,),
-              const SizedBox(height: 20),
-
-
-              // --- Completion Status ---
-              if (showHandoverBy) ...[
-                Padding(
-                  padding: const EdgeInsets.only(left: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Handover By',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 15),
-
-                      // ✅ Handover By chips (4 visible + scrollable)
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          const double spacing = 10;
-                          final double chipWidth =
-                              (constraints.maxWidth - (spacing * 3)) / 4; // 4 per viewport
-
-                          return SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: List.generate(_handoverOptions.length, (i) {
-                                final bool isSelected = selectedHandover == i;
-
-                                return Container(
-                                  width: chipWidth,
-                                  margin: EdgeInsets.only(
-                                      right: i == _handoverOptions.length - 1 ? 0 : spacing),
-                                  child: GestureDetector(
-                                    onTap: () async {
-                                      setState(() {
-                                        selectedHandover = i;
-                                        handoverBy = (_handoverOptions[i] == 'Any')
-                                            ? ''
-                                            : _handoverOptions[i];
-                                      });
-                                      await updateFilterCount();
-                                    },
-                                    child: Container(
-                                      constraints: const BoxConstraints(minHeight: 34),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 8),
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: isSelected
-                                            ? const Color(0xFFF5F4F9)
-                                            : Colors.white,
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? Colors.black
-                                              : const Color(0xFFE6E4EE),
-                                          width: 1,
-                                        ),
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.15),
-                                            offset: const Offset(0, 2),
-                                            blurRadius: 4,
-                                            spreadRadius: 0,
-                                          ),
-                                          BoxShadow(
-                                            color: Colors.white.withOpacity(0.9),
-                                            offset: const Offset(-2, -2),
-                                            blurRadius: 6,
-                                            spreadRadius: 2,
-                                          ),
-                                        ],
-                                      ),
-                                      child: Text(
-                                        _handoverOptions[i],
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          letterSpacing: 0.2,
-                                          color: Colors.black,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-
-
-                SizedBox(height: 20,),
-
-
-
+            SizedBox(
+              height: 20,
+            ),
 
 // % Completion (under Handover By)
-                Padding(
-                  padding: const EdgeInsets.only(left: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '% Completion',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 15),
-
-                      // 4 visible + scrollable, same as Handover By
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          const double spacing = 10;
-                          final double chipWidth =
-                              (constraints.maxWidth - (spacing * 3)) / 4; // 4 per viewport
-
-                          return SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: List.generate(_percentCompletionOptions.length, (i) {
-                                final bool isSelected = selectedPercentCompletion == i;
-
-                                return Container(
-                                  width: chipWidth,
-                                  margin: EdgeInsets.only(
-                                    right: i == _percentCompletionOptions.length - 1 ? 0 : spacing,
-                                  ),
-                                  child: GestureDetector(
-                                    onTap: () async {
-                                      setState(() {
-                                        selectedPercentCompletion = i;
-                                        percentCompletion = (_percentCompletionOptions[i] == 'Any')
-                                            ? ''
-                                            : _percentCompletionOptions[i];
-                                      });
-                                      await updateFilterCount();
-                                    },
-                                    child: Container(
-                                      constraints: const BoxConstraints(minHeight: 34),
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: isSelected ? const Color(0xFFF5F4F9) : Colors.white,
-                                        border: Border.all(
-                                          color: isSelected ? Colors.black : const Color(0xFFE6E4EE),
-                                          width: 1,
-                                        ),
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.15),
-                                            offset: const Offset(0, 2),
-                                            blurRadius: 4,
-                                            spreadRadius: 0,
-                                          ),
-                                          BoxShadow(
-                                            color: Colors.white.withOpacity(0.9),
-                                            offset: const Offset(-2, -2),
-                                            blurRadius: 6,
-                                            spreadRadius: 2,
-                                          ),
-                                        ],
-                                      ),
-                                      child: Text(
-                                        _percentCompletionOptions[i],
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          letterSpacing: 0.2,
-                                          color: Colors.black,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+            Padding(
+              padding: const EdgeInsets.only(left: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '% Completion',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                ),
+                  const SizedBox(height: 15),
 
+                  // 4 visible + scrollable, same as Handover By
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      const double spacing = 10;
+                      final double chipWidth =
+                          (constraints.maxWidth - (spacing * 3)) /
+                              4; // 4 per viewport
 
-                SizedBox(height: 15,),
-                //Amenities
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: List.generate(
+                              _percentCompletionOptions.length, (i) {
+                            final bool isSelected =
+                                selectedPercentCompletion == i;
 
-
-
-
-
-
-
-
-
-                // const SizedBox(height: 20),
-                // Padding(
-                //   padding: const EdgeInsets.symmetric(horizontal: 16),
-                //   child: Container(
-                //     width: double.infinity,
-                //     height: 100,
-                //     padding: const EdgeInsets.all(16),
-                //     decoration: BoxDecoration(
-                //       color: Color(0xFFFFFBF0)
-                //       ,
-                //       borderRadius: BorderRadius.circular(10),
-                //       boxShadow: [
-                //         BoxShadow(
-                //           color: Colors.grey.withOpacity(0.2),
-                //           blurRadius: 6,
-                //           offset: Offset(0, 3),
-                //         ),
-                //       ],
-                //     ),
-                //     child: Column(
-                //       crossAxisAlignment: CrossAxisAlignment.start,
-                //       children: [
-                //         Row(
-                //           children: [
-                //             Image.asset(
-                //               "assets/images/app-icon_new.png",
-                //               width: 22,
-                //               height: 22,
-                //               fit: BoxFit.contain,
-                //             ),
-                //             const SizedBox(width: 8),
-                //             const Text(
-                //               "Explore more locations",
-                //               style: TextStyle(
-                //                 fontSize: 16,
-                //                 fontWeight: FontWeight.bold,
-                //                 color: Colors.black87,
-                //                 letterSpacing: 0.5,
-                //               ),
-                //             ),
-                //           ],
-                //         ),
-                //
-                //         const SizedBox(height: 12),
-                //         Row(
-                //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //           children: ["Dubai", "AbuDhabi", "Sharjah", "Ajman", "Al Ain"].map((city) {
-                //             return Container(
-                //               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                //               decoration: BoxDecoration(
-                //                 color: Colors.white,
-                //                 borderRadius: BorderRadius.circular(12),
-                //                 boxShadow: [
-                //                   BoxShadow(
-                //                     color: Colors.grey.withOpacity(0.2),
-                //                     blurRadius: 4,
-                //                     offset: Offset(1, 2),
-                //                   ),
-                //                 ],
-                //               ),
-                //               child: Text(
-                //                 city,
-                //                 style: const TextStyle(
-                //                   fontSize: 13,
-                //                   fontWeight: FontWeight.w600,
-                //                   color: Colors.black87,
-                //                 ),
-                //               ),
-                //             );
-                //           }).toList(),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-                // ),
-                // const SizedBox(height: 20),
-
-                const Divider(height: 1,indent: 15,endIndent: 15,),
-                SizedBox(height: 8,),
-                // Container(
-                //   height: 100,
-                // ),
-                // GestureDetector(
-                //   onTap: () {
-                //     showResult();
-                //   },
-                //   child: Padding(
-                //     padding: const EdgeInsets.only(top: 25.0, left: 15, bottom: 15, right: 15),
-                //     child: Container(
-                //       width: screenSize.width * 0.9,
-                //       height: 45,
-                //       decoration: BoxDecoration(
-                //         color: Colors.red,
-                //         borderRadius: BorderRadiusDirectional.circular(6.0),
-                //         boxShadow: [
-                //           BoxShadow(
-                //             color: Colors.grey,
-                //             offset: const Offset(0.3, 0.3),
-                //             blurRadius: 0.3,
-                //             spreadRadius: 0.3,
-                //           ),
-                //           BoxShadow(
-                //             color: Colors.white,
-                //             offset: const Offset(0.0, 0.0),
-                //             blurRadius: 0.0,
-                //             spreadRadius: 0.0,
-                //           ),
-                //         ],
-                //       ),
-                //       child: Center(
-                //         child: Text(
-                //           "Showing $displayedFilterResultCount Results" ,// ✅ Live count!
-                //           style: TextStyle(
-                //             color: Colors.white,
-                //             letterSpacing: 0.5,
-                //             fontWeight: FontWeight.bold,
-                //             fontSize: 15,
-                //           ),
-                //           textAlign: TextAlign.center,
-                //         ),
-                //       ),
-                //     ),
-                //   ),
-                // ),
-
-              ],
-
-
-              // --- Amenities (always for Properties) ---
-              if (showAmenities) ...[
-                const SizedBox(height: 15),
-                Row(
-                  children: const [
-                    Padding(
-                      padding: EdgeInsets.only(left: 20),
-                      child: Text(
-                        "Amenities",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                        textAlign: TextAlign.left,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: GridView.builder(
-                    itemCount: _showAllAmenities ? amenities.length : 5,
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 4,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
-                    itemBuilder: (context, index) {
-                      final isSelected = selectedIndexes.contains(index);
-
-                      return GestureDetector(
-                        onTap: () async {
-                          setState(() {
-                            isSelected
-                                ? selectedIndexes.remove(index)
-                                : selectedIndexes.add(index);
-                          });
-                          await updateFilterCount();
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(
-                              color: isSelected ? Colors.black87 : Colors.grey.shade300,
-                              width: isSelected ? 2 : 1,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 3,
-                                offset: Offset(0, 1),
+                            return Container(
+                              width: chipWidth,
+                              margin: EdgeInsets.only(
+                                right: i == _percentCompletionOptions.length - 1
+                                    ? 0
+                                    : spacing,
                               ),
-                            ],
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Row(
-                            children: [
-                              CachedNetworkImage(
-                                imageUrl: amenities[index].icon ?? '',
-                                width: 18,
-                                height: 18,
-                                placeholder: (context, url) => const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                ),
-                                errorWidget: (context, url, error) =>
-                                const Icon(Icons.broken_image, size: 18),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  amenities[index].title ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  setState(() {
+                                    selectedPercentCompletion = i;
+                                    percentCompletion =
+                                    (_percentCompletionOptions[i] == 'Any')
+                                        ? ''
+                                        : _percentCompletionOptions[i];
+                                  });
+                                  await updateFilterCount();
+                                },
+                                child: Container(
+                                  constraints:
+                                  const BoxConstraints(minHeight: 34),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? const Color(0xFFF5F4F9)
+                                        : Colors.white,
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? Colors.black
+                                          : const Color(0xFFE6E4EE),
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.15),
+                                        offset: const Offset(0, 2),
+                                        blurRadius: 4,
+                                        spreadRadius: 0,
+                                      ),
+                                      BoxShadow(
+                                        color: Colors.white.withOpacity(0.9),
+                                        offset: const Offset(-2, -2),
+                                        blurRadius: 6,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    _percentCompletionOptions[i],
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      letterSpacing: 0.2,
+                                      color: Colors.black,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            );
+                          }),
                         ),
                       );
                     },
                   ),
+                ],
+              ),
+            ),
+
+            SizedBox(
+              height: 15,
+            ),
+            //Amenities
+
+            // const SizedBox(height: 20),
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 16),
+            //   child: Container(
+            //     width: double.infinity,
+            //     height: 100,
+            //     padding: const EdgeInsets.all(16),
+            //     decoration: BoxDecoration(
+            //       color: Color(0xFFFFFBF0)
+            //       ,
+            //       borderRadius: BorderRadius.circular(10),
+            //       boxShadow: [
+            //         BoxShadow(
+            //           color: Colors.grey.withOpacity(0.2),
+            //           blurRadius: 6,
+            //           offset: Offset(0, 3),
+            //         ),
+            //       ],
+            //     ),
+            //     child: Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         Row(
+            //           children: [
+            //             Image.asset(
+            //               "assets/images/app-icon_new.png",
+            //               width: 22,
+            //               height: 22,
+            //               fit: BoxFit.contain,
+            //             ),
+            //             const SizedBox(width: 8),
+            //             const Text(
+            //               "Explore more locations",
+            //               style: TextStyle(
+            //                 fontSize: 16,
+            //                 fontWeight: FontWeight.bold,
+            //                 color: Colors.black87,
+            //                 letterSpacing: 0.5,
+            //               ),
+            //             ),
+            //           ],
+            //         ),
+            //
+            //         const SizedBox(height: 12),
+            //         Row(
+            //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //           children: ["Dubai", "AbuDhabi", "Sharjah", "Ajman", "Al Ain"].map((city) {
+            //             return Container(
+            //               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            //               decoration: BoxDecoration(
+            //                 color: Colors.white,
+            //                 borderRadius: BorderRadius.circular(12),
+            //                 boxShadow: [
+            //                   BoxShadow(
+            //                     color: Colors.grey.withOpacity(0.2),
+            //                     blurRadius: 4,
+            //                     offset: Offset(1, 2),
+            //                   ),
+            //                 ],
+            //               ),
+            //               child: Text(
+            //                 city,
+            //                 style: const TextStyle(
+            //                   fontSize: 13,
+            //                   fontWeight: FontWeight.w600,
+            //                   color: Colors.black87,
+            //                 ),
+            //               ),
+            //             );
+            //           }).toList(),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+            // const SizedBox(height: 20),
+
+            const Divider(
+              height: 1,
+              indent: 15,
+              endIndent: 15,
+            ),
+            SizedBox(
+              height: 8,
+            ),
+            // Container(
+            //   height: 100,
+            // ),
+            // GestureDetector(
+            //   onTap: () {
+            //     showResult();
+            //   },
+            //   child: Padding(
+            //     padding: const EdgeInsets.only(top: 25.0, left: 15, bottom: 15, right: 15),
+            //     child: Container(
+            //       width: screenSize.width * 0.9,
+            //       height: 45,
+            //       decoration: BoxDecoration(
+            //         color: Colors.red,
+            //         borderRadius: BorderRadiusDirectional.circular(6.0),
+            //         boxShadow: [
+            //           BoxShadow(
+            //             color: Colors.grey,
+            //             offset: const Offset(0.3, 0.3),
+            //             blurRadius: 0.3,
+            //             spreadRadius: 0.3,
+            //           ),
+            //           BoxShadow(
+            //             color: Colors.white,
+            //             offset: const Offset(0.0, 0.0),
+            //             blurRadius: 0.0,
+            //             spreadRadius: 0.0,
+            //           ),
+            //         ],
+            //       ),
+            //       child: Center(
+            //         child: Text(
+            //           "Showing $displayedFilterResultCount Results" ,// ✅ Live count!
+            //           style: TextStyle(
+            //             color: Colors.white,
+            //             letterSpacing: 0.5,
+            //             fontWeight: FontWeight.bold,
+            //             fontSize: 15,
+            //           ),
+            //           textAlign: TextAlign.center,
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            // ),
+          ],
+
+          // --- Amenities (always for Properties) ---
+          if (showAmenities) ...[
+            const SizedBox(height: 15),
+            Row(
+              children: const [
+                Padding(
+                  padding: EdgeInsets.only(left: 20),
+                  child: Text(
+                    "Amenities",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: GridView.builder(
+                itemCount: _showAllAmenities ? amenities.length : 5,
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 4,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                ),
+                itemBuilder: (context, index) {
+                  final isSelected =
+                  selectedAmenitiesId.contains(amenities[index].id);
 
-                if (amenities.length > 6)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10.0),
-                    child: TextButton(
-                      onPressed: () async {
-                        await Future.wait(
-                          amenities.map((a) async {
-                            final url = a.icon;
-                            if (url != null && url.isNotEmpty) {
-                              try {
-                                final provider = CachedNetworkImageProvider(url);
-                                await precacheImage(provider, context);
-                              } catch (_) {}
-                            }
-                          }),
-                        );
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => FullAmenitiesScreen(
-                              allAmenities: amenities,
-                              selectedIndexes: selectedIndexes,
-                              onDone: (selected) async {
-                                setState(() => selectedIndexes = selected);
-                                await updateFilterCount();
-                              },
+                  return GestureDetector(
+                    onTap: () async {
+                      setState(() {
+                        isSelected
+                            ? selectedAmenitiesId.remove(amenities[index].id)
+                            : selectedAmenitiesId.add(amenities[index].id!);
+                      });
+                      await updateFilterCount();
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(
+                          color: isSelected
+                              ? Colors.black87
+                              : Colors.grey.shade300,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 3,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(
+                        children: [
+                          CachedNetworkImage(
+                            imageUrl: amenities[index].icon ?? '',
+                            width: 18,
+                            height: 18,
+                            placeholder: (context, url) => const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            errorWidget: (context, url, error) =>
+                            const Icon(Icons.broken_image, size: 18),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              amenities[index].title ?? '',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black,
+                              ),
                             ),
                           ),
-                        );
-                      },
-                      child: Text(
-                        _showAllAmenities ? "Show less amenities" : "Show more amenities",
-                        style: const TextStyle(
-                          color: Colors.blueAccent,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                        ],
                       ),
                     ),
-                  ),
+                  );
+                },
+              ),
+            ),
+            if (amenities.length > 6)
+              Padding(
+                padding: const EdgeInsets.only(top: 10.0),
+                child: TextButton(
+                  onPressed: () async {
+                    await Future.wait(
+                      amenities.map((a) async {
+                        final url = a.icon;
+                        if (url != null && url.isNotEmpty) {
+                          try {
+                            final provider = CachedNetworkImageProvider(url);
+                            await precacheImage(provider, context);
+                          } catch (_) {}
+                        }
+                      }),
+                    );
 
-                if (!isBuyMode) ...[
-                  const SizedBox(height: 10),
-                  const Divider(height: 1, indent: 15, endIndent: 15),
-                  const SizedBox(height: 20),
-                ],
-              ],
-
-
-              //real estate
-              if (showRentPaid) ...[
-                Row(
-                  children: const [
-                    Padding(
-                      padding: EdgeInsets.only(left: 20),
-                      child: Text(
-                        "Rent is paid",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                        textAlign: TextAlign.left,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: SizedBox(
-                    height: 60,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      physics: const ScrollPhysics(),
-                      itemCount: _rent.length,
-                      itemBuilder: (context, index) {
-                        final isSelected = selectedrent == index;
-                        return GestureDetector(
-                          onTap: () async {
-                            setState(() {
-                              selectedrent = index;
-                              rent = _rent[index];
-                            });
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FullAmenitiesScreen(
+                          allAmenities: amenities,
+                          selectedAmenitiesId: selectedAmenitiesId,
+                          onDone: (selected) async {
+                            setState(() => selectedAmenitiesId = selected);
                             await updateFilterCount();
                           },
-                          child: Container(
-                            margin: const EdgeInsets.all(5),
-                            padding: const EdgeInsets.symmetric(horizontal: 15),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(
-                                color: isSelected ? Colors.black87 : Colors.grey.shade300,
-                                width: isSelected ? 2 : 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: const Offset(4, 4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: const Offset(-4, -4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            alignment: Alignment.center,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (isSelected) ...[
-                                  const Icon(Icons.check, size: 18, color: Colors.green),
-                                  const SizedBox(width: 4),
-                                ],
-                                Text(
-                                  _rent[index],
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    letterSpacing: 0.5,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    _showAllAmenities
+                        ? "Show less amenities"
+                        : "Show more amenities",
+                    style: const TextStyle(
+                      color: Colors.blueAccent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
                 ),
-              ],
-
-
-              if (showRentPaid) ...[
-                const Divider(height: 1, indent: 15, endIndent: 15),
-                const SizedBox(height: 8),
-              ],
-
-
-              // ✅ always show the CTA (not inside any condition)
-              const SizedBox(height: 8),
-              _showResultsButton(context, screenSize),
-              const SizedBox(height: 90),
-
-
-              Container(
-                height: 10,
               ),
+            if (!isBuyMode) ...[
+              const SizedBox(height: 10),
+              const Divider(height: 1, indent: 15, endIndent: 15),
+              const SizedBox(height: 20),
+            ],
+          ],
 
+          //real estate
+          if (showRentPaid) ...[
+            Row(
+              children: const [
+                Padding(
+                  padding: EdgeInsets.only(left: 20),
+                  child: Text(
+                    "Rent is paid",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            Padding(
+              padding: const EdgeInsets.all(5),
+              child: SizedBox(
+                height: 60,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const ScrollPhysics(),
+                  itemCount: _rent.length,
+                  itemBuilder: (context, index) {
+                    final isSelected = selectedrent == index;
+                    return GestureDetector(
+                      onTap: () async {
+                        setState(() {
+                          selectedrent = index;
+                          rent = _rent[index];
+                        });
+                        await updateFilterCount();
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.all(5),
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(
+                            color: isSelected
+                                ? Colors.black87
+                                : Colors.grey.shade300,
+                            width: isSelected ? 2 : 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              offset: const Offset(4, 4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.8),
+                              offset: const Offset(-4, -4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isSelected) ...[
+                              const Icon(Icons.check,
+                                  size: 18, color: Colors.green),
+                              const SizedBox(width: 4),
+                            ],
+                            Text(
+                              _rent[index],
+                              style: const TextStyle(
+                                color: Colors.black,
+                                letterSpacing: 0.5,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
 
+          if (showRentPaid) ...[
+            const Divider(height: 1, indent: 15, endIndent: 15),
+            const SizedBox(height: 8),
+          ],
 
-            ]
+          // ✅ always show the CTA (not inside any condition)
+          const SizedBox(height: 8),
+          _showResultsButton(context, screenSize),
+          const SizedBox(height: 90),
 
-        ),
-
+          Container(
+            height: 10,
+          ),
+        ]),
       ),
-    ) ;
-
+    );
   }
 
   BoxDecoration _inputBoxDecoration() {
@@ -2747,10 +2868,14 @@ class _FilterDemoState extends State<FilterDemo> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           GestureDetector(
-              onTap: ()async{
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> Home()));
+              onTap: () async {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Home()));
               },
-              child: Image.asset("assets/images/home.png",height: 25,)),
+              child: Image.asset(
+                "assets/images/home.png",
+                height: 25,
+              )),
           // IconButton(
           //   enableFeedback: false,
           //   onPressed: () {
@@ -2780,8 +2905,10 @@ class _FilterDemoState extends State<FilterDemo> {
                   context: context,
                   builder: (context) => AlertDialog(
                     backgroundColor: Colors.white, // white container
-                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    title: const Text("Login Required",
+                        style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.",
+                        style: TextStyle(color: Colors.black)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
@@ -2795,7 +2922,8 @@ class _FilterDemoState extends State<FilterDemo> {
                           Navigator.pop(context);
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                            MaterialPageRoute(
+                                builder: (_) => const LoginDemo()),
                           );
                         },
                         child: const Text(
@@ -2806,8 +2934,7 @@ class _FilterDemoState extends State<FilterDemo> {
                     ],
                   ),
                 );
-              }
-              else {
+              } else {
                 // ✅ Logged in – go to favorites
                 Navigator.push(
                   context,
@@ -2817,15 +2944,9 @@ class _FilterDemoState extends State<FilterDemo> {
             },
             icon: pageIndex == 2
                 ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+                : const Icon(Icons.favorite_border_outlined,
+                color: Colors.red, size: 30),
           ),
-
-
-
-
-
-
-
 
           IconButton(
             tooltip: "Email",
@@ -2865,24 +2986,16 @@ class _FilterDemoState extends State<FilterDemo> {
             },
           ),
 
-
-
-
-
-
-
-
-
           IconButton(
             enableFeedback: false,
             onPressed: () {
               setState(() {
-                if(token == ''){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-                }
-                else{
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> My_Account()));
-
+                if (token == '') {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => My_Account()));
+                } else {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => My_Account()));
                 }
               });
             },
@@ -2903,6 +3016,7 @@ class _FilterDemoState extends State<FilterDemo> {
     );
   }
 }
+
 class Data {
   final double x, y;
   Data(this.x, this.y);

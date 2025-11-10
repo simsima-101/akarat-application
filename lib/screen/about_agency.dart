@@ -1,27 +1,28 @@
 import 'dart:async';
 import 'dart:convert';
+
+import 'package:Akarat/model/agency_detailModel.dart';
 import 'package:Akarat/model/agencyagentmodel.dart';
 import 'package:Akarat/model/agencypropertiesmodel.dart' as propertyModel;
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:Akarat/model/agency_detailModel.dart';
-import 'package:Akarat/screen/home.dart';
-import 'package:Akarat/screen/my_account.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../model/togglemodel.dart';
 import '../secure_storage.dart';
 import '../services/api_service.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
+import '../widgets/read_more_text.dart';
 import 'about_agent.dart';
 import 'featured_detail.dart';
-import 'findagent.dart';
-import 'htmlEpandableText.dart';
+import 'home.dart';
 import 'login.dart';
-
+import 'my_account.dart';
 
 // Force HTTPS so iOS hardware doesn't block http:// images/redirects
 String secureUrl(String? url) {
@@ -34,14 +35,16 @@ String secureUrl(String? url) {
 class About_Agency extends StatefulWidget {
   const About_Agency({super.key, required this.data});
   final String data;
+
   @override
   State<About_Agency> createState() => _About_AgencyState();
 }
+
 class _About_AgencyState extends State<About_Agency> {
   AgencyDetailmodel? agencyDetailmodel;
   int pageIndex = 0;
   bool isFavorited = false;
-  int? property_id ;
+  int? property_id;
   String token = '';
   String email = '';
   String result = '';
@@ -50,10 +53,12 @@ class _About_AgencyState extends State<About_Agency> {
   bool _agencyLoading = true;
   String? _agencyError;
 
-  // Create an object of SharedPreferencesManager class
+  // Shared prefs manager
   SharedPreferencesManager prefManager = SharedPreferencesManager();
 
   final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
+
   // Method to read data from shared preferences
   void readData() async {
     token = await prefManager.readStringFromPref();
@@ -63,12 +68,20 @@ class _About_AgencyState extends State<About_Agency> {
       isDataRead = true;
     });
   }
+
   int currentPage = 1;
   bool isLoadingMore = false;
   bool hasMoreData = true;
   List<propertyModel.Property> allProperties = [];
   propertyModel.AgencyPropertiesResponseModel? agencyPropertiesModel;
   final ScrollController _scrollController = ScrollController();
+
+  AgencyAgentsModel? agencyAgentsModel;
+  ToggleModel? toggleModel;
+
+  int _currentImageIndex = 0;
+
+  Set<int> favoriteProperties = {}; // Stores favorite property IDs
 
   @override
   void initState() {
@@ -80,16 +93,26 @@ class _About_AgencyState extends State<About_Agency> {
 
     getFilesApi(widget.data); // Load page 1
     _scrollController.addListener(() {
+      // debug logs
       print("📍 Scroll position: ${_scrollController.position.pixels}");
       print("📍 Max scroll extent: ${_scrollController.position.maxScrollExtent}");
 
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 &&
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200 &&
           !isLoadingMore &&
           hasMoreData) {
         print("🚀 Triggering next page fetch");
         getFilesApi(widget.data);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _locationController.dispose();
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadAgencyDetails() async {
@@ -124,6 +147,7 @@ class _About_AgencyState extends State<About_Agency> {
 
       // 🌐 Fallback to API
       final uri = ApiService.buildUri('company/${widget.data}');
+
       final response = await http.get(uri).timeout(const Duration(seconds: 12));
 
       if (response.statusCode == 200) {
@@ -160,14 +184,10 @@ class _About_AgencyState extends State<About_Agency> {
     }
   }
 
-
-  ToggleModel? toggleModel;
-
-  AgencyAgentsModel? agencyAgentsModel;
-
   Future<void> getFilesApi(String user) async {
     if (isLoadingMore || !hasMoreData) {
-      print("⛔ Skipped fetch: isLoadingMore = $isLoadingMore, hasMoreData = $hasMoreData");
+      print(
+          "⛔ Skipped fetch: isLoadingMore = $isLoadingMore, hasMoreData = $hasMoreData");
       return;
     }
 
@@ -189,7 +209,8 @@ class _About_AgencyState extends State<About_Agency> {
         print("📦 Using cached data for key: $cacheKey");
 
         final jsonData = jsonDecode(cachedData);
-        final feature = propertyModel.AgencyPropertiesResponseModel.fromJson(jsonData);
+        final feature =
+        propertyModel.AgencyPropertiesResponseModel.fromJson(jsonData);
 
         final newProperties = feature.data?.data ?? [];
         final meta = feature.data?.meta;
@@ -198,7 +219,9 @@ class _About_AgencyState extends State<About_Agency> {
 
         setState(() {
           allProperties.addAll(newProperties);
-          if (meta != null && meta.currentPage != null && meta.lastPage != null) {
+          if (meta != null &&
+              meta.currentPage != null &&
+              meta.lastPage != null) {
             if (meta.currentPage! >= meta.lastPage!) {
               hasMoreData = false;
             } else {
@@ -211,7 +234,8 @@ class _About_AgencyState extends State<About_Agency> {
         });
 
         print("✅ Loaded agency properties from cache (page $currentPage)");
-        print("📃 Total allProperties count after cache: ${allProperties.length}");
+        print(
+            "📃 Total allProperties count after cache: ${allProperties.length}");
         return;
       } else {
         print("⚠️ Cache expected but not found for key: $cacheKey");
@@ -223,22 +247,21 @@ class _About_AgencyState extends State<About_Agency> {
     // 🛰️ Fallback: API fetch
     setState(() => isLoadingMore = true);
     try {
-      final apiUrl = ApiService.buildUri(
-        'company/properties/$user',
-        query: {'page': '$currentPage'},
-      ).toString();
-      print("🌐 Calling API: $apiUrl");
+      final uri = ApiService.buildUri('company/properties/$user?page=$currentPage');
+
+
+      print("🌐 Calling API: $uri");
 
       final response = await http
-          .get(Uri.parse(apiUrl))
+          .get(uri)
           .timeout(const Duration(seconds: 12));
-
 
       print("📄 API Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final feature = propertyModel.AgencyPropertiesResponseModel.fromJson(data);
+        final feature =
+        propertyModel.AgencyPropertiesResponseModel.fromJson(data);
         final newProperties = feature.data?.data ?? [];
         final meta = feature.data?.meta;
 
@@ -249,7 +272,9 @@ class _About_AgencyState extends State<About_Agency> {
 
         setState(() {
           allProperties.addAll(newProperties);
-          if (meta != null && meta.currentPage != null && meta.lastPage != null) {
+          if (meta != null &&
+              meta.currentPage != null &&
+              meta.lastPage != null) {
             if (meta.currentPage! >= meta.lastPage!) {
               hasMoreData = false;
             } else {
@@ -271,15 +296,10 @@ class _About_AgencyState extends State<About_Agency> {
       print("❌ Error fetching properties: $e");
       setState(() => isLoadingMore = false);
     }
-  }
-
-  final int _currentImageIndex = 0;
-
-// Make sure to dispose the controller
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
+    catch (e) {
+      print("❌ Error fetching properties: $e");
+      setState(() => isLoadingMore = false);
+    }
   }
 
   Future<void> getAgentsApi(String user) async {
@@ -304,7 +324,9 @@ class _About_AgencyState extends State<About_Agency> {
       }
 
       final uri = ApiService.buildUri('company/agents/$user');
-      final response = await http.get(uri).timeout(const Duration(seconds: 12));
+
+      final response =
+      await http.get(uri).timeout(const Duration(seconds: 12));
       debugPrint('Agents status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
@@ -316,7 +338,8 @@ class _About_AgencyState extends State<About_Agency> {
           isAgentsLoading = false;
         });
       } else {
-        debugPrint("❌ Agents API failed: ${response.statusCode} / ${response.body}");
+        debugPrint(
+            "❌ Agents API failed: ${response.statusCode} / ${response.body}");
         setState(() => isAgentsLoading = false);
       }
     } on TimeoutException catch (e) {
@@ -328,16 +351,15 @@ class _About_AgencyState extends State<About_Agency> {
     }
   }
 
-
-  Future<void> toggledApi( token,  propertyId) async {
+  Future<void> toggledApi(token, propertyId) async {
     try {
+      final uri = ApiService.buildUri('toggle-saved-property');
+
       final response = await http.post(
-        ApiService.buildUri('toggle-saved-property'),
+        uri,
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
         },
         body: jsonEncode({
           "property_id": propertyId,
@@ -356,8 +378,6 @@ class _About_AgencyState extends State<About_Agency> {
       debugPrint("🚨 Toggle error: $e");
     }
   }
-
-  Set<int> favoriteProperties = {}; // Stores favorite property IDs
 
   void toggleFavorite(int propertyId) async {
     setState(() {
@@ -382,16 +402,15 @@ class _About_AgencyState extends State<About_Agency> {
   // Save favorites to SharedPreferences
   Future<void> _saveFavorites() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-        'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
+    await prefs.setStringList('favorite_properties',
+        favoriteProperties.map((id) => id.toString()).toList());
   }
-
-  final TextEditingController _searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
-    // NEW
+
+    // NEW: Agency loading state
     if (_agencyLoading) {
       return Scaffold(
         body: ListView.builder(
@@ -411,7 +430,10 @@ class _About_AgencyState extends State<About_Agency> {
               if (_agencyError != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(_agencyError!, style: const TextStyle(color: Colors.red)),
+                  child: Text(
+                    _agencyError!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
                 ),
               const SizedBox(height: 12),
               ElevatedButton(
@@ -425,168 +447,724 @@ class _About_AgencyState extends State<About_Agency> {
     }
 
     return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.red),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => FindAgentDemo()),
-              );
-            },
-          ),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.red),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
-        bottomNavigationBar: SafeArea(child: buildMyNavBar(context),),
-        body: DefaultTabController(
-
-            length: 4,
-            child: Column(
-                children: <Widget>[
-                  const SizedBox(height: 10,),
-                  Container(
-                    height: screenSize.height * 0.22,
-                    color: Color(0xFFF5F5F5),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ instead of spacing
-                            children: [
-                              // Container(
-                              //   margin: const EdgeInsets.only(left: 20),
-                              //   height: 35,
-                              //   width: 35,
-                              //   padding: const EdgeInsets.all(7),
-                              //   decoration: BoxDecoration(
-                              //     borderRadius: BorderRadius.circular(20.0),
-                              //     boxShadow: [
-                              //       BoxShadow(
-                              //         color: Colors.grey,
-                              //         offset: Offset(0.3, 0.3),
-                              //         blurRadius: 0.3,
-                              //         spreadRadius: 0.3,
-                              //       ),
-                              //       BoxShadow(
-                              //         color: Colors.white,
-                              //         offset: Offset(0.0, 0.0),
-                              //         blurRadius: 0.0,
-                              //         spreadRadius: 0.0,
-                              //       ),
-                              //     ],
-                              //   ),
-                              //   child: GestureDetector(
-                              //     onTap: () {
-                              //       Navigator.of(context).pop();
-                              //     },
-                              //     child: Image.asset(
-                              //       "assets/images/ar-left.png",
-                              //       width: 15,
-                              //       height: 15,
-                              //       fit: BoxFit.contain,
-                              //     ),
-                              //   ),
-                              // ),
-                            ],
-                          ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: buildMyNavBar(context),
+      ),
+      body: DefaultTabController(
+        length: 4,
+        child: Column(
+          children: <Widget>[
+            const SizedBox(
+              height: 10,
+            ),
+            Container(
+              height: screenSize.height * 0.22,
+              color: const Color(0xFFF5F5F5),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        // currently just spacing
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 8),
+                    child: Padding(
+                      padding:
+                      const EdgeInsets.only(top: 30, bottom: 4),
+                      child: Container(
+                        height: screenSize.height * 0.12,
+                        width: screenSize.width * 0.91,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                              Colors.grey.withOpacity(0.5),
+                              offset: const Offset(4, 4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                            BoxShadow(
+                              color:
+                              Colors.white.withOpacity(0.8),
+                              offset: const Offset(-4, -4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 30, bottom: 4),
-                            child: Container(
+                        child: Row(
+                          crossAxisAlignment:
+                          CrossAxisAlignment.center,
+                          children: [
+                            /// Logo
+                            SizedBox(
+                              width: screenSize.width * 0.29,
                               height: screenSize.height * 0.12,
-                              width: screenSize.width * 0.91,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    offset: Offset(4, 4),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.8),
-                                    offset: Offset(-4, -4),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                                borderRadius: BorderRadius.circular(10),
+                              child: Align(
+                                alignment: Alignment.center,
+                                child: CachedNetworkImage(
+                                  imageUrl: secureUrl(
+                                      agencyDetailmodel?.image),
+                                  height:
+                                  screenSize.height * 0.08,
+                                  fit: BoxFit.contain,
+                                ),
                               ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment:
+                                MainAxisAlignment.center,
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
                                 children: [
-                                  /// ✅ Logo pushed down using Align inside SizedBox
-                                  SizedBox(
-                                    width: screenSize.width * 0.29,
-                                    height: screenSize.height * 0.12,
-                                    child: Align(
-                                      alignment: Alignment.center,  // 👈 was Alignment.bottomCenter
-                                      child: CachedNetworkImage(
-                                        imageUrl: secureUrl(agencyDetailmodel!.image),
-                                        height: screenSize.height * 0.08,
-                                        fit: BoxFit.contain,
-                                      ),
+                                  Text(
+                                    agencyDetailmodel!.name
+                                        .toString(),
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      letterSpacing: 0.5,
+                                      fontWeight: FontWeight.bold,
                                     ),
-
+                                    overflow:
+                                    TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
-
-                                  SizedBox(width: 8), // ✅ Add spacing
-                                  Expanded(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center, // ✅ Center vertically
-                                      crossAxisAlignment: CrossAxisAlignment.start, // ✅ Align text left
-                                      children: [
-                                        Text(
-                                          agencyDetailmodel!.name.toString(),
-                                          style: TextStyle(
-                                            fontSize: 17,
-                                            letterSpacing: 0.5,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          overflow: TextOverflow.ellipsis, // ✅ To prevent overflow
-                                          maxLines: 1,
+                                  const SizedBox(height: 5),
+                                  Container(
+                                    padding: const EdgeInsets
+                                        .symmetric(
+                                        horizontal: 8,
+                                        vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey
+                                              .withOpacity(0.5),
+                                          offset:
+                                          const Offset(4, 4),
+                                          blurRadius: 8,
+                                          spreadRadius: 2,
                                         ),
-                                        SizedBox(height: 5),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey.withOpacity(0.5),
-                                                offset: Offset(4, 4),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
-                                              BoxShadow(
-                                                color: Colors.white.withOpacity(0.8),
-                                                offset: Offset(-4, -4),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
-                                            ],
-                                            borderRadius: BorderRadius.circular(6),
-                                          ),
-                                          child: Text(
-                                            "${agencyDetailmodel!.propertiesCount} Properties",
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              letterSpacing: 0.5,
-                                              color: Colors.blueAccent,
-                                            ),
-                                          ),
+                                        BoxShadow(
+                                          color: Colors.white
+                                              .withOpacity(0.8),
+                                          offset:
+                                          const Offset(-4, -4),
+                                          blurRadius: 8,
+                                          spreadRadius: 2,
                                         ),
                                       ],
+                                      borderRadius:
+                                      BorderRadius.circular(
+                                          6),
+                                    ),
+                                    child: Text(
+                                      "${agencyDetailmodel!.propertiesCount} Properties",
+                                      textAlign:
+                                      TextAlign.center,
+                                      style: const TextStyle(
+                                        letterSpacing: 0.5,
+                                        color:
+                                        Colors.blueAccent,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            TabBar(
+              padding:
+              const EdgeInsets.only(top: 15, left: 0, right: 0),
+              labelPadding:
+              const EdgeInsets.symmetric(horizontal: 0),
+              splashFactory: NoSplash.splashFactory,
+              indicatorWeight: 1.0,
+              labelColor: Colors.lightBlueAccent,
+              dividerColor: Colors.transparent,
+              indicatorColor: Colors.transparent,
+              tabAlignment: TabAlignment.center,
+              tabs: [
+                _tabItem('About'),
+                _tabItem('Properties'),
+                _tabItem('Agents'),
+                _tabItem('Review'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  // ABOUT TAB
+                  SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 10),
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
+                            child: Row(
+                              children: const [
+                                Text(
+                                  "About  ",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.black,
+                                    letterSpacing: 0.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.start,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // DESCRIPTION
+                          if (agencyDetailmodel?.description !=
+                              null)
+                            Column(
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 10),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "Description ",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.grey,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                (agencyDetailmodel!
+                                    .description !=
+                                    null &&
+                                    agencyDetailmodel!
+                                        .description!
+                                        .trim()
+                                        .isNotEmpty)
+                                    ? Padding(
+                                  padding:
+                                  const EdgeInsets
+                                      .symmetric(
+                                      horizontal:
+                                      10.0),
+                                  child: ReadMoreText(
+                                    agencyDetailmodel!
+                                        .description!,
+                                    trimMode:
+                                    TrimMode.line,
+                                    trimLines: 4,
+                                    trimCollapsedText:
+                                    ' Read more',
+                                    trimExpandedText:
+                                    ' Read less',
+                                    style:
+                                    const TextStyle(
+                                      fontSize: 15,
+                                      color:
+                                      Colors.black,
+                                      letterSpacing:
+                                      0.5,
+                                    ),
+                                    moreStyle:
+                                    const TextStyle(
+                                      fontSize: 15,
+                                      color:
+                                      Colors.blue,
+                                      letterSpacing:
+                                      0.5,
+                                      fontWeight:
+                                      FontWeight
+                                          .w600,
+                                    ),
+                                    lessStyle:
+                                    const TextStyle(
+                                      fontSize: 15,
+                                      color:
+                                      Colors.blue,
+                                      letterSpacing:
+                                      0.5,
+                                      fontWeight:
+                                      FontWeight
+                                          .w600,
+                                    ),
+                                  ),
+                                )
+                                    : const Padding(
+                                  padding:
+                                  EdgeInsets
+                                      .symmetric(
+                                      horizontal:
+                                      15.0),
+                                  child: Text(
+                                    "No description available",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color:
+                                      Colors.black54,
+                                      fontStyle:
+                                      FontStyle
+                                          .italic,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                          const SizedBox(height: 12),
+                          // SERVICE AREAS
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
+                            child: Row(
+                              children: const [
+                                Text(
+                                  "Service Areas",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
+                            child: Row(
+                              children: const [
+                                Text(
+                                  "Meydan City, Al Marjan Island, Dubailand",
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+                          // PROPERTY TYPE
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
+                            child: Row(
+                              children: const [
+                                Text(
+                                  "Property Type",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
+                            child: Row(
+                              children: const [
+                                Text(
+                                  "Villas, Townhouses, Apartments",
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+                          // DED
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
+                            child: Row(
+                              children: const [
+                                Text(
+                                  "DED",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
+                            child: Row(
+                              children: [
+                                Text(
+                                  agencyDetailmodel!.ded
+                                      .toString(),
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+                          // RERA
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
+                            child: Row(
+                              children: const [
+                                Text(
+                                  "RERA",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
+                            child: Row(
+                              children: [
+                                Text(
+                                  agencyDetailmodel!.rera
+                                      .toString(),
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // PROPERTIES TAB
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 0, right: 0, top: 15),
+                            child: ListView.builder(
+                              padding: const EdgeInsets.all(0),
+                              controller: _scrollController,
+                              itemCount: allProperties.length +
+                                  (isLoadingMore ? 1 : 0),
+                              physics:
+                              const AlwaysScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              itemBuilder: (context, index) {
+                                if (index ==
+                                    allProperties.length) {
+                                  return const Center(
+                                    child: Padding(
+                                      padding:
+                                      EdgeInsets.all(10.0),
+                                      child:
+                                      CircularProgressIndicator(),
+                                    ),
+                                  );
+                                }
+
+                                final property =
+                                allProperties[index];
+                                bool isFavorited =
+                                favoriteProperties
+                                    .contains(
+                                    property.id);
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    String id = property.id
+                                        .toString();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            Featured_Detail(
+                                                data: id),
+                                      ),
+                                    );
+                                  },
+                                  child: Padding(
+                                    padding:
+                                    const EdgeInsets.only(
+                                        bottom: 15),
+                                    child: Card(
+                                      color: Colors.white,
+                                      borderOnForeground:
+                                      true,
+                                      shadowColor:
+                                      Colors.white,
+                                      elevation: 10,
+                                      child: Padding(
+                                        padding:
+                                        const EdgeInsets
+                                            .only(
+                                          left: 5.0,
+                                          top: 0,
+                                          right: 5,
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets
+                                                  .only(
+                                                top: 0.0,
+                                              ),
+                                              child:
+                                              ClipRRect(
+                                                borderRadius:
+                                                BorderRadius.circular(
+                                                    12),
+                                                child: Stack(
+                                                  children: [
+                                                    AspectRatio(
+                                                      aspectRatio:
+                                                      1.6,
+                                                      child: ListView
+                                                          .builder(
+                                                        scrollDirection:
+                                                        Axis.horizontal,
+                                                        itemCount: property.media?.length ??
+                                                            0,
+                                                        itemBuilder:
+                                                            (context,
+                                                            mediaIndex) {
+                                                          return CachedNetworkImage(
+                                                            imageUrl:
+                                                            secureUrl(property.media![mediaIndex].originalUrl),
+                                                            fit:
+                                                            BoxFit.fill,
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
+                                                    // indicator dots
+                                                    Positioned(
+                                                      bottom:
+                                                      12,
+                                                      left:
+                                                      0,
+                                                      right:
+                                                      0,
+                                                      child:
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                        MainAxisAlignment.center,
+                                                        children:
+                                                        List.generate(
+                                                          property.media?.length ?? 0,
+                                                              (index) {
+                                                            final distance = (index - _currentImageIndex).abs();
+                                                            double scale;
+                                                            double opacity;
+
+                                                            if (distance == 0) {
+                                                              scale = 1.2;
+                                                              opacity = 1.0;
+                                                            } else if (distance == 1) {
+                                                              scale = 1.0;
+                                                              opacity = 0.7;
+                                                            } else if (distance == 2) {
+                                                              scale = 0.8;
+                                                              opacity = 0.5;
+                                                            } else {
+                                                              scale = 0.5;
+                                                              opacity = 0.0;
+                                                            }
+
+                                                            return AnimatedOpacity(
+                                                              duration: const Duration(milliseconds: 300),
+                                                              opacity: opacity,
+                                                              child: SizedBox(
+                                                                width: 12,
+                                                                height: 12,
+                                                                child: Center(
+                                                                  child: Container(
+                                                                    width: 8 * scale,
+                                                                    height: 8 * scale,
+                                                                    decoration: const BoxDecoration(
+                                                                      color: Colors.white,
+                                                                      shape: BoxShape.circle,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.only(
+                                                top: 5,
+                                              ),
+                                              child: ListTile(
+                                                title:
+                                                Padding(
+                                                  padding:
+                                                  const EdgeInsets.only(
+                                                    top: 5.0,
+                                                    bottom:
+                                                    5,
+                                                  ),
+                                                  child:
+                                                  Text(
+                                                    property.title.toString(),
+                                                    style:
+                                                    const TextStyle(
+                                                      fontSize: 16,
+                                                      height: 1.4,
+                                                    ),
+                                                  ),
+                                                ),
+                                                subtitle:
+                                                Text(
+                                                  '${property.price} AED',
+                                                  style:
+                                                  const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 22,
+                                                    height: 1.4,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Row(
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                              children: [
+                                                Padding(
+                                                  padding:
+                                                  const EdgeInsets
+                                                      .only(
+                                                    left: 15,
+                                                    right:
+                                                    5,
+                                                    top: 0,
+                                                    bottom:
+                                                    10,
+                                                  ),
+                                                  child: Image
+                                                      .asset(
+                                                    "assets/images/map.png",
+                                                    height:
+                                                    14,
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  const EdgeInsets
+                                                      .only(
+                                                    left: 0,
+                                                    right:
+                                                    0,
+                                                    top: 0,
+                                                  ),
+                                                  child: Text(
+                                                    property.location.toString(),
+                                                    style:
+                                                    const TextStyle(
+                                                      fontSize: 13,
+                                                      height: 1.4,
+                                                      overflow: TextOverflow.visible,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(
+                                                height: 10),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -594,1018 +1172,673 @@ class _About_AgencyState extends State<About_Agency> {
                     ),
                   ),
 
-                  TabBar(
-                    padding: const EdgeInsets.only(top: 15,left: 0,right: 0),
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 0,),
-                    splashFactory: NoSplash.splashFactory,
-                    indicatorWeight: 1.0,
-                    labelColor: Colors.lightBlueAccent,
-                    dividerColor: Colors.transparent,
-                    indicatorColor: Colors.transparent,
-                    tabAlignment: TabAlignment.center,
-                    // onTap: (int index) => setState(() =>  screens[about_tb()]),
-                    tabs: [
-                      Container(
-                        margin: const EdgeInsets.only(left: 10),
-                        width: 80,
-                        height: 40,
-                        padding: const EdgeInsets.only(top: 9,),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              offset: Offset(4, 4),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.8),
-                              offset: Offset(-4, -4),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text('About',textAlign: TextAlign.center,
+                  // AGENTS TAB
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Builder(
+                      builder: (context) {
+                        if (isAgentsLoading) {
+                          return const Center(
+                              child:
+                              CircularProgressIndicator());
+                        }
 
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5),
-                        width: 80,
-                        height: 40,
-                        padding: const EdgeInsets.only(top: 9,),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              offset: Offset(4, 4),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.8),
-                              offset: Offset(-4, -4),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text('Properties',textAlign: TextAlign.center,
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5),
-                        width: 80,
-                        height: 40,
-                        padding: const EdgeInsets.only(top: 9,),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              offset: Offset(4, 4),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.8),
-                              offset: Offset(-4, -4),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text('Agents',textAlign: TextAlign.center,
-                          // style: tabTextStyle(context)
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 5),
-                        width: 80,
-                        height: 40,
-                        padding: const EdgeInsets.only(top: 9,),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              offset: Offset(4, 4),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.8),
-                              offset: Offset(-4, -4),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text('Review',textAlign: TextAlign.center,
-                          // style: tabTextStyle(context)
-                        ),
-                      ),
-                    ],
-                  ),
-                  Expanded(
-                      child: TabBarView(
-                          children: [
-                            //About
-                            SingleChildScrollView(
-                                child:  Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    children: [
-                                      //About details
-                                      const SizedBox(height: 10,),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                        child: Row(
-                                          children: [
-                                            Text("About  ", style: TextStyle(
-                                                fontSize: 20, color: Colors.black, letterSpacing: 0.5,
-                                                fontWeight: FontWeight.bold
-                                            ),textAlign: TextAlign.start,),
-                                            Text(""),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10,),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                        child: Row(
-                                          children: [
-                                            Text("Description ", style: TextStyle(
-                                                fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold
-                                            ),),
-                                            Text(""),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10,),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                                        child: HtmlExpandableText(
-                                          htmlContent: agencyDetailmodel!.description.toString()
-                                              .replaceAll('\r\n', '<br>'),
-                                        ),
-                                      ),
+                        final agents =
+                            agencyAgentsModel?.data ?? const [];
 
-                                      const SizedBox(height: 10,),
-                                      // Padding(
-                                      //   padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                      //   child: Row(
-                                      //     children: [
-                                      //       Text("Properties", style: TextStyle(
-                                      //           fontSize: 15, color: Colors.grey, letterSpacing: 0.5
-                                      //       ),),
-                                      //       Text(""),
-                                      //     ],
-                                      //   ),
-                                      // ),
-                                      // const SizedBox(height: 10,),
-                                      // Container(
-                                      //   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                      //   height: MediaQuery.of(context).size.height * 0.06,
-                                      //   alignment: Alignment.centerLeft,
-                                      //   child: ListView(
-                                      //     scrollDirection: Axis.horizontal,
-                                      //     physics: const BouncingScrollPhysics(),
-                                      //     shrinkWrap: true,
-                                      //     children: [
-                                      //       _buildTagContainer(
-                                      //         text: "18 Properties for Rent",
-                                      //         iconPath: "assets/images/arrow.png",
-                                      //       ),
-                                      //       const SizedBox(width: 4,),
-                                      //       _buildTagContainer(
-                                      //         text: "18 Properties for Sale",
-                                      //         iconPath: "assets/images/arrow.png",
-                                      //       ),
-                                      //     ],
-                                      //   ),
-                                      // ),
-                                      const SizedBox(height: 10,),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                        child: Row(
-                                          children: [
-                                            Text("Service Areas", style: TextStyle(
-                                                fontSize: 15, color: Colors.grey, letterSpacing: 0.5,
-                                                height: 1.0
-                                            ),),
-                                            Text("")
-                                          ],
+                        if (agents.isEmpty) {
+                          return const Center(
+                              child: Text('No agents found'));
+                        }
+
+                        final String agencyLogo =
+                        secureUrl(agencyDetailmodel?.image);
+                        final bool isValidLogo =
+                            agencyLogo.isNotEmpty;
+
+                        return ListView.separated(
+                          physics:
+                          const AlwaysScrollableScrollPhysics(),
+                          itemCount: agents.length,
+                          separatorBuilder: (_, __) =>
+                          const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final agent = agents[index];
+
+                            final String imageUrl =
+                            secureUrl(agent.image);
+                            final bool isValidImage =
+                                imageUrl.isNotEmpty;
+
+                            return GestureDetector(
+                              onTap: () {
+                                final id =
+                                    agent.id?.toString() ?? '';
+                                if (id.isEmpty) return;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        AboutAgent(
+                                          data: id,
                                         ),
-                                      ),
-                                      const SizedBox(height: 10,),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                        child: Row(
-                                          children: [
-                                            Text("Meydan City, Al Marjan Island, Dubailand", style: TextStyle(
-                                                fontSize: 15, color: Colors.black, letterSpacing: 0.5,
-                                                height: 1.0
-                                            ),),
-                                            Text("")
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10,),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                        child: Row(
-                                          children: [
-                                            Text("Property Type", style: TextStyle(
-                                                fontSize: 15, color: Colors.grey, letterSpacing: 0.5
-                                            ),),
-                                            Text("")
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10,),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                        child: Row(
-                                          children: [
-                                            Text("Villas, Townhouses,Apartments", style: TextStyle(
-                                                fontSize: 15, color: Colors.black, letterSpacing: 0.5,
-                                                height: 1.0
-                                            ),),
-                                            Text("")
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10,),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                        child: Row(
-                                          children: [
-                                            Text("DED", style: TextStyle(
-                                                fontSize: 15, color: Colors.grey, letterSpacing: 0.5
-                                            ),),
-                                            Text("")
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10,),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                        child: Row(
-                                          children: [
-                                            Text(agencyDetailmodel!.ded.toString(), style: TextStyle(
-                                                fontSize: 15, color: Colors.black, letterSpacing: 0.5,
-                                                height: 1.0
-                                            ),),
-                                            Text("")
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10,),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                        child: Row(
-                                          children: [
-                                            Text("RERA", style: TextStyle(
-                                                fontSize: 15, color: Colors.grey, letterSpacing: 0.5
-                                            ),),
-                                            Text("")
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10,),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                        child: Row(
-                                          children: [
-                                            Text(agencyDetailmodel!.rera.toString(), style: TextStyle(
-                                                fontSize: 15, color: Colors.black, letterSpacing: 0.5,
-                                                height: 1.0
-                                            ),),
-                                            Text("")
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(height: 20,)
-                                      //ending about details
-                                    ],
                                   ),
-                                )
+                                );
+                              },
+                              child: Padding(
+                                padding:
+                                const EdgeInsets.symmetric(
+                                  horizontal: 8.0,
+                                  vertical: 6.0,
+                                ),
+                                child: Card(
+                                  color: Colors.white,
+                                  elevation: 6,
+                                  shadowColor:
+                                  Colors.grey.shade100,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                    BorderRadius.circular(
+                                        10),
+                                  ),
+                                  child: Padding(
+                                    padding:
+                                    const EdgeInsets.all(
+                                        10.0),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment
+                                          .start,
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 30,
+                                          backgroundColor:
+                                          Colors.grey
+                                              .shade200,
+                                          backgroundImage: isValidImage
+                                              ? NetworkImage(
+                                              imageUrl)
+                                              : const AssetImage(
+                                            'assets/images/profile.png',
+                                          )
+                                          as ImageProvider,
+                                        ),
+                                        const SizedBox(
+                                            width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                            CrossAxisAlignment
+                                                .start,
+                                            children: [
+                                              Text(
+                                                agent.name ??
+                                                    '',
+                                                style:
+                                                const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight:
+                                                  FontWeight.bold,
+                                                  letterSpacing:
+                                                  0.5,
+                                                ),
+                                                maxLines: 1,
+                                                overflow:
+                                                TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(
+                                                  height: 4),
+                                              Text(
+                                                "${agent.propertiesCount ?? 0} Properties",
+                                                style:
+                                                const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Color(
+                                                      0xFF3A7CED),
+                                                ),
+                                                maxLines: 1,
+                                                overflow:
+                                                TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(
+                                                  height: 4),
+                                              Text(
+                                                "Speaks: ${agent.languages?.isNotEmpty == true ? agent.languages : 'N/A'}",
+                                                style:
+                                                const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors
+                                                      .black54,
+                                                ),
+                                                maxLines: 1,
+                                                overflow:
+                                                TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(
+                                                  height: 8),
+                                              Row(
+                                                children: [
+                                                  _pill(
+                                                      "${agent.sale ?? 0} Sale"),
+                                                  const SizedBox(
+                                                      width:
+                                                      10),
+                                                  _pill(
+                                                      "${agent.rent ?? 0} Rent"),
+                                                ],
+                                              ),
+                                              const SizedBox(
+                                                  height: 6),
+                                              if (agent.bio
+                                                  ?.trim()
+                                                  .isNotEmpty ==
+                                                  true)
+                                                Text(
+                                                  agent.bio!
+                                                      .trim(),
+                                                  style:
+                                                  const TextStyle(
+                                                    fontSize:
+                                                    11,
+                                                    color: Colors
+                                                        .black45,
+                                                    fontStyle:
+                                                    FontStyle
+                                                        .italic,
+                                                  ),
+                                                  maxLines: 2,
+                                                  overflow:
+                                                  TextOverflow.ellipsis,
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                        if (isValidLogo)
+                                          Padding(
+                                            padding:
+                                            const EdgeInsets.only(
+                                                left:
+                                                6.0),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                              BorderRadius
+                                                  .circular(
+                                                  6),
+                                              child:
+                                              Image.network(
+                                                agencyLogo,
+                                                width: 40,
+                                                height: 40,
+                                                fit: BoxFit
+                                                    .cover,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+
+                  // REVIEWS TAB
+                  SingleChildScrollView(
+                    child: Padding(
+                      padding:
+                      const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding:
+                            const EdgeInsets.only(
+                              top: 10,
+                              left: 10,
+                              right: 0,
                             ),
-                            //Properties
-                            // SingleChildScrollView(
-                            //     child:
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: const [
+                                Text(
+                                  "Reviews",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                  textAlign: TextAlign.left,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                            const EdgeInsets.only(
+                              top: 10,
+                              left: 10,
+                              right: 5,
+                            ),
+                            child: Container(
+                              height:
+                              screenSize.height *
+                                  0.17,
+                              padding:
+                              const EdgeInsets.only(
+                                  top: 5),
+                              decoration:
+                              BoxDecoration(
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey
+                                        .withOpacity(
+                                        0.5),
+                                    offset:
+                                    const Offset(
+                                        4, 4),
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.white
+                                        .withOpacity(
+                                        0.8),
+                                    offset:
+                                    const Offset(
+                                        -4, -4),
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                                borderRadius:
+                                BorderRadius
+                                    .circular(
+                                    10),
+                              ),
                               child: Column(
                                 children: [
-
-
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(left: 0,right: 0,top: 15),
-                                      child: ListView.builder(
-                                        padding: const EdgeInsets.all(0),
-                                        controller: _scrollController,
-                                        itemCount: allProperties.length + (isLoadingMore ? 1 : 0),
-                                        physics: const AlwaysScrollableScrollPhysics(),
-                                        shrinkWrap: true,
-                                        itemBuilder: (context, index) {
-                                          if (index == allProperties.length) {
-                                            return Center(child: Padding(
-                                              padding: const EdgeInsets.all(10.0),
-                                              child: CircularProgressIndicator(),
-                                            ));
-                                          }
-
-                                          final property = allProperties[index];
-                                          bool isFavorited = favoriteProperties.contains(property.id);
-                                          return
-                                            //SingleChildScrollView(
-                                            //  child:
-                                            GestureDetector(
-                                              onTap: () {
-                                                String id = property.id.toString();
-                                                Navigator.push(context, MaterialPageRoute(
-                                                  builder: (context) => Featured_Detail(data: id),
-                                                ));
-                                              },
-                                              child : Padding(
-                                                padding: const EdgeInsets.only(bottom: 15),
-                                                child: Card(
-                                                  color: Colors.white,
-                                                  borderOnForeground: true,
-                                                  shadowColor: Colors.white,
-                                                  elevation: 10,
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.only(left: 5.0,top: 0,right: 5),
-                                                    child: Column(
-                                                      // spacing: 5,// this is the coloumn
-                                                      children: [
-                                                        Padding(
-                                                          padding: const EdgeInsets.only(top: 0.0),
-                                                          child: ClipRRect(
-                                                            borderRadius: BorderRadius.circular(12),
-                                                            child: Stack(
-                                                              children: [
-                                                                AspectRatio(
-                                                                  aspectRatio: 1.6,
-                                                                  child: ListView.builder(
-                                                                    scrollDirection: Axis.horizontal,
-                                                                    itemCount: property.media?.length ?? 0,
-                                                                    itemBuilder: (context, mediaIndex) {
-                                                                      return CachedNetworkImage(
-                                                                        imageUrl: secureUrl(property.media![mediaIndex].originalUrl),
-                                                                        fit: BoxFit.fill,
-                                                                      );
-
-                                                                    },
-                                                                  ),
-                                                                ),
-
-                                                                // ⚪ Image Indicator Dots
-                                                                Positioned(
-                                                                  bottom: 12,
-                                                                  left: 0,
-                                                                  right: 0,
-                                                                  child: Row(
-                                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                                    children: List.generate(
-                                                                      property.media?.length ?? 0,
-                                                                          (index) {
-                                                                        final distance = (index - _currentImageIndex).abs();
-                                                                        double scale;
-                                                                        double opacity;
-
-                                                                        if (distance == 0) {
-                                                                          scale = 1.2;
-                                                                          opacity = 1.0;
-                                                                        } else if (distance == 1) {
-                                                                          scale = 1.0;
-                                                                          opacity = 0.7;
-                                                                        } else if (distance == 2) {
-                                                                          scale = 0.8;
-                                                                          opacity = 0.5;
-                                                                        } else {
-                                                                          scale = 0.5;
-                                                                          opacity = 0.0;
-                                                                        }
-
-                                                                        return AnimatedOpacity(
-                                                                          duration: const Duration(milliseconds: 300),
-                                                                          opacity: opacity,
-                                                                          child: SizedBox(
-                                                                            width: 12,
-                                                                            height: 12,
-                                                                            child: Center(
-                                                                              child: Container(
-                                                                                width: 8 * scale,
-                                                                                height: 8 * scale,
-                                                                                decoration: const BoxDecoration(
-                                                                                  color: Colors.white,
-                                                                                  shape: BoxShape.circle,
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        );
-                                                                      },
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-
-                                                        ),
-
-                                                        // ⚪ Image Indicator Dots
-
-                                                        Padding(
-                                                          padding: const EdgeInsets.only(top: 5),
-                                                          child: ListTile(
-                                                            title: Padding(
-                                                              padding: const EdgeInsets.only(top: 5.0,bottom: 5),
-                                                              child: Text(property.title.toString(),
-                                                                style: TextStyle(
-                                                                    fontSize: 16,height: 1.4
-                                                                ),),
-                                                            ),
-                                                            subtitle: Text('${property.price} AED',
-                                                              style: TextStyle(
-                                                                  fontWeight: FontWeight.bold,fontSize: 22,height: 1.4
-                                                              ),),
-                                                          ),
-                                                        ),
-                                                        Row(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                          mainAxisAlignment: MainAxisAlignment.start,
-                                                          children: [
-                                                            Padding(padding: const EdgeInsets.only(left: 15,right: 5,top: 0,bottom: 10),
-                                                              child:  Image.asset("assets/images/map.png",height: 14,),
-                                                            ),
-                                                            Padding(padding: const EdgeInsets.only(left: 0,right: 0,top: 0),
-                                                              child: Text(property.location.toString(),style: TextStyle(
-                                                                  fontSize: 13,height: 1.4,
-                                                                  overflow: TextOverflow.visible
-                                                              ),),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        // Row(
-                                                        //   children: [
-                                                        //     const SizedBox(width: 10),
-                                                        //     Expanded(
-                                                        //       child: ElevatedButton.icon(
-                                                        //         onPressed: () async {
-                                                        //           String phone = 'tel:${property.phoneNumber}';
-                                                        //           try {
-                                                        //             final bool launched = await launchUrlString(
-                                                        //               phone,
-                                                        //               mode: LaunchMode.externalApplication,
-                                                        //             );
-                                                        //             if (!launched) print("❌ Could not launch dialer");
-                                                        //           } catch (e) {
-                                                        //             print("❌ Exception: $e");
-                                                        //           }
-                                                        //         },
-                                                        //         icon: const Icon(Icons.call, color: Colors.red),
-                                                        //         label: const Text("Call", style: TextStyle(color: Colors.black)),
-                                                        //         style: ElevatedButton.styleFrom(
-                                                        //           backgroundColor: Colors.grey[100],
-                                                        //           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                        //           elevation: 3,
-                                                        //           padding: const EdgeInsets.symmetric(vertical: 10),
-                                                        //         ),
-                                                        //       ),
-                                                        //     ),
-                                                        //     const SizedBox(width: 10),
-                                                        //     Expanded(
-                                                        //       child: ElevatedButton.icon(
-                                                        //         onPressed: () async {
-                                                        //           final phone = property.whatsapp;
-                                                        //           final url = Uri.parse("https://api.whatsapp.com/send/?phone=%2B$phone&text&type=phone_number&app_absent=0");
-                                                        //           if (await canLaunchUrl(url)) {
-                                                        //             try {
-                                                        //               final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
-                                                        //               if (!launched) print("❌ Could not launch WhatsApp");
-                                                        //             } catch (e) {
-                                                        //               print("❌ Exception: $e");
-                                                        //             }
-                                                        //           } else {
-                                                        //             print("❌ WhatsApp not available");
-                                                        //           }
-                                                        //         },
-                                                        //         icon: Image.asset("assets/images/whats.png", height: 20),
-                                                        //         label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                                        //         style: ElevatedButton.styleFrom(
-                                                        //           backgroundColor: Colors.grey[100],
-                                                        //           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                        //           elevation: 1,
-                                                        //           padding: const EdgeInsets.symmetric(vertical: 10),
-                                                        //         ),
-                                                        //       ),
-                                                        //     ),
-                                                        //     const SizedBox(width: 10),
-                                                        //   ],
-                                                        // ),
-                                                        const SizedBox(height: 10),
-                                                      ],
-                                                    ),
-                                                  ),
-
-                                                ),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        alignment:
+                                        Alignment
+                                            .topCenter,
+                                        margin:
+                                        const EdgeInsets
+                                            .only(
+                                          top: 5,
+                                          left: 15,
+                                        ),
+                                        height: 30,
+                                        width: 30,
+                                        padding:
+                                        const EdgeInsets
+                                            .only(
+                                          top: 6,
+                                        ),
+                                        decoration:
+                                        BoxDecoration(
+                                          borderRadius:
+                                          BorderRadiusDirectional.circular(
+                                              15.0),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors
+                                                  .grey,
+                                              offset:
+                                              const Offset(
+                                                0.3,
+                                                0.3,
                                               ),
-
-                                            );
-
-                                          // );
-                                        },
+                                              blurRadius:
+                                              0.3,
+                                              spreadRadius:
+                                              0.3,
+                                            ),
+                                            const BoxShadow(
+                                              color: Colors
+                                                  .white,
+                                              offset:
+                                              Offset(
+                                                  0.0,
+                                                  0.0),
+                                              blurRadius:
+                                              0.0,
+                                              spreadRadius:
+                                              0.0,
+                                            ),
+                                          ],
+                                        ),
+                                        child:
+                                        const Text(
+                                          "DM",
+                                          style:
+                                          TextStyle(
+                                            fontWeight:
+                                            FontWeight.bold,
+                                            fontSize:
+                                            12,
+                                            color:
+                                            Colors.black,
+                                          ),
+                                          textAlign:
+                                          TextAlign
+                                              .center,
+                                        ),
                                       ),
+                                      Container(
+                                        alignment:
+                                        Alignment
+                                            .topCenter,
+                                        margin:
+                                        const EdgeInsets
+                                            .only(
+                                          top: 5,
+                                          left: 10,
+                                          right: 10,
+                                        ),
+                                        child:
+                                        const Text(
+                                          "Bilsay Citak",
+                                          style:
+                                          TextStyle(
+                                            color: Colors
+                                                .black,
+                                            letterSpacing:
+                                            0.5,
+                                            fontSize:
+                                            15,
+                                            fontWeight:
+                                            FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Align(
+                                          alignment:
+                                          Alignment
+                                              .topRight,
+                                          child:
+                                          Container(
+                                            margin:
+                                            const EdgeInsets
+                                                .only(
+                                              top: 5,
+                                              right:
+                                              10,
+                                            ),
+                                            child:
+                                            const Icon(
+                                              Icons.star,
+                                              color:
+                                              Colors.yellow,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Padding(
+                                    padding:
+                                    EdgeInsets
+                                        .only(
+                                      top: 10,
+                                      left: 10,
+                                      right: 10,
+                                      bottom: 10,
+                                    ),
+                                    child: Text(
+                                      "In the realm of real estate, Ben Caballero's name is synonymous with unparalleled success, particularly in the new homes market.",
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            // ),
-                            //Agent
-                            // AGENTS TAB
-// --- AGENTS TAB (drop-in) ---
-                            // --- AGENTS TAB (uses your GestureDetector card) ---
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Builder(
-                                builder: (context) {
-                                  // Spinner while fetching
-                                  if (isAgentsLoading) {
-                                    return const Center(child: CircularProgressIndicator());
-                                  }
-
-                                  // Safe list
-                                  final agents = agencyAgentsModel?.data ?? const [];
-
-                                  // Empty state
-                                  if (agents.isEmpty) {
-                                    return const Center(child: Text('No agents found'));
-                                  }
-
-                                  // Build list using your card
-                                  return ListView.separated(
-                                    physics: const AlwaysScrollableScrollPhysics(),
-                                    itemCount: agents.length,
-                                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                                    itemBuilder: (context, index) {
-                                      final agent = agents[index];
-
-                                      // Resolve image + logo safely
-                                      final String imageUrl    = secureUrl(agent.image);
-                                      final String agencyLogo  = secureUrl(agencyDetailmodel?.image);
-                                      // if your model uses a different key, adjust here
-                                      final bool isValidImage  = imageUrl.isNotEmpty;
-                                      final bool isValidLogo   = agencyLogo.isNotEmpty;
-
-                                      return GestureDetector(
-                                        onTap: () {
-                                          final id = agent.id?.toString() ?? '';
-                                          if (id.isEmpty) return;
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => AboutAgent(data: id),
-                                            ),
-                                          );
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
-                                          child: Card(
-                                            color: Colors.white,
-                                            elevation: 6,
-                                            shadowColor: Colors.grey.shade100,
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(10.0),
-                                              child: Row(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  // Agent photo
-                                                  CircleAvatar(
-                                                    radius: 30,
-                                                    backgroundColor: Colors.grey.shade200,
-                                                    backgroundImage: isValidImage
-                                                        ? NetworkImage(imageUrl)
-                                                        : const AssetImage('assets/images/profile.png') as ImageProvider,
-                                                  ),
-                                                  const SizedBox(width: 12),
-
-                                                  // Info + Sale/Rent
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        Text(
-                                                          agent.name ?? '',
-                                                          style: const TextStyle(
-                                                            fontSize: 14,
-                                                            fontWeight: FontWeight.bold,
-                                                            letterSpacing: 0.5,
-                                                          ),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow.ellipsis,
-                                                        ),
-                                                        const SizedBox(height: 4),
-
-                                                        Text(
-                                                          "${agent.propertiesCount ?? 0} Properties",
-                                                          style: const TextStyle(
-                                                            fontSize: 12,
-                                                            color: Color(0xFF3A7CED),
-                                                          ),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow.ellipsis,
-                                                        ),
-                                                        const SizedBox(height: 4),
-
-                                                        Text(
-                                                          "Speaks: ${agent.languages?.isNotEmpty == true ? agent.languages : 'N/A'}",
-                                                          style: const TextStyle(fontSize: 12, color: Colors.black54),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow.ellipsis,
-                                                        ),
-                                                        const SizedBox(height: 8),
-
-                                                        Row(
-                                                          children: [
-                                                            Container(
-                                                              width: 55,
-                                                              height: 20,
-                                                              decoration: BoxDecoration(
-                                                                color: Colors.white,
-                                                                borderRadius: BorderRadius.circular(6),
-                                                                border: Border.all(color: Colors.white),
-                                                                boxShadow: const [
-                                                                  BoxShadow(color: Color(0x40000000), blurRadius: 2, offset: Offset(0, 0)),
-                                                                ],
-                                                              ),
-                                                              child: Center(
-                                                                child: Text(
-                                                                  "${agent.sale ?? 0} Sale",
-                                                                  style: const TextStyle(
-                                                                    fontSize: 10,
-                                                                    fontWeight: FontWeight.w500,
-                                                                    color: Color(0xFF3A7CED),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            const SizedBox(width: 10),
-                                                            Container(
-                                                              width: 55,
-                                                              height: 20,
-                                                              decoration: BoxDecoration(
-                                                                color: Colors.white,
-                                                                borderRadius: BorderRadius.circular(6),
-                                                                border: Border.all(color: Colors.white),
-                                                                boxShadow: const [
-                                                                  BoxShadow(color: Color(0x40000000), blurRadius: 2, offset: Offset(0, 0)),
-                                                                ],
-                                                              ),
-                                                              child: Center(
-                                                                child: Text(
-                                                                  "${agent.rent ?? 0} Rent",
-                                                                  style: const TextStyle(
-                                                                    fontSize: 10,
-                                                                    fontWeight: FontWeight.w500,
-                                                                    color: Color(0xFF3A7CED),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-
-                                                        const SizedBox(height: 6),
-                                                        if (agent.bio?.trim().isNotEmpty == true)
-                                                          Text(
-                                                            agent.bio!.trim(),
-                                                            style: const TextStyle(
-                                                              fontSize: 11,
-                                                              color: Colors.black45,
-                                                              fontStyle: FontStyle.italic,
-                                                            ),
-                                                            maxLines: 2,
-                                                            overflow: TextOverflow.ellipsis,
-                                                          ),
-                                                      ],
-                                                    ),
-                                                  ),
-
-                                                  // Agency Logo (optional)
-                                                  if (isValidLogo)
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(left: 6.0),
-                                                      child: ClipRRect(
-                                                        borderRadius: BorderRadius.circular(6),
-                                                        child: Image.network(
-                                                          agencyLogo,
-                                                          width: 40,
-                                                          height: 40,
-                                                          fit: BoxFit.cover,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-
-
-
-
-                            //Review
-                            SingleChildScrollView(
-                                child:  Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                      children: [
-                                        //About details
-                                        Padding(padding: const EdgeInsets.only(top: 10,left: 10,right: 0),
-                                          child: Row(
-                                            children: [
-                                              Text("Reviews",style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                                letterSpacing: 0.5,
-                                              ),textAlign: TextAlign.left,),
-                                              Text(""),
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(padding: const EdgeInsets.only(top: 10,left: 10,right: 5),
-                                          child: Container(
-                                            //   width: 250,
-                                              height: screenSize.height*0.17,
-                                              padding: const EdgeInsets.only(top: 5),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.grey.withOpacity(0.5),
-                                                    offset: Offset(4, 4),
-                                                    blurRadius: 8,
-                                                    spreadRadius: 2,
-                                                  ),
-                                                  BoxShadow(
-                                                    color: Colors.white.withOpacity(0.8),
-                                                    offset: Offset(-4, -4),
-                                                    blurRadius: 8,
-                                                    spreadRadius: 2,
-                                                  ),
-                                                ],
-                                                borderRadius: BorderRadius.circular(10),),
-                                              child:Column(
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          Container(
-                                                              alignment: Alignment.topCenter,
-                                                              margin: const EdgeInsets.only(top: 5, left: 15,bottom: 0),
-                                                              height: 30,
-                                                              width: 30,
-                                                              padding: const EdgeInsets.only(top: 6),
-                                                              decoration: BoxDecoration(
-                                                                borderRadius: BorderRadiusDirectional.circular(15.0),
-                                                                boxShadow: [
-                                                                  BoxShadow(
-                                                                    color: Colors.grey,
-                                                                    offset: const Offset(
-                                                                      0.3,
-                                                                      0.3,
-                                                                    ),
-                                                                    blurRadius: 0.3,
-                                                                    spreadRadius: 0.3,
-                                                                  ), //BoxShadow
-                                                                  BoxShadow(
-                                                                    color: Colors.white,
-                                                                    offset: const Offset(0.0, 0.0),
-                                                                    blurRadius: 0.0,
-                                                                    spreadRadius: 0.0,
-                                                                  ), //BoxShadow
-                                                                ],
-                                                              ),
-                                                              child: Text("DM",style:
-                                                              TextStyle(
-                                                                  fontWeight: FontWeight.bold,
-                                                                  fontSize: 12,
-                                                                  color: Colors.black
-                                                              ),textAlign: TextAlign.center,)
-                                                          ),
-
-                                                          //logo2
-                                                          Container(
-                                                            alignment: Alignment.topCenter,
-                                                            margin: const EdgeInsets.only(top: 5, left: 10,right:10,bottom: 0),
-                                                            /* height: 30,
-                                        width: 125,*/
-
-                                                            child: Text("Bilsay Citak", style: TextStyle(
-                                                                color: Colors.black,
-                                                                letterSpacing: 0.5,
-                                                                fontSize: 15,fontWeight: FontWeight.bold
-                                                            ),),
-                                                          ),
-                                                          Row(
-                                                            spacing: screenSize.width*0.35,
-                                                            children: [
-                                                              Text(""),
-                                                              Container(
-                                                                  margin: const EdgeInsets.only(left: 0,top: 5,bottom: 0),
-                                                                  /* height: 35,
-                                                                                                    width: 35,*/
-                                                                  //  padding: const EdgeInsets.only(top: 7,left: 7,right: 7,bottom: 7),
-                                                                  child: Icon(Icons.star,color: Colors.yellow,)
-                                                                //child: Image(image: Image.asset("assets/images/share.png")),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Padding(padding: const EdgeInsets.only(top: 10,left: 10,right: 10,bottom: 10),
-                                                    child: Text("In the realm of real estate, Ben Caballero's name"
-                                                        " is synonymous with unparalleled success, particularly in the new homes market."),
-                                                  )
-                                                ],
-
-                                              )
-                                          ),)
-                                      ]
-                                  ),
-                                )
-                            )
-                          ]
-                      )
-                  )
-                ]
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             )
+          ],
+        ),
+      ),
+    );
+  }
 
-        )
+  Widget _tabItem(String label) {
+    return Container(
+      margin: const EdgeInsets.only(left: 5),
+      width: 80,
+      height: 40,
+      padding: const EdgeInsets.only(top: 9),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            offset: const Offset(4, 4),
+            blurRadius: 8,
+            spreadRadius: 2,
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.8),
+            offset: const Offset(-4, -4),
+            blurRadius: 8,
+            spreadRadius: 2,
+          ),
+        ],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+      ),
     );
   }
 
   Container buildMyNavBar(BuildContext context) {
     return Container(
       height: 50,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment:
+        MainAxisAlignment.spaceBetween,
+        crossAxisAlignment:
+        CrossAxisAlignment.center,
         children: [
           GestureDetector(
             onTap: () async {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => Home()),
+              );
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Image.asset("assets/images/home.png", height: 25),
+              padding:
+              const EdgeInsets.symmetric(
+                  horizontal: 20.0),
+              child: Image.asset(
+                "assets/images/home.png",
+                height: 25,
+              ),
             ),
           ),
-
-
           IconButton(
             enableFeedback: false,
             onPressed: () async {
-              final token = await SecureStorage.getToken();
+              final token =
+              await SecureStorage.getToken();
 
               if (token == null || token.isEmpty) {
                 showDialog(
                   context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white, // white container
-                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          "Cancel",
-                          style: TextStyle(color: Colors.red), // red text
+                  builder: (context) =>
+                      AlertDialog(
+                        backgroundColor:
+                        Colors.white,
+                        title: const Text(
+                          "Login Required",
+                          style: TextStyle(
+                              color: Colors.black),
                         ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const LoginDemo()),
-                          );
-                        },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(color: Colors.red), // red text
+                        content: const Text(
+                          "Please login to access favorites.",
+                          style: TextStyle(
+                              color: Colors.black),
                         ),
+                        actions: [
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pop(
+                                    context),
+                            child: const Text(
+                              "Cancel",
+                              style: TextStyle(
+                                  color:
+                                  Colors.red),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(
+                                  context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                  const LoginDemo(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              "Login",
+                              style: TextStyle(
+                                  color:
+                                  Colors.red),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
                 );
-              }
-              else {
-                // ✅ Logged in – go to favorites
+              } else {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Fav_Logout()),
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        Fav_Logout(),
+                  ),
                 );
               }
             },
             icon: pageIndex == 2
-                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+                ? const Icon(
+              Icons.favorite,
+              color: Colors.red,
+              size: 30,
+            )
+                : const Icon(
+              Icons.favorite_border_outlined,
+              color: Colors.red,
+              size: 30,
+            ),
           ),
-
           IconButton(
             tooltip: "Email",
-            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+            icon: const Icon(
+              Icons.email_outlined,
+              color: Colors.red,
+              size: 28,
+            ),
             onPressed: () async {
-              final Uri emailUri = Uri.parse(
+              final Uri emailUri =
+              Uri.parse(
                 'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
               );
 
-              if (await canLaunchUrl(emailUri)) {
+              if (await canLaunchUrl(
+                  emailUri)) {
                 await launchUrl(emailUri);
               } else {
                 showDialog(
                   context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white, // White dialog container
-                    title: const Text(
-                      'Email not available',
-                      style: TextStyle(color: Colors.black), // Title in black
-                    ),
-                    content: const Text(
-                      'No email app is configured on this device. Please add a mail account first.',
-                      style: TextStyle(color: Colors.black), // Content in black
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          'OK',
-                          style: TextStyle(color: Colors.red), // Red "OK" text
+                  builder: (context) =>
+                      AlertDialog(
+                        backgroundColor:
+                        Colors.white,
+                        title: const Text(
+                          'Email not available',
+                          style: TextStyle(
+                              color: Colors.black),
                         ),
+                        content: const Text(
+                          'No email app is configured on this device. Please add a mail account first.',
+                          style: TextStyle(
+                              color: Colors.black),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pop(
+                                    context),
+                            child: const Text(
+                              'OK',
+                              style: TextStyle(
+                                  color:
+                                  Colors.red),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
                 );
               }
             },
           ),
-
           Padding(
-            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            padding: const EdgeInsets.only(
+                right: 20.0),
             child: IconButton(
               enableFeedback: false,
               onPressed: () {
                 setState(() {
-                  if (token == '') {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  } else {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          My_Account(),
+                    ),
+                  );
                 });
               },
               icon: pageIndex == 3
-                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+                  ? const Icon(
+                Icons.dehaze,
+                color: Colors.red,
+                size: 35,
+              )
+                  : const Icon(
+                Icons.dehaze_outlined,
+                color: Colors.red,
+                size: 35,
+              ),
             ),
           ),
         ],
       ),
-
     );
   }
-
 
   // Small label used in the Agents cards
   Widget _pill(String text) => Container(
@@ -1616,7 +1849,11 @@ class _About_AgencyState extends State<About_Agency> {
       borderRadius: BorderRadius.circular(6),
       border: Border.all(color: Colors.white),
       boxShadow: const [
-        BoxShadow(color: Color(0x40000000), blurRadius: 2, offset: Offset(0, 0)),
+        BoxShadow(
+          color: Color(0x40000000),
+          blurRadius: 2,
+          offset: Offset(0, 0),
+        ),
       ],
     ),
     child: Center(
@@ -1631,24 +1868,28 @@ class _About_AgencyState extends State<About_Agency> {
     ),
   );
 
-
-  Widget _buildTagContainer({required String text, required String iconPath}) {
+  Widget _buildTagContainer(
+      {required String text,
+        required String iconPath}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 3.0, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+          horizontal: 3.0, vertical: 8),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        padding: const EdgeInsets.symmetric(
+            horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8.0),
-          boxShadow: [
+          borderRadius:
+          BorderRadius.circular(8.0),
+          boxShadow: const [
             BoxShadow(
               color: Colors.red,
-              offset: const Offset(0.3, 0.5),
+              offset: Offset(0.3, 0.5),
               blurRadius: 0.5,
               spreadRadius: 0.8,
             ),
             BoxShadow(
               color: Colors.white,
-              offset: const Offset(0.5, 0.5),
+              offset: Offset(0.5, 0.5),
               blurRadius: 0.5,
               spreadRadius: 0.5,
             ),

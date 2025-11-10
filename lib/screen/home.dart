@@ -1299,108 +1299,140 @@ class _MyHomePageState extends State<HomeDemo> {
                               children: [
                                 //logo 1
                                 GestureDetector(
-                                  onTap: (){
-                                    purpose="Commercial";
-                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> filter.Filter(data: purpose,)));
+                                  onTap: () {
+                                    purpose = "Commercial";
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => filter.Filter(
+                                              data: purpose,
+                                              propertyType: 1,
+                                            )));
                                   },
-                                  child:
-                                  Padding(
+                                  child: Padding(
                                     padding: const EdgeInsets.all(8),
                                     /* padding: const EdgeInsets.only(
-                                        left: 17.0, right: 10.0, top: 8, bottom: 0),*/
+        left: 17.0, right: 10.0, top: 8, bottom: 0),*/
                                     child: Container(
                                         width: screenSize.width * 0.29,
-                                        height: screenSize.height*0.11,
+                                        height: screenSize.height * 0.11,
                                         padding: const EdgeInsets.only(top: 0),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.grey.withOpacity(0.8),
+                                              color:
+                                              Colors.grey.withOpacity(0.8),
                                               offset: Offset(7, 7),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                             BoxShadow(
-                                              color: Colors.white.withOpacity(0.8),
+                                              color:
+                                              Colors.white.withOpacity(0.8),
                                               offset: Offset(-4, -4),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                           ],
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                          BorderRadius.circular(12),
                                         ),
-                                        child:   Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                           children: [
                                             Padding(
-                                              padding: const EdgeInsets.only(bottom: 2.0),
-                                              child: Image.asset("assets/images/commercial_new.png",height: 35,),
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 2.0),
+                                              child: Image.asset(
+                                                "assets/images/commercial_new.png",
+                                                height: 35,
+                                              ),
                                             ),
-                                            Padding(padding: const EdgeInsets.all(4),
-                                              child:  Text("Commercial",style:
-                                              TextStyle(height: 1.2,
-                                                  letterSpacing: 0.5,
-                                                  fontSize: 11,fontWeight: FontWeight.bold
-                                              ),),
+                                            Padding(
+                                              padding: const EdgeInsets.all(4),
+                                              child: Text(
+                                                "Commercial",
+                                                style: TextStyle(
+                                                    height: 1.2,
+                                                    letterSpacing: 0.5,
+                                                    fontSize: 11,
+                                                    fontWeight:
+                                                    FontWeight.bold),
+                                              ),
                                             )
-
                                           ],
-                                        )
-                                    ),
+                                        )),
                                   ),
                                 ),
                                 //logo2
                                 GestureDetector(
-                                  onTap: (){
-                                    purpose= "Rent";
-                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> filter.Filter(data: purpose,)));
+                                  onTap: () {
+                                    purpose = "Rent";
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => filter.Filter(
+                                              data: purpose,
+                                              propertyCategoryType: 'Villa',
+                                            )));
                                   },
-                                  child:
-                                  Padding(
-                                    padding: const EdgeInsets.all(8),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(5),
                                     /*padding: const EdgeInsets.only(
-                                        left: 5.0, right: 10.0, top: 8, bottom: 0),*/
+        left: 5.0, right: 5.0, top: 8, bottom: 0),*/
                                     child: Container(
-                                        width: screenSize.width * 0.29,
-                                        height: screenSize.height*0.11,
+                                        width: screenSize.width * 0.3,
+                                        height: screenSize.height * 0.11,
                                         padding: const EdgeInsets.only(top: 0),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.grey.withOpacity(0.8),
+                                              color:
+                                              Colors.grey.withOpacity(0.8),
                                               offset: Offset(7, 7),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                             BoxShadow(
-                                              color: Colors.white.withOpacity(0.8),
+                                              color:
+                                              Colors.white.withOpacity(0.8),
                                               offset: Offset(-4, -4),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                           ],
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                          BorderRadius.circular(12),
                                         ),
-                                        child:   Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                           children: [
                                             Padding(
-                                              padding: const EdgeInsets.only(bottom: 2.0),
-                                              child: Image.asset("assets/images/city.png",height: 35,),
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 2.0),
+                                              child: Image.asset(
+                                                "assets/images/villa-new.png",
+                                                height: 35,
+                                              ),
                                             ),
-                                            Padding(padding: const EdgeInsets.all(5),
-                                              child:  Text("Apartments",style:
-                                              TextStyle(height: 1.2,
-                                                  letterSpacing: 0.5,
-                                                  fontSize: 11,fontWeight: FontWeight.bold
-                                              ),),
+                                            Padding(
+                                              padding: const EdgeInsets.all(5),
+                                              child: Text(
+                                                "Villas",
+                                                style: TextStyle(
+                                                    height: 1.2,
+                                                    letterSpacing: 0.5,
+                                                    fontSize: 11,
+                                                    fontWeight:
+                                                    FontWeight.bold),
+                                              ),
                                             )
-
                                           ],
-                                        )
-                                    ),
+                                        )),
                                   ),
                                 ),
                                 //logo2
@@ -1445,7 +1477,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                               child: Image.asset("assets/images/villa-new.png",height: 35,),
                                             ),
                                             Padding(padding: const EdgeInsets.all(5),
-                                              child:  Text("Villas",style:
+                                              child:  Text("Apartment",style:
                                               TextStyle(height: 1.2,
                                                   letterSpacing: 0.5,
                                                   fontSize: 11,fontWeight: FontWeight.bold
@@ -1686,10 +1718,16 @@ class _MyHomePageState extends State<HomeDemo> {
                                 final properties = featuredModel?.data ?? [];
 
                                 // 🔄 Show loader at end if next page exists
-                                if (index == properties.length && nextPageUrl != null) {
-                                  return const CircularProgressIndicator();
-                                } else if (index == properties.length && nextPageUrl == null) {
-                                  return const SizedBox.shrink(); // Nothing more to show
+                                if (index == properties.length &&
+                                    nextPageUrl != null) {
+                                  //  return const CircularProgressIndicator(); previous code
+                                  return Center(
+                                      child:
+                                      const CircularProgressIndicator());
+                                } else if (index == properties.length &&
+                                    nextPageUrl == null) {
+                                  return const SizedBox
+                                      .shrink(); // Nothing more to show
                                 }
 
 

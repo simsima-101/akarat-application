@@ -73,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed && mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeDemo()),
+          MaterialPageRoute(builder: (_) => const Home()),
         );
       }
     });
