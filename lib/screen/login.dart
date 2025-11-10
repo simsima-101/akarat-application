@@ -255,6 +255,37 @@ class _LoginDemoState extends State<LoginDemo> {
 
   // ============== Email/password login ==============
 
+  bool _looksUnverified(int statusCode, Map<String, dynamic> body) {
+    final msg = (body['message'] ?? '').toString().toLowerCase();
+    return statusCode == 403 ||
+        statusCode == 423 ||
+        msg.contains('verify') ||
+        msg.contains('inactive') ||
+        msg.contains('not verified');
+  }
+
+  Future<void> _maybeBounceToVerifyIfNeeded({
+    required int statusCode,
+    required Map<String, dynamic> body,
+    required String emailLower,
+  }) async {
+    final locallyVerifiedFor =
+    (await SecureStorage.read('email_verified_for'))?.trim().toLowerCase();
+
+    final recentlyVerified = (locallyVerifiedFor == emailLower);
+    if (_looksUnverified(statusCode, body) && !recentlyVerified) {
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pushNamed(
+        '/verify-otp',
+        arguments: {
+          'mode': 'register',
+          'email': emailLower,
+          'resendAfter': 0,
+        },
+      );
+    }
+  }
+
   void _login() async {
     if (isLoading) return;
     if (!formKey.currentState!.validate()) return;
@@ -266,15 +297,25 @@ class _LoginDemoState extends State<LoginDemo> {
 
     try {
       final email = emailController.text.trim();
+      final emailLower = email.toLowerCase();
       final password = passwordController.text.trim();
 
       final res = await http.post(
         Uri.parse('${ApiService.baseUrl}/login'),
         headers: {'Accept': 'application/json'},
-        body: {'email': email, 'password': password}, // Laravel-friendly form
+        body: {'email': emailLower, 'password': password}, // Laravel form
       );
 
-      Map<String, dynamic> body = _tryDecode(res.body);
+      final Map<String, dynamic> body = _tryDecode(res.body);
+
+      // === Guard: if backend says "verify/inactive", only bounce if not just verified ===
+      if (res.statusCode != 200) {
+        await _maybeBounceToVerifyIfNeeded(
+          statusCode: res.statusCode,
+          body: body,
+          emailLower: emailLower,
+        );
+      }
 
       if (res.statusCode == 200) {
         final token = _extractTokenFromAny(body);
@@ -292,7 +333,7 @@ class _LoginDemoState extends State<LoginDemo> {
             .toString()
             .trim();
         final emailFromApi =
-        (userObj is Map && userObj['email'] != null ? userObj['email'] : email)
+        (userObj is Map && userObj['email'] != null ? userObj['email'] : emailLower)
             .toString()
             .trim();
         final imageFromApi =
@@ -312,6 +353,14 @@ class _LoginDemoState extends State<LoginDemo> {
 
         await _ensureFirstLastFromBestNameFallback(nameFromLogin: nameFromApi);
 
+        // Clear the "just verified" marker after successful login
+        final locallyVerifiedFor =
+        (await SecureStorage.read('email_verified_for'))?.trim().toLowerCase();
+        if (locallyVerifiedFor == emailLower) {
+          await SecureStorage.delete('email_verified_for');
+          await SecureStorage.delete('email_verified_at');
+        }
+
         if (!mounted) return;
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const Home()),
@@ -323,27 +372,6 @@ class _LoginDemoState extends State<LoginDemo> {
       if (res.statusCode == 410) {
         await SecureStorage.signOutLocal();
         setState(() => errorMessage = 'This account has been deleted.');
-        return;
-      }
-
-      if (res.statusCode == 403) {
-        await SecureStorage.signOutLocal();
-        final isUnverified = (body['message'] ?? '')
-            .toString()
-            .toLowerCase()
-            .contains(RegExp(r'verify|inactive|not verified'));
-        setState(() => errorMessage =
-            body['message']?.toString() ?? 'Your account is not allowed to log in.');
-        if (isUnverified) {
-          Navigator.of(context).pushNamed(
-            '/verify-otp',
-            arguments: {
-              'mode': 'register',
-              'email': emailController.text.trim().toLowerCase(),
-              'resendAfter': 0,
-            },
-          );
-        }
         return;
       }
 
@@ -413,16 +441,11 @@ class _LoginDemoState extends State<LoginDemo> {
       final String? googleIdTokenMaybe = googleAuth.idToken; // may be null on some iOS flows
 
       // 4) Sign in to Firebase using whichever token is available
-      // Prefer Google idToken if present; otherwise we'll rely on Firebase ID token after sign-in.
       if (googleIdTokenMaybe != null && googleIdTokenMaybe.isNotEmpty) {
         final cred = GoogleAuthProvider.credential(idToken: googleIdTokenMaybe);
         await FirebaseAuth.instance.signInWithCredential(cred);
       } else {
-        // If google idToken was not provided, do the normal sign-in path anyway:
-        // (authenticate() has already done the account selection; Firebase will restore it)
-        // On iOS v7 this is typically fine after authenticate().
-        // If you want a stronger fallback, you can add serverClientId/clientId in _initGoogle().
-        // We still proceed to fetch Firebase token below.
+        // Proceed; we'll fetch Firebase ID token after auth restore
       }
 
       final user = FirebaseAuth.instance.currentUser;
@@ -433,49 +456,26 @@ class _LoginDemoState extends State<LoginDemo> {
       if (tokenMaybe == null || tokenMaybe.isEmpty) {
         throw Exception('Failed to get Firebase ID token.');
       }
-      final String firebaseIdToken = tokenMaybe; // <-- non-nullable from here on
+      final String firebaseIdToken = tokenMaybe;
 
       final displayName = (user.displayName ?? '').trim();
-      final email       = (user.email ?? '').trim();
-      final photoUrl    = (user.photoURL ?? '').trim();
-      final uid         = user.uid;
+      final email = (user.email ?? '').trim();
+      final photoUrl = (user.photoURL ?? '').trim();
 
-      // ======== 🔁 Backend exchange attempts (using ApiService helpers) ========
-
-      // 1) Try /login-google
-      String? backendToken = await ApiService.tryLoginGoogle(firebaseIdToken);
-
-      // 2) Try /social-auth/google
-      backendToken ??= await ApiService.trySocialAuthGoogle(
-        idToken: firebaseIdToken,
-        email: email,
-        name: displayName,
-        photo: photoUrl,
-        providerUid: uid,
-      );
-
-      // 3) Fallback: register shadow user with deterministic password, then login
-      if (backendToken == null || backendToken.isEmpty) {
-        final deterministicPwd = 'GGL_${uid}_AKARAT';
-
-        // ok even if 409/422 (already exists)
-        await ApiService.tryRegisterGoogleShadow(
-          name: displayName.isEmpty
-              ? (email.isNotEmpty ? email.split('@').first : 'Google User')
-              : displayName,
-          email: email,
-          password: deterministicPwd,
-          providerUid: uid,
-        );
-
-        backendToken = await ApiService.tryPasswordLoginBothEncodings(
-          email: email,
-          password: deterministicPwd,
-        );
+      // ======== Backend exchange using ApiService ========
+      String? backendToken;
+      try {
+        final data = await ApiService.loginWithGoogleIdToken(firebaseIdToken);
+        backendToken = _extractTokenFromAny(data);
+      } catch (_) {
+        backendToken = await ApiService.tryLoginGoogle(firebaseIdToken);
       }
 
+      // Ensure subsequent calls use the same host we just hit (QA vs PROD)
+      ApiService.setRuntimeBase(ApiService.baseUrl);
+
       if (backendToken == null || backendToken.isEmpty) {
-        throw Exception('Could not obtain backend token after Google sign-in.');
+        throw Exception('This account has been deleted. Please contact support or use a different Google account.');
       }
 
       // Cache session + profile
@@ -483,7 +483,7 @@ class _LoginDemoState extends State<LoginDemo> {
       await SecureStorage.setUserProfile(
         name: displayName,
         email: email,
-        image: photoUrl.isEmpty ? null : photoUrl, // make image nullable in SecureStorage
+        image: photoUrl.isEmpty ? null : photoUrl,
       );
       try {
         await _fetchAndCacheMe(backendToken);
@@ -507,7 +507,6 @@ class _LoginDemoState extends State<LoginDemo> {
       if (mounted) setState(() => isLoading = false);
     }
   }
-
 
   // ============== Small helpers ==============
 
@@ -576,8 +575,7 @@ class _LoginDemoState extends State<LoginDemo> {
                                   (route) => false,
                             );
                           },
-                          child:
-                          const Icon(Icons.close, size: 28, color: Colors.black),
+                          child: const Icon(Icons.close, size: 28, color: Colors.black),
                         ),
                       ),
                     ),
@@ -588,14 +586,16 @@ class _LoginDemoState extends State<LoginDemo> {
                       child: SizedBox(
                         width: 150,
                         height: 50,
-                        child: Image.asset('assets/images/app_icon.png'),
+                        child: Image.asset('assets/images/app_icon.png',
+                            errorBuilder: (_, __, ___) => const SizedBox()),
                       ),
                     ),
                     Center(
                       child: SizedBox(
                         width: 150,
                         height: 38,
-                        child: Image.asset('assets/images/logo-text.png'),
+                        child: Image.asset('assets/images/logo-text.png',
+                            errorBuilder: (_, __, ___) => const SizedBox()),
                       ),
                     ),
 
@@ -603,8 +603,7 @@ class _LoginDemoState extends State<LoginDemo> {
                       key: formKey,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 30),
+                        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
                         padding: const EdgeInsets.only(top: 15),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
@@ -619,8 +618,7 @@ class _LoginDemoState extends State<LoginDemo> {
                         ),
                         child: Column(
                           children: [
-                            const Text("Welcome to Akarat!",
-                                style: TextStyle(fontSize: 20)),
+                            const Text("Welcome to Akarat!", style: TextStyle(fontSize: 20)),
                             const SizedBox(height: 15),
 
                             // EMAIL
@@ -628,8 +626,7 @@ class _LoginDemoState extends State<LoginDemo> {
                               width: MediaQuery.of(context).size.width * 0.8,
                               height: 50,
                               decoration: _boxDecoration(),
-                              padding:
-                              const EdgeInsets.symmetric(horizontal: 10),
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
                               child: TextFormField(
                                 controller: emailController,
                                 keyboardType: TextInputType.emailAddress,
@@ -661,8 +658,7 @@ class _LoginDemoState extends State<LoginDemo> {
                                   width: MediaQuery.of(context).size.width * 0.8,
                                   height: 50,
                                   decoration: _boxDecoration(),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
                                   child: Center(
                                     child: TextFormField(
                                       controller: passwordController,
@@ -672,15 +668,13 @@ class _LoginDemoState extends State<LoginDemo> {
                                       decoration: InputDecoration(
                                         border: InputBorder.none,
                                         hintText: 'Password',
-                                        contentPadding:
-                                        const EdgeInsets.only(top: 16),
+                                        contentPadding: const EdgeInsets.only(top: 16),
                                         suffixIcon: IconButton(
                                           icon: Icon(obscurePassword
                                               ? Icons.visibility_off
                                               : Icons.visibility),
-                                          onPressed: () => setState(() =>
-                                          obscurePassword =
-                                          !obscurePassword),
+                                          onPressed: () => setState(
+                                                  () => obscurePassword = !obscurePassword),
                                         ),
                                       ),
                                       validator: (value) {
@@ -693,15 +687,13 @@ class _LoginDemoState extends State<LoginDemo> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.only(
-                                      right: 10, top: 4),
+                                  padding: const EdgeInsets.only(right: 10, top: 4),
                                   child: InkWell(
                                     onTap: () {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (_) =>
-                                                ForgotPasswordScreen()),
+                                            builder: (_) => ForgotPasswordScreen()),
                                       );
                                     },
                                     child: const Text(
@@ -726,12 +718,8 @@ class _LoginDemoState extends State<LoginDemo> {
                                 : ElevatedButton(
                               onPressed: _login,
                               style: ElevatedButton.styleFrom(
-                                minimumSize: Size(
-                                    MediaQuery.of(context).size.width *
-                                        0.8,
-                                    50),
-                                backgroundColor:
-                                const Color(0xFFF1F1F1),
+                                minimumSize: Size(MediaQuery.of(context).size.width * 0.8, 50),
+                                backgroundColor: const Color(0xFFF1F1F1),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -754,19 +742,15 @@ class _LoginDemoState extends State<LoginDemo> {
                               children: [
                                 Expanded(
                                   child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 20),
+                                    margin: const EdgeInsets.symmetric(horizontal: 20),
                                     height: 1,
                                     color: Colors.black12,
                                   ),
                                 ),
-                                const Text('  or  ',
-                                    style:
-                                    TextStyle(color: Colors.black54)),
+                                const Text('  or  ', style: TextStyle(color: Colors.black54)),
                                 Expanded(
                                   child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 20),
+                                    margin: const EdgeInsets.symmetric(horizontal: 20),
                                     height: 1,
                                     color: Colors.black12,
                                   ),
@@ -778,8 +762,7 @@ class _LoginDemoState extends State<LoginDemo> {
 
                             // Google Sign-In button
                             SizedBox(
-                              width:
-                              MediaQuery.of(context).size.width * 0.8,
+                              width: MediaQuery.of(context).size.width * 0.8,
                               height: 50,
                               child: OutlinedButton.icon(
                                 onPressed: _signInWithGoogle,
@@ -787,19 +770,21 @@ class _LoginDemoState extends State<LoginDemo> {
                                   width: 20,
                                   height: 20,
                                   child: Image.asset(
-                                      'assets/images/google.png'),
+                                    'assets/images/google.png',
+                                    fit: BoxFit.contain,
+                                    // Prevent crashes if asset is missing
+                                    errorBuilder: (_, __, ___) =>
+                                    const Icon(Icons.g_mobiledata_outlined, size: 20),
+                                  ),
                                 ),
                                 label: const Text(
                                   'Continue with Google',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w600),
+                                  style: TextStyle(fontWeight: FontWeight.w600),
                                 ),
                                 style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(
-                                      color: Colors.black12),
+                                  side: const BorderSide(color: Colors.black12),
                                   shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                      BorderRadius.circular(10)),
+                                      borderRadius: BorderRadius.circular(10)),
                                   foregroundColor: Colors.black87,
                                   backgroundColor: Colors.white,
                                 ),
@@ -813,17 +798,14 @@ class _LoginDemoState extends State<LoginDemo> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Text('Not registered yet? ',
-                                    style: TextStyle(
-                                        color: Color(0xFF424242))),
+                                    style: TextStyle(color: Color(0xFF424242))),
                                 InkWell(
                                   onTap: () => Navigator.push(
                                     context,
-                                    MaterialPageRoute(
-                                        builder: (_) => RegisterScreen()),
+                                    MaterialPageRoute(builder: (_) => RegisterScreen()),
                                   ),
                                   child: const Text('Create new account',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
+                                      style: TextStyle(fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ),
@@ -838,8 +820,8 @@ class _LoginDemoState extends State<LoginDemo> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 16),
+                          padding:
+                          const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                           decoration: BoxDecoration(
                             color: Colors.redAccent,
                             borderRadius: BorderRadius.circular(8),
@@ -852,8 +834,7 @@ class _LoginDemoState extends State<LoginDemo> {
                           ),
                           child: Text(
                             errorMessage!,
-                            style:
-                            const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.white),
                           ),
                         ),
                       ),

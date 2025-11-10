@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../services/api_service.dart';
 import '../utils/shared_preference_manager.dart';
 import 'about_agent.dart';
 import 'filter_list.dart';
@@ -59,7 +60,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
 
   Future<bool> toggledApi(String token, int id) async {
-    final url = Uri.parse('https://akarat.com/api/toggle-saved-property');
+
+    final url = ApiService.buildUri('toggle-saved-property');
+
     try {
       final response = await http.post(
         url,
@@ -135,7 +138,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
     }
 
     // Step 3: Fetch from API if cache is stale or missing
-    final url = Uri.parse('https://akarat.com/api/featured-properties/$data');
+
+    final url = ApiService.buildUri('featured-properties/$data');
+
     try {
       final response = await http.get(url).timeout(const Duration(seconds: 8));
 

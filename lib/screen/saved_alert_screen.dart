@@ -4,10 +4,13 @@ import 'package:http/http.dart' as http;
 
 // Akarat imports
 import 'package:Akarat/secure_storage.dart';
-import 'package:Akarat/screen/login.dart';            // Login / LoginDemo (adjust if needed)
+import 'package:Akarat/screen/login.dart';            // Login screen (contains LoginDemo)
 import 'package:Akarat/services/api_service.dart';    // central base URL
-import 'package:Akarat/utils/fav_logout.dart';        // Favorites screen (adjust if needed)
-import 'package:Akarat/screen/my_account.dart';       // Account/Menu screen (adjust if needed)
+import 'package:Akarat/utils/fav_logout.dart';        // Favorites screen
+import 'package:Akarat/screen/my_account.dart';       // Account/Menu screen
+import 'package:Akarat/screen/home.dart';             // Home screen
+import 'package:url_launcher/url_launcher.dart';      // for mailto
+import 'package:Akarat/services/favorite_service.dart';
 
 // spacing
 const double _headerLeftPad   = 0;   // pull header to the very left
@@ -17,11 +20,11 @@ const double _colGap          = 13;
 
 // text sizes
 const double _headerFontSize   = 12;  // smaller header text
-const double _rowFontSize     = 11;  // ⬅️ reduced row text a bit
+const double _rowFontSize     = 11;  // reduced row text a bit
 const FontWeight _rowFontWeight = FontWeight.w600;
 
-const double _gapBeforePurposeHeader = 4; // was 26 for others
-const double _gapBeforePurposeRow    = 10; // a bit tighter between Time & Purpose in rows
+const double _gapBeforePurposeHeader = 4;
+const double _gapBeforePurposeRow    = 10;
 
 const double _minTableWidth          = 860;
 
@@ -33,15 +36,15 @@ const double _hGapNameToTime     = 10;
 const double _hGapTimeToPurpose  = 1;
 const double _hGapPurposeToType  = 8;
 
-// --- row-only gaps (you can tweak these without touching header) ---
+// --- row-only gaps ---
 const double _rGapNameToTime     = 18;
-const double _rGapTimeToPurpose  = 18;   // <- different from header
+const double _rGapTimeToPurpose  = 18;
 const double _rGapPurposeToType  = 10;
 
 const double _checkColW = 42.0;
 
-const double _trashIconW = 32;       // matches IconButton constraint
-const double _gapTypeToTrash = 5;    // ⬅️ gap you want to see
+const double _trashIconW = 32;
+const double _gapTypeToTrash = 5;
 
 /// Read the auth token from your secure storage.
 Future<String?> readToken() async {
@@ -52,109 +55,14 @@ Future<String?> readToken() async {
   }
 }
 
-/// -------------------------------- NAV BAR (shared) --------------------------------
-
-Container buildMyNavBar(
-    BuildContext context, {
-      required int currentIndex, // 0: Home, 1: Fav, 2: Email, 3: Menu
-    }) {
-  Future<void> openFavorites() async {
-    final token = await SecureStorage.read('token');
-
-    if (token == null || token.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: Colors.white,
-          title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-          content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel", style: TextStyle(color: Colors.red)),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const Login()));
-              },
-              child: const Text("Login", style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => const Fav_Logout()));
-  }
-
-  return Container(
-    height: 64,
-    decoration: const BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.only(
-        topLeft: Radius.circular(20),
-        topRight: Radius.circular(20),
-      ),
-      boxShadow: [
-        BoxShadow(color: Color(0x14000000), blurRadius: 12, offset: Offset(0, -4)),
-      ],
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Home
-        IconButton(
-          tooltip: "Home",
-          onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
-          icon: Image.asset("assets/images/home.png", height: 26),
-        ),
-
-        // Favorites
-        IconButton(
-          tooltip: "Favorites",
-          onPressed: openFavorites,
-          icon: Icon(
-            currentIndex == 1 ? Icons.favorite : Icons.favorite_border_outlined,
-            color: Colors.red,
-            size: 30,
-          ),
-        ),
-
-        // Email
-        IconButton(
-          tooltip: "Email",
-          icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
-          onPressed: () {},
-        ),
-
-        // Menu / My Account
-        IconButton(
-          tooltip: "Menu",
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => My_Account()));
-          },
-          icon: Icon(
-            currentIndex == 3 ? Icons.dehaze : Icons.dehaze_outlined,
-            color: Colors.red,
-            size: 34,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
 /// -------------------------------- MODEL --------------------------------
 
 class SavedAlert {
   final int id;
-  final String alertName;     // backend: alert_name
-  final String timePeriod;    // backend: time_period
-  final String purpose;       // pretty label (Rent/Buy/New Projects/Commercial)
-  final String propertyType;  // normalized singular slug or '' for Any
+  final String alertName;
+  final String timePeriod;
+  final String purpose;
+  final String propertyType;
   final DateTime createdAt;
 
   SavedAlert({
@@ -231,7 +139,7 @@ class SavedAlert {
 /// -------------------------------- SCREEN --------------------------------
 
 class SavedAlertsScreen extends StatefulWidget {
-  final String? token; // optional token passed from previous screen
+  final String? token;
   const SavedAlertsScreen({super.key, this.token});
 
   @override
@@ -240,17 +148,22 @@ class SavedAlertsScreen extends StatefulWidget {
 
 class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
   late Future<List<SavedAlert>> _future;
-  String? _token; // cache token once resolved
+  String? _token;
 
-  // UI state
   List<SavedAlert> _all = [];
   final Set<int> _selected = {};
   bool _selectAll = false;
 
-  // Simple client-side pagination
   static const int _pageSize = 4;
   int _page = 1;
   int _lastCount = 0;
+  bool _deletingAll = false;
+
+  // For bottom nav highlighting (2 = "favorites / alerts" tab)
+  int pageIndex = 2;
+
+  // for nav menu token check (to match New_Projects)
+  String token = '';
 
   @override
   void initState() {
@@ -328,7 +241,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
         if (data is List) {
           list = data;
         } else if (data is Map && data['data'] is List) {
-          list = data['data']; // paginator
+          list = data['data'];
         } else if (jsonBody['saved_searches'] is List) {
           list = jsonBody['saved_searches'];
         } else {
@@ -347,8 +260,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       throw Exception(msg);
     }
   }
-
-  // --- Row actions (DELETE) --------------------------------------------------
 
   Future<void> _deleteAlert(SavedAlert a) async {
     if (_token == null) return;
@@ -394,8 +305,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
     }
   }
 
-  bool _deletingAll = false;
-
   Future<void> _deleteAllAlerts() async {
     if (_token == null || _deletingAll) return;
     _deletingAll = true;
@@ -404,7 +313,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       final base = ApiService.baseUrl;
       final url = Uri.parse('$base/alerts-deleteall');
 
-      // Primary: DELETE
       final res = await http.delete(
         url,
         headers: {
@@ -414,7 +322,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
         },
       );
 
-      // Fallback: some backends require POST for bulk ops
       http.Response? fallbackRes;
       if (res.statusCode == 405 || res.statusCode == 404) {
         fallbackRes = await http.post(
@@ -478,8 +385,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
     });
   }
 
-  // --- Helpers ---------------------------------------------------------------
-
   String _relativeTime(DateTime dt) {
     final now = DateTime.now();
     final diff = now.difference(dt);
@@ -541,18 +446,179 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
   void _handleBack() {
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
-    } else {
-      Navigator.of(context).pop(); // or do nothing
     }
   }
 
-  // --- UI --------------------------------------------------------------------
+  /// ------------------------------ NAV BAR (EXACTLY LIKE New_Projects) ------------------------------
+  Container buildMyNavBar(BuildContext context) {
+    return Container(
+      height: 50, // ✅ exact same as New_Projects
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // HOME
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const Home()),
+            ),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image(
+                image: AssetImage("assets/images/home.png"),
+                height: 25,
+              ),
+            ),
+          ),
 
+          // FAVORITES
+          IconButton(
+            enableFeedback: false,
+            onPressed: () async {
+              final token = await SecureStorage.getToken();
+
+              if (token == null || token.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // white container
+                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
+                        },
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                // ✅ Logged in – go to favorites
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const Fav_Logout()),
+                ).then((_) async {
+                  // 🔁 Re-sync when coming back
+                  final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
+                  if (!mounted) return;
+                  setState(() {
+                    FavoriteService.loggedInFavorites = updatedFavorites;
+                  });
+                });
+              }
+            },
+            icon: const Icon(
+              Icons.favorite_border_outlined,  // 👈 always this icon
+              color: Colors.red,
+              size: 30,
+            ),
+          ),
+
+
+          // EMAIL
+          IconButton(
+            tooltip: "Email",
+            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+            onPressed: () async {
+              final Uri emailUri = Uri.parse(
+                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+              );
+
+              if (await canLaunchUrl(emailUri)) {
+                await launchUrl(emailUri);
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white, // White dialog container
+                    title: const Text(
+                      'Email not available',
+                      style: TextStyle(color: Colors.black), // Title in black
+                    ),
+                    content: const Text(
+                      'No email app is configured on this device. Please add a mail account first.',
+                      style: TextStyle(color: Colors.black), // Content in black
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          'OK',
+                          style: TextStyle(color: Colors.red), // Red "OK" text
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+
+          // MENU / MY ACCOUNT
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                setState(() {
+                  if (token == '') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const My_Account()),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const My_Account()),
+                    );
+                  }
+                });
+              },
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
+  /// ------------------------------ BUILD ------------------------------
+  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F7F7),
+      backgroundColor: Colors.white,
       body: SafeArea(
+        top: true,
+        bottom: false, // ⬅️ bottom space handled by bottomNavigationBar
         child: FutureBuilder<List<SavedAlert>>(
           future: _future,
           builder: (context, snap) {
@@ -566,13 +632,14 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
               );
             }
 
-            final int titleCount = snap.hasData ? (snap.data?.length ?? _all.length) : _all.length;
+            final int titleCount =
+            snap.hasData ? (snap.data?.length ?? _all.length) : _all.length;
 
             return Column(
               children: [
                 const SizedBox(height: 8),
 
-                // Back arrow row
+                // Back arrow
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Row(
@@ -584,7 +651,11 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                           onTap: _handleBack,
                           child: const Padding(
                             padding: EdgeInsets.all(8.0),
-                            child: Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.black87),
+                            child: Icon(
+                              Icons.arrow_back_ios_new,
+                              size: 20,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
                       ),
@@ -625,14 +696,17 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
 
                 const SizedBox(height: 6),
 
-                // Subtitle
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Manage your saved property alerts here',
-                      style: TextStyle(fontSize: 14, color: Colors.black87, height: 1.2),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                        height: 1.2,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -641,173 +715,247 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
 
                 const SizedBox(height: 12),
 
-                // Table card
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x14000000),
-                            blurRadius: 12,
-                            offset: Offset(0, 4),
-                          )
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          // Header row
-                          _headerRow(
-                            onSelectAll: (v) => _toggleSelectAllOnPage(v ?? false),
-                            value: _selectAll,
-                          ),
-
-                          const Divider(height: 1, color: Color(0xFFECECEC)),
-
-                          // Rows
-                          Expanded(
-                            child: _all.isEmpty
-                                ? const Center(child: Text('No saved alerts yet.'))
-                                : ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount: _pageItems.length,
-                              itemBuilder: (_, i) {
-                                final a = _pageItems[i];
-                                final checked = _selected.contains(a.id);
-                                return _dataRow(
-                                  alert: a,
-                                  checked: checked,
-                                  onCheck: (v) {
-                                    setState(() {
-                                      if (v == true) {
-                                        _selected.add(a.id);
-                                      } else {
-                                        _selected.remove(a.id);
-                                      }
-                                      final allOnPageSelected = _pageItems.every(
-                                              (x) => _selected.contains(x.id));
-                                      _selectAll = allOnPageSelected;
-                                    });
-                                  },
-                                  onDelete: () => _deleteAlert(a),
-                                  createdLabel: _relativeTime(a.createdAt),
-                                );
-                              },
+                // Table card – lifted a bit from bottom
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.6,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x14000000),
+                              blurRadius: 12,
+                              offset: Offset(0, 4),
+                            )
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            _headerRow(
+                              onSelectAll: (v) =>
+                                  _toggleSelectAllOnPage(v ?? false),
+                              value: _selectAll,
                             ),
-                          ),
+                            const Divider(
+                              height: 1,
+                              color: Color(0xFFECECEC),
+                            ),
 
-                          // Footer controls: delete all + pagination
-                          LayoutBuilder(
-                            builder: (context, cs) {
-                              final narrow = cs.maxWidth < 420; // tweak threshold as you like
-                              final double txt = narrow ? 12 : 14;
+                            Expanded(
+                              child: _all.isEmpty
+                                  ? const Center(
+                                child: Text('No saved alerts yet.'),
+                              )
+                                  : ListView.builder(
+                                physics:
+                                const AlwaysScrollableScrollPhysics(),
+                                itemCount: _pageItems.length,
+                                itemBuilder: (_, i) {
+                                  final a = _pageItems[i];
+                                  final checked =
+                                  _selected.contains(a.id);
+                                  return _dataRow(
+                                    alert: a,
+                                    checked: checked,
+                                    onCheck: (v) {
+                                      setState(() {
+                                        if (v == true) {
+                                          _selected.add(a.id);
+                                        } else {
+                                          _selected.remove(a.id);
+                                        }
+                                        final allOnPageSelected =
+                                        _pageItems.every((x) =>
+                                            _selected
+                                                .contains(x.id));
+                                        _selectAll = allOnPageSelected;
+                                      });
+                                    },
+                                    onDelete: () => _deleteAlert(a),
+                                    createdLabel:
+                                    _relativeTime(a.createdAt),
+                                  );
+                                },
+                              ),
+                            ),
 
-                              return Row(
-                                children: [
-                                  // LEFT: controls (expand & allow wrapping)
-                                  Expanded(
-                                    child: Wrap(
-                                      alignment: WrapAlignment.start,
-                                      crossAxisAlignment: WrapCrossAlignment.center,
-                                      spacing: 8,
-                                      runSpacing: 6,
-                                      children: [
-                                        // ✅ Select all on this page
-                                        Wrap(
-                                          spacing: 6,
-                                          crossAxisAlignment: WrapCrossAlignment.center,
-                                          children: [
-                                            Checkbox(
-                                              visualDensity: VisualDensity.compact,
-                                              value: _pageItems.isNotEmpty &&
-                                                  _pageItems.every((a) => _selected.contains(a.id)),
-                                              onChanged: (v) => _toggleSelectAllOnPage(v ?? false),
-                                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                            ),
-                                            Text(
-                                              narrow ? 'Select all' : 'Select all on this page',
-                                              style: TextStyle(fontSize: txt),
-                                              softWrap: true,
-                                            ),
-                                          ],
-                                        ),
+                            LayoutBuilder(
+                              builder: (context, cs) {
+                                final narrow = cs.maxWidth < 420;
+                                final double txt = narrow ? 12 : 14;
 
-                                        // 🗑 Delete selected
-                                        TextButton.icon(
-                                          onPressed: _selected.isEmpty ? null : _deleteSelected,
-                                          icon: Icon(Icons.delete_outline, size: narrow ? 16 : 20),
-                                          label: Text('Delete selected', style: TextStyle(fontSize: txt)),
-                                          style: TextButton.styleFrom(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: narrow ? 8 : 12,
-                                              vertical: narrow ? 6 : 8,
-                                            ),
-                                            minimumSize: Size.zero,
-                                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                            visualDensity: VisualDensity.compact,
+                                return Row(
+                                  children: [
+                                    // LEFT controls
+                                    Expanded(
+                                      child: Wrap(
+                                        alignment: WrapAlignment.start,
+                                        crossAxisAlignment:
+                                        WrapCrossAlignment.center,
+                                        spacing: 8,
+                                        runSpacing: 6,
+                                        children: [
+                                          Wrap(
+                                            spacing: 6,
+                                            crossAxisAlignment:
+                                            WrapCrossAlignment.center,
+                                            children: [
+                                              Checkbox(
+                                                visualDensity:
+                                                VisualDensity.compact,
+                                                value: _pageItems.isNotEmpty &&
+                                                    _pageItems.every((a) =>
+                                                        _selected
+                                                            .contains(a.id)),
+                                                onChanged: (v) =>
+                                                    _toggleSelectAllOnPage(
+                                                        v ?? false),
+                                                materialTapTargetSize:
+                                                MaterialTapTargetSize
+                                                    .shrinkWrap,
+                                              ),
+                                              Text(
+                                                narrow
+                                                    ? 'Select all'
+                                                    : 'Select all on this page',
+                                                style: TextStyle(
+                                                  fontSize: txt,
+                                                ),
+                                                softWrap: true,
+                                              ),
+                                            ],
                                           ),
-                                        ),
-
-                                        // ✅ Delete all alerts — like "Delete selected" (no border)
-                                        TextButton.icon(
-                                          onPressed: (_all.isEmpty || _deletingAll) ? null : _deleteAllAlerts,
-                                          icon: Icon(Icons.delete_forever_outlined, size: narrow ? 16 : 20),
-                                          label: Text(
-                                            _deletingAll ? 'Deleting…' : 'Delete all alerts',
-                                            style: TextStyle(fontSize: txt),
-                                          ),
-                                          style: ButtonStyle(
-                                            padding: WidgetStatePropertyAll(
-                                              EdgeInsets.symmetric(
-                                                horizontal: narrow ? 8 : 12,
-                                                vertical: narrow ? 6 : 8,
+                                          TextButton.icon(
+                                            onPressed: _selected.isEmpty
+                                                ? null
+                                                : _deleteSelected,
+                                            icon: Icon(
+                                              Icons.delete_outline,
+                                              size: narrow ? 16 : 20,
+                                            ),
+                                            label: Text(
+                                              'Delete selected',
+                                              style: TextStyle(
+                                                fontSize: txt,
                                               ),
                                             ),
-                                            minimumSize: const WidgetStatePropertyAll(Size.zero),
-                                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                            visualDensity: VisualDensity.compact,
-                                            foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
-                                              if (states.contains(WidgetState.disabled)) {
-                                                return Colors.red.withOpacity(0.38);
-                                              }
-                                              return Colors.red;
-                                            }),
-                                            backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
-                                            overlayColor: WidgetStatePropertyAll(Colors.red.withOpacity(0.08)),
-                                            side: const WidgetStatePropertyAll(BorderSide.none),
-                                            shape: const WidgetStatePropertyAll(StadiumBorder()),
+                                            style: TextButton.styleFrom(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal:
+                                                narrow ? 8 : 12,
+                                                vertical:
+                                                narrow ? 6 : 8,
+                                              ),
+                                              minimumSize: Size.zero,
+                                              tapTargetSize:
+                                              MaterialTapTargetSize
+                                                  .shrinkWrap,
+                                              visualDensity:
+                                              VisualDensity.compact,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                          TextButton.icon(
+                                            onPressed: (_all.isEmpty ||
+                                                _deletingAll)
+                                                ? null
+                                                : _deleteAllAlerts,
+                                            icon: Icon(
+                                              Icons.delete_forever_outlined,
+                                              size: narrow ? 16 : 20,
+                                            ),
+                                            label: Text(
+                                              _deletingAll
+                                                  ? 'Deleting…'
+                                                  : 'Delete all alerts',
+                                              style: TextStyle(
+                                                fontSize: txt,
+                                              ),
+                                            ),
+                                            style: ButtonStyle(
+                                              padding:
+                                              WidgetStatePropertyAll(
+                                                EdgeInsets.symmetric(
+                                                  horizontal:
+                                                  narrow ? 8 : 12,
+                                                  vertical:
+                                                  narrow ? 6 : 8,
+                                                ),
+                                              ),
+                                              minimumSize:
+                                              const WidgetStatePropertyAll(
+                                                Size.zero,
+                                              ),
+                                              tapTargetSize:
+                                              MaterialTapTargetSize
+                                                  .shrinkWrap,
+                                              visualDensity:
+                                              VisualDensity.compact,
+                                              foregroundColor:
+                                              WidgetStateProperty
+                                                  .resolveWith<Color?>(
+                                                    (states) {
+                                                  if (states.contains(
+                                                      WidgetState
+                                                          .disabled)) {
+                                                    return Colors.red
+                                                        .withOpacity(0.38);
+                                                  }
+                                                  return Colors.red;
+                                                },
+                                              ),
+                                              backgroundColor:
+                                              const WidgetStatePropertyAll(
+                                                Colors.transparent,
+                                              ),
+                                              overlayColor:
+                                              WidgetStatePropertyAll(
+                                                Colors.red.withOpacity(0.08),
+                                              ),
+                                              side:
+                                              const WidgetStatePropertyAll(
+                                                BorderSide.none,
+                                              ),
+                                              shape:
+                                              const WidgetStatePropertyAll(
+                                                StadiumBorder(),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
 
-                                  // RIGHT: pager (expand, align right, allow horizontal scroll)
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(right: 12),
-                                      child: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: SizedBox(
-                                            height: 34,
-                                            child: FittedBox(
-                                              child: _pager(),
+                                    // RIGHT pager
+                                    Expanded(
+                                      child: Padding(
+                                        padding:
+                                        const EdgeInsets.only(right: 12),
+                                        child: Align(
+                                          alignment: Alignment.centerRight,
+                                          child: SingleChildScrollView(
+                                            scrollDirection:
+                                            Axis.horizontal,
+                                            child: SizedBox(
+                                              height: 34,
+                                              child: FittedBox(
+                                                child: _pager(),
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              );
-                            },
-                          )
-                        ],
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -820,12 +968,19 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
         ),
       ),
 
-      // 🔻 Global bottom navigator
-      bottomNavigationBar: buildMyNavBar(context, currentIndex: 1),
+      // 🔻 Bottom navigation bar exactly like in New_Projects,
+      // with white extended under the home indicator
+      bottomNavigationBar: Container(
+        color: Colors.white,          // ⬅️ paints under the system gesture area
+        child: SafeArea(
+          top: false,                 // ⬅️ only respect bottom inset
+          child: buildMyNavBar(context),
+        ),
+      ),
     );
   }
 
-  bool get _isAllSelectedGlobally => _all.isNotEmpty && _selected.length == _all.length;
+  // -------------------------------- ROW / HEADER / PAGER --------------------------------
 
   Widget _headerRow({
     required bool value,
@@ -835,12 +990,14 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: const BoxDecoration(
         color: Color(0xFFF7F4F4),
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(14), topRight: Radius.circular(14)),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(14),
+          topRight: Radius.circular(14),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // fixed checkbox column
           SizedBox(
             width: _checkColW,
             child: Transform.scale(
@@ -848,22 +1005,18 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
               child: Checkbox(
                 value: value,
                 onChanged: onSelectAll,
-                visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                visualDensity:
+                const VisualDensity(horizontal: -4, vertical: -4),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
           ),
-
-          // columns (same flex & gaps as rows)
           const _HeaderCell('Alert Name', flex: 4, fontSize: _headerFontSize),
           const SizedBox(width: _hGapNameToTime),
-
           const _HeaderCell('Time', flex: 3, fontSize: _headerFontSize),
           const SizedBox(width: _hGapTimeToPurpose),
-
           const _HeaderCell('Purpose', flex: 3, fontSize: _headerFontSize),
           const SizedBox(width: _hGapPurposeToType),
-
           const _HeaderCell('Property Type', flex: 4, fontSize: _headerFontSize),
         ],
       ),
@@ -882,11 +1035,9 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       decoration: const BoxDecoration(color: Colors.white),
       child: Column(
         children: [
-          // ── TOP GRID ROW (no delete icon here)
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // checkbox
               SizedBox(
                 width: _checkColW,
                 child: Transform.scale(
@@ -894,13 +1045,12 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                   child: Checkbox(
                     value: checked,
                     onChanged: onCheck,
-                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                    visualDensity:
+                    const VisualDensity(horizontal: -4, vertical: -4),
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ),
-
-              // Alert Name
               Expanded(
                 flex: 4,
                 child: _CellText(
@@ -910,8 +1060,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                 ),
               ),
               const SizedBox(width: _rGapNameToTime),
-
-              // Time period (single line)
               Expanded(
                 flex: 3,
                 child: _CellText(
@@ -924,8 +1072,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                 ),
               ),
               const SizedBox(width: _rGapTimeToPurpose),
-
-              // Purpose (max 2 lines)
               Expanded(
                 flex: 3,
                 child: _CellText(
@@ -938,8 +1084,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                 ),
               ),
               const SizedBox(width: _rGapPurposeToType),
-
-              // Property Type (exactly 1 line)
               Expanded(
                 flex: 4,
                 child: _CellText(
@@ -953,19 +1097,20 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
               ),
             ],
           ),
-
-          // ── BOTTOM ROW: Created label + Delete icon on the SAME line
           Padding(
             padding: const EdgeInsets.only(top: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Flexible(
                   child: Text(
                     createdLabel,
                     textAlign: TextAlign.right,
-                    style: const TextStyle(fontSize: 11.5, color: Colors.grey, height: 1.2),
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: Colors.grey,
+                      height: 1.2,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     softWrap: false,
@@ -976,22 +1121,24 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                   tooltip: 'Delete',
                   onPressed: onDelete,
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints.tightFor(width: 28, height: 28),
+                  constraints:
+                  const BoxConstraints.tightFor(width: 28, height: 28),
                   iconSize: 16,
                   visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.delete_outline, color: Colors.black54),
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.black54,
+                  ),
                 ),
               ],
             ),
           ),
-
           const Divider(height: 20, color: Color(0xFFECECEC)),
         ],
       ),
     );
   }
 
-  // Pagination controls
   Widget _pager() {
     final total = _totalPages;
     final canPrev = _page > 1;
@@ -1009,10 +1156,18 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
             shape: BoxShape.circle,
             color: Colors.white,
             boxShadow: [
-              BoxShadow(color: Color(0x14000000), blurRadius: 8, offset: Offset(0, 2)),
+              BoxShadow(
+                color: Color(0x14000000),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
             ],
           ),
-          child: Icon(icon, size: 20, color: enabled ? Colors.black87 : Colors.black26),
+          child: Icon(
+            icon,
+            size: 20,
+            color: enabled ? Colors.black87 : Colors.black26,
+          ),
         ),
       );
     }
@@ -1041,7 +1196,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       children: [
         navButton(Icons.chevron_left, canPrev, _prevPage),
         const SizedBox(width: 8),
-        currentPageChip(), // 👈 only the current page number
+        currentPageChip(),
         const SizedBox(width: 8),
         navButton(Icons.chevron_right, canNext, _nextPage),
       ],
@@ -1071,8 +1226,8 @@ class _HeaderCell extends StatelessWidget {
         text,
         maxLines: 1,
         softWrap: false,
-        overflow: TextOverflow.visible,         // ✅ never hide with dots
-        textScaler: const TextScaler.linear(1), // ✅ ignore system text scaling here
+        overflow: TextOverflow.visible,
+        textScaler: const TextScaler.linear(1),
         style: TextStyle(
           fontSize: fontSize,
           fontWeight: FontWeight.w700,
@@ -1090,11 +1245,9 @@ class _CellText extends StatelessWidget {
   final TextAlign textAlign;
   final FontWeight fontWeight;
   final double fontSize;
-
-  // Options:
-  final int? maxLines;                 // null = unlimited
-  final bool softWrap;                 // whether to wrap lines
-  final TextOverflow overflow;         // how to overflow
+  final int? maxLines;
+  final bool softWrap;
+  final TextOverflow overflow;
 
   const _CellText(
       this.text, {
@@ -1104,7 +1257,7 @@ class _CellText extends StatelessWidget {
         this.maxLines,
         this.softWrap = true,
         this.overflow = TextOverflow.visible,
-        this.textAlign = TextAlign.left, // ✅ default provided
+        this.textAlign = TextAlign.left,
       });
 
   @override
@@ -1122,23 +1275,6 @@ class _CellText extends StatelessWidget {
         height: 1.25,
       ),
     );
-  }
-}
-
-// Placeholder to align with row checkbox space
-class _HeaderCheckboxPlaceholder extends StatelessWidget {
-  final double width;
-  final double height;
-
-  const _HeaderCheckboxPlaceholder({
-    super.key,
-    this.width = _checkColW, // ✅ default to checkbox column width
-    this.height = 0,         // ✅ safe default
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(width: width, height: height);
   }
 }
 
@@ -1163,51 +1299,6 @@ class _ErrorView extends StatelessWidget {
               label: const Text('Retry'),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Optional shrinking text helper (kept simple & const-friendly)
-class _ShrinkText extends StatelessWidget {
-  final String text;
-  final double baseSize;
-  final double minSize;
-  final TextAlign textAlign;
-  final FontWeight fontWeight;
-  final Color color;
-
-  const _ShrinkText(
-      this.text, {
-        super.key,
-        this.baseSize = 14,                // ✅ initialized
-        this.minSize = 10,                 // ✅ initialized (kept for API compat)
-        this.textAlign = TextAlign.left,   // ✅ initialized
-        this.fontWeight = FontWeight.w600, // ✅ initialized
-        this.color = const Color(0xFF000000), // ✅ const-friendly black
-      });
-
-  @override
-  Widget build(BuildContext context) {
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      alignment: textAlign == TextAlign.right
-          ? Alignment.centerRight
-          : textAlign == TextAlign.center
-          ? Alignment.center
-          : Alignment.centerLeft,
-      child: Text(
-        text,
-        maxLines: 1,
-        softWrap: false,
-        overflow: TextOverflow.ellipsis,
-        textAlign: textAlign,
-        style: TextStyle(
-          fontSize: baseSize,
-          fontWeight: fontWeight,
-          color: color,
-          height: 1.2,
         ),
       ),
     );

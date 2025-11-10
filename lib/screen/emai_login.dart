@@ -5,6 +5,8 @@ import 'package:Akarat/utils/shared_preference_manager.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import '../services/api_service.dart';
+
 class EmaiLogin extends StatefulWidget {
   const EmaiLogin({super.key, required this.data});
   final String data;
@@ -31,7 +33,7 @@ class _EmaiLoginState extends State<EmaiLogin> {
 
     try {
       final response = await dio.post(
-        'https://akarat.com/api/login',
+        ApiService.buildUri('login').toString(),
         data: {
           'email': emailInput.trim(),
           'password': passwordController.text.trim(),
@@ -43,6 +45,7 @@ class _EmaiLoginState extends State<EmaiLogin> {
           },
         ),
       );
+
 
       debugPrint("Login Status Code: ${response.statusCode}");
       debugPrint("Login Response Body: ${response.data}");

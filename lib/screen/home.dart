@@ -200,8 +200,8 @@ class _MyHomePageState extends State<HomeDemo> {
 
   Future<void> fetchLocationSuggestions(String query) async {
     String url = query.isEmpty
-        ? 'https://akarat.com/api/locations'
-        : 'https://akarat.com/api/locations?q=$query';
+        ? ApiService.buildUri('locations').toString()
+        : ApiService.buildUri('locations', query: {'q': query}).toString();
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -267,7 +267,10 @@ class _MyHomePageState extends State<HomeDemo> {
 
 
   void fetchProperties(String sortBy) async {
-    final url = Uri.parse('https://akarat.com/api/properties?sort_by=$sortBy');
+
+
+    final url = ApiService.buildUri('properties?sort_by=$sortBy');
+
 
     try {
       final response = await http.get(url);
@@ -335,6 +338,10 @@ class _MyHomePageState extends State<HomeDemo> {
   List<Property> searchResults = [];
   String location ='';
 
+
+  String _token = '';
+  bool _loadingToken = true;
+
   // ScrollController _scrollController = ScrollController();
   int currentPage = 1;
   bool isLoading = false;
@@ -361,29 +368,46 @@ class _MyHomePageState extends State<HomeDemo> {
   @override
 
   @override
+  @override
   void initState() {
     super.initState();
 
-    SecureStorage.getToken().then((value) {
-      setState(() => token = value ?? '');
-      if (token.isNotEmpty) {
+    // Load token once, then fetch saved properties if logged in
+    _loadToken().then((_) {
+      if (_token.isNotEmpty) {
         _fetchSavedProperties();
       }
     });
 
-    getFeaturedProperties(forceRefresh: true); // Initial call
+    // Initial data load
+    getFeaturedProperties(forceRefresh: true);
 
+    // Infinite scroll listener
     _scrollController.addListener(() {
-      final threshold = 200.0;
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - threshold) {
+      const threshold = 200.0;
+      final position = _scrollController.position;
+      if (position.pixels >= position.maxScrollExtent - threshold) {
         if (!isLoading && nextPageUrl != null && nextPageUrl!.isNotEmpty) {
-          print("🟢 Triggering loadMore: $nextPageUrl");
+          debugPrint("🟢 Triggering loadMore: $nextPageUrl");
           getFeaturedProperties(loadMore: true);
         }
       }
     });
   }
+
+  /// Loads the token from SecureStorage and updates state.
+  /// Keep this as a CLASS METHOD (not nested inside initState).
+  Future<void> _loadToken() async {
+    final t = await SecureStorage.getToken();
+    if (!mounted) return;
+    setState(() {
+      _token = t ?? '';
+      token  = _token;   // keep both in sync if other code still reads `token`
+      _loadingToken = false;
+    });
+  }
+
+
 
 
 
@@ -462,7 +486,10 @@ class _MyHomePageState extends State<HomeDemo> {
   }
 
   Future<bool> toggledApi(String token, int propertyId) async {
-    final url = Uri.parse('https://akarat.com/api/toggle-saved-property');
+
+
+    final url = ApiService.buildUri('toggle-saved-property');
+
     try {
       final response = await http.post(
         url,
@@ -502,37 +529,58 @@ class _MyHomePageState extends State<HomeDemo> {
 
     setState(() => isLoading = true);
 
-    // Build URL ourselves to ALWAYS include sort_by
-    String url;
+    Uri uri;
+
+    // Build URL to ALWAYS include sort_by
     if (loadMore) {
       // Derive next page from meta; don't trust links.next because it may drop sort
       final meta = featuredModel?.meta;
       final current = meta?.currentPage ?? 1;
-      final last    = meta?.lastPage ?? 1;
+      final last = meta?.lastPage ?? 1;
+
       if (current >= last) {
         setState(() => isLoading = false);
+        debugPrint("🔴 Already at last page.");
         return;
       }
+
       final nextPage = current + 1;
-      url = "https://akarat.com/api/properties?page=$nextPage&sort_by=$_currentSortKey";
+      uri = ApiService.buildUri(
+        'properties',
+        query: {
+          'page': '$nextPage',
+          'sort_by': _currentSortKey,
+        },
+      );
     } else {
       // Initial load or refresh
-      url = "https://akarat.com/api/properties?page=1&sort_by=$_currentSortKey";
+      uri = ApiService.buildUri(
+        'properties',
+        query: {
+          'page': '1',
+          'sort_by': _currentSortKey,
+        },
+      );
     }
 
     try {
-      debugPrint("📡 Fetching URL: $url");
-      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
+      debugPrint("📡 Fetching URL: $uri");
+
+      final response = await http
+          .get(uri)
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         final model = featured.FeaturedResponseModel.fromJson(jsonData);
 
-        final List<featured.Data> incoming = model.data?.data ?? <featured.Data>[];
-        final List<featured.Data> current  = loadMore ? (featuredModel?.data ?? <featured.Data>[]) : <featured.Data>[];
+        final List<featured.Data> incoming =
+            model.data?.data ?? <featured.Data>[];
+        final List<featured.Data> currentList =
+        loadMore ? (featuredModel?.data ?? <featured.Data>[]) : <featured.Data>[];
 
         // Merge + de-dupe by id
-        final merged = _mergeDedupFeatured(current, incoming);
+        final merged = _mergeDedupFeatured(currentList, incoming);
 
         // Optional client-side enforcement for "newest"
         _applyClientSortIfNeeded(merged);
@@ -548,10 +596,16 @@ class _MyHomePageState extends State<HomeDemo> {
           // Compute a safe nextPageUrl that preserves sort_by
           final m = model.data?.meta;
           if (m != null) {
-            final cur  = m.currentPage ?? 1;
+            final cur = m.currentPage ?? 1;
             final last = m.lastPage ?? 1;
             nextPageUrl = (cur < last)
-                ? "https://akarat.com/api/properties?page=${cur + 1}&sort_by=$_currentSortKey"
+                ? ApiService.buildUri(
+              'properties',
+              query: {
+                'page': '${cur + 1}',
+                'sort_by': _currentSortKey,
+              },
+            ).toString()
                 : null;
           } else {
             nextPageUrl = null;
@@ -569,6 +623,7 @@ class _MyHomePageState extends State<HomeDemo> {
       if (mounted) setState(() => isLoading = false);
     }
   }
+
 
 
 
@@ -695,7 +750,10 @@ class _MyHomePageState extends State<HomeDemo> {
 
   Future<void> fetchLocations() async {
     try {
-      final response = await http.get(Uri.parse("https://akarat.com/api/locations"));
+      final response = await http.get(
+        ApiService.buildUri('locations'),
+      );
+
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = jsonDecode(response.body);  // API gives list directly
@@ -782,7 +840,8 @@ class _MyHomePageState extends State<HomeDemo> {
               //Searchbar
               // Responsive universal search bar
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Container(
                   width: double.infinity,
                   height: 55,
@@ -816,7 +875,8 @@ class _MyHomePageState extends State<HomeDemo> {
                                 onPressed: () async {
                                   final loc = _searchController.text.trim();
                                   if (loc.isNotEmpty) {
-                                    final filterModelData = await fetchFilterData(loc);  // ⬅️ this function you will add (explained below)
+                                    final filterModelData = await fetchFilterData(
+                                        loc); // ⬅️ this function you will add (explained below)
                                     // 1) Search icon onPressed
                                     Navigator.pushReplacement(
                                       context,
@@ -824,20 +884,19 @@ class _MyHomePageState extends State<HomeDemo> {
                                         builder: (_) => FliterList(
                                           location: loc,
                                           filterModel: filterModelData,
-                                          selectedPurpose: (purpose.isNotEmpty ? purpose : 'Rent'),
-
-
-                                          selectedPropertyType: (propertyType.isNotEmpty ? propertyType : ''),
+                                          selectedPurpose: (purpose.isNotEmpty
+                                              ? purpose
+                                              : 'Rent'),
+                                          selectedPropertyType:
+                                          (propertyType.isNotEmpty
+                                              ? propertyType
+                                              : ''),
                                         ),
                                       ),
                                     );
-
-
                                   }
                                 },
-
                               ),
-
 
                               // const SizedBox(width: 5),
 
@@ -846,15 +905,28 @@ class _MyHomePageState extends State<HomeDemo> {
                                   controller: _searchController,
                                   focusNode: _focusNode,
                                   decoration: InputDecoration(
-                                    hintText: "Search for a locality, area or city",
-                                    hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                                    hintText:
+                                    "Search for a locality, area or city",
+                                    hintStyle: TextStyle(
+                                        color: Colors.grey, fontSize: 14),
                                     border: InputBorder.none,
                                   ),
-                                  onTap: () => fetchLocationSuggestions(''),
-                                  onChanged: (value) => fetchLocationSuggestions(value),
+                                  onTap: () async {
+                                    if (locationSuggestions.isEmpty) {
+                                      await fetchLocationSuggestions('');
+                                    } else if (locationSuggestions.isNotEmpty) {
+                                      setState(() {
+                                        locationSuggestions = [];
+                                      });
+                                      _focusNode.unfocus();
+                                    }
+                                  },
+                                  onChanged: (value) =>
+                                      fetchLocationSuggestions(value),
                                   onSubmitted: (value) async {
                                     if (value.isNotEmpty) {
-                                      final filterModelData = await fetchFilterData(value);
+                                      final filterModelData =
+                                      await fetchFilterData(value);
                                       // 2) onSubmitted in TextField
                                       Navigator.push(
                                         context,
@@ -862,36 +934,33 @@ class _MyHomePageState extends State<HomeDemo> {
                                           builder: (context) => FliterList(
                                             location: value,
                                             filterModel: filterModelData,
-                                            selectedPurpose: (purpose.isNotEmpty ? purpose : 'Rent'),
-                                            selectedPropertyType: (propertyType.isNotEmpty ? propertyType : ''),
+                                            selectedPurpose: (purpose.isNotEmpty
+                                                ? purpose
+                                                : 'Rent'),
+                                            selectedPropertyType:
+                                            (propertyType.isNotEmpty
+                                                ? propertyType
+                                                : ''),
                                           ),
                                         ),
                                       );
-
                                     }
                                   },
-
-
-
                                 ),
                               ),
-
-
-
-
-
-
 
                               IconButton(
                                 icon: Container(
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.grey.shade300,  // light background circle
+                                    color: Colors.grey
+                                        .shade300, // light background circle
                                   ),
-                                  padding: EdgeInsets.all(4),  // control size of the circle
+                                  padding: EdgeInsets.all(
+                                      4), // control size of the circle
                                   child: Icon(
                                     Icons.close,
-                                    size: 16,  // smaller icon size
+                                    size: 16, // smaller icon size
                                     color: Colors.black54,
                                   ),
                                 ),
@@ -903,44 +972,109 @@ class _MyHomePageState extends State<HomeDemo> {
                                   _focusNode.unfocus();
                                 },
                               ),
-
-
                             ],
                           ),
                         ),
                       ),
                     ],
                   ),
-
                 ),
               ),
 
               if (locationSuggestions.isNotEmpty)
-                Container(
-                  height: 200,
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOut,
+                  height: 220,
+                  margin:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 6)],
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
-                  child: ListView.builder(
-                    itemCount: locationSuggestions.length,
-                    itemBuilder: (context, index) {
-                      final loc = locationSuggestions[index];
-                      return ListTile(
-                        title: Text(loc),
-                        onTap: () {
-                          _searchController.text = loc;
-                          // fetchPropertiesForLocation(loc);
-                          setState(() {
-                            locationSuggestions = [];
-                          });
-                        },
-                      );
-                    },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: ListView.separated(
+                      padding: EdgeInsets.zero,
+                      itemCount: locationSuggestions.length,
+                      separatorBuilder: (_, __) => const Divider(
+                        height: 0,
+                        thickness: 0.5,
+                        indent: 12,
+                        endIndent: 12,
+                        color: Color(0xFFE0E0E0),
+                      ),
+                      itemBuilder: (context, index) {
+                        final loc = locationSuggestions[index];
+                        return InkWell(
+                          onTap: () {
+                            _searchController.text = loc;
+                            FocusScope.of(context).unfocus(); // close keyboard
+                            setState(() {
+                              locationSuggestions = [];
+                            });
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.location_on_outlined,
+                                    color: Colors.redAccent, size: 22),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    loc,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black87,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
+
+              // if (locationSuggestions.isNotEmpty)
+              //   Container(
+              //     height: 200,
+              //     margin: const EdgeInsets.symmetric(horizontal: 16),
+              //     decoration: BoxDecoration(
+              //       color: Colors.white,
+              //       borderRadius: BorderRadius.circular(8),
+              //       boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 6)],
+              //     ),
+              //     child: ListView.builder(
+              //       itemCount: locationSuggestions.length,
+              //       itemBuilder: (context, index) {
+              //         final loc = locationSuggestions[index];
+              //         return ListTile(
+              //           title: Text(loc),
+              //           onTap: () {
+              //             _searchController.text = loc;
+              //             // fetchPropertiesForLocation(loc);
+              //             setState(() {
+              //               locationSuggestions = [];
+              //             });
+              //           },
+              //         );
+              //       },
+              //     ),
+              //   ),
 
 
 
@@ -1653,29 +1787,40 @@ class _MyHomePageState extends State<HomeDemo> {
                                                               }
 
                                                               return AnimatedOpacity(
-                                                                duration: Duration(milliseconds: 300),
-                                                                opacity: opacity,
-                                                                child: SizedBox(
+                                                                duration: Duration(
+                                                                    milliseconds:
+                                                                    300),
+                                                                opacity:
+                                                                opacity,
+                                                                child:
+                                                                SizedBox(
                                                                   width: 12,
                                                                   // fixed size for layout stability
-                                                                  height: 12,
-                                                                  child: Center(
-                                                                    child: Container(
-                                                                      width: 8 * scale,
-                                                                      height: 8 * scale,
-                                                                      decoration: BoxDecoration(
-                                                                        color: Colors.white,
-                                                                        shape: BoxShape.circle,
+                                                                  height:
+                                                                  12,
+                                                                  child:
+                                                                  Center(
+                                                                    child:
+                                                                    Container(
+                                                                      width:
+                                                                      8 * scale,
+                                                                      height:
+                                                                      8 * scale,
+                                                                      decoration:
+                                                                      BoxDecoration(
+                                                                        color:
+                                                                        Colors.white,
+                                                                        shape:
+                                                                        BoxShape.circle,
                                                                       ),
                                                                     ),
                                                                   ),
                                                                 ),
                                                               );
-                                                            },
+                                                                },
                                                           ),
                                                         ),
                                                       ),
-
 
                                                       // ❤️ Favorite Icon
                                                       // ❤️ Favorite Icon
@@ -1683,97 +1828,126 @@ class _MyHomePageState extends State<HomeDemo> {
                                                         top: 10,
                                                         right: 10,
                                                         child: Material(
-                                                          color: Colors.white,
-                                                          shape: const CircleBorder(),
+                                                          color:
+                                                          Colors.white,
+                                                          shape:
+                                                          const CircleBorder(),
                                                           elevation: 4,
-                                                          child: Consumer<FavoriteProvider>(
-                                                            builder: (context, favProvider, _) {
-                                                              final isLoggedIn = token.isNotEmpty;
-                                                              final isFav = isLoggedIn && favProvider.isFavorite(item.id!); // ✅ Only true for logged-in users
+                                                          child: Consumer<
+                                                              FavoriteProvider>(
+                                                            builder: (context,
+                                                                favProvider,
+                                                                _) {
+                                                              final isLoggedIn =
+                                                                  token
+                                                                      .isNotEmpty;
+                                                              final isFav =
+                                                                  isLoggedIn &&
+                                                                      favProvider
+                                                                          .isFavorite(item.id!); // ✅ Only true for logged-in users
 
                                                               return IconButton(
                                                                 icon: Icon(
-                                                                  isFav ? Icons.favorite : Icons.favorite_border,
-                                                                  color: isFav ? Colors.red : Colors.grey, // ✅ Grey for logged-out users
+                                                                  isFav
+                                                                      ? Icons
+                                                                      .favorite
+                                                                      : Icons
+                                                                      .favorite_border,
+                                                                  color: isFav
+                                                                      ? Colors
+                                                                      .red
+                                                                      : Colors
+                                                                      .grey, // ✅ Grey for logged-out users
                                                                   size: 20,
                                                                 ),
-                                                                onPressed: () async {
+                                                                onPressed:
+                                                                    () async {
                                                                   if (!isLoggedIn) {
                                                                     // 🔒 Show login prompt
                                                                     showDialog(
-                                                                      context: context,
-                                                                      builder: (ctx) => Dialog(
-                                                                        backgroundColor: Colors.transparent,
-                                                                        insetPadding: EdgeInsets.zero,
-                                                                        child: Container(
-                                                                          height: 70,
-                                                                          margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
-                                                                          decoration: BoxDecoration(
-                                                                            color: Colors.red,
-                                                                            borderRadius: BorderRadius.circular(10),
-                                                                          ),
-                                                                          child: Stack(
-                                                                            clipBehavior: Clip.none,
-                                                                            children: [
-                                                                              Positioned(
-                                                                                top: -14,
-                                                                                right: -10,
-                                                                                child: Material(
-                                                                                  color: Colors.transparent,
-                                                                                  child: IconButton(
-                                                                                    icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                                                                                    onPressed: () => Navigator.of(ctx).pop(),
-                                                                                    padding: EdgeInsets.zero,
-                                                                                    constraints: const BoxConstraints(),
+                                                                      context:
+                                                                      context,
+                                                                      builder: (ctx) =>
+                                                                          Dialog(
+                                                                            backgroundColor:
+                                                                            Colors.transparent,
+                                                                            insetPadding:
+                                                                            EdgeInsets.zero,
+                                                                            child:
+                                                                            Container(
+                                                                              height: 70,
+                                                                              margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+                                                                              decoration: BoxDecoration(
+                                                                                color: Colors.red,
+                                                                                borderRadius: BorderRadius.circular(10),
+                                                                              ),
+                                                                              child: Stack(
+                                                                                clipBehavior: Clip.none,
+                                                                                children: [
+                                                                                  Positioned(
+                                                                                    top: -14,
+                                                                                    right: -10,
+                                                                                    child: Material(
+                                                                                      color: Colors.transparent,
+                                                                                      child: IconButton(
+                                                                                        icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                                                        onPressed: () => Navigator.of(ctx).pop(),
+                                                                                        padding: EdgeInsets.zero,
+                                                                                        constraints: const BoxConstraints(),
+                                                                                      ),
+                                                                                    ),
                                                                                   ),
-                                                                                ),
-                                                                              ),
-                                                                              Positioned(
-                                                                                left: 16,
-                                                                                right: 16,
-                                                                                bottom: 12,
-                                                                                child: Row(
-                                                                                  children: [
-                                                                                    const Expanded(
-                                                                                      child: Text(
-                                                                                        'Login required to add favorites.',
-                                                                                        style: TextStyle(color: Colors.white, fontSize: 13),
-                                                                                      ),
-                                                                                    ),
-                                                                                    const SizedBox(width: 12),
-                                                                                    GestureDetector(
-                                                                                      onTap: () {
-                                                                                        Navigator.of(ctx).pop();
-                                                                                        Navigator.of(ctx).pushNamed('/login');
-                                                                                      },
-                                                                                      child: const Text(
-                                                                                        'Login',
-                                                                                        style: TextStyle(
-                                                                                          color: Colors.white,
-                                                                                          fontWeight: FontWeight.bold,
-                                                                                          decoration: TextDecoration.underline,
-                                                                                          decorationColor: Colors.white,
-                                                                                          decorationThickness: 1.5,
+                                                                                  Positioned(
+                                                                                    left: 16,
+                                                                                    right: 16,
+                                                                                    bottom: 12,
+                                                                                    child: Row(
+                                                                                      children: [
+                                                                                        const Expanded(
+                                                                                          child: Text(
+                                                                                            'Login required to add favorites.',
+                                                                                            style: TextStyle(color: Colors.white, fontSize: 13),
+                                                                                          ),
                                                                                         ),
-                                                                                      ),
+                                                                                        const SizedBox(width: 12),
+                                                                                        GestureDetector(
+                                                                                          onTap: () {
+                                                                                            Navigator.of(ctx).pop();
+                                                                                            Navigator.of(ctx).pushNamed('/login');
+                                                                                          },
+                                                                                          child: const Text(
+                                                                                            'Login',
+                                                                                            style: TextStyle(
+                                                                                              color: Colors.white,
+                                                                                              fontWeight: FontWeight.bold,
+                                                                                              decoration: TextDecoration.underline,
+                                                                                              decorationColor: Colors.white,
+                                                                                              decorationThickness: 1.5,
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      ],
                                                                                     ),
-                                                                                  ],
-                                                                                ),
+                                                                                  ),
+                                                                                ],
                                                                               ),
-                                                                            ],
+                                                                            ),
                                                                           ),
-                                                                        ),
-                                                                      ),
                                                                     );
                                                                     return;
                                                                   }
 
                                                                   // ✅ Use Provider's API-integrated method
-                                                                  final success = await favProvider.toggleFavoriteWithApi(item.id!, token, context);
+                                                                  final success = await favProvider.toggleFavoriteWithApi(
+                                                                      item.id!,
+                                                                      token,
+                                                                      context);
 
                                                                   if (!success) {
-                                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                                      const SnackBar(content: Text("Failed to update favorite.")),
+                                                                    ScaffoldMessenger.of(context)
+                                                                        .showSnackBar(
+                                                                      const SnackBar(
+                                                                          content: Text("Failed to update favorite.")),
                                                                     );
                                                                   }
                                                                 },
@@ -1781,6 +1955,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                                             },
                                                           ),
                                                         ),
+
                                                       ),
 
 

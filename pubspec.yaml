@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  readmore: ^3.0.0
   carousel_slider: ^5.0.0
   standard_searchbar: ^2.0.0
   sliding_switch: ^1.0.0
@@ -48,6 +49,8 @@ dependencies:
   firebase_core: ^4.2.0
   firebase_auth: ^6.1.1
   google_sign_in: ^7.2.0
+  gap: ^3.0.1
+
 
 dev_dependencies:
   flutter_test:
@@ -96,4 +99,7 @@ flutter:
     - assets/images/bell-red.png
     - assets/images/my-account.png
     - assets/images/my-account-profile.png
+    - assets/images/alert_box_logout_icon.png
+    - assets/images/alert_box_delete_icon.png
+
 

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'api_service.dart';
+
 class FavoriteService {
   static const String _favoriteKey = 'favorite_properties';
   static Set<int> loggedInFavorites = {};
@@ -34,7 +36,8 @@ class FavoriteService {
 
   // 🔁 API: Toggle favorite on server
   static Future<bool> toggleFavoriteApi(String token, int propertyId) async {
-    final url = Uri.parse("https://akarat.com/api/toggle-saved-property");
+    final url = ApiService.buildUri('toggle-saved-property');
+
 
     final response = await http.post(
       url,
@@ -57,9 +60,14 @@ class FavoriteService {
   // 🔁 API: Fetch current favorites from backend
   static Future<Set<int>> fetchApiFavorites(String token) async {
     final response = await http.get(
-      Uri.parse('https://akarat.com/api/saved-property-list'),
-      headers: {'Authorization': 'Bearer $token'},
+      ApiService.buildUri('saved-property-list'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
     );
+
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);

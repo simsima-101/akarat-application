@@ -5,6 +5,7 @@ import 'dart:async';
 
 import 'package:http/http.dart' as http;
 
+import '../services/api_service.dart';
 import 'filter_list.dart';
 
 void main() {
@@ -56,7 +57,15 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 
   Future<List<String>> fetchSuggestionsFromBackend(String query) async {
     try {
-      final response = await http.get(Uri.parse('https://akarat.com/api/filters?search=$query'));
+      final response = await http.get(
+        ApiService.buildUri(
+          'filters',
+          query: {
+            'search': query, // will be URL-encoded automatically
+          },
+        ),
+      );
+
 
       // Debug print
       print("API Raw Response: ${response.body}");

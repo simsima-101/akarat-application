@@ -13,8 +13,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../model/togglemodel.dart';
 import '../secure_storage.dart';
+import '../services/api_service.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
+import 'about_agent.dart';
 import 'featured_detail.dart';
 import 'findagent.dart';
 import 'htmlEpandableText.dart';
@@ -121,7 +123,7 @@ class _About_AgencyState extends State<About_Agency> {
       }
 
       // 🌐 Fallback to API
-      final uri = Uri.parse('https://akarat.com/api/company/${widget.data}');
+      final uri = ApiService.buildUri('company/${widget.data}');
       final response = await http.get(uri).timeout(const Duration(seconds: 12));
 
       if (response.statusCode == 200) {
@@ -221,7 +223,10 @@ class _About_AgencyState extends State<About_Agency> {
     // 🛰️ Fallback: API fetch
     setState(() => isLoadingMore = true);
     try {
-      final apiUrl = "https://akarat.com/api/company/properties/$user?page=$currentPage";
+      final apiUrl = ApiService.buildUri(
+        'company/properties/$user',
+        query: {'page': '$currentPage'},
+      ).toString();
       print("🌐 Calling API: $apiUrl");
 
       final response = await http
@@ -298,7 +303,7 @@ class _About_AgencyState extends State<About_Agency> {
         }
       }
 
-      final uri = Uri.parse("https://akarat.com/api/company/agents/$user");
+      final uri = ApiService.buildUri('company/agents/$user');
       final response = await http.get(uri).timeout(const Duration(seconds: 12));
       debugPrint('Agents status: ${response.statusCode}');
 
@@ -327,15 +332,18 @@ class _About_AgencyState extends State<About_Agency> {
   Future<void> toggledApi( token,  propertyId) async {
     try {
       final response = await http.post(
-        Uri.parse('https://akarat.com/api/toggle-saved-property'),
+        ApiService.buildUri('toggle-saved-property'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: jsonEncode({
           "property_id": propertyId,
         }),
       );
+
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
@@ -518,14 +526,14 @@ class _About_AgencyState extends State<About_Agency> {
                                     width: screenSize.width * 0.29,
                                     height: screenSize.height * 0.12,
                                     child: Align(
-                                      alignment: Alignment.bottomCenter, // Push logo downward
+                                      alignment: Alignment.center,  // 👈 was Alignment.bottomCenter
                                       child: CachedNetworkImage(
                                         imageUrl: secureUrl(agencyDetailmodel!.image),
                                         height: screenSize.height * 0.08,
                                         fit: BoxFit.contain,
                                       ),
-
                                     ),
+
                                   ),
 
                                   SizedBox(width: 8), // ✅ Add spacing
@@ -803,7 +811,7 @@ class _About_AgencyState extends State<About_Agency> {
                                         child: Row(
                                           children: [
                                             Text("Meydan City, Al Marjan Island, Dubailand", style: TextStyle(
-                                                fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
+                                                fontSize: 15, color: Colors.black, letterSpacing: 0.5,
                                                 height: 1.0
                                             ),),
                                             Text("")
@@ -828,7 +836,7 @@ class _About_AgencyState extends State<About_Agency> {
                                         child: Row(
                                           children: [
                                             Text("Villas, Townhouses,Apartments", style: TextStyle(
-                                                fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
+                                                fontSize: 15, color: Colors.black, letterSpacing: 0.5,
                                                 height: 1.0
                                             ),),
                                             Text("")
@@ -853,7 +861,7 @@ class _About_AgencyState extends State<About_Agency> {
                                         child: Row(
                                           children: [
                                             Text(agencyDetailmodel!.ded.toString(), style: TextStyle(
-                                                fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
+                                                fontSize: 15, color: Colors.black, letterSpacing: 0.5,
                                                 height: 1.0
                                             ),),
                                             Text("")
@@ -878,7 +886,7 @@ class _About_AgencyState extends State<About_Agency> {
                                         child: Row(
                                           children: [
                                             Text(agencyDetailmodel!.rera.toString(), style: TextStyle(
-                                                fontSize: 15, color: Colors.black, letterSpacing: 0.5,fontWeight: FontWeight.bold,
+                                                fontSize: 15, color: Colors.black, letterSpacing: 0.5,
                                                 height: 1.0
                                             ),),
                                             Text("")
@@ -942,7 +950,7 @@ class _About_AgencyState extends State<About_Agency> {
                                                       // spacing: 5,// this is the coloumn
                                                       children: [
                                                         Padding(
-                                                            padding: const EdgeInsets.only(top: 0.0),
+                                                          padding: const EdgeInsets.only(top: 0.0),
                                                           child: ClipRRect(
                                                             borderRadius: BorderRadius.circular(12),
                                                             child: Stack(
@@ -1130,125 +1138,191 @@ class _About_AgencyState extends State<About_Agency> {
                             //Agent
                             // AGENTS TAB
 // --- AGENTS TAB (drop-in) ---
+                            // --- AGENTS TAB (uses your GestureDetector card) ---
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Builder(
                                 builder: (context) {
-                                  // A) show spinner only while fetching
+                                  // Spinner while fetching
                                   if (isAgentsLoading) {
                                     return const Center(child: CircularProgressIndicator());
                                   }
 
-                                  // B) resolve list safely (null -> empty)
+                                  // Safe list
                                   final agents = agencyAgentsModel?.data ?? const [];
 
-                                  // C) empty state when fetch failed or no data
+                                  // Empty state
                                   if (agents.isEmpty) {
                                     return const Center(child: Text('No agents found'));
                                   }
 
-                                  // D) the list
+                                  // Build list using your card
                                   return ListView.separated(
                                     physics: const AlwaysScrollableScrollPhysics(),
                                     itemCount: agents.length,
                                     separatorBuilder: (_, __) => const SizedBox(height: 8),
                                     itemBuilder: (context, index) {
                                       final agent = agents[index];
-                                      final avatarUrl = secureUrl(agent.image);
 
-                                      return Card(
-                                        color: Colors.white,
-                                        elevation: 10,
-                                        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                                      // Resolve image + logo safely
+                                      final String imageUrl    = secureUrl(agent.image);
+                                      final String agencyLogo  = secureUrl(agencyDetailmodel?.image);
+                                      // if your model uses a different key, adjust here
+                                      final bool isValidImage  = imageUrl.isNotEmpty;
+                                      final bool isValidLogo   = agencyLogo.isNotEmpty;
+
+                                      return GestureDetector(
+                                        onTap: () {
+                                          final id = agent.id?.toString() ?? '';
+                                          if (id.isEmpty) return;
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => AboutAgent(data: id),
+                                            ),
+                                          );
+                                        },
                                         child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              // Avatar with safe fallback
-                                              Container(
-                                                width: MediaQuery.of(context).size.width * 0.2,
-                                                height: MediaQuery.of(context).size.width * 0.2,
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.grey.withOpacity(0.3),
-                                                      offset: const Offset(0, 2),
-                                                      blurRadius: 4,
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: CircleAvatar(
-                                                  backgroundImage:
-                                                  (avatarUrl.isNotEmpty) ? NetworkImage(avatarUrl) : null,
-                                                  onBackgroundImageError: (_, __) {},
-                                                  child: (avatarUrl.isEmpty)
-                                                      ? const Icon(Icons.person, color: Colors.white)
-                                                      : null,
-                                                ),
-                                              ),
+                                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+                                          child: Card(
+                                            color: Colors.white,
+                                            elevation: 6,
+                                            shadowColor: Colors.grey.shade100,
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10.0),
+                                              child: Row(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  // Agent photo
+                                                  CircleAvatar(
+                                                    radius: 30,
+                                                    backgroundColor: Colors.grey.shade200,
+                                                    backgroundImage: isValidImage
+                                                        ? NetworkImage(imageUrl)
+                                                        : const AssetImage('assets/images/profile.png') as ImageProvider,
+                                                  ),
+                                                  const SizedBox(width: 12),
 
-                                              const SizedBox(width: 12),
-
-                                              // Info + Sale/Rent + Bio
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      agent.name ?? '',
-                                                      style: const TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight: FontWeight.bold,
-                                                        letterSpacing: 0.5,
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      "${agent.propertiesCount ?? 0} Properties",
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        color: Color(0xFF3A7CED),
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      "Speaks: ${agent.languages?.isNotEmpty == true ? agent.languages : 'N/A'}",
-                                                      style: const TextStyle(fontSize: 12, color: Colors.black54),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                    const SizedBox(height: 8),
-
-                                                    Row(
+                                                  // Info + Sale/Rent
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
                                                       children: [
-                                                        _pill("${agent.sale ?? 0} Sale"),
-                                                        const SizedBox(width: 10),
-                                                        _pill("${agent.rent ?? 0} Rent"),
+                                                        Text(
+                                                          agent.name ?? '',
+                                                          style: const TextStyle(
+                                                            fontSize: 14,
+                                                            fontWeight: FontWeight.bold,
+                                                            letterSpacing: 0.5,
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                        const SizedBox(height: 4),
+
+                                                        Text(
+                                                          "${agent.propertiesCount ?? 0} Properties",
+                                                          style: const TextStyle(
+                                                            fontSize: 12,
+                                                            color: Color(0xFF3A7CED),
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                        const SizedBox(height: 4),
+
+                                                        Text(
+                                                          "Speaks: ${agent.languages?.isNotEmpty == true ? agent.languages : 'N/A'}",
+                                                          style: const TextStyle(fontSize: 12, color: Colors.black54),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                        const SizedBox(height: 8),
+
+                                                        Row(
+                                                          children: [
+                                                            Container(
+                                                              width: 55,
+                                                              height: 20,
+                                                              decoration: BoxDecoration(
+                                                                color: Colors.white,
+                                                                borderRadius: BorderRadius.circular(6),
+                                                                border: Border.all(color: Colors.white),
+                                                                boxShadow: const [
+                                                                  BoxShadow(color: Color(0x40000000), blurRadius: 2, offset: Offset(0, 0)),
+                                                                ],
+                                                              ),
+                                                              child: Center(
+                                                                child: Text(
+                                                                  "${agent.sale ?? 0} Sale",
+                                                                  style: const TextStyle(
+                                                                    fontSize: 10,
+                                                                    fontWeight: FontWeight.w500,
+                                                                    color: Color(0xFF3A7CED),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            const SizedBox(width: 10),
+                                                            Container(
+                                                              width: 55,
+                                                              height: 20,
+                                                              decoration: BoxDecoration(
+                                                                color: Colors.white,
+                                                                borderRadius: BorderRadius.circular(6),
+                                                                border: Border.all(color: Colors.white),
+                                                                boxShadow: const [
+                                                                  BoxShadow(color: Color(0x40000000), blurRadius: 2, offset: Offset(0, 0)),
+                                                                ],
+                                                              ),
+                                                              child: Center(
+                                                                child: Text(
+                                                                  "${agent.rent ?? 0} Rent",
+                                                                  style: const TextStyle(
+                                                                    fontSize: 10,
+                                                                    fontWeight: FontWeight.w500,
+                                                                    color: Color(0xFF3A7CED),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+
+                                                        const SizedBox(height: 6),
+                                                        if (agent.bio?.trim().isNotEmpty == true)
+                                                          Text(
+                                                            agent.bio!.trim(),
+                                                            style: const TextStyle(
+                                                              fontSize: 11,
+                                                              color: Colors.black45,
+                                                              fontStyle: FontStyle.italic,
+                                                            ),
+                                                            maxLines: 2,
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
                                                       ],
                                                     ),
+                                                  ),
 
-                                                    const SizedBox(height: 6),
-                                                    if ((agent.bio?.trim().isNotEmpty ?? false))
-                                                      Text(
-                                                        agent.bio!,
-                                                        style: const TextStyle(
-                                                          fontSize: 11,
-                                                          color: Colors.black45,
-                                                          fontStyle: FontStyle.italic,
+                                                  // Agency Logo (optional)
+                                                  if (isValidLogo)
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(left: 6.0),
+                                                      child: ClipRRect(
+                                                        borderRadius: BorderRadius.circular(6),
+                                                        child: Image.network(
+                                                          agencyLogo,
+                                                          width: 40,
+                                                          height: 40,
+                                                          fit: BoxFit.cover,
                                                         ),
-                                                        maxLines: 2,
-                                                        overflow: TextOverflow.ellipsis,
                                                       ),
-                                                  ],
-                                                ),
+                                                    ),
+                                                ],
                                               ),
-                                            ],
+                                            ),
                                           ),
                                         ),
                                       );
@@ -1257,6 +1331,7 @@ class _About_AgencyState extends State<About_Agency> {
                                 },
                               ),
                             ),
+
 
 
 

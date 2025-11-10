@@ -13,6 +13,7 @@ import '../model/togglemodel.dart';
 import '../screen/home.dart';
 import '../screen/login.dart';
 import '../screen/product_detail.dart';
+import '../services/api_service.dart';
 import '../services/favorite_service.dart';
 
 class Fav_Login extends StatefulWidget {
@@ -128,13 +129,15 @@ class _Fav_LoginState extends State<Fav_Login> {
     // Fetch from API
     try {
       final response = await http.get(
-        Uri.parse("https://akarat.com/api/saved-property-list"),
+        ApiService.buildUri('saved-property-list'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
       );
+
 
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
@@ -231,12 +234,15 @@ class _Fav_LoginState extends State<Fav_Login> {
   Future<bool> toggledApi(String token, int propertyId) async {
     try {
       final response = await http.post(
-        Uri.parse('https://akarat.com/api/toggle-saved-property/$propertyId'),
+        ApiService.buildUri('toggle-saved-property/$propertyId'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
       );
+
 
       if (response.statusCode == 200) {
         print("✅ Favorite toggled successfully");

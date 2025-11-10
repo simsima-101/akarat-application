@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/api_service.dart';
+
 class UserProvider with ChangeNotifier {
   String? _token;
   String? _username;
@@ -79,12 +81,13 @@ class UserProvider with ChangeNotifier {
     if (_token == null) return false;
 
     final response = await http.delete(
-      Uri.parse('https://akarat.com/api/delete-account'),
+      ApiService.buildUri('delete-account'),
       headers: {
         'Accept': 'application/json',
         'Authorization': 'Bearer $_token',
       },
     );
+
 
     if (response.statusCode == 200) {
       await logout();

@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../model/productmodel.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../services/api_service.dart';
 import '../utils/shared_preference_manager.dart';
 import 'about_agent.dart';
 import 'full_map_screen.dart';
@@ -62,7 +63,9 @@ class _Product_DetailState extends State<Product_Detail> {
 
 
   Future<bool> toggledApi(String token, int id) async {
-    final url = Uri.parse('https://akarat.com/api/toggle-saved-property');
+
+    final url = ApiService.buildUri('toggle-saved-property');
+
     try {
       final response = await http.post(
         url,
@@ -126,7 +129,9 @@ class _Product_DetailState extends State<Product_Detail> {
       }
     }
 
-    final url = Uri.parse('https://akarat.com/api/properties/$data');
+
+    final url = ApiService.buildUri('properties/$data');
+
     try {
       final response = await http.get(url);
       debugPrint("Status Code: ${response.statusCode}");

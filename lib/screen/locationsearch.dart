@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../services/api_service.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -49,8 +51,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> fetchLocationSuggestions(String query) async {
     String url = query.isEmpty
-        ? 'https://akarat.com/api/locations'
-        : 'https://akarat.com/api/locations?q=$query';
+        ? ApiService.buildUri('locations').toString()
+        : ApiService.buildUri('locations', query: {'q': query}).toString();
+
 
     try {
       final response = await http.get(Uri.parse(url));

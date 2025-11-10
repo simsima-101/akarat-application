@@ -14,14 +14,14 @@ import 'package:Akarat/screen/new_projects.dart';
 
 // Providers
 import 'package:Akarat/providers/favorite_provider.dart';
-import 'providers/profile_image_provider.dart';
+import 'package:Akarat/providers/profile_image_provider.dart';
 
 // Utils
 import 'package:Akarat/services/api_service.dart';
 
 // Firebase
 import 'package:firebase_core/firebase_core.dart';
-// If you used `flutterfire configure`, uncomment the next line and use the options in _initFirebase():
+// If you used `flutterfire configure`, prefer initializing with options in _initFirebase():
 // import 'firebase_options.dart';
 
 // Dotenv (for API_BASE_URL, etc.)
@@ -34,20 +34,20 @@ final GlobalKey<ScaffoldMessengerState> _smKey = GlobalKey<ScaffoldMessengerStat
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1) Load environment variables first so ApiService / others can read them
-  // Try to load .env if it exists, but don’t crash if it doesn’t.
+  // 1) Load environment variables (ok if file is absent — CI/Release can use --dart-define)
   try {
     await dotenv.load(fileName: ".env");
   } catch (_) {
-    // No .env on device – that's fine when using --dart-define
+    // No .env on device — fine when using --dart-define
   }
-
 
   // 2) Initialize Firebase (required for Google Sign-In)
   await _initFirebase();
 
-  // 3) Optional: log effective base URL once at startup (reads from your ApiService)
-  ApiService.debugPrintBaseUrl();
+  // 3) Optional: log effective base URL (guarded so it never crashes a build)
+  try {
+    ApiService.debugPrintBaseUrl();
+  } catch (_) {}
 
   // 4) Create ONE instance of ProfileImageProvider and init before runApp
   final profileProvider = ProfileImageProvider();
@@ -60,11 +60,18 @@ Future<void> main() async {
           lazy: false,
           create: (_) {
             final p = FavoriteProvider();
-            p.loadFavorites(); // fire-and-forget
+            // Optional preload; guard in case you haven't implemented this yet
+            try {
+              // fire-and-forget (no await so startup stays snappy)
+              // implement inside FavoriteProvider if you want cached restore
+              // e.g., read SharedPreferences or fetch bulk favorites and call replaceFavoritesFromIds
+              // ignore: discarded_futures
+              p.loadFavorites();
+            } catch (_) {}
             return p;
           },
         ),
-        // Provide the already-created instance
+        // Provide the already-created profile provider instance
         ChangeNotifierProvider.value(value: profileProvider),
       ],
       child: const MyApp(),
@@ -109,7 +116,7 @@ class MyApp extends StatelessWidget {
         '/my_accounts': (context) => const My_Account(),
         '/home': (context) => const Home(),
         '/forgot-password': (context) => const ForgotPasswordScreen(),
-        '/new-projects': (context) => const New_Projects(),
+        '/new-projects': (context) => New_Projects(),
       },
 
       // Routes that expect arguments
@@ -121,7 +128,7 @@ class MyApp extends StatelessWidget {
           final Map<String, dynamic> args =
           (raw is Map) ? Map<String, dynamic>.from(raw) : const {};
           return MaterialPageRoute(
-            builder: (_) => const OtpVerificationScreen(), // read args via ModalRoute.of(context)
+            builder: (_) => const OtpVerificationScreen(), // Read args via ModalRoute inside screen
             settings: RouteSettings(name: name, arguments: args),
           );
         }

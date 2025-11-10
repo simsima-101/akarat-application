@@ -18,6 +18,7 @@ import '../model/filtermodel.dart';
 import '../model/propertytypemodel.dart';
 import '../model/searchmodel.dart';
 import '../model/togglemodel.dart';
+import '../services/api_service.dart';
 import '../utils/shared_preference_manager.dart';
 import 'filter_list.dart';
 import 'login.dart';
@@ -215,7 +216,12 @@ class _SearchState extends State<Search> {
     try {
       final encodedLocation = Uri.encodeComponent(location);
       final response = await http.get(
-        Uri.parse("https://akarat.com/api/search-properties?location=$encodedLocation"),
+        ApiService.buildUri(
+          'search-properties',
+          query: {
+            'location': encodedLocation, // or just `location` if it's not pre-encoded
+          },
+        ),
       );
 
       if (response.statusCode == 200) {
@@ -262,7 +268,10 @@ class _SearchState extends State<Search> {
 
 
   Future<void> toggledApi( token,  propertyId) async {
-    final url = Uri.parse('https://akarat.com/api/toggle-saved-property');
+
+
+    final url = ApiService.buildUri('toggle-saved-property');
+
 
     try {
       final response = await http.post(
@@ -358,8 +367,11 @@ class _SearchState extends State<Search> {
   Future<void> propertyApi(String purpose) async {
     try {
       final response = await http
-          .get(Uri.parse("https://akarat.com/api/property-types/$purpose"))
+          .get(
+        ApiService.buildUri('property-types/$purpose'),
+      )
           .timeout(const Duration(seconds: 10)); // ⏱ Timeout prevents slow hang
+
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -381,7 +393,8 @@ class _SearchState extends State<Search> {
   Future<void> showResult() async {
     try {
       // Create base url
-      String baseUrl = 'https://akarat.com/api/filters?';
+      final String baseUrl = ApiService.buildUri('filters').toString();
+
 
       // Create a map for query parameters
       Map<String, String> params = {

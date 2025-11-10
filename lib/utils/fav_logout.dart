@@ -1,9 +1,13 @@
+// lib/screen/fav_logout.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+
+import 'package:provider/provider.dart';
+
 import 'package:Akarat/model/propertymodel.dart';
 import 'package:Akarat/secure_storage.dart';
 
@@ -12,8 +16,6 @@ import '../screen/featured_detail.dart';
 import '../screen/login.dart';
 import '../screen/my_account.dart';
 import '../services/favorite_service.dart';
-import 'package:provider/provider.dart';
-
 
 class Fav_Logout extends StatefulWidget {
   const Fav_Logout({super.key});
@@ -82,7 +84,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     final token = await SecureStorage.getToken();
     if (token == null || token.isEmpty) return;
 
-    final base = FavoriteProvider.apiBase; // ✅ same env as provider
+    final base = FavoriteProvider.apiBase;
     try {
       final response = await http.delete(
         Uri.parse('$base/saved-properties/delete-all'),
@@ -94,9 +96,9 @@ class _Fav_LogoutState extends State<Fav_Logout> {
       );
 
       if (response.statusCode == 200) {
-        // Clear provider first so hearts everywhere update
         context.read<FavoriteProvider>().clearFavorites();
 
+        if (!mounted) return;
         setState(() {
           for (var item in savedProperties) {
             item.saved = false;
@@ -108,11 +110,13 @@ class _Fav_LogoutState extends State<Fav_Logout> {
           const SnackBar(content: Text("All favorites cleared successfully.")),
         );
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed to clear favorites: ${response.statusCode}")),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error clearing favorites: $e")),
       );
@@ -128,21 +132,23 @@ class _Fav_LogoutState extends State<Fav_Logout> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    refreshFavorites(); // 🔄 auto-refresh when screen is revisited
+    refreshFavorites();
   }
 
-  // ✅ Fetch server list → bulk-sync provider → update UI list
+  // ✅ Fetch server list → **merge** provider → update UI list
   Future<void> _fetchSavedProperties() async {
     token = await SecureStorage.getToken();
 
-    if (token == null) {
+    if (token == null || token!.isEmpty) {
+      if (!mounted) return;
       setState(() => isLoading = false);
       return;
     }
 
+    if (!mounted) return;
     setState(() => isLoading = true);
 
-    final base = FavoriteProvider.apiBase; // ✅ same env as provider
+    final base = FavoriteProvider.apiBase;
     try {
       final response = await http.get(
         Uri.parse('$base/saved-property-list'),
@@ -156,14 +162,12 @@ class _Fav_LogoutState extends State<Fav_Logout> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        // Build the UI list and mark saved from server truth
         final List<Property> props = (data['data']['data'] as List).map((e) {
           final p = Property.fromJson(e);
           p.saved = true;
           return p;
         }).toList();
 
-        // Convert response ids to ints (supports id or property_id)
         int? toInt(dynamic v) {
           if (v == null) return null;
           if (v is int) return v;
@@ -175,10 +179,10 @@ class _Fav_LogoutState extends State<Fav_Logout> {
             .map((e) => toInt(e['id']) ?? toInt(e['property_id']))
             .whereType<int>();
 
-        // ✅ Bulk replace provider favorites (no snackbars, no loops)
-        await context.read<FavoriteProvider>().replaceFavoritesFromIds(ids);
+        // ✅ Merge (not replace) to avoid wiping optimistic items
+        await context.read<FavoriteProvider>().mergeFavoritesFromIds(ids);
 
-        // Update screen list
+        if (!mounted) return;
         setState(() => savedProperties = props);
       } else {
         debugPrint('❌ Failed to fetch saved properties: ${response.statusCode}');
@@ -187,6 +191,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
       debugPrint('❌ Error: $e');
     }
 
+    if (!mounted) return;
     setState(() => isLoading = false);
   }
 
@@ -207,14 +212,11 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     if (rawUrl == null || rawUrl.isEmpty) {
       return 'https://via.placeholder.com/400x300.png?text=No+Image';
     }
-
     if (await _urlExists(rawUrl)) return rawUrl;
-
     if (!rawUrl.startsWith('http')) {
       final full = 'https://akarat.com/$rawUrl';
       if (await _urlExists(full)) return full;
     }
-
     return 'https://via.placeholder.com/400x300.png?text=No+Image';
   }
 
@@ -244,9 +246,9 @@ class _Fav_LogoutState extends State<Fav_Logout> {
           IconButton(
             enableFeedback: false,
             onPressed: () async {
-              final token = await SecureStorage.getToken();
+              final t = await SecureStorage.getToken();
 
-              if (token == null || token.isEmpty) {
+              if (t == null || t.isEmpty) {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -272,15 +274,15 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                   ),
                 );
               } else {
-                // ✅ Logged in – go to favorites
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const Fav_Logout()),
                 ).then((_) async {
-                  final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
-                  setState(() {
-                    FavoriteService.loggedInFavorites = updatedFavorites;
-                  });
+                  final updatedFavorites = await FavoriteService.fetchApiFavorites(t);
+                  if (!mounted) return;
+                  // ✅ Merge to avoid wiping optimistic in-flight items
+                  await context.read<FavoriteProvider>().mergeFavoritesFromIds(updatedFavorites);
+                  setState(() {}); // refresh if needed
                 });
               }
             },
@@ -345,11 +347,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
             child: IconButton(
               enableFeedback: false,
               onPressed: () {
-                if (token == '') {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                } else {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
-                }
+                Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
               },
               icon: pageIndex == 3
                   ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
@@ -363,6 +361,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoggedIn = (token ?? '').isNotEmpty;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -434,10 +434,11 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                               itemCount: (item.media?.isNotEmpty ?? false)
                                                   ? item.media!.length
                                                   : 1,
-                                              onPageChanged: (index) {
-                                                final pid = int.tryParse(item.id ?? '') ?? index;
+                                              onPageChanged: (idx) {
+                                                final pid =
+                                                    int.tryParse(item.id ?? '') ?? idx;
                                                 setState(() {
-                                                  _carouselPageIndex[pid] = index;
+                                                  _carouselPageIndex[pid] = idx;
                                                 });
                                               },
                                               itemBuilder: (context, pageIndex) {
@@ -469,26 +470,27 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                                 left: 0,
                                                 right: 0,
                                                 child: Row(
-                                                  mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                                  mainAxisAlignment: MainAxisAlignment.center,
                                                   children: List.generate(
-                                                      item.media!.length, (dotIndex) {
-                                                    final pid = int.tryParse(item.id ?? '') ?? dotIndex;
-                                                    final currentIndex =
-                                                        _carouselPageIndex[pid] ?? 0;
-                                                    return Container(
-                                                      margin: const EdgeInsets.symmetric(
-                                                          horizontal: 3),
-                                                      width: currentIndex == dotIndex ? 10 : 6,
-                                                      height: currentIndex == dotIndex ? 10 : 6,
-                                                      decoration: BoxDecoration(
-                                                        color: currentIndex == dotIndex
-                                                            ? Colors.white
-                                                            : Colors.white60,
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                    );
-                                                  }),
+                                                    item.media!.length,
+                                                        (dotIndex) {
+                                                      final pid =
+                                                          int.tryParse(item.id ?? '') ?? dotIndex;
+                                                      final currentIndex =
+                                                          _carouselPageIndex[pid] ?? 0;
+                                                      return Container(
+                                                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                                                        width: currentIndex == dotIndex ? 10 : 6,
+                                                        height: currentIndex == dotIndex ? 10 : 6,
+                                                        decoration: BoxDecoration(
+                                                          color: currentIndex == dotIndex
+                                                              ? Colors.white
+                                                              : Colors.white60,
+                                                          shape: BoxShape.circle,
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
                                                 ),
                                               ),
                                           ],
@@ -500,49 +502,54 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                     Positioned(
                                       top: 12,
                                       right: 12,
-                                      child: IconButton(
-                                        padding: const EdgeInsets.all(6),
-                                        style: IconButton.styleFrom(
-                                          backgroundColor:
-                                          Colors.white.withOpacity(0.85),
-                                        ),
-                                        icon: Icon(
-                                          context
-                                              .watch<FavoriteProvider>()
-                                              .isFavorite(propertyId) ||
-                                              (item.saved == true)
-                                              ? Icons.favorite
-                                              : Icons.favorite_border_outlined,
-                                          color: Colors.red,
-                                          size: 22,
-                                        ),
-                                        onPressed: () async {
-                                          final ok = await context
-                                              .read<FavoriteProvider>()
-                                              .toggleFavoriteUnified(
-                                              propertyId, context);
-                                          if (!ok) return;
+                                      child: Material(
+                                        color: Colors.white.withOpacity(0.85),
+                                        shape: const CircleBorder(),
+                                        child: Consumer<FavoriteProvider>(
+                                          builder: (context, favProvider, _) {
+                                            final isFav = favProvider.isFavorite(propertyId);
+                                            return IconButton(
+                                              padding: const EdgeInsets.all(6),
+                                              icon: Icon(
+                                                isFav
+                                                    ? Icons.favorite
+                                                    : Icons.favorite_border_outlined,
+                                                color: isFav && isLoggedIn
+                                                    ? Colors.red
+                                                    : Colors.grey,
+                                                size: 22,
+                                              ),
+                                              onPressed: () async {
+                                                if (!isLoggedIn) {
+                                                  _showLoginDialog(context);
+                                                  return;
+                                                }
 
-                                          final stillSaved = context
-                                              .read<FavoriteProvider>()
-                                              .isFavorite(propertyId);
+                                                final ok = await context
+                                                    .read<FavoriteProvider>()
+                                                    .toggleFavoriteUnified(propertyId, context);
+                                                if (!ok) return;
 
-                                          setState(() {
-                                            item.saved = stillSaved;
-                                            // ✅ if removed, drop the card immediately
-                                            if (!stillSaved) {
-                                              savedProperties.removeWhere(
-                                                    (p) =>
-                                                int.tryParse(p.id ?? '') ==
-                                                    propertyId,
-                                              );
-                                            }
-                                          });
-                                        },
+                                                final stillSaved = context
+                                                    .read<FavoriteProvider>()
+                                                    .isFavorite(propertyId);
+
+                                                setState(() {
+                                                  item.saved = stillSaved;
+                                                  if (!stillSaved) {
+                                                    savedProperties.removeWhere(
+                                                          (p) => int.tryParse(p.id ?? '') == propertyId,
+                                                    );
+                                                  }
+                                                });
+                                              },
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ),
 
-                                    // Agent avatar section (unchanged)
+                                    // Agent avatar (unchanged)
                                     Positioned(
                                       bottom: -30,
                                       left: 10,
@@ -552,22 +559,20 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) => Featured_Detail(
-                                                  data: item.id.toString()),
+                                                data: item.id.toString(),
+                                              ),
                                             ),
                                           );
                                         },
                                         child: Column(
-                                          crossAxisAlignment:
-                                          CrossAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
                                             CircleAvatar(
                                               radius: 28,
                                               backgroundImage: (item.agentImage != null &&
                                                   item.agentImage!.isNotEmpty)
-                                                  ? CachedNetworkImageProvider(
-                                                  item.agentImage!)
-                                                  : const AssetImage(
-                                                  "assets/images/dummy.jpg")
+                                                  ? CachedNetworkImageProvider(item.agentImage!)
+                                                  : const AssetImage("assets/images/dummy.jpg")
                                               as ImageProvider,
                                             ),
                                             const SizedBox(height: 6),
@@ -592,19 +597,17 @@ class _Fav_LogoutState extends State<Fav_Logout> {
 
                                 const SizedBox(height: 15),
 
-                                // … the rest of your card content (unchanged)
+                                // …rest of card
                                 Padding(
                                   padding: const EdgeInsets.only(
                                       left: 0, right: 0, top: 4, bottom: 4),
                                   child: Row(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
                                       Expanded(
                                         child: Padding(
-                                          padding:
-                                          const EdgeInsets.only(left: 10),
+                                          padding: const EdgeInsets.only(left: 10),
                                           child: Text(
                                             item.agent ?? 'Agent',
                                             style: const TextStyle(
@@ -618,8 +621,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                       ),
                                       Row(
                                         children: [
-                                          if (item.postedOn != null &&
-                                              item.postedOn!.isNotEmpty)
+                                          if (item.postedOn != null && item.postedOn!.isNotEmpty)
                                             Text(
                                               'Listed ${item.postedOn}',
                                               style: const TextStyle(
@@ -628,21 +630,16 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                               ),
                                             ),
                                           const SizedBox(width: 4),
-                                          if (item.agencyLogo != null &&
-                                              item.agencyLogo!.isNotEmpty)
+                                          if (item.agencyLogo != null && item.agencyLogo!.isNotEmpty)
                                             Padding(
-                                              padding:
-                                              const EdgeInsets.all(8.0),
+                                              padding: const EdgeInsets.all(8.0),
                                               child: Container(
                                                 height: 30,
                                                 width: 60,
                                                 decoration: BoxDecoration(
-                                                  borderRadius:
-                                                  BorderRadius.circular(4),
+                                                  borderRadius: BorderRadius.circular(4),
                                                   image: DecorationImage(
-                                                    image:
-                                                    CachedNetworkImageProvider(
-                                                        item.agencyLogo!),
+                                                    image: CachedNetworkImageProvider(item.agencyLogo!),
                                                     fit: BoxFit.contain,
                                                   ),
                                                 ),
@@ -654,15 +651,11 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                   ),
                                 ),
                                 const SizedBox(height: 5),
-                                const Divider(
-                                    color: Colors.grey,
-                                    thickness: 0.3,
-                                    height: 6),
+                                const Divider(color: Colors.grey, thickness: 0.3, height: 6),
                                 const SizedBox(height: 8),
                                 Text(
                                   item.title,
-                                  style: const TextStyle(
-                                      fontSize: 16, height: 1.4),
+                                  style: const TextStyle(fontSize: 16, height: 1.4),
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
                                 ),
@@ -678,8 +671,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                 const SizedBox(height: 5),
                                 Row(
                                   children: [
-                                    Image.asset("assets/images/map.png",
-                                        height: 14),
+                                    Image.asset("assets/images/map.png", height: 14),
                                     const SizedBox(width: 5),
                                     Expanded(
                                       child: Text(
@@ -694,18 +686,15 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    Image.asset("assets/images/bed.png",
-                                        height: 13),
+                                    Image.asset("assets/images/bed.png", height: 13),
                                     const SizedBox(width: 5),
                                     Text(item.bedrooms.toString()),
                                     const SizedBox(width: 10),
-                                    Image.asset("assets/images/bath.png",
-                                        height: 13),
+                                    Image.asset("assets/images/bath.png", height: 13),
                                     const SizedBox(width: 5),
                                     Text(item.bathrooms.toString()),
                                     const SizedBox(width: 10),
-                                    Image.asset("assets/images/messure.png",
-                                        height: 13),
+                                    Image.asset("assets/images/messure.png", height: 13),
                                     const SizedBox(width: 5),
                                     Text(item.squareFeet),
                                   ],
@@ -717,22 +706,19 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                     Expanded(
                                       child: ElevatedButton.icon(
                                         onPressed: () async {
-                                          final phone =
-                                              'tel:${item.phoneNumber}';
-                                          await launchUrlString(phone,
-                                              mode:
-                                              LaunchMode.externalApplication);
+                                          final phone = 'tel:${item.phoneNumber}';
+                                          await launchUrlString(
+                                            phone,
+                                            mode: LaunchMode.externalApplication,
+                                          );
                                         },
-                                        icon: const Icon(Icons.call,
-                                            color: Colors.red),
-                                        label: const Text("Call",
-                                            style: TextStyle(
-                                                color: Colors.black)),
+                                        icon: const Icon(Icons.call, color: Colors.red),
+                                        label: const Text("Call", style: TextStyle(color: Colors.black)),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.grey[100],
                                           shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                              BorderRadius.circular(10)),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -740,23 +726,19 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                     Expanded(
                                       child: ElevatedButton.icon(
                                         onPressed: () async {
-                                          final link =
-                                              'https://wa.me/${item.whatsapp}';
-                                          await launchUrlString(link,
-                                              mode:
-                                              LaunchMode.externalApplication);
+                                          final link = 'https://wa.me/${item.whatsapp}';
+                                          await launchUrlString(
+                                            link,
+                                            mode: LaunchMode.externalApplication,
+                                          );
                                         },
-                                        icon: Image.asset(
-                                            "assets/images/whats.png",
-                                            height: 20),
-                                        label: const Text("WhatsApp",
-                                            style: TextStyle(
-                                                color: Colors.black)),
+                                        icon: Image.asset("assets/images/whats.png", height: 20),
+                                        label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.grey[100],
                                           shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                              BorderRadius.circular(10)),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -781,6 +763,30 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     );
   }
 
+  void _showLoginDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+        content: const Text("Please login to manage favorites.", style: TextStyle(color: Colors.black)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
+            },
+            child: const Text("Login", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _loginPrompt(BuildContext context) {
     return Center(
       child: Padding(
@@ -798,10 +804,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const Login()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const Login()));
               },
               icon: const Icon(Icons.login),
               label: const Text("Login"),
@@ -817,26 +820,4 @@ class _Fav_LogoutState extends State<Fav_Logout> {
       ),
     );
   }
-}
-
-// ------------ helpers ------------
-Future<bool> _urlExists(String url) async {
-  try {
-    final resp = await http.head(Uri.parse(url));
-    return resp.statusCode == 200;
-  } catch (_) {
-    return false;
-  }
-}
-
-Future<String> resolveImageUrl(String? rawUrl) async {
-  if (rawUrl == null || rawUrl.isEmpty) {
-    return 'https://via.placeholder.com/400x300.png?text=No+Image';
-  }
-  if (await _urlExists(rawUrl)) return rawUrl;
-  if (!rawUrl.startsWith('http')) {
-    final full = 'https://akarat.com/$rawUrl';
-    if (await _urlExists(full)) return full;
-  }
-  return 'https://via.placeholder.com/400x300.png?text=No+Image';
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../services/api_service.dart';
+
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -22,13 +24,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final email = emailController.text.trim();
     try {
       final response = await http.post(
-        Uri.parse('https://akarat.com/api/forgot-password'),
+        ApiService.buildUri('forgot-password'),
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest',
         },
-        body: jsonEncode({'email': email}),
+        body: jsonEncode({
+          'email': email,
+        }),
       );
+
 
       final responseData = jsonDecode(response.body);
       setState(() => _isSubmitting = false);

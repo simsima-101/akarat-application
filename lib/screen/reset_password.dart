@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../services/api_service.dart';
+
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
   final String token;
@@ -43,8 +45,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://akarat.com/api/reset-password'),
-        headers: {'Content-Type': 'application/json'},
+        ApiService.buildUri('reset-password'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
         body: jsonEncode({
           "email": widget.email,
           "token": widget.token,
@@ -52,6 +58,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           "password_confirmation": confirmPasswordController.text.trim(),
         }),
       );
+
 
       setState(() => _isSubmitting = false);
 

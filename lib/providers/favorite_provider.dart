@@ -8,42 +8,29 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../secure_storage.dart';
+import '../services/api_service.dart';
 import '../services/favorite_service.dart';
 
 class FavoriteProvider with ChangeNotifier {
   // -------- Effective Base URL (respects --dart-define=API_BASE_URL=...) --------
-  // - iOS Simulator / Web: 127.0.0.1 is OK
-  // - Android Emulator: rewrite localhost/127.0.0.1 → 10.0.2.2
-  static String get apiBase {
-    var url = const String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue: 'https://akarat.com/api',
-    ).replaceFirst(RegExp(r'/+$'), '');
-
-    if (!kIsWeb &&
-        Platform.isAndroid &&
-        (url.contains('127.0.0.1') || url.contains('localhost'))) {
-      url = url
-          .replaceAll('127.0.0.1', '10.0.2.2')
-          .replaceAll('localhost', '10.0.2.2');
-    }
-    return url;
-  }
+  static String get apiBase => ApiService.baseUrl;
 
   // ---------------- State ----------------
-  Set<int> _favorites = {};
-  Set<int> get favorites => _favorites;
-  int get favoriteCount => _favorites.length;
-  bool isFavorite(int id) => _favorites.contains(id);
-  Set<int> get allFavorites => _favorites;
+  final Set<int> _favoriteIds = <int>{};
+  Set<int> get ids => _favoriteIds;
+  Set<int> get allFavorites => _favoriteIds;
+  int get favoriteCount => _favoriteIds.length;
+  bool isFavorite(int id) => _favoriteIds.contains(id);
 
   // ---------------- Local cache (guest mode support) ----------------
   Future<void> loadFavorites() async {
     debugPrint('🔧 API_BASE_URL = $apiBase');
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getStringList('favorite_properties') ?? [];
-    _favorites = saved.map(int.parse).toSet();
-    debugPrint('❤️ Loaded ${_favorites.length} favorites from local prefs');
+    final saved = prefs.getStringList('favorite_properties') ?? <String>[];
+    _favoriteIds
+      ..clear()
+      ..addAll(saved.map(int.parse));
+    debugPrint('❤️ Loaded ${_favoriteIds.length} favorites from local prefs');
     notifyListeners();
   }
 
@@ -51,36 +38,43 @@ class FavoriteProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
       'favorite_properties',
-      _favorites.map((e) => e.toString()).toList(),
+      _favoriteIds.map((e) => e.toString()).toList(),
     );
   }
 
-  // Bulk replace (for server → app sync on Fav screen)
+  /// Bulk replace (use carefully — overwrites local state).
   Future<void> replaceFavoritesFromIds(Iterable<int> ids) async {
-    final newSet = ids.toSet();
-    if (newSet.length == _favorites.length && _favorites.containsAll(newSet)) {
-      return; // no change
-    }
-    _favorites = newSet;
+    _favoriteIds
+      ..clear()
+      ..addAll(ids);
     await _saveToPrefs();
     notifyListeners();
   }
 
+  /// ✅ Merge helper: union server IDs into local set (prevents wiping optimistic items).
+  Future<void> mergeFavoritesFromIds(Iterable<int> ids) async {
+    final before = _favoriteIds.length;
+    _favoriteIds.addAll(ids);
+    if (_favoriteIds.length != before) {
+      await _saveToPrefs();
+      notifyListeners();
+    }
+  }
+
   // ---------------- Token (ONLY from SecureStorage) ----------------
   Future<String?> _loadToken() async {
-    final t = await SecureStorage.getToken(); // unified token source
+    final t = await SecureStorage.getToken();
     return (t != null && t.trim().isNotEmpty) ? t : null;
   }
 
   // ---------------- Local state helpers ----------------
-  // Set a specific state (add/remove) instead of blindly toggling.
   Future<void> _applyLocalSet(int id, bool shouldBeSaved) async {
     bool changed = false;
     if (shouldBeSaved) {
-      changed = _favorites.add(id);
+      changed = _favoriteIds.add(id);
       if (changed) debugPrint('❤️ Ensured $id saved (local)');
     } else {
-      changed = _favorites.remove(id);
+      changed = _favoriteIds.remove(id);
       if (changed) debugPrint('💔 Ensured $id removed (local)');
     }
     if (changed) {
@@ -89,22 +83,21 @@ class FavoriteProvider with ChangeNotifier {
     }
   }
 
-  // A legacy “toggle” for pure-local usage (guest screens)
   Future<void> _applyLocalToggle(int id) async {
-    if (_favorites.contains(id)) {
-      _favorites.remove(id);
+    if (_favoriteIds.contains(id)) {
+      _favoriteIds.remove(id);
       debugPrint('💔 Removed $id (local)');
     } else {
-      _favorites.add(id);
+      _favoriteIds.add(id);
       debugPrint('❤️ Added $id (local)');
     }
     await _saveToPrefs();
     notifyListeners();
   }
 
-  // ---------------- Backward-compat methods ----------------
+  // ---------------- Legacy / convenience methods ----------------
   void addFavorite(int id, BuildContext context, {bool showSnackBar = true}) {
-    if (_favorites.add(id)) {
+    if (_favoriteIds.add(id)) {
       _saveToPrefs();
       if (showSnackBar) _showSnackBar(context, "Added to favorites", Colors.green);
       notifyListeners();
@@ -112,27 +105,31 @@ class FavoriteProvider with ChangeNotifier {
   }
 
   void clearFavorites() {
-    if (_favorites.isEmpty) return;
-    _favorites.clear();
+    if (_favoriteIds.isEmpty) return;
+    _favoriteIds.clear();
     _saveToPrefs();
     notifyListeners();
   }
 
-  // Old signature shim (keeps old call sites compiling)
+  /// Back-compat shim (delegates to unified method).
   Future<bool> toggleFavoriteWithApi(
       int id,
-      String unusedToken,
+      String _unusedToken,
       BuildContext context, {
         bool showSnackBar = true,
-      }) async {
+      }) {
     return toggleFavoriteUnified(id, context, showSnackBar: showSnackBar);
   }
 
-  // Keep a pure-local toggle (used by some UIs when guest)
-  Future<void> toggleFavorite(int id, BuildContext context, {bool showSnackBar = true}) async {
+  /// Pure-local toggle (guest flows)
+  Future<void> toggleFavorite(
+      int id,
+      BuildContext context, {
+        bool showSnackBar = true,
+      }) async {
     await _applyLocalToggle(id);
     if (showSnackBar) {
-      final added = _favorites.contains(id);
+      final added = _favoriteIds.contains(id);
       _showSnackBar(
         context,
         added ? "Added to favorites" : "Removed from favorites",
@@ -141,12 +138,18 @@ class FavoriteProvider with ChangeNotifier {
     }
   }
 
-  // ---------------- Public sync helper (Favorites screen can call this) ----------------
-  Future<void> syncFromServer() async {
+  // ---------------- Public sync helper ----------------
+  /// By default **merges** server truth into local set to avoid wiping optimistic items.
+  Future<void> syncFromServer({bool merge = true}) async {
     final token = await _loadToken();
-    if (token == null) return; // guest: nothing to sync from server
+    if (token == null) return; // guest
     final ids = await FavoriteService.fetchApiFavorites(token);
-    await replaceFavoritesFromIds(ids);
+
+    if (merge) {
+      await mergeFavoritesFromIds(ids);
+    } else {
+      await replaceFavoritesFromIds(ids);
+    }
   }
 
   // ---------------- The ONE method your UI should call ----------------
@@ -159,7 +162,7 @@ class FavoriteProvider with ChangeNotifier {
 
     // Guest → local only (instant flip)
     if (token == null) {
-      final willBeSaved = !_favorites.contains(id);
+      final willBeSaved = !_favoriteIds.contains(id);
       await _applyLocalSet(id, willBeSaved);
       if (showSnackBar) {
         _showSnackBar(
@@ -171,12 +174,13 @@ class FavoriteProvider with ChangeNotifier {
       return true;
     }
 
-    // Logged-in → OPTIMISTIC flip, then API, then align to server truth
-    final optimisticWillBeSaved = !_favorites.contains(id);
+    // Logged-in → OPTIMISTIC flip, then API, then (optionally) merge server truth.
+    final optimisticWillBeSaved = !_favoriteIds.contains(id);
     await _applyLocalSet(id, optimisticWillBeSaved); // instant UI
 
     final url = Uri.parse('$apiBase/toggle-saved-property');
-    final headers = {
+
+    final jsonHeaders = {
       'Authorization': 'Bearer $token',
       'Accept': 'application/json',
       'Content-Type': 'application/json; charset=UTF-8',
@@ -188,7 +192,7 @@ class FavoriteProvider with ChangeNotifier {
       debugPrint('🌍 POST $url');
       res = await http.post(
         url,
-        headers: headers,
+        headers: jsonHeaders,
         body: jsonEncode({'property_id': id}),
       );
       debugPrint('🔎 Status: ${res.statusCode}  Body: ${res.body}');
@@ -220,9 +224,9 @@ class FavoriteProvider with ChangeNotifier {
         );
       }
 
-      // Refresh from server to keep Favorites screen correct (fire-and-forget)
+      // ✅ Important: MERGE server truth instead of replacing (prevents immediate flicker)
       // ignore: unawaited_futures
-      syncFromServer();
+      syncFromServer(merge: true);
 
       return true;
     }
@@ -235,7 +239,7 @@ class FavoriteProvider with ChangeNotifier {
       return false;
     }
 
-    // Optional retry if server expects form-encoded
+    // Optional retry with form-encoded
     if (res.statusCode == 400 || res.statusCode == 415) {
       try {
         final retry = await http.post(
@@ -257,6 +261,7 @@ class FavoriteProvider with ChangeNotifier {
           } catch (_) {}
           final finalState = savedFlag ?? optimisticWillBeSaved;
           await _applyLocalSet(id, finalState);
+
           if (showSnackBar) {
             _showSnackBar(
               context,
@@ -264,13 +269,13 @@ class FavoriteProvider with ChangeNotifier {
               finalState ? Colors.green : Colors.red,
             );
           }
+
+          // ✅ Merge, not replace
           // ignore: unawaited_futures
-          syncFromServer();
+          syncFromServer(merge: true);
           return true;
         }
-      } catch (_) {
-        // fallthrough to rollback below
-      }
+      } catch (_) {}
     }
 
     // Any other failure → rollback optimistic state

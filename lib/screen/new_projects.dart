@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../model/togglemodel.dart';
 import '../secure_storage.dart';
 
+import '../services/api_service.dart';
 import '../services/favorite_service.dart';
 import '../utils/fav_logout.dart';
 import 'login.dart';
@@ -188,9 +189,26 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
 
     try {
-      final response = await http.get(Uri.parse(
-          'https://akarat.com/api/filters?search=$query&amenities=&property_type=&furnished_status=&bedrooms=&min_price='
-              '&max_price=&payment_period=&min_square_feet=&max_square_feet=&bathrooms=&purpose=New%20Projects'));
+      final response = await http.get(
+        ApiService.buildUri(
+          'filters',
+          query: {
+            'search': query,
+            'amenities': '',
+            'property_type': '',
+            'furnished_status': '',
+            'bedrooms': '',
+            'min_price': '',
+            'max_price': '',
+            'payment_period': '',
+            'min_square_feet': '',
+            'max_square_feet': '',
+            'bathrooms': '',
+            'purpose': 'New Projects', // will be encoded as New%20Projects
+          },
+        ),
+      );
+
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -218,7 +236,11 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
 
     setState(() => isLoading = true);
 
-    final uri = Uri.parse("https://akarat.com/api/new-projects?page=$currentPage");
+    final uri = ApiService.buildUri(
+      'new-projects',
+      query: {'page': '$currentPage'},
+    );
+
 
     try {
       final response = await http.get(uri);
@@ -259,13 +281,18 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
   Future<bool> toggledApi(String token, int propertyId) async {
     try {
       final response = await http.post(
-        Uri.parse('https://akarat.com/api/toggle-saved-property'),
+        ApiService.buildUri('toggle-saved-property'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
-        body: jsonEncode({ "property_id": propertyId }),
+        body: jsonEncode({
+          "property_id": propertyId,
+        }),
       );
+
 
       if (response.statusCode == 200) {
         // Optionally parse the response JSON here if you need the new `saved` state
@@ -513,18 +540,24 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                           elevation: 4,
                                           child: Consumer<FavoriteProvider>(
                                             builder: (context, favProvider, _) {
-                                              final isLoggedIn = token.isNotEmpty;
-                                              final isFav = isLoggedIn && favProvider.isFavorite(item.id!);
+                                              final bool isLoggedIn = token.isNotEmpty; // <-- use `token` (you already have this)
+                                              final int propertyId = (item.id is int)
+                                                  ? item.id as int
+                                                  : int.tryParse(item.id.toString()) ?? 0;
+
+                                              // ✅ Icon STATE from provider only (instant flip on notifyListeners)
+                                              final bool isFav = favProvider.isFavorite(propertyId);
 
                                               return IconButton(
                                                 icon: Icon(
                                                   isFav ? Icons.favorite : Icons.favorite_border,
-                                                  color: isFav ? Colors.red : Colors.grey,
+                                                  // Shape = provider, Color = login policy
+                                                  color: (isLoggedIn && isFav) ? Colors.red : Colors.grey,
                                                   size: 20,
                                                 ),
                                                 onPressed: () async {
                                                   if (!isLoggedIn) {
-                                                    // 🔒 Show login prompt
+                                                    // 🔒 Show login prompt (kept your original UI)
                                                     showDialog(
                                                       context: context,
                                                       builder: (ctx) => Dialog(
@@ -593,18 +626,22 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                                     return;
                                                   }
 
-                                                  // ✅ Toggle using API
-                                                  final success = await favProvider.toggleFavoriteWithApi(item.id!, token, context);
+                                                  // ✅ Optimistic toggle via provider
+                                                  final success = await context
+                                                      .read<FavoriteProvider>()
+                                                      .toggleFavoriteUnified(propertyId, context);
 
-                                                  if (!success) {
+                                                  if (!success && context.mounted) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text("Failed to update favorite.")),
+                                                      const SnackBar(content: Text('Failed to update favorite.')),
                                                     );
                                                   }
                                                 },
                                               );
                                             },
-                                          ),
+                                          )
+
+
                                         ),
                                       ),
 

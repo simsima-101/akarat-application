@@ -8,10 +8,11 @@ import '../services/api_service.dart';
 import 'login.dart';
 
 class PersonalInformationScreen extends StatefulWidget {
-  final String? name;   // optional initial values
-  final String? email;  // optional initial values
+  final String? name;        // optional initial values (fallback)
+  final String? email;       // optional initial values
+  final String? firstName;   // ✅ NEW: preferred initial first name
+  final String? lastName;    // ✅ NEW: preferred initial last name
 
-  // You can keep this if other parts use it, but we won't rely on it here.
   final Future<void> Function() onDeleteAccount;
   final String? afterSaveRouteName;
 
@@ -19,6 +20,8 @@ class PersonalInformationScreen extends StatefulWidget {
     super.key,
     this.name,
     this.email,
+    this.firstName,
+    this.lastName,
     required this.onDeleteAccount,
     this.afterSaveRouteName,
   });
@@ -37,7 +40,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
 
   final TextEditingController _passwordCtrl = TextEditingController(); // (unused in UI now)
   final TextEditingController _currentPwdCtrl = TextEditingController();
-
   final TextEditingController _newPwdCtrl     = TextEditingController();
   final TextEditingController _confirmPwdCtrl = TextEditingController();
 
@@ -49,18 +51,82 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   bool _obscureConfirm = true;
   bool _obscureCurrent = true;
 
+  bool _looksHtml(http.Response r) {
+    final ct = (r.headers['content-type'] ?? '').toLowerCase();
+    if (ct.contains('text/html')) return true;
+    final body = r.body.trimLeft();
+    return body.startsWith('<!doctype') || body.startsWith('<html');
+  }
+
+  /// Try GET /me against a specific baseUrl. Returns JSON map or null (if not JSON).
+  Future<Map<String, dynamic>?> _tryMe(String baseUrl, String token) async {
+    final uri = Uri.parse('$baseUrl/me');
+    final r = await http.get(uri, headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    });
+
+    if (_looksHtml(r)) {
+      debugPrint('ME at $uri returned HTML (status ${r.statusCode}).');
+      return null;
+    }
+    if (r.statusCode != 200) {
+      debugPrint('ME at $uri -> ${r.statusCode} ${r.body}');
+      return null;
+    }
+
+    try {
+      final decoded = json.decode(r.body);
+      return decoded is Map<String, dynamic> ? decoded : null;
+    } catch (e) {
+      debugPrint('ME decode error for $uri: $e');
+      return null;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
 
-    _firstNameCtrl = TextEditingController();
-    _lastNameCtrl  = TextEditingController();
+    // Start with whatever the caller passed.
+    _firstNameCtrl = TextEditingController(text: widget.firstName ?? '');
+    _lastNameCtrl  = TextEditingController(text: widget.lastName ?? '');
+    _nameCtrl      = TextEditingController(text: widget.name ?? '');
+    _emailCtrl     = TextEditingController(text: widget.email ?? '');
 
-    _nameCtrl  = TextEditingController(text: widget.name ?? '');
-    _emailCtrl = TextEditingController(text: widget.email ?? '');
     _newPwdCtrl.addListener(() => setState(() {}));
 
-    _resolveInitialValues();
+    // Hydrate from local storage (same source as My Account)
+    _hydrateFromLocal().then((_) {
+      // Try API refresh (best-effort). Even if it fails, UI is already correct.
+      _fetchProfileFromApi();
+    });
+  }
+
+  Future<void> _hydrateFromLocal() async {
+    // ✅ Do NOT delete any cache here.
+    final localFirst = (await SecureStorage.read('user_first_name') ?? '').trim();
+    final localLast  = (await SecureStorage.read('user_last_name')  ?? '').trim();
+    final localEmail = (await SecureStorage.read('user_email')      ?? '').trim();
+
+    // If no explicit first/last were passed, use local
+    final first = (widget.firstName ?? '').trim().isNotEmpty ? widget.firstName!.trim() : localFirst;
+    final last  = (widget.lastName  ?? '').trim().isNotEmpty ? widget.lastName!.trim()  : localLast;
+    final email = _emailCtrl.text.trim().isNotEmpty ? _emailCtrl.text.trim() : localEmail;
+
+    // Build a name only for display; we still store first/last separately
+    final joinedName = [first, last].where((s) => s.isNotEmpty).join(' ');
+
+    if (!mounted) return;
+    setState(() {
+      _firstNameCtrl.text = first;
+      _lastNameCtrl.text  = last;
+      _emailCtrl.text     = email;
+      // keep name as a convenience display field (not used for saving)
+      if (_nameCtrl.text.trim().isEmpty) _nameCtrl.text = joinedName;
+    });
+
+    debugPrint('PI local hydrate → first="$first" last="$last" email="$email"');
   }
 
   List<String> _splitName(String full) {
@@ -68,7 +134,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     if (s.isEmpty) return ['', ''];
     final parts = s.split(' ');
     if (parts.length == 1) return [parts[0], ''];
-    // first = first token, last = everything after
     return [parts.first, parts.sublist(1).join(' ')];
   }
 
@@ -88,64 +153,9 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     _newPwdCtrl.dispose();
     _confirmPwdCtrl.dispose();
     _currentPwdCtrl.dispose();
-
-    // _passwordCtrl was never used in the UI; if you plan to use it later, keep it.
-    // For now we can safely dispose it once (or remove entirely if unused everywhere).
     _passwordCtrl.dispose();
 
     super.dispose();
-  }
-
-
-  String _firstNonEmpty(Iterable<String?> vals) {
-    for (final v in vals) {
-      if (v != null && v.trim().isNotEmpty) return v.trim();
-    }
-    return '';
-  }
-
-  Future<void> _resolveInitialValues() async {
-    // Prefer the more granular fields if available
-    final localFirst = await SecureStorage.read('user_first_name');
-    final localLast  = await SecureStorage.read('user_last_name');
-    final localName  = await SecureStorage.read('user_name');
-    final localEmail = await SecureStorage.read('user_email');
-
-    // 1) Email
-    final mergedEmail = _firstNonEmpty([_emailCtrl.text, widget.email, localEmail]);
-
-    // 2) First/Last from storage; fallback to splitting provided name
-    String first = (localFirst ?? '').trim();
-    String last  = (localLast ?? '').trim();
-    if (first.isEmpty && last.isEmpty) {
-      final mergedName = _firstNonEmpty([_nameCtrl.text, widget.name, localName]);
-      final parts = _splitName(mergedName);
-      first = parts[0];
-      last  = parts[1];
-      if ((_nameCtrl.text).trim().isEmpty) {
-        _nameCtrl.text = mergedName;
-      }
-    }
-
-    if (mounted) {
-      setState(() {
-        _emailCtrl.text = mergedEmail;
-        _firstNameCtrl.text = first;
-        _lastNameCtrl.text  = last;
-
-        // keep a full-name mirror for compatibility/UI hints
-        final joined = _joinName(first, last);
-        if (joined.isNotEmpty) _nameCtrl.text = joined;
-      });
-    }
-
-    debugPrint('PI init name="${_nameCtrl.text}" email="${_emailCtrl.text}" '
-        'first="${_firstNameCtrl.text}" last="${_lastNameCtrl.text}"');
-
-    // If anything still missing, pull from API
-    if (_emailCtrl.text.trim().isEmpty || _nameCtrl.text.trim().isEmpty) {
-      await _fetchProfileFromApi();
-    }
   }
 
   Future<void> _fetchProfileFromApi() async {
@@ -154,86 +164,77 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       final token = await SecureStorage.getToken();
       if (token == null || token.isEmpty) return;
 
-      final resp = await http.get(
-        Uri.parse('${ApiService.baseUrl}/me'), // ✅ dynamic base
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-      );
+      final base = ApiService.baseUrl; // e.g. https://qa.akarat.com/api
+      Map<String, dynamic>? data;
 
-      if (resp.statusCode == 200) {
-        final data = json.decode(resp.body);
+      // 1) Try current base
+      data = await _tryMe(base, token);
 
-        String pick(List<dynamic> paths) {
-          for (final p in paths) {
-            dynamic cur = data;
-            final keys = (p as List).cast<String>();
-            for (final k in keys) {
-              if (cur is Map && cur.containsKey(k)) {
-                cur = cur[k];
-              } else {
-                cur = null;
-                break;
-              }
-            }
-            final s = (cur is String ? cur : cur?.toString() ?? '').trim();
-            if (s.isNotEmpty) return s;
-          }
-          return '';
+      // 2) If HTML or non-JSON, auto-retry with alternate host (qa <-> prod)
+      if (data == null) {
+        final altBase = base.contains('qa.akarat.com')
+            ? base.replaceFirst('qa.akarat.com', 'akarat.com')
+            : base.replaceFirst('akarat.com', 'qa.akarat.com');
+        if (altBase != base) {
+          debugPrint('Retrying /me on alternate base: $altBase');
+          data = await _tryMe(altBase, token);
         }
-
-        final fetchedFirst = pick([
-          ['first_name'],
-          ['data','first_name'],
-          ['user','first_name'],
-          ['data','user','first_name'],
-        ]);
-
-        final fetchedLast = pick([
-          ['last_name'],
-          ['data','last_name'],
-          ['user','last_name'],
-          ['data','user','last_name'],
-        ]);
-
-        String fetchedName = pick([
-          ['name'],
-          ['data','name'],
-          ['user','name'],
-          ['data','user','name'],
-        ]);
-
-        String fetchedEmail = pick([
-          ['email'],
-          ['data','email'],
-          ['user','email'],
-          ['data','user','email'],
-        ]);
-
-        // If only first/last provided, synthesize name
-        if (fetchedName.isEmpty) {
-          fetchedName = [fetchedFirst, fetchedLast].where((s) => s.isNotEmpty).join(' ').trim();
-        }
-
-        if (mounted) {
-          setState(() {
-            if (fetchedFirst.isNotEmpty) _firstNameCtrl.text = fetchedFirst;
-            if (fetchedLast.isNotEmpty)  _lastNameCtrl.text  = fetchedLast;
-
-            if (fetchedName.isNotEmpty)  _nameCtrl.text  = fetchedName;
-            if (fetchedEmail.isNotEmpty) _emailCtrl.text = fetchedEmail;
-          });
-        }
-
-        // Persist for next app launch / other screens
-        if (fetchedFirst.isNotEmpty) await SecureStorage.write('user_first_name', fetchedFirst);
-        if (fetchedLast.isNotEmpty)  await SecureStorage.write('user_last_name',  fetchedLast);
-        if (fetchedName.isNotEmpty)  await SecureStorage.write('user_name',       fetchedName);
-        if (fetchedEmail.isNotEmpty) await SecureStorage.write('user_email',      fetchedEmail);
-      } else {
-        debugPrint('/me failed: ${resp.statusCode} ${resp.body}');
       }
+
+      // 3) If still null, bail without touching local cache
+      if (data == null) {
+        debugPrint('Could not refresh profile (non-JSON from /me). Using local values.');
+        return;
+      }
+
+      String pickStr(List<List<String>> paths) {
+        for (final keys in paths) {
+          dynamic cur = data;
+          for (final k in keys) {
+            if (cur is Map && cur.containsKey(k)) {
+              cur = cur[k];
+            } else {
+              cur = null;
+              break;
+            }
+          }
+          final s = (cur is String ? cur : cur?.toString() ?? '').trim();
+          if (s.isNotEmpty) return s;
+        }
+        return '';
+      }
+
+      final fetchedFirst = pickStr([
+        ['first_name'], ['data','first_name'], ['user','first_name'], ['data','user','first_name'],
+      ]);
+      final fetchedLast = pickStr([
+        ['last_name'], ['data','last_name'], ['user','last_name'], ['data','user','last_name'],
+      ]);
+      final fetchedEmail = pickStr([
+        ['email'], ['data','email'], ['user','email'], ['data','user','email'],
+      ]);
+
+      if (!mounted) return;
+      setState(() {
+        if (fetchedFirst.isNotEmpty) _firstNameCtrl.text = fetchedFirst;
+        if (fetchedLast.isNotEmpty)  _lastNameCtrl.text  = fetchedLast;
+        if (fetchedEmail.isNotEmpty) _emailCtrl.text     = fetchedEmail;
+
+        final display = [
+          _firstNameCtrl.text.trim(),
+          _lastNameCtrl.text.trim(),
+        ].where((s) => s.isNotEmpty).join(' ').trim();
+        if (display.isNotEmpty) _nameCtrl.text = display;
+      });
+
+      // Persist only non-empty values (keeps My Account in sync)
+      if (fetchedFirst.isNotEmpty) await SecureStorage.write('user_first_name', fetchedFirst);
+      if (fetchedLast .isNotEmpty) await SecureStorage.write('user_last_name',  fetchedLast);
+      if (fetchedEmail.isNotEmpty) await SecureStorage.write('user_email',      fetchedEmail);
+      final joined = [_firstNameCtrl.text.trim(), _lastNameCtrl.text.trim()]
+          .where((s) => s.isNotEmpty).join(' ').trim();
+      if (joined.isNotEmpty) await SecureStorage.write('user_name', joined);
+
     } catch (e) {
       debugPrint('fetch profile error: $e');
     } finally {
@@ -266,7 +267,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         'Content-Type': 'application/json; charset=UTF-8',
       };
 
-      // Build payload
       final first      = _firstNameCtrl.text.trim();
       final last       = _lastNameCtrl.text.trim();
       final joinedName = _joinName(first, last);
@@ -278,8 +278,8 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       final payload = <String, dynamic>{
         'first_name': first,
         'last_name':  last,
-        'name':       joinedName,              // keep legacy compatibility
-        'email':      _emailCtrl.text.trim(),  // email stays read-only in UI
+        'name':       joinedName,              // legacy compatibility
+        'email':      _emailCtrl.text.trim(),  // email read-only in UI
       };
 
       if (newPwd.isNotEmpty) {
@@ -313,18 +313,12 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         payload['current_password']      = currentPwd;
       }
 
-      // ⬇️ use POST instead of PUT
-      final resp = await http.post(
-        url,
-        headers: headers,
-        body: jsonEncode(payload),
-      );
+      final resp = await http.post(url, headers: headers, body: jsonEncode(payload));
 
-      // ----- Success -----
       if (resp.statusCode == 200) {
         final body = json.decode(resp.body);
 
-        // Save updated fields locally for UI
+        // Save updated fields locally for UI (keeps My Account consistent)
         await SecureStorage.write('user_first_name', first);
         await SecureStorage.write('user_last_name',  last);
         await SecureStorage.write('user_name',       joinedName);
@@ -332,7 +326,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
 
         _nameCtrl.text = joinedName;
 
-        // If backend rotated token (only when password changed), store it
         final newToken = (body['token'] ?? '').toString().trim();
         if (newToken.isNotEmpty) {
           await SecureStorage.writeToken(newToken);
@@ -351,14 +344,13 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
           _currentPwdCtrl.clear();
         });
 
-        // ---- Navigate to "My Account" (or pop with result) ----
         final route = widget.afterSaveRouteName;
         if (route != null && route.isNotEmpty) {
           if (!mounted) return;
           Navigator.of(context).pushReplacementNamed(route);
         } else if (Navigator.of(context).canPop()) {
           if (!mounted) return;
-          Navigator.of(context).pop(true); // parent can refresh on result == true
+          Navigator.of(context).pop(true);
         } else {
           if (!mounted) return;
           Navigator.of(context).pushReplacementNamed('/my-account');
@@ -366,7 +358,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         return;
       }
 
-      // ----- Auth expired / forbidden -----
       if (resp.statusCode == 401 || resp.statusCode == 403) {
         await _signOutLocalOnly();
         if (mounted) {
@@ -378,7 +369,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         return;
       }
 
-      // ----- Validation errors -----
       if (resp.statusCode == 422) {
         try {
           final m = json.decode(resp.body);
@@ -403,7 +393,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         return;
       }
 
-      // ----- Other errors -----
       String msg = 'Update failed: ${resp.statusCode}';
       try {
         final m = json.decode(resp.body);
@@ -439,8 +428,8 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       }
 
       final base = ApiService.baseUrl;
-      final del  = Uri.parse('$base/delete'); // DELETE /api/delete
-      final me   = Uri.parse('$base/me');     // sanity check
+      final del  = Uri.parse('$base/delete');
+      final me   = Uri.parse('$base/me');
 
       final headers = <String, String>{
         'Authorization': 'Bearer $token',
@@ -449,9 +438,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         'X-Requested-With': 'XMLHttpRequest',
       };
 
-      final body = jsonEncode(<String, dynamic>{
-        'token': token,
-      });
+      final body = jsonEncode(<String, dynamic>{ 'token': token });
 
       debugPrint('[DELETE] $del');
       http.Response resp;
@@ -537,7 +524,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     await SecureStorage.delete('user_last_name');
   }
 
-  // navigate using the ROOT navigator on the next frame
   void _goLogin() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -547,35 +533,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       );
     });
   }
-
-  Future<void> _confirmAndDelete() async {
-    // Show ONE confirmation dialog and wait for the user's choice
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Account'),
-        content: const Text('Are you sure? This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-
-    if (!mounted) return; // context could be gone if user navigated away
-
-    if (confirmed == true) {
-      await _deleteAccountViaApi();
-    }
-  }
-
 
   InputDecoration _dec(String label, {Widget? suffix}) {
     return InputDecoration(
@@ -654,7 +611,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                         controller: _lastNameCtrl,
                         readOnly: !canEdit,
                         decoration: _dec('Last name'),
-                        validator: (v) => null, // optional
+                        validator: (v) => null,
                       ),
                     ),
                   ],
@@ -663,7 +620,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
 
                 TextFormField(
                   controller: _emailCtrl,
-                  readOnly: true, // email is static
+                  readOnly: true,
                   enableInteractiveSelection: false,
                   keyboardType: TextInputType.emailAddress,
                   decoration: _dec('Email').copyWith(helperText: 'Email cannot be changed'),
@@ -687,7 +644,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                   ),
                   const SizedBox(height: 8),
 
-                  // New Password
                   TextFormField(
                     controller: _newPwdCtrl,
                     readOnly: !_editMode,
@@ -702,7 +658,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Confirm New Password
                   TextFormField(
                     controller: _confirmPwdCtrl,
                     readOnly: !_editMode,
@@ -770,5 +725,31 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmAndDelete() async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: const Text('Are you sure? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted) return;
+    if (confirmed == true) {
+      await _deleteAccountViaApi();
+    }
   }
 }

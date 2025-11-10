@@ -58,17 +58,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     });
   }
 
-  Future<void> _fetchDevOtpIfNeeded() async {
-    if (!kDebugMode || email.isEmpty || (_devOtpHint?.isNotEmpty ?? false)) return;
-    try {
-      final res = await ApiService.resendOtp(email: email).timeout(const Duration(seconds: 160));
-      final dev = ((res['otp'] ?? '') as String).trim();
-      if (mounted && dev.isNotEmpty) _setDevOtp(dev);
-    } catch (e) {
-      if (kDebugMode) debugPrint('DEV resendOtp failed: $e');
-    }
-  }
-
   // ---------------- lifecycle ----------------
   @override
   void didChangeDependencies() {
@@ -129,15 +118,22 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       // Ensure there is no stale local session
       try { await SecureStorage.signOutLocal(); } catch (_) {}
 
-      // Step 1: verify OTP → returns a short-lived token (for register/reset flow)
-      final verifyToken = await ApiService
+      // Step 1: verify OTP → ApiService.verifyOtp returns a boolean
+      final verified = await ApiService
           .verifyOtp(email: normalizedEmail, otp: otp)
           .timeout(const Duration(seconds: 180));
 
       if (!mounted) return;
 
+      if (!verified) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Incorrect code. Please try again.')),
+        );
+        return;
+      }
+
       if (mode == 'register') {
-        // Step 2: complete registration on server (don’t log the user in)
+        // Step 2: complete registration on server (no token needed)
         try {
           await ApiService.completeRegistration(
             name: (name.isNotEmpty ? name : '$firstName $lastName').trim(),
@@ -145,7 +141,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             lastName:  lastName,
             email: normalizedEmail,
             password: password,
-            token: verifyToken,
+            token: null, // <- new flow: not required
             phoneCountryCode: phoneCode.isEmpty ? null : phoneCode,
             phone:            phone.isEmpty     ? null : phone,
           );
@@ -167,27 +163,21 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
         // Success UX + navigate to Login (email pre-filled) and clear history
         await HapticFeedback.lightImpact();
-        // Success UX + navigate to Login (email pre-filled) and clear history
-        await HapticFeedback.lightImpact();
         if (!mounted) return;
 
-// Use rootNavigator to escape any nested navigators.
+        // Use rootNavigator to escape any nested navigators.
         Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => LoginDemo(initialEmail: normalizedEmail)),
               (route) => false,
         );
         return;
-
       }
 
       // ===== Reset-password flow =====
-      final hasToken = (verifyToken is String) && verifyToken.isNotEmpty;
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed(
         '/reset-password',
-        arguments: hasToken
-            ? {'email': normalizedEmail, 'token': verifyToken}
-            : {'email': normalizedEmail},
+        arguments: {'email': normalizedEmail}, // no token in new flow
       );
     } on TimeoutException {
       if (!mounted) return;
@@ -216,43 +206,29 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     }
   }
 
-
   Future<void> _resendOtp() async {
     if (_isResending || _cooldown > 0 || email.isEmpty) return;
 
     setState(() => _isResending = true);
     try {
-      Map<String, dynamic> res = const {};
+      bool ok = false;
 
       if (mode == 'register') {
-        res = await ApiService.resendOtp(email: email).timeout(const Duration(seconds: 200));
+        ok = await ApiService.resendOtp(email: email).timeout(const Duration(seconds: 200));
       } else {
-        final ok = await ApiService.forgotPassword(email).timeout(const Duration(seconds: 200));
-        res = {
-          'success': ok,
-          'message': ok
-              ? 'If the email exists, we sent a new code.'
-              : 'Could not resend code. Try again soon.'
-        };
+        // If you later add a dedicated reset endpoint, call it here.
+        ok = await ApiService.resendOtp(email: email).timeout(const Duration(seconds: 200));
       }
 
       if (!mounted) return;
 
-      final msg = (res['message'] as String?) ??
-          (mode == 'register'
-              ? 'We’ve sent a new code.'
-              : 'If the email exists, we sent a new code.');
+      final msg = ok
+          ? (mode == 'register' ? 'We’ve sent a new code.' : 'If the email exists, we sent a new code.')
+          : 'Could not resend code. Try again soon.';
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
-      final devOtp = ((res['otp'] ?? '') as String).trim();
-      if (devOtp.isNotEmpty && kDebugMode) {
-        _setDevOtp(devOtp);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('DEV OTP: $devOtp')));
-      }
-
-      final wait = (res['resend_after'] is int) ? res['resend_after'] as int : 60;
-      _startCooldown(wait);
+      // API no longer returns resend_after → default to 60s cooldown
+      _startCooldown(60);
     } on TimeoutException {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -411,7 +387,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
                 const SizedBox(height: 16),
 
-// 🔗 Login link
+                // 🔗 Login link
                 Center(
                   child: RichText(
                     text: TextSpan(

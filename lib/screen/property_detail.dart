@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/api_service.dart';
 import '../utils/shared_preference_manager.dart';
 import 'htmlEpandableText.dart';
 import 'my_account.dart';
@@ -74,7 +75,7 @@ class _Property_DetailState extends State<Property_Detail> {
     }
 
     // Fetch from API if no cache or cache is old
-    final url = Uri.parse('https://akarat.com/api/new-projects/$data');
+    final url = ApiService.buildUri('new-projects/$data');
     try {
       final response = await http.get(url);
       debugPrint("Status Code: ${response.statusCode}");

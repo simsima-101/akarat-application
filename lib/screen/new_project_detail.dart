@@ -15,6 +15,7 @@ import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/screen/full_map_screen.dart';
 import 'package:Akarat/screen/about_agent.dart';
+import '../services/api_service.dart';
 import 'htmlEpandableText.dart';
 
 class NewProjectDetail extends StatefulWidget {
@@ -93,7 +94,9 @@ class _NewProjectDetailState extends State<NewProjectDetail> {
     }
 
     // Fetch from API
-    final url = Uri.parse('https://akarat.com/api/new-projects/$id');
+
+    final url = ApiService.buildUri('new-projects/$id');
+
     try {
       final res = await http.get(url);
       if (res.statusCode == 200) {

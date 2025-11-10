@@ -15,6 +15,7 @@ import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import '../secure_storage.dart';
+import '../services/api_service.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'CreateAlertScreen.dart';
@@ -27,6 +28,7 @@ import 'my_account.dart';
 class Filter extends StatelessWidget {
   final dynamic data;
   const Filter({super.key, required this.data});
+
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +85,8 @@ class _FilterDemoState extends State<FilterDemo> {
 
   final TextEditingController minPriceController = TextEditingController();
   final TextEditingController maxPriceController = TextEditingController();
+
+
 
 
 
@@ -288,7 +292,10 @@ class _FilterDemoState extends State<FilterDemo> {
           amenities = jsonData.map((e) => Amenities.fromJson(e)).toList();
         }
       } else {
-        final response = await http.get(Uri.parse("https://akarat.com/api/amenities")).timeout(const Duration(seconds: 8));
+        final response = await http
+            .get(ApiService.buildUri('amenities'))
+            .timeout(const Duration(seconds: 8));
+
         if (response.statusCode == 200) {
           final jsonData = json.decode(response.body) as List;
           amenities = jsonData.map((e) => Amenities.fromJson(e)).toList();
@@ -309,7 +316,7 @@ class _FilterDemoState extends State<FilterDemo> {
           propertyTypeModel = PropertyTypeModel.fromJson(data);
         }
       } else {
-        final uri = Uri.parse("https://akarat.com/api/property-types/$purpose");
+        final uri = ApiService.buildUri('property-types/$purpose');
         final response = await http.get(uri).timeout(const Duration(seconds: 10));
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
@@ -613,13 +620,12 @@ class _FilterDemoState extends State<FilterDemo> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            settings: const RouteSettings(name: 'FliterList'),
+            settings: const RouteSettings(name: 'FilterList'),
             builder: (context) => FliterList(
               filterModel: filterModel,
-              forceRefresh: true,
-              // 👇 send the exact UI selections forward
-              selectedPurpose: _currentUiPurpose,          // "Buy" | "Rent" | "New Projects"
-              selectedPropertyType: _currentPropertyType,  // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
+              // send the exact UI selections forward
+              selectedPurpose: _currentUiPurpose,         // "Buy" | "Rent" | "New Projects"
+              selectedPropertyType: _currentPropertyType, // "Apartment" | "Villa" | ...
             ),
           ),
         );
@@ -715,7 +721,8 @@ class _FilterDemoState extends State<FilterDemo> {
 
     // Fetch data from API if not cached or cache has expired
     try {
-      final uri = Uri.parse("https://akarat.com/api/property-types/$purpose");
+      final uri = ApiService.buildUri('property-types/$purpose');
+
       final response = await http.get(uri).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
@@ -761,8 +768,9 @@ class _FilterDemoState extends State<FilterDemo> {
     // Fetch data from API if not cached or cache has expired
     try {
       final response = await http
-          .get(Uri.parse("https://akarat.com/api/amenities"))
+          .get(ApiService.buildUri('amenities'))
           .timeout(const Duration(seconds: 8));
+
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);

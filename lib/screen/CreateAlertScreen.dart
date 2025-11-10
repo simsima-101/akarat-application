@@ -1,12 +1,12 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-// Akarat imports
-import 'package:Akarat/secure_storage.dart';
 import 'package:Akarat/screen/login.dart';
 import 'package:Akarat/screen/saved_alert_screen.dart';
+// Akarat imports
+import 'package:Akarat/secure_storage.dart';
 import 'package:Akarat/services/api_service.dart'; // central base URL
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 /// Read the auth token from your secure storage.
 Future<String?> readToken() async {
@@ -18,8 +18,9 @@ Future<String?> readToken() async {
 }
 
 class CreateAlertScreen extends StatefulWidget {
-  final String initialPurpose;         // e.g., "Rent" | "Buy" | "New Projects" | "Commercial"
-  final String initialPropertyType;    // e.g., "Villa" | "Apartment" | "" (Any)
+  final String
+  initialPurpose; // e.g., "Rent" | "Buy" | "New Projects" | "Commercial"
+  final String initialPropertyType; // e.g., "Villa" | "Apartment" | "" (Any)
   final List<String> availablePropertyTypes;
 
   const CreateAlertScreen({
@@ -37,10 +38,10 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
 
-  late String _timePeriod;   // UI: Hourly | Daily | Weekly | Monthly
-  late String _purpose;      // Locked display from caller
+  late String _timePeriod; // UI: Hourly | Daily | Weekly | Monthly
+  late String _purpose; // Locked display from caller
   late String _propertyType; // '' = Any (locked)
-  late List<String> _types;  // available types (for display if needed)
+  late List<String> _types; // available types (for display if needed)
 
   final _timePeriods = const ['Hourly', 'Daily', 'Weekly', 'Monthly'];
   bool _submitting = false;
@@ -101,11 +102,16 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
 
   String _mapTimePeriodForApi(String period) {
     switch (period.trim().toLowerCase()) {
-      case 'hourly':  return 'hourly';
-      case 'daily':   return 'daily';
-      case 'weekly':  return 'weekly';
-      case 'monthly': return 'monthly';
-      default:        return 'daily';
+      case 'hourly':
+        return 'hourly';
+      case 'daily':
+        return 'daily';
+      case 'weekly':
+        return 'weekly';
+      case 'monthly':
+        return 'monthly';
+      default:
+        return 'daily';
     }
   }
 
@@ -121,7 +127,8 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
 
   String _mapTypeForApi(String t) {
     final s = t.trim().toLowerCase();
-    if (s.isEmpty || s == 'all residential' || s == 'any' || s == 'all') return '';
+    if (s.isEmpty || s == 'all residential' || s == 'any' || s == 'all')
+      return '';
     if (s.startsWith('office')) return 'office';
     if (s.startsWith('commercial')) return 'commercial';
     if (s.startsWith('apart')) return 'apartment';
@@ -138,7 +145,8 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
     if (!mounted) return null;
 
     if (token == null || token.isEmpty) {
-      await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const Login()));
+      await Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => const Login()));
       final t2 = await readToken();
       return (t2 != null && t2.isNotEmpty) ? t2 : null;
     }
@@ -148,9 +156,9 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
   Future<void> _openSavedAlerts() async {
     final token = await _requireAuth();
     if (token == null || !mounted) return;
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => SavedAlertsScreen(token: token)));
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => SavedAlertsScreen(token: token)));
   }
-
 
   // Make 'New Projects' == 'new_projects', 'Buy' == 'Sale', trim, etc.
   String _canonPurpose(String p) {
@@ -176,7 +184,8 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
 
   // ---------- Saved Alerts utilities ----------
 
-  Future<bool> _comboExists(String token, String purpose, String typeSlug) async {
+  Future<bool> _comboExists(
+      String token, String purpose, String typeSlug) async {
     final url = Uri.parse('${ApiService.baseUrl}/saved-searches');
     final res = await http.get(
       url,
@@ -196,9 +205,12 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
       final data = body['data'];
       if (data is List) {
         list = data;
-      } else if (data is Map && data['data'] is List) list = data['data']; // paginator
-      else if (body['saved_searches'] is List) list = body['saved_searches'];
-      else list = const [];
+      } else if (data is Map && data['data'] is List)
+        list = data['data']; // paginator
+      else if (body['saved_searches'] is List)
+        list = body['saved_searches'];
+      else
+        list = const [];
     } else {
       list = const [];
     }
@@ -209,7 +221,8 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
     for (final e in list) {
       final m = Map<String, dynamic>.from(e);
       final p = _canonPurpose((m['purpose'] ?? '').toString());
-      final t = _canonType((m['property_type'] ?? m['propertyType'] ?? '').toString());
+      final t = _canonType(
+          (m['property_type'] ?? m['propertyType'] ?? '').toString());
 
       // Duplicate if BOTH match
       if (p == cp && t == ct) return true;
@@ -219,7 +232,6 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
     }
     return false;
   }
-
 
   // Ensure unique alert name (avoids “name already taken”)
   Future<String> _uniqueName(String base, String token) async {
@@ -240,9 +252,12 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
         final data = body['data'];
         if (data is List) {
           list = data;
-        } else if (data is Map && data['data'] is List) list = data['data'];
-        else if (body['saved_searches'] is List) list = body['saved_searches'];
-        else list = const [];
+        } else if (data is Map && data['data'] is List)
+          list = data['data'];
+        else if (body['saved_searches'] is List)
+          list = body['saved_searches'];
+        else
+          list = const [];
       } else {
         list = const [];
       }
@@ -278,11 +293,13 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
 
     // Keep a clean label for UI/name
     final purposeForUi = _purpose.trim();
-    final typeSlug     = _mapTypeForApi(_propertyType); // apartment|villa|studio|office|commercial or ''
+    final typeSlug = _mapTypeForApi(
+        _propertyType); // apartment|villa|studio|office|commercial or ''
 
     // 🔑 Composite key so the server treats each combo as unique
     // Examples: rent|apartment, buy|villa, new projects|office, rent|any
-    final purposeServerKey = '${_canonPurpose(purposeForUi)}|${typeSlug.isEmpty ? 'any' : typeSlug}';
+    final purposeServerKey =
+        '${_canonPurpose(purposeForUi)}|${typeSlug.isEmpty ? 'any' : typeSlug}';
 
     // 1) Meaningful default name (unique by combo)
     String alertName = _nameCtrl.text.trim();
@@ -297,13 +314,15 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
     // 2) Build payload (send composite purpose; still include property_type)
     final payload = <String, dynamic>{
       'alert_name': alertName,
-      'time_period': _mapTimePeriodForApi(_timePeriod), // hourly|daily|weekly|monthly
-      'purpose': purposeServerKey,                      // <-- composite key
+      'time_period':
+      _mapTimePeriodForApi(_timePeriod), // hourly|daily|weekly|monthly
+      'purpose': purposeServerKey, // <-- composite key
       if (typeSlug.isNotEmpty) 'property_type': typeSlug,
     };
 
     debugPrint('CREATE ALERT payload => ${jsonEncode(payload)}');
-    debugPrint('🛰️ Save Alert: purposeUi="$purposeForUi", purposeKey="$purposeServerKey", typeSlug="$typeSlug"');
+    debugPrint(
+        '🛰️ Save Alert: purposeUi="$purposeForUi", purposeKey="$purposeServerKey", typeSlug="$typeSlug"');
 
     try {
       final url = Uri.parse('${ApiService.baseUrl}/alerts');
@@ -314,14 +333,17 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
         'Authorization': 'Bearer $token',
       };
 
-      var res = await http.post(url, headers: headers, body: jsonEncode(payload));
+      var res =
+      await http.post(url, headers: headers, body: jsonEncode(payload));
       debugPrint('POST /alerts -> ${res.statusCode} ${res.body}');
 
       // If server still says duplicate/name conflict, auto-rename & retry once
       if (res.statusCode == 409 || res.statusCode == 422) {
         final newName = await _uniqueName('$alertName • 2', token);
-        final retryPayload = Map<String, dynamic>.from(payload)..['alert_name'] = newName;
-        res = await http.post(url, headers: headers, body: jsonEncode(retryPayload));
+        final retryPayload = Map<String, dynamic>.from(payload)
+          ..['alert_name'] = newName;
+        res = await http.post(url,
+            headers: headers, body: jsonEncode(retryPayload));
         debugPrint('POST /alerts (retry) -> ${res.statusCode} ${res.body}');
       }
 
@@ -340,8 +362,11 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
         final body = res.body.isNotEmpty ? jsonDecode(res.body) : null;
         if (body is Map) {
           if (body['errors'] is Map && (body['errors'] as Map).isNotEmpty) {
-            final errs = (body['errors'] as Map).values
-                .map((v) => (v is List && v.isNotEmpty) ? v.first.toString() : v.toString())
+            final errs = (body['errors'] as Map)
+                .values
+                .map((v) => (v is List && v.isNotEmpty)
+                ? v.first.toString()
+                : v.toString())
                 .join('\n');
             msg = errs;
           } else if (body['message'] != null) {
@@ -352,12 +377,12 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Network error: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Network error: $e')));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
   }
-
 
   // ---------- UI ----------
 
@@ -370,7 +395,8 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
         actions: [
           IconButton(
             onPressed: _openSavedAlerts,
-            icon: const Icon(Icons.notifications_active_outlined, color: Colors.black),
+            icon: const Icon(Icons.notifications_active_outlined,
+                color: Colors.black),
             tooltip: 'Saved Alerts',
           ),
         ],
@@ -384,12 +410,15 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
               decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.grey.shade400,
+                      blurRadius: 2,
+                      spreadRadius: 2,
+                      offset: Offset(1, 1))
+                ],
                 borderRadius: BorderRadius.circular(16),
-                gradient: const LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [Color(0xFFFFE0E0), Color(0xFFFFFFFF)],
-                ),
               ),
               child: Stack(
                 children: [
@@ -414,13 +443,13 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
                         ),
                       ),
                       const SizedBox(height: 18),
-
                       Form(
                         key: _formKey,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Alert Name', style: TextStyle(fontWeight: FontWeight.w600)),
+                            const Text('Alert Name',
+                                style: TextStyle(fontWeight: FontWeight.w600)),
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _nameCtrl,
@@ -431,56 +460,65 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
                             ),
                             const SizedBox(height: 16),
 
-                            const Text('Time Period', style: TextStyle(fontWeight: FontWeight.w600)),
+                            const Text('Time Period',
+                                style: TextStyle(fontWeight: FontWeight.w600)),
                             const SizedBox(height: 6),
                             DropdownButtonFormField<String>(
+                              dropdownColor: Colors.white,
                               value: _timePeriod,
                               decoration: _dec(''),
                               icon: const Icon(Icons.keyboard_arrow_down),
                               items: _timePeriods
-                                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                  .map((e) => DropdownMenuItem(
+                                  value: e, child: Text(e)))
                                   .toList(),
-                              onChanged: (v) => setState(() => _timePeriod = v ?? _timePeriod),
+                              onChanged: (v) => setState(
+                                      () => _timePeriod = v ?? _timePeriod),
                             ),
                             const SizedBox(height: 16),
 
                             // Purpose (locked)
-                            const Text('Purpose', style: TextStyle(fontWeight: FontWeight.w600)),
+                            const Text('Purpose',
+                                style: TextStyle(fontWeight: FontWeight.w600)),
                             const SizedBox(height: 6),
                             Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 14),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: Color(0xFFE7E7E7)),
                               ),
-                              child: Text(_purpose, style: const TextStyle(fontSize: 16)),
+                              child: Text(_purpose,
+                                  style: const TextStyle(fontSize: 16)),
                             ),
                             const SizedBox(height: 16),
 
                             // Property Type (locked)
-                            const Text('Property Type', style: TextStyle(fontWeight: FontWeight.w600)),
+                            const Text('Property Type',
+                                style: TextStyle(fontWeight: FontWeight.w600)),
                             const SizedBox(height: 6),
                             Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 14),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: Color(0xFFE7E7E7)),
                               ),
                               child: Text(
-                                _propertyType.isEmpty ? 'All Residential — Any Type' : _propertyType,
+                                _propertyType.isEmpty
+                                    ? 'All Residential — Any Type'
+                                    : _propertyType,
                                 style: const TextStyle(fontSize: 16),
                               ),
                             ),
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 24),
-
                       Row(
                         children: [
                           Expanded(
@@ -535,7 +573,8 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
           ),
           child: Text(
             label,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.w700),
           ),
         ),
       ),

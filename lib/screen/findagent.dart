@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../model/language.dart';
 import '../model/nationality.dart';
 import '../secure_storage.dart';
+import '../services/api_service.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'login.dart';
@@ -492,7 +493,10 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
 
     // If no cache or cache is expired, fetch from API
-    final response = await http.get(Uri.parse('https://akarat.com/api/agents/nationalities'));
+    final response = await http.get(
+      ApiService.buildUri('agents/nationalities'),
+    );
+
 
     if (response.statusCode == 200) {
       final responseBody = response.body;
@@ -510,7 +514,10 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
 
     // Otherwise, fetch from API
-    final response = await http.get(Uri.parse('https://akarat.com/api/agents/languages'));
+    final response = await http.get(
+      ApiService.buildUri('agents/languages'),
+    );
+
 
     if (response.statusCode == 200) {
       final responseBody = response.body;

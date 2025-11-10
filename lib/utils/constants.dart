@@ -1,1 +1,3 @@
-const String baseUrl = 'https://akarat.com/api';
+import '../services/api_service.dart';
+
+final String baseUrl = ApiService.baseUrl;

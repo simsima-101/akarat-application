@@ -21,6 +21,7 @@ import '../model/searchmodel.dart';
 import '../model/togglemodel.dart';
 import '../providers/favorite_provider.dart';
 import '../secure_storage.dart';
+import '../services/api_service.dart';
 import '../services/favorite_service.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
@@ -632,10 +633,18 @@ class _FliterListDemoState extends State<FliterListDemo> {
     // Build correct API URL based on whether location is provided
     String url;
     if (location != null) {
-      url = "https://akarat.com/api/property-types/$purpose?location=${Uri.encodeQueryComponent(location)}";
+      url = ApiService.buildUri(
+        'property-types/$purpose',
+        query: {
+          'location': location, // will be encoded automatically
+        },
+      ).toString();
     } else {
-      url = "https://akarat.com/api/property-types/$purpose";
+      url = ApiService.buildUri(
+        'property-types/$purpose',
+      ).toString();
     }
+
 
     try {
       final response = await http
@@ -725,7 +734,10 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
   Future<void> fetchLocations() async {
     try {
-      final response = await http.get(Uri.parse("https://akarat.com/api/locations?q="));
+      final response = await http.get(
+        ApiService.buildUri('locations', query: {'q': ''}),
+      );
+
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = jsonDecode(response.body);

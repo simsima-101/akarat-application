@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:Akarat/screen/about_us.dart';
 import 'package:Akarat/screen/findagent.dart';
 import 'package:Akarat/screen/home.dart';
@@ -12,14 +13,15 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../model/agencypropertiesmodel.dart';
 import '../providers/profile_image_provider.dart';
 import '../secure_storage.dart';
-import '../services/account_service.dart';
 import '../services/api_service.dart';
-import 'personal_information.dart';
-import 'favorite.dart';
+import '../widgets/custom_alert_box.dart';
+
 import 'login.dart';
+import 'personal_information.dart';
 
 class My_Account extends StatefulWidget {
   const My_Account({super.key});
@@ -37,33 +39,53 @@ class _My_AccountState extends State<My_Account> {
   String? firstName;
   String? lastName;
 
-
   @override
   void initState() {
     super.initState();
     _loadUserName();
     _ensureProfileLoaded();
-
   }
 
-
   Future<void> _ensureProfileLoaded() async {
-    // 1) Fast path from cache
+    // 1) Read from cache
     final cachedEmail = (await SecureStorage.getUserEmail())?.trim() ?? '';
-    final cachedName  = (await SecureStorage.getUserName())?.trim() ?? '';
-    final cachedFirst = (await SecureStorage.read('user_first_name'))?.trim() ?? '';
-    final cachedLast  = (await SecureStorage.read('user_last_name'))?.trim() ?? '';
+    final cachedName = (await SecureStorage.getUserName())?.trim() ?? '';
+
+    // make these mutable so we can fix them
+    var cachedFirst =
+        (await SecureStorage.read('user_first_name'))?.trim() ?? '';
+    var cachedLast =
+        (await SecureStorage.read('user_last_name'))?.trim() ?? '';
+
+    // if first/last are missing OR don't match the full name, re-derive them
+    if (cachedName.isNotEmpty) {
+      final combined = [cachedFirst, cachedLast]
+          .where((s) => s.isNotEmpty)
+          .join(' ')
+          .trim();
+
+      final needResplit = combined.isEmpty || combined != cachedName;
+      if (needResplit) {
+        final parts = cachedName.split(RegExp(r'\s+'));
+        cachedFirst = parts.isNotEmpty ? parts.first : '';
+        cachedLast = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+
+        // overwrite any stale values
+        await SecureStorage.write('user_first_name', cachedFirst);
+        await SecureStorage.write('user_last_name', cachedLast);
+      }
+    }
 
     if (mounted) {
       setState(() {
         if (cachedEmail.isNotEmpty) userEmail = cachedEmail;
-        if (cachedName.isNotEmpty)  userName  = cachedName;
+        if (cachedName.isNotEmpty) userName = cachedName;
         if (cachedFirst.isNotEmpty) firstName = cachedFirst;
-        if (cachedLast.isNotEmpty)  lastName  = cachedLast;
+        if (cachedLast.isNotEmpty) lastName = cachedLast;
       });
     }
 
-    // If we already have an email, we're done (no server call).
+    // If we already have an email, we can skip /me
     if (cachedEmail.isNotEmpty) return;
 
     // 2) No cached email → fetch /me only if token exists
@@ -73,9 +95,9 @@ class _My_AccountState extends State<My_Account> {
       if (mounted) {
         setState(() {
           userEmail = '';
-          userName  = '';
+          userName = '';
           firstName = '';
-          lastName  = '';
+          lastName = '';
         });
       }
       return;
@@ -96,16 +118,16 @@ class _My_AccountState extends State<My_Account> {
         if (mounted) {
           setState(() {
             userEmail = '';
-            userName  = '';
+            userName = '';
             firstName = '';
-            lastName  = '';
+            lastName = '';
           });
         }
         return;
       }
 
       if (resp.statusCode == 200) {
-        final raw  = utf8.decode(resp.bodyBytes);
+        final raw = utf8.decode(resp.bodyBytes);
         final data = json.decode(raw);
 
         // ---- helpers ----
@@ -148,65 +170,95 @@ class _My_AccountState extends State<My_Account> {
           }
           return '';
         }
-        // ---- end helpers ----
 
         // Possible payload shapes
         final namePaths = <List<String>>[
           ['name'],
-          ['data','name'],
-          ['user','name'],
-          ['data','user','name'],
-          ['result','name'],
+          ['data', 'name'],
+          ['user', 'name'],
+          ['data', 'user', 'name'],
+          ['result', 'name'],
         ];
         final emailPaths = <List<String>>[
           ['email'],
-          ['data','email'],
-          ['user','email'],
-          ['data','user','email'],
-          ['result','email'],
+          ['data', 'email'],
+          ['user', 'email'],
+          ['data', 'user', 'email'],
+          ['result', 'email'],
         ];
         final imagePaths = <List<String>>[
-          ['image'], ['data','image'], ['user','image'], ['data','user','image'],
-          ['result','image'], ['avatar'], ['profile','image'],
+          ['image'],
+          ['data', 'image'],
+          ['user', 'image'],
+          ['data', 'user', 'image'],
+          ['result', 'image'],
+          ['avatar'],
+          ['profile', 'image'],
         ];
         final firstPaths = <List<String>>[
-          ['first_name'], ['data','first_name'], ['user','first_name'],
-          ['data','user','first_name'], ['result','first_name'],
+          ['first_name'],
+          ['data', 'first_name'],
+          ['user', 'first_name'],
+          ['data', 'user', 'first_name'],
+          ['result', 'first_name'],
         ];
         final lastPaths = <List<String>>[
-          ['last_name'], ['data','last_name'], ['user','last_name'],
-          ['data','user','last_name'], ['result','last_name'],
+          ['last_name'],
+          ['data', 'last_name'],
+          ['user', 'last_name'],
+          ['data', 'user', 'last_name'],
+          ['result', 'last_name'],
         ];
 
-        final fetchedName   = firstNonEmpty(namePaths.map((p) => getByPath(data, p)));
-        String fetchedEmail = firstNonEmpty(emailPaths.map((p) => getByPath(data, p)));
-        final fetchedImage  = firstNonEmpty(imagePaths.map((p) => getByPath(data, p)));
-        String fetchedFirst = firstNonEmpty(firstPaths.map((p) => getByPath(data, p)));
-        String fetchedLast  = firstNonEmpty(lastPaths.map((p) => getByPath(data, p)));
+        final fetchedName =
+        firstNonEmpty(namePaths.map((p) => getByPath(data, p)));
+        String fetchedEmail =
+        firstNonEmpty(emailPaths.map((p) => getByPath(data, p)));
+        final fetchedImage =
+        firstNonEmpty(imagePaths.map((p) => getByPath(data, p)));
+        String fetchedFirst =
+        firstNonEmpty(firstPaths.map((p) => getByPath(data, p)));
+        String fetchedLast =
+        firstNonEmpty(lastPaths.map((p) => getByPath(data, p)));
 
-        // Fill first/last from full name if needed (one-time split)
-        if (fetchedFirst.isEmpty && fetchedLast.isEmpty && fetchedName.isNotEmpty) {
+        // Fill first/last from full name if needed
+        if (fetchedFirst.isEmpty &&
+            fetchedLast.isEmpty &&
+            fetchedName.isNotEmpty) {
           final parts = fetchedName.split(RegExp(r'\s+'));
           fetchedFirst = parts.isNotEmpty ? parts.first : '';
-          fetchedLast  = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+          fetchedLast =
+          parts.length > 1 ? parts.sublist(1).join(' ') : '';
         }
 
         // Last resort: scan nested
-        if (fetchedEmail.isEmpty) fetchedEmail = findStringByKey(data, 'email');
+        if (fetchedEmail.isEmpty) {
+          fetchedEmail = findStringByKey(data, 'email');
+        }
 
-        // 3) Persist locally (so other screens can use it immediately)
-        if (fetchedFirst.isNotEmpty) await SecureStorage.write('user_first_name', fetchedFirst);
-        if (fetchedLast.isNotEmpty)  await SecureStorage.write('user_last_name',  fetchedLast);
-        if (fetchedName.isNotEmpty)  await SecureStorage.write('user_name',       fetchedName);
-        if (fetchedEmail.isNotEmpty) await SecureStorage.write('user_email',      fetchedEmail);
-        if (fetchedImage.isNotEmpty) await SecureStorage.write('user_image',      fetchedImage);
+        // 3) Persist locally
+        if (fetchedFirst.isNotEmpty) {
+          await SecureStorage.write('user_first_name', fetchedFirst);
+        }
+        if (fetchedLast.isNotEmpty) {
+          await SecureStorage.write('user_last_name', fetchedLast);
+        }
+        if (fetchedName.isNotEmpty) {
+          await SecureStorage.write('user_name', fetchedName);
+        }
+        if (fetchedEmail.isNotEmpty) {
+          await SecureStorage.write('user_email', fetchedEmail);
+        }
+        if (fetchedImage.isNotEmpty) {
+          await SecureStorage.write('user_image', fetchedImage);
+        }
 
         // 4) Reflect in UI
         if (mounted) {
           setState(() {
             if (fetchedFirst.isNotEmpty) firstName = fetchedFirst;
-            if (fetchedLast.isNotEmpty)  lastName  = fetchedLast;
-            if (fetchedName.isNotEmpty)  userName  = fetchedName;
+            if (fetchedLast.isNotEmpty) lastName = fetchedLast;
+            if (fetchedName.isNotEmpty) userName = fetchedName;
             if (fetchedEmail.isNotEmpty) userEmail = fetchedEmail;
           });
         }
@@ -219,55 +271,63 @@ class _My_AccountState extends State<My_Account> {
     }
   }
 
-
   Future<bool> _hasSession() async {
     final t = await SecureStorage.getToken();
     return t != null && t.isNotEmpty;
   }
 
-
   String get _displayName {
     final f = (firstName ?? '').trim();
-    final l = (lastName  ?? '').trim();
-    if (f.isNotEmpty || l.isNotEmpty) return [f, l].where((s) => s.isNotEmpty).join(' ');
+    final l = (lastName ?? '').trim();
+    if (f.isNotEmpty || l.isNotEmpty) {
+      return [f, l].where((s) => s.isNotEmpty).join(' ');
+    }
     final n = (userName ?? '').trim();
-    return n; // legacy fallback (split logic already handled above)
+    return n;
   }
 
   Future<void> _loadUserName() async {
-    final name     = await SecureStorage.read('user_name');
-    final email    = await SecureStorage.read('user_email');
+    final name = await SecureStorage.read('user_name');
+    final email = await SecureStorage.read('user_email');
     final imageUrl = await SecureStorage.read('user_image');
-    final f        = await SecureStorage.read('user_first_name');
-    final l        = await SecureStorage.read('user_last_name');
+    final f = await SecureStorage.read('user_first_name');
+    final l = await SecureStorage.read('user_last_name');
 
+    if (!mounted) return;
     setState(() {
-      userName        = name ?? '';
-      userEmail       = email ?? '';
+      userName = name ?? '';
+      userEmail = email ?? '';
       profileImageUrl = imageUrl ?? '';
-      firstName       = (f ?? '').trim();
-      lastName        = (l ?? '').trim();
+      firstName = (f ?? '').trim();
+      lastName = (l ?? '').trim();
     });
   }
-
 
   Future<List<Property>> fetchSavedProperties() async {
     try {
       final token = await SecureStorage.getToken();
       final response = await http.get(
-        Uri.parse('https://akarat.com/api/saved-property-list?page=1'),
+        ApiService.buildUri('saved-property-list', query: {'page': '1'}),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
       );
 
+
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseJson = json.decode(response.body);
-        final List<dynamic> propertiesJsonList = responseJson['data']?['data'] ?? [];
-        return propertiesJsonList.map((item) => Property.fromJson(item)).toList();
+        final Map<String, dynamic> responseJson =
+        json.decode(response.body);
+        final List<dynamic> propertiesJsonList =
+            responseJson['data']?['data'] ?? [];
+        return propertiesJsonList
+            .map((item) => Property.fromJson(item))
+            .toList();
       } else {
-        throw Exception('Failed to fetch properties: ${response.statusCode}');
+        throw Exception(
+            'Failed to fetch properties: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('Error fetching saved properties: $e');
@@ -276,15 +336,22 @@ class _My_AccountState extends State<My_Account> {
   }
 
   // ===================== DELETE ACCOUNT FUNCTION =====================
-  // In My_Account State class
   Future<void> deleteAccount() async {
     try {
       final token = await SecureStorage.getToken();
       if (token == null || token.isEmpty) {
-        throw Exception("No token found.");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('You are not logged in')),
+          );
+        }
+        return;
       }
 
-      final uri = Uri.parse('https://akarat.com/api/delete');
+      // ✅ use the same base URL as the rest of the app (QA or PROD)
+      final base = ApiService.baseUrl; // e.g. https://qa.akarat.com/api
+      final uri = Uri.parse('$base/delete');
+
       http.Response resp = await http.delete(
         uri,
         headers: {
@@ -293,6 +360,7 @@ class _My_AccountState extends State<My_Account> {
         },
       );
 
+      // some backends respond 405/404 for DELETE → use POST + _method override
       if (resp.statusCode == 405 || resp.statusCode == 404) {
         resp = await http.post(
           uri,
@@ -311,46 +379,53 @@ class _My_AccountState extends State<My_Account> {
         await SecureStorage.delete('user_name');
         await SecureStorage.delete('user_email');
         await SecureStorage.delete('user_image');
+        await SecureStorage.delete('user_first_name');
+        await SecureStorage.delete('user_last_name');
+        await SecureStorage.clearProfile();
 
         if (!mounted) return;
+
+        // Clear in-memory profile image
+        context.read<ProfileImageProvider>().clear();
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Account deleted successfully")),
+          const SnackBar(content: Text('Account deleted successfully')),
         );
 
-        // 👉 Navigate to LOGIN (not Register)
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LoginDemo()),
               (route) => false,
         );
       } else if (resp.statusCode == 401) {
+        // Token invalid/expired – treat like forced logout
+        await SecureStorage.signOutLocal();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Session expired. Please login again.")),
+          const SnackBar(content: Text('Session expired. Please login again.')),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginDemo()),
+              (route) => false,
         );
       } else {
-        throw Exception("Failed with status ${resp.statusCode}");
+        throw Exception('Failed with status ${resp.statusCode}');
       }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Account deletion failed: $e")),
+        SnackBar(content: Text('Account deletion failed: $e')),
       );
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-    final profileProvider = context.watch<ProfileImageProvider>();
-
-
     return Scaffold(
       bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
       backgroundColor: Colors.white,
       body: FutureBuilder<bool>(
-        // Logged-in means: token exists AND a non-empty email is cached
         future: SecureStorage.isLoggedIn(),
         builder: (context, snap) {
           final waiting = snap.connectionState == ConnectionState.waiting;
@@ -443,7 +518,6 @@ class _My_AccountState extends State<My_Account> {
                                 MaterialPageRoute(builder: (_) => const LoginDemo()),
                               );
 
-                              setState(() {});
                               await _ensureProfileLoaded();
                               if (mounted) setState(() {});
                             },
@@ -459,7 +533,6 @@ class _My_AccountState extends State<My_Account> {
                             ),
                           ),
                         ),
-
                       ],
                     ),
                   ),
@@ -467,14 +540,13 @@ class _My_AccountState extends State<My_Account> {
 
                 const SizedBox(height: 10),
 
-                // Settings (make sure your _buildSettings refreshes UI after logout)
+                // Settings
                 _buildSettings(isLoggedIn),
               ],
             ),
           );
         },
       ),
-
     );
   }
 
@@ -537,84 +609,86 @@ class _My_AccountState extends State<My_Account> {
   }
 
   Widget _buildSettings(bool isLoggedIn) {
-    // Build the first group dynamically so "My Account" only shows for guests.
-    final List<Widget> primaryTiles = [];
-
-    // ✅ Only show this when NOT logged in (guest users)
-    if (!isLoggedIn) {
-      primaryTiles.add(
-        _settingsTile("My Account", "assets/images/my-account-profile.png", () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterScreen()));
-        }),
-      );
-    }
-
-    // Always show these (both logged-in & guest)
-    primaryTiles.addAll([
-      _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => FindAgentDemo()));
-      }),
-      _settingsTile("Favorites", "assets/images/favourites.png", () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => Favorite()));
-      }),
-      _settingsTile("Saved Alerts", "assets/images/favourites.png", () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => SavedAlertsScreen()));
-      }),
-      _settingsTile("About Us", "assets/images/about.png", () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => About_Us()));
-      }),
-      _settingsTile("Support", "assets/images/support.png", () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => Support()));
-      }),
-      _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => Privacy()));
-      }),
-      _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => TermsCondition()));
-      }),
-    ]);
-
     return Column(
       children: [
-        _settingsContainer(primaryTiles),
-
-        // Second group: auth actions depend on login state
+        _settingsContainer([
+          if (!isLoggedIn)
+            _settingsTile("My Account", "assets/images/my-account-profile.png", () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterScreen()));
+            }),
+          _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const FindAgentDemo()));
+          }),
+          _settingsTile("Favorites", "assets/images/favourites.png", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => Fav_Logout()));
+          }),
+          _settingsTile("Saved Alerts", "assets/images/favourites.png", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedAlertsScreen()));
+          }),
+          _settingsTile("About Us", "assets/images/about.png", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => About_Us()));
+          }),
+          _settingsTile("Support", "assets/images/support.png", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const Support()));
+          }),
+          _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const Privacy()));
+          }),
+          _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsCondition()));
+          }),
+        ]),
         _settingsContainer(
           isLoggedIn
               ? [
+            // Logout
             _settingsTile("Logout", "", () async {
-              await SecureStorage.deleteToken();
-              await SecureStorage.delete('user_name');
-              context.read<ProfileImageProvider>().clear(); // clear profile image
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginDemo()),
-                    (route) => false,
+              customAlertBox(
+                context: context,
+                title: 'Are you sure you want to logout?',
+                onPress: () async {
+                  // 1️⃣ Close the dialog first
+                  Navigator.of(context, rootNavigator: true).pop();
+
+                  // 2️⃣ Now do the logout cleanup
+                  await SecureStorage.deleteToken();
+                  await SecureStorage.delete('user_name');
+                  await SecureStorage.delete('user_email');
+                  await SecureStorage.delete('user_image');
+                  await SecureStorage.delete('user_first_name');
+                  await SecureStorage.delete('user_last_name');
+
+                  final ok = await SecureStorage.isLoggedIn();
+                  if (!ok) await SecureStorage.clearProfile();
+
+                  if (!mounted) return;
+                  context.read<ProfileImageProvider>().clear();
+
+                  if (!mounted) return;
+
+                  // 3️⃣ Go to Login and remove everything behind it
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginDemo()),
+                        (route) => false,
+                  );
+                },
+                icons: 'assets/images/alert_box_logout_icon.png',
               );
             }),
+
+            // Delete account
             _settingsTile("Delete your Account", "", () async {
-              await AccountService.confirmAndDelete(context);
-              final bool? confirmed = await showDialog<bool>(
+              customAlertBox(
                 context: context,
-                barrierDismissible: false,
-                builder: (dialogCtx) => AlertDialog(
-                  title: const Text("Delete Account"),
-                  content: const Text("Are you sure you want to delete your account?"),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(dialogCtx).pop(false),
-                      child: const Text("Cancel"),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(dialogCtx).pop(true),
-                      child: const Text("Delete", style: TextStyle(color: Colors.red)),
-                    ),
-                  ],
-                ),
+                title: 'Are you sure you want to delete your account?',
+                onPress: () async {
+                  // Close the dialog BEFORE calling API
+                  Navigator.of(context, rootNavigator: true).pop();
+                  await deleteAccount(); // handles cleanup + nav
+                },
+                icons: 'assets/images/alert_box_delete_icon.png',
               );
-              if (confirmed == true) {
-                await deleteAccount();
-              }
             }),
           ]
               : [
@@ -627,7 +701,6 @@ class _My_AccountState extends State<My_Account> {
     );
   }
 
-
   Widget _settingsContainer(List<Widget> children) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -636,7 +709,7 @@ class _My_AccountState extends State<My_Account> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
+          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
         ),
         child: Column(children: children),
       ),
@@ -654,7 +727,7 @@ class _My_AccountState extends State<My_Account> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Home())),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Home())),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Image.asset("assets/images/home.png", height: 25),
@@ -705,22 +778,16 @@ class _My_AccountState extends State<My_Account> {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white, // White dialog container
-                    title: const Text(
-                      'Email not available',
-                      style: TextStyle(color: Colors.black), // Title in black
-                    ),
+                    backgroundColor: Colors.white,
+                    title: const Text('Email not available', style: TextStyle(color: Colors.black)),
                     content: const Text(
                       'No email app is configured on this device. Please add a mail account first.',
-                      style: TextStyle(color: Colors.black), // Content in black
+                      style: TextStyle(color: Colors.black),
                     ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          'OK',
-                          style: TextStyle(color: Colors.red), // Red "OK" text
-                        ),
+                        child: const Text('OK', style: TextStyle(color: Colors.red)),
                       ),
                     ],
                   ),
@@ -728,7 +795,6 @@ class _My_AccountState extends State<My_Account> {
               }
             },
           ),
-
           const Padding(
             padding: EdgeInsets.only(right: 20.0),
             child: Icon(Icons.dehaze, color: Colors.red, size: 35),

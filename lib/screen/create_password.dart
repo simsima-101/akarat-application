@@ -6,6 +6,7 @@ import 'package:Akarat/screen/my_account.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../services/api_service.dart';
 import '../utils/shared_preference_manager.dart';
 
 class CreatePassword extends StatefulWidget {
@@ -36,7 +37,10 @@ class _CreatePasswordState extends State<CreatePassword> {
 
   Future<void> registerUsers(String emailInput) async {
     try {
-      final url = Uri.parse('https://akarat.com/api/register');
+
+
+      final url = ApiService.buildUri('register');
+
 
       final response = await http.post(
         url,
