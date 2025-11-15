@@ -24,6 +24,7 @@ import '../utils/shared_preference_manager.dart';
 import 'CreateAlertScreen.dart';
 import 'filter_list.dart';
 import 'full_amenities_screen.dart';
+import 'location_picker_screen.dart';
 import 'login.dart';
 import 'my_account.dart';
 
@@ -33,9 +34,9 @@ class Filter extends StatelessWidget {
   final String? propertyCategoryType;
   const Filter(
       {super.key,
-        required this.data,
-        this.propertyType = 0,
-        this.propertyCategoryType});
+      required this.data,
+      this.propertyType = 0,
+      this.propertyCategoryType});
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +55,9 @@ class FilterDemo extends StatefulWidget {
 
   const FilterDemo(
       {super.key,
-        required this.data,
-        required this.propertyType,
-        this.propertyCategoryType});
+      required this.data,
+      required this.propertyType,
+      this.propertyCategoryType});
 
   @override
   _FilterDemoState createState() => _FilterDemoState();
@@ -107,7 +108,7 @@ class _FilterDemoState extends State<FilterDemo> {
   String percentCompletion = ''; // '' means Any
 
   SfRangeValues _values =
-  SfRangeValues(500.0, 300000.0); // full range internally
+      SfRangeValues(500.0, 300000.0); // full range internally
 
   final TextEditingController minPriceController = TextEditingController();
   final TextEditingController maxPriceController = TextEditingController();
@@ -194,7 +195,7 @@ class _FilterDemoState extends State<FilterDemo> {
         builder: (_) => CreateAlertScreen(
           initialPurpose: _currentUiPurpose, // 'Buy' | 'Rent' | 'New Projects'
           initialPropertyType:
-          _currentPropertyType, // 'Apartment' | 'Villa' | 'Studio' | 'Offices' | 'Commercials'
+              _currentPropertyType, // 'Apartment' | 'Villa' | 'Studio' | 'Offices' | 'Commercials'
           availablePropertyTypes: types, // for dropdown on alert screen
         ),
       ),
@@ -206,7 +207,7 @@ class _FilterDemoState extends State<FilterDemo> {
       onTap: () => showResult(),
       child: Padding(
         padding:
-        const EdgeInsets.only(top: 25.0, left: 15, bottom: 15, right: 15),
+            const EdgeInsets.only(top: 25.0, left: 15, bottom: 15, right: 15),
         child: Container(
           width: screenSize.width * 0.9,
           height: 45,
@@ -279,7 +280,7 @@ class _FilterDemoState extends State<FilterDemo> {
     // Build chart data
     chartData = List.generate(
       96,
-          (index) =>
+      (index) =>
           Data(500 + index * 100.0, yValues[index % yValues.length].toDouble()),
     );
 
@@ -289,8 +290,8 @@ class _FilterDemoState extends State<FilterDemo> {
       if (widget.propertyCategoryType != null) {
         log('11111111111111111111111');
         final index = propertyTypeModel!.data!.indexWhere(
-              (item) =>
-          item.name?.trim().toLowerCase() ==
+          (item) =>
+              item.name?.trim().toLowerCase() ==
               widget.propertyCategoryType?.trim().toLowerCase(),
         );
 
@@ -342,9 +343,8 @@ class _FilterDemoState extends State<FilterDemo> {
       } else {
         final uri = ApiService.buildUri('amenities');
 
-        final response = await http
-            .get(uri)
-            .timeout(const Duration(seconds: 8));
+        final response =
+            await http.get(uri).timeout(const Duration(seconds: 8));
 
         if (response.statusCode == 200) {
           final jsonData = json.decode(response.body) as List;
@@ -369,7 +369,7 @@ class _FilterDemoState extends State<FilterDemo> {
         final uri = ApiService.buildUri('property-types/$purpose');
 
         final response =
-        await http.get(uri).timeout(const Duration(seconds: 10));
+            await http.get(uri).timeout(const Duration(seconds: 10));
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           propertyTypeModel = PropertyTypeModel.fromJson(data);
@@ -666,7 +666,7 @@ class _FilterDemoState extends State<FilterDemo> {
                         },
                         child: Text('Back to Filters',
                             style:
-                            TextStyle(fontSize: 14, color: Colors.white)),
+                                TextStyle(fontSize: 14, color: Colors.white)),
                       ),
                     ],
                   ),
@@ -691,9 +691,9 @@ class _FilterDemoState extends State<FilterDemo> {
               // forceRefresh: true,
               // 👇 send the exact UI selections forward
               selectedPurpose:
-              _currentUiPurpose, // "Buy" | "Rent" | "New Projects"
+                  _currentUiPurpose, // "Buy" | "Rent" | "New Projects"
               selectedPropertyType:
-              _currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
+                  _currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
             ),
           ),
         );
@@ -824,9 +824,7 @@ class _FilterDemoState extends State<FilterDemo> {
     try {
       final uri = ApiService.buildUri('amenities');
 
-      final response = await http
-          .get(uri)
-          .timeout(const Duration(seconds: 8));
+      final response = await http.get(uri).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
@@ -857,10 +855,10 @@ class _FilterDemoState extends State<FilterDemo> {
     if (propertyTypeModel == null) {
       return Scaffold(
           body: ListView.builder(
-            itemCount: 5,
-            itemBuilder: (context, index) => const ShimmerCard(),
-          ) // Show loading state
-      );
+        itemCount: 5,
+        itemBuilder: (context, index) => const ShimmerCard(),
+      ) // Show loading state
+          );
     }
     Size screenSize = MediaQuery.sizeOf(context);
 
@@ -885,336 +883,663 @@ class _FilterDemoState extends State<FilterDemo> {
 
     final bool isBuyMode = isProperties && selectedproduct == buyIndex;
 
-    return Scaffold(
-      // bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Color(0xFFF9F9F9), // Softer white
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          "Filters",
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.red),
-          onPressed: () {
-            Navigator.pop(context);
-            // context.read<MainBottomNavBarProvider>().setSelectedItemIndex(ScreenEnum.homeScreen);
-
-            // Navigator.pushAndRemoveUntil(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => const Home()),
-            //       (route) => false,
-            // );
-          },
-        ),
-
-        actions: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                // Reset all filter variables
-                purpose = '';
-                category = '';
-                bedroom = '';
-                bathroom = '';
-                ftype = '';
-                property_type = '';
-                rent = '';
-                min_price = '';
-                max_price = '';
-                min_sqrfeet = '';
-                max_sqrfeet = '';
-                handoverBy = '';
-                percentCompletion = '';
-
-                // Reset selected indexes and lists
-                selectedIndex = null;
-                selectedtype = null;
-                selectedproduct = null;
-                selectedcategory = null;
-                selectedBedrooms.clear();
-                selectedBathrooms.clear();
-                selectedrent = null;
-                selectedAmenitiesId.clear();
-                selectedHandover = 0;
-                selectedPercentCompletion = 0;
-
-                // Reset sliders to full range
-                _priceRangeController.start = 500;
-                _priceRangeController.end = 300000;
-
-                _areaRangeController.start = 0;
-                _areaRangeController.end = 10000;
-
-                // Clear all text field controllers
-                minPriceController.clear();
-                maxPriceController.clear();
-                minAreaController.clear();
-                maxAreaController.clear();
-                _searchController.clear();
-                agenciesController.clear();
-
-                // Update filter count (UI)
-                updateFilterCount();
-              });
-            },
-            child: const Text(
-              "Reset",
-              style: TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.w500,
-              ),
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        // bottomNavigationBar: SafeArea( child: buildMyNavBar(context),),
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Color(0xFFF9F9F9), // Softer white
+          elevation: 0,
+          centerTitle: true,
+          title: const Text(
+            "Filters",
+            style: TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
             ),
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(children: <Widget>[
-          Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.all(5),
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFF5F4F9), Color(0xFFF5F4F9)],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.4),
-                      offset: const Offset(0, 2),
-                      blurRadius: 6,
-                      spreadRadius: 1,
-                    ),
-                  ],
+          leading: IconButton(
+            icon: const Icon(Icons.close, color: Colors.red),
+            onPressed: () {
+              Navigator.pop(context);
+              // context.read<MainBottomNavBarProvider>().setSelectedItemIndex(ScreenEnum.homeScreen);
+
+              // Navigator.pushAndRemoveUntil(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => const Home()),
+              //       (route) => false,
+              // );
+            },
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  // Reset all filter variables
+                  purpose = '';
+                  category = '';
+                  bedroom = '';
+                  bathroom = '';
+                  ftype = '';
+                  property_type = '';
+                  rent = '';
+                  min_price = '';
+                  max_price = '';
+                  min_sqrfeet = '';
+                  max_sqrfeet = '';
+                  handoverBy = '';
+                  percentCompletion = '';
+
+                  // Reset selected indexes and lists
+                  selectedIndex = null;
+                  selectedtype = null;
+                  selectedproduct = null;
+                  selectedcategory = null;
+                  selectedBedrooms.clear();
+                  selectedBathrooms.clear();
+                  selectedrent = null;
+                  selectedAmenitiesId.clear();
+                  selectedHandover = 0;
+                  selectedPercentCompletion = 0;
+
+                  // Reset sliders to full range
+                  _priceRangeController.start = 500;
+                  _priceRangeController.end = 300000;
+
+                  _areaRangeController.start = 0;
+                  _areaRangeController.end = 10000;
+
+                  // Clear all text field controllers
+                  minPriceController.clear();
+                  maxPriceController.clear();
+                  minAreaController.clear();
+                  maxAreaController.clear();
+                  _searchController.clear();
+                  agenciesController.clear();
+
+                  // Update filter count (UI)
+                  updateFilterCount();
+                });
+              },
+              child: const Text(
+                "Reset",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w500,
                 ),
-                child: Row(
-                  children: [
-                    // Properties
-                    // ✅ UPDATED: Properties toggle
-                    GestureDetector(
-                      onTap: () async {
-                        setState(() {
-                          _selected = 0;
-                          selectedCompletion = 0; // reset Handover/Completion
-                          selectedproduct ??=
-                          0; // default to "Buy" when coming from New Projects
-                          purpose =
-                          _product[selectedproduct!]; // "Buy" or "Rent"
-                          if (purpose != 'Rent') {
+              ),
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Column(children: <Widget>[
+            Column(
+              children: [
+                Container(
+                  margin: const EdgeInsets.all(5),
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFFF5F4F9), Color(0xFFF5F4F9)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.4),
+                        offset: const Offset(0, 2),
+                        blurRadius: 6,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      // Properties
+                      // ✅ UPDATED: Properties toggle
+                      GestureDetector(
+                        onTap: () async {
+                          setState(() {
+                            _selected = 0;
+                            selectedCompletion = 0; // reset Handover/Completion
+                            selectedproduct ??=
+                                0; // default to "Buy" when coming from New Projects
+                            purpose =
+                                _product[selectedproduct!]; // "Buy" or "Rent"
+                            if (purpose != 'Rent') {
+                              selectedrent = null;
+                              rent = '';
+                            }
+                            _isLoading = true; // hide type chips briefly
+                          });
+
+                          // 1) Reload property types for the chosen purpose
+                          await propertyApi(purpose);
+
+                          // 2) Pick the first type safely (if any)
+                          final firstTypeName =
+                              (propertyTypeModel?.data?.isNotEmpty ?? false)
+                                  ? (propertyTypeModel!.data!.first.name ?? '')
+                                  : '';
+
+                          setState(() {
+                            selectedtype = firstTypeName.isNotEmpty ? 0 : null;
+                            property_type =
+                                firstTypeName; // '' if none returned
+                            _isLoading = false;
+                          });
+
+                          // 3) Update the live count → drives "Showing X Results"
+                          await updateFilterCount();
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          width: 180,
+                          height: 45,
+                          alignment: Alignment.center,
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: _selected == 0
+                                ? const Color(0xFF3A7CED)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                                spreadRadius: 0,
+                              ),
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.8),
+                                offset: const Offset(-4, -4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            "Properties",
+                            style: TextStyle(
+                              color:
+                                  _selected == 0 ? Colors.white : Colors.black,
+                              letterSpacing: 0.5,
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+
+                      // New Projects
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selected = 1;
+                            selectedCompletion = 0; // default to “All”
+                            selectedproduct = null;
+                            purpose = '';
                             selectedrent = null;
                             rent = '';
-                          }
-                          _isLoading = true; // hide type chips briefly
-                        });
+                            selectedtype = null;
+                            property_type = '';
+                          });
 
-                        // 1) Reload property types for the chosen purpose
-                        await propertyApi(purpose);
-
-                        // 2) Pick the first type safely (if any)
-                        final firstTypeName =
-                        (propertyTypeModel?.data?.isNotEmpty ?? false)
-                            ? (propertyTypeModel!.data!.first.name ?? '')
-                            : '';
-
-                        setState(() {
-                          selectedtype = firstTypeName.isNotEmpty ? 0 : null;
-                          property_type = firstTypeName; // '' if none returned
-                          _isLoading = false;
-                        });
-
-                        // 3) Update the live count → drives "Showing X Results"
-                        await updateFilterCount();
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        width: 180,
-                        height: 45,
-                        alignment: Alignment.center,
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 5),
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        decoration: BoxDecoration(
-                          color: _selected == 0
-                              ? const Color(0xFF3A7CED)
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              offset: const Offset(0, 2),
-                              blurRadius: 4,
-                              spreadRadius: 0,
-                            ),
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.8),
-                              offset: const Offset(-4, -4),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          "Properties",
-                          style: TextStyle(
-                            color: _selected == 0 ? Colors.white : Colors.black,
-                            letterSpacing: 0.5,
-                            fontSize: 14,
+                          updateFilterCount();
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          width: 180,
+                          height: 45,
+                          alignment: Alignment.center,
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: _selected == 1
+                                ? const Color(0xFF3A7CED)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                                spreadRadius: 0,
+                              ),
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.8),
+                                offset: const Offset(-4, -4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-
-                    // New Projects
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selected = 1;
-                          selectedCompletion = 0; // default to “All”
-                          selectedproduct = null;
-                          purpose = '';
-                          selectedrent = null;
-                          rent = '';
-                          selectedtype = null;
-                          property_type = '';
-                        });
-
-                        updateFilterCount();
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        width: 180,
-                        height: 45,
-                        alignment: Alignment.center,
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 5),
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        decoration: BoxDecoration(
-                          color: _selected == 1
-                              ? const Color(0xFF3A7CED)
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              offset: const Offset(0, 2),
-                              blurRadius: 4,
-                              spreadRadius: 0,
+                          child: Text(
+                            "New Projects",
+                            style: TextStyle(
+                              color:
+                                  _selected == 1 ? Colors.white : Colors.black,
+                              letterSpacing: 0.5,
+                              fontSize: 14,
                             ),
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.8),
-                              offset: const Offset(-4, -4),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          "New Projects",
-                          style: TextStyle(
-                            color: _selected == 1 ? Colors.white : Colors.black,
-                            letterSpacing: 0.5,
-                            fontSize: 14,
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
                         ),
-                      ),
-                    )
-                  ],
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+            //properties
+            if (showProductPills) ...[
+              Padding(
+                padding: const EdgeInsets.all(5),
+                child: SizedBox(
+                  height: 60,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _product.length,
+                    itemBuilder: (context, index) {
+                      final isSelected = selectedproduct == index;
+                      return GestureDetector(
+                        onTap: () async {
+                          setState(() {
+                            selectedproduct = index;
+                            purpose = _product[index];
+                            _isLoading = true;
+                          });
+
+                          // fetch property types for the selected purpose
+                          await propertyApi(purpose);
+
+                          // pick the first type safely (if any)
+                          final firstTypeName =
+                              (propertyTypeModel?.data?.isNotEmpty ?? false)
+                                  ? (propertyTypeModel!.data!.first.name ?? '')
+                                  : '';
+
+                          setState(() {
+                            selectedtype = 0; // select first chip
+                            property_type =
+                                firstTypeName; // set its name ('' if none)
+                            _isLoading = false;
+                          });
+
+                          // refresh the live “Showing X Results” count
+                          await updateFilterCount();
+                        },
+                        child: Container(
+                          width: 180,
+                          height: 34,
+                          alignment: Alignment.center,
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFFF5F4F9)
+                                : Colors.white,
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.black
+                                  : Colors.transparent,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                                spreadRadius: 0,
+                              ),
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.8),
+                                offset: const Offset(-4, -4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            _product[index],
+                            style: const TextStyle(
+                              color: Colors.black,
+                              letterSpacing: 0.5,
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ],
-          ),
 
-          const SizedBox(height: 10),
-          //properties
-          if (showProductPills) ...[
+            const SizedBox(height: 20),
+            const Divider(
+              height: 1,
+              indent: 15,
+              endIndent: 15,
+            ),
+            const SizedBox(height: 20),
+
             Padding(
-              padding: const EdgeInsets.all(5),
-              child: SizedBox(
-                height: 60,
+              padding: EdgeInsets.only(left: 15, right: 15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(left: 5),
+                    child: Text(
+                      "Location",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                  const SizedBox(height: 13),
+                  SizedBox(
+                      height: 48,
+                      width: double.infinity,
+                      child: TextFormField(
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => const FractionallySizedBox(
+                              heightFactor: 0.95,
+                              child: LocationPickerScreen(),
+                            ),
+                          );
+                        },
+                        readOnly: true,
+                        // enableInteractiveSelection: false,
+                        style: const TextStyle(
+                            color: Colors.black, fontSize: 16.5),
+                        decoration: InputDecoration(
+                          prefixIcon: Padding(
+                            padding: EdgeInsets.only(left: 4, right: 0),
+                            child: Icon(
+                              Icons.place,
+                              color: Colors.redAccent,
+                              size: 26,
+                            ),
+                          ),
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white, // Background red
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 2),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                            borderSide:
+                                const BorderSide(color: Colors.grey, width: 1),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                            borderSide:
+                                const BorderSide(color: Colors.grey, width: 1),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                            borderSide:
+                                const BorderSide(color: Colors.red, width: 1),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                            borderSide: const BorderSide(
+                                color: Colors.grey, width: 1.5),
+                          ),
+                          hintText: 'Search locations',
+                          hintStyle: const TextStyle(
+                              color: Colors.black54, fontSize: 16),
+                        ),
+                        cursorColor: Colors.redAccent,
+                      )),
+                  SizedBox(
+                    height: 25,
+                  ),
+                ],
+              ),
+            ),
+            const Divider(
+              height: 1,
+              indent: 15,
+              endIndent: 15,
+            ),
+            const SizedBox(height: 20),
+
+            Row(
+              children: [
+                Padding(
+                    padding: const EdgeInsets.only(left: 18),
+                    // child:  Text(purpose,
+                    child: Text(
+                      "Property Type",
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5),
+                      textAlign: TextAlign.left,
+                    )),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                const SizedBox(width: 12),
+
+                // Residential
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => selectedPropType = 0),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      height: 40,
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        // selected: subtle gray gradient; unselected: white
+                        gradient: selectedPropType == 0
+                            ? const LinearGradient(
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                colors: [Color(0xFFF5F4F9), Color(0xFFEFEFF3)],
+                              )
+                            : null,
+                        color: selectedPropType == 0 ? null : Colors.white,
+                        border: Border.all(
+                          color: selectedPropType == 0
+                              ? Colors.black
+                              : Color(0xFFE6E4EE),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            offset: const Offset(0, 3),
+                            blurRadius: 6,
+                            spreadRadius: 0,
+                          ),
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.9),
+                            offset: const Offset(-2, -2),
+                            blurRadius: 6,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: const Text(
+                        'Residential',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Commercial
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => selectedPropType = 1),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      height: 40,
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.only(left: 8, right: 12),
+                      decoration: BoxDecoration(
+                        gradient: selectedPropType == 1
+                            ? const LinearGradient(
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                colors: [Color(0xFFF5F4F9), Color(0xFFEFEFF3)],
+                              )
+                            : null,
+                        color: selectedPropType == 1 ? null : Colors.white,
+                        border: Border.all(
+                          color: selectedPropType == 1
+                              ? Colors.black
+                              : Color(0xFFE6E4EE),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            offset: const Offset(0, 3),
+                            blurRadius: 6,
+                            spreadRadius: 0,
+                          ),
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.9),
+                            offset: const Offset(-2, -2),
+                            blurRadius: 6,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: const Text(
+                        'Commercial',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            SizedBox(height: 10),
+
+            AnimatedOpacity(
+              opacity: _isLoading ? 0.0 : 1.0,
+              duration: const Duration(milliseconds: 500),
+              child: Container(
+                margin: const EdgeInsets.all(5),
+                height: screenSize.height * 0.125,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: _product.length,
+                  itemCount: propertyTypeModel?.data?.length ?? 0,
                   itemBuilder: (context, index) {
-                    final isSelected = selectedproduct == index;
+                    final String iconUrl =
+                        propertyTypeModel!.data![index].icon.toString();
+                    print("Loading icon: $iconUrl"); // ← Add this
+
+                    if (iconUrl.isEmpty || !iconUrl.startsWith('http')) {
+                      print("Invalid URL: $iconUrl");
+                    }
                     return GestureDetector(
                       onTap: () async {
                         setState(() {
-                          selectedproduct = index;
-                          purpose = _product[index];
-                          _isLoading = true;
-                        });
-
-                        // fetch property types for the selected purpose
-                        await propertyApi(purpose);
-
-                        // pick the first type safely (if any)
-                        final firstTypeName =
-                        (propertyTypeModel?.data?.isNotEmpty ?? false)
-                            ? (propertyTypeModel!.data!.first.name ?? '')
-                            : '';
-
-                        setState(() {
-                          selectedtype = 0; // select first chip
+                          selectedtype = index;
                           property_type =
-                              firstTypeName; // set its name ('' if none)
-                          _isLoading = false;
+                              propertyTypeModel!.data![index].name.toString();
                         });
-
-                        // refresh the live “Showing X Results” count
-                        await updateFilterCount();
+                        await updateFilterCount(); // 👈 add this line
                       },
                       child: Container(
-                        width: 180,
-                        height: 34,
-                        alignment: Alignment.center,
                         margin: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 5),
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                            horizontal: 8, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 5),
                         decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color(0xFFF5F4F9)
+                          color: selectedtype == index
+                              ? Color(0xFFEEEEEE)
                               : Colors.white,
-                          border: Border.all(
-                            color:
-                            isSelected ? Colors.black : Colors.transparent,
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.withOpacity(0.5),
-                              offset: const Offset(0, 2),
+                              offset: Offset(0, 2),
                               blurRadius: 4,
-                              spreadRadius: 0,
                             ),
                             BoxShadow(
                               color: Colors.white.withOpacity(0.8),
-                              offset: const Offset(-4, -4),
+                              offset: Offset(-4, -4),
                               blurRadius: 8,
                               spreadRadius: 2,
                             ),
                           ],
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(
-                          _product[index],
-                          style: const TextStyle(
-                            color: Colors.black,
-                            letterSpacing: 0.5,
-                            fontSize: 14,
-                          ),
-                          textAlign: TextAlign.center,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: CachedNetworkImage(
+                                imageUrl: propertyTypeModel!.data![index].icon
+                                    .toString(),
+                                height: 35,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Text(
+                                propertyTypeModel!.data![index].name.toString(),
+                                style: TextStyle(
+                                  color: selectedtype == index
+                                      ? Colors.black
+                                      : Colors.black,
+                                  letterSpacing: 0.5,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -1222,1369 +1547,101 @@ class _FilterDemoState extends State<FilterDemo> {
                 ),
               ),
             ),
-          ],
 
-          const SizedBox(height: 10),
-
-          Row(
-            children: [
-              Padding(
-                  padding: const EdgeInsets.only(left: 18),
-                  // child:  Text(purpose,
-                  child: Text(
-                    "Property Type",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5),
-                    textAlign: TextAlign.left,
-                  )),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          Row(
-            children: [
-              const SizedBox(width: 12),
-
-              // Residential
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => selectedPropType = 0),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    height: 40,
-                    alignment: Alignment.center,
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      // selected: subtle gray gradient; unselected: white
-                      gradient: selectedPropType == 0
-                          ? const LinearGradient(
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                        colors: [Color(0xFFF5F4F9), Color(0xFFEFEFF3)],
-                      )
-                          : null,
-                      color: selectedPropType == 0 ? null : Colors.white,
-                      border: Border.all(
-                        color: selectedPropType == 0
-                            ? Colors.black
-                            : Color(0xFFE6E4EE),
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
-                          offset: const Offset(0, 3),
-                          blurRadius: 6,
-                          spreadRadius: 0,
-                        ),
-                        BoxShadow(
-                          color: Colors.white.withOpacity(0.9),
-                          offset: const Offset(-2, -2),
-                          blurRadius: 6,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: const Text(
-                      'Residential',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // Commercial
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => selectedPropType = 1),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    height: 40,
-                    alignment: Alignment.center,
-                    margin: const EdgeInsets.only(left: 8, right: 12),
-                    decoration: BoxDecoration(
-                      gradient: selectedPropType == 1
-                          ? const LinearGradient(
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                        colors: [Color(0xFFF5F4F9), Color(0xFFEFEFF3)],
-                      )
-                          : null,
-                      color: selectedPropType == 1 ? null : Colors.white,
-                      border: Border.all(
-                        color: selectedPropType == 1
-                            ? Colors.black
-                            : Color(0xFFE6E4EE),
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
-                          offset: const Offset(0, 3),
-                          blurRadius: 6,
-                          spreadRadius: 0,
-                        ),
-                        BoxShadow(
-                          color: Colors.white.withOpacity(0.9),
-                          offset: const Offset(-2, -2),
-                          blurRadius: 6,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: const Text(
-                      'Commercial',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: 10),
-
-          AnimatedOpacity(
-            opacity: _isLoading ? 0.0 : 1.0,
-            duration: const Duration(milliseconds: 500),
-            child: Container(
-              margin: const EdgeInsets.all(5),
-              height: screenSize.height * 0.125,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: propertyTypeModel?.data?.length ?? 0,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () async {
-                      setState(() {
-                        selectedtype = index;
-                        property_type =
-                            propertyTypeModel!.data![index].name.toString();
-                      });
-                      await updateFilterCount(); // 👈 add this line
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 5),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 15, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: selectedtype == index
-                            ? Color(0xFFEEEEEE)
-                            : Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            offset: Offset(0, 2),
-                            blurRadius: 4,
-                          ),
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.8),
-                            offset: Offset(-4, -4),
-                            blurRadius: 8,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: CachedNetworkImage(
-                              imageUrl: propertyTypeModel!.data![index].icon
-                                  .toString(),
-                              height: 35,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: Text(
-                              propertyTypeModel!.data![index].name.toString(),
-                              style: TextStyle(
-                                color: selectedtype == index
-                                    ? Colors.black
-                                    : Colors.black,
-                                letterSpacing: 0.5,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          // const Divider(height: 1,indent: 15,endIndent: 15,),
-          const SizedBox(height: 20),
-
-          // --- Completion Status ---
-          if (showCompletion) ...[
-            Padding(
-              padding: const EdgeInsets.only(right: 100),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Completion Status',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 15),
-
-                  // Pills row (scrollable if needed)
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: List.generate(_completion.length, (i) {
-                        final bool isSelected = selectedCompletion == i;
-
-                        return GestureDetector(
-                          onTap: () async {
-                            setState(() => selectedCompletion = i);
-                            await updateFilterCount(); // keep the live count in sync
-                          },
-                          child: Container(
-                            // auto width based on label
-                            constraints: const BoxConstraints(minHeight: 34),
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            margin: const EdgeInsets.only(right: 10),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? const Color(0xFFF5F4F9)
-                                  : Colors.white,
-                              border: Border.all(
-                                color: isSelected
-                                    ? Colors.black
-                                    : const Color(0xFFE6E4EE),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.15),
-                                  offset: const Offset(0, 2),
-                                  blurRadius: 4,
-                                  spreadRadius: 0,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.9),
-                                  offset: const Offset(-2, -2),
-                                  blurRadius: 6,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              _completion[i],
-                              style: const TextStyle(
-                                fontSize: 14,
-                                letterSpacing: 0.2,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // const Divider(height: 1,indent: 15,endIndent: 15,),
             const SizedBox(height: 20),
-            const Divider(
-              height: 1,
-              indent: 15,
-              endIndent: 15,
-            ),
-            const SizedBox(height: 20),
-          ],
-          //text
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+
+            // --- Completion Status ---
+            if (showCompletion) ...[
               Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: Text(
-                  "Price range",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.left,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-          Padding(
-              padding: const EdgeInsets.only(top: 0, left: 20, right: 10),
-              child: Row(spacing: 15, children: [
-                Container(
-                  width: screenSize.width * 0.38,
-                  height: 40,
-                  padding: const EdgeInsets.only(top: 8, left: 8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(6.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.3,
-                          0.3,
-                        ),
-                        blurRadius: 0.3,
-                        spreadRadius: 0.3,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: TextFormField(
-                      controller: minPriceController,
-                      keyboardType: TextInputType.number,
-                      decoration:
-                      const InputDecoration(border: InputBorder.none),
-                      onTap: () => isMinTyping = true, // 👈 starts typing
-                      onEditingComplete: () =>
-                      isMinTyping = false, // 👈 ends typing (on "done")
-                      onChanged: (val) {
-                        final start = double.tryParse(val) ?? 0;
-                        if (start <= _values.end) {
-                          setState(() {
-                            _values = SfRangeValues(start, _values.end);
-                            min_price = start.toStringAsFixed(0);
-                          });
-                          showResult(autoUpdate: true);
-                        }
-                      },
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 5),
-                  child: Text(
-                    "to",
-                    style: TextStyle(color: Colors.black, fontSize: 15.0),
-                    textAlign: TextAlign.left,
-                  ),
-                ),
-                Container(
-                  width: screenSize.width * 0.38,
-                  height: 40,
-                  padding: const EdgeInsets.only(top: 8, left: 8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadiusDirectional.circular(6.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: const Offset(
-                          0.3,
-                          0.3,
-                        ),
-                        blurRadius: 0.3,
-                        spreadRadius: 0.3,
-                      ), //BoxShadow
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 0.0,
-                        spreadRadius: 0.0,
-                      ), //BoxShadow
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: TextFormField(
-                      controller: maxPriceController,
-                      keyboardType: TextInputType.number,
-                      decoration:
-                      const InputDecoration(border: InputBorder.none),
-                      onTap: () => isMaxTyping = true,
-                      onEditingComplete: () => isMaxTyping = false,
-                      onChanged: (val) {
-                        final end = double.tryParse(val) ?? 0;
-                        if (end >= _values.start) {
-                          setState(() {
-                            _values = SfRangeValues(_values.start, end);
-                            max_price = end.toStringAsFixed(0);
-                          });
-                          showResult(autoUpdate: true);
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              ])),
-          const SizedBox(height: 20),
-          //rangeslider
-          Padding(
-            padding: const EdgeInsets.all(0),
-            child: SfRangeSelectorTheme(
-              data: SfRangeSelectorThemeData(
-                overlappingTooltipStrokeColor: Color(0x80E0E0E0),
-                tooltipBackgroundColor: Colors.black,
-                activeDividerStrokeWidth: 1,
-                activeDividerRadius: 2,
-                thumbStrokeWidth: 0.5, // Change tooltip background color
-                tooltipTextStyle: TextStyle(
-                  color: Colors.white, // Change tooltip text color
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              child: SfRangeSelector(
-                min: 500,
-                max: 300000,
-                interval: 10000,
-                activeColor: Color(0xFF2575D4), // ✅ blue line
-
-                inactiveColor: Color(0x80F1EEEE),
-                enableTooltip: true,
-                shouldAlwaysShowTooltip: true,
-                controller: _priceRangeController,
-
-                tooltipTextFormatterCallback: (actualValue, _) =>
-                'AED ${actualValue.toInt()}',
-                onChanged: (SfRangeValues value) {
-                  setState(() {
-                    _values = SfRangeValues(value.start, value.end);
-                    min_price = value.start.toStringAsFixed(0);
-                    max_price = value.end.toStringAsFixed(0);
-
-                    // ✅ Force update min only if not currently editing, or if value actually changed
-                    if (!isMinTyping ||
-                        minPriceController.text !=
-                            value.start.toStringAsFixed(0)) {
-                      minPriceController.text = value.start.toStringAsFixed(0);
-                    }
-
-                    if (!isMaxTyping ||
-                        maxPriceController.text !=
-                            value.end.toStringAsFixed(0)) {
-                      maxPriceController.text = value.end.toStringAsFixed(0);
-                    }
-                  });
-
-                  showResult(autoUpdate: true);
-                },
-
-                child: SizedBox(
-                  height: 60,
-                  width: double.infinity,
-                  child: SfCartesianChart(
-                    backgroundColor: Colors.transparent,
-                    plotAreaBorderColor: Colors.transparent,
-                    margin: const EdgeInsets.all(0),
-                    primaryXAxis: NumericAxis(
-                      minimum: 500,
-                      maximum: 10000,
-                      isVisible: false,
-                    ),
-                    primaryYAxis: NumericAxis(isVisible: false),
-                    plotAreaBorderWidth: 0,
-                    plotAreaBackgroundColor: Colors.transparent,
-                    series: <ColumnSeries<Data, double>>[
-                      ColumnSeries<Data, double>(
-                        trackColor: Colors.transparent,
-                        //color: Color.fromARGB(255, 126, 184, 253),
-                        //opacity: 0.5,
-                        dataSource: chartData,
-                        selectionBehavior: SelectionBehavior(
-                          unselectedOpacity: 0.0,
-                          selectedColor: Colors.transparent,
-                          selectedOpacity: 0.0,
-                          unselectedColor: Colors.transparent,
-                          selectionController: _rangeController,
-                        ),
-                        xValueMapper: (Data sales, int index) => sales.x,
-                        yValueMapper: (Data sales, int index) => sales.y,
-                        pointColorMapper: (Data sales, int index) {
-                          return const Color.fromARGB(255, 37, 117, 212);
-                        },
-                        // color: const Color.fromRGBO(255, 255, 255, 0),
-                        dashArray: const <double>[5, 3],
-                        // borderColor: const Color.fromRGBO(194, 194, 194, 1),
-                        animationDuration: 0,
-                        borderWidth: 0,
-                        //opacity: 0.5,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Divider(
-            height: 1,
-            indent: 15,
-            endIndent: 15,
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 20),
-                // child:  Text(_values.start.toStringAsFixed(2),
-                child: Text(
-                  "Bedrooms",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.left,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 5),
-          //studio
-          Padding(
-            padding: const EdgeInsets.all(5),
-            child: SizedBox(
-              height: 60,
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                scrollDirection: Axis.horizontal,
-                itemCount: _bedroom.length,
-                itemBuilder: (context, index) {
-                  final isSelected = selectedBedrooms.contains(index);
-
-                  return GestureDetector(
-                    onTap: () async {
-                      setState(() {
-                        if (selectedBedrooms.contains(index)) {
-                          selectedBedrooms.remove(index);
-                        } else {
-                          selectedBedrooms.add(index);
-                        }
-
-                        // Convert selected values into comma-separated string
-                        bedroom =
-                            selectedBedrooms.map((i) => _bedroom[i]).join(',');
-                      });
-
-                      await updateFilterCount(); // ✅ NOW this will work
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 5),
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: isSelected
-                              ? Colors.black87
-                              : Colors.grey.shade300,
-                          width: isSelected ? 2 : 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            offset: Offset(0, 2),
-                            blurRadius: 4,
-                            spreadRadius: 0,
-                          ),
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.8),
-                            offset: Offset(-4, -4),
-                            blurRadius: 8,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (isSelected) ...[
-                            Icon(Icons.check, size: 18, color: Colors.green),
-                            SizedBox(width: 4),
-                          ],
-                          Text(
-                            _bedroom[index],
-                            style: TextStyle(
-                              color: Colors.black,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-          const Divider(
-            height: 1,
-            indent: 15,
-            endIndent: 15,
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 20),
-                // child:  Text(bedroom,
-                child: Text(
-                  "Bathrooms",
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5),
-                  textAlign: TextAlign.left,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 5),
-          Padding(
-            padding: const EdgeInsets.all(5),
-            child: SizedBox(
-              height: 60,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _bathroom.length,
-                itemBuilder: (context, index) {
-                  final isSelected = selectedBathrooms.contains(index);
-
-                  return GestureDetector(
-                    onTap: () async {
-                      setState(() {
-                        if (selectedBathrooms.contains(index)) {
-                          selectedBathrooms.remove(index);
-                        } else {
-                          selectedBathrooms.add(index);
-                        }
-
-                        bathroom = selectedBathrooms
-                            .map((i) => _bathroom[i])
-                            .join(',');
-                      });
-
-                      await updateFilterCount(); // ✅ call API to update count
-                    },
-                    child: Container(
-                      alignment: Alignment.center,
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 5),
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: isSelected
-                              ? Colors.black87
-                              : Colors.grey.shade300,
-                          width: isSelected ? 2 : 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            offset: Offset(4, 4),
-                            blurRadius: 8,
-                            spreadRadius: 2,
-                          ),
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.8),
-                            offset: Offset(-4, -4),
-                            blurRadius: 8,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (isSelected) ...[
-                            Icon(Icons.check, size: 18, color: Colors.green),
-                            SizedBox(width: 4),
-                          ],
-                          Text(
-                            _bathroom[index],
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-          const Divider(
-            height: 1,
-            indent: 15,
-            endIndent: 15,
-          ),
-          const SizedBox(height: 20),
-          //area
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(left: 20),
-                child: Text(
-                  "Area/Size",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
+                padding: const EdgeInsets.only(right: 100),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Minimum area input
-                    Expanded(
-                      child: Container(
-                        height: 40,
-                        padding: const EdgeInsets.only(left: 8),
-                        decoration: _inputBoxDecoration(),
-                        child: TextFormField(
-                          controller: minAreaController,
-                          keyboardType: TextInputType.number,
-                          decoration:
-                          const InputDecoration(border: InputBorder.none),
-                          onTap: () => isMinAreaTyping = true,
-                          onEditingComplete: () => isMinAreaTyping = false,
-                          onChanged: (val) {
-                            final start = double.tryParse(val) ?? 0;
-                            if (start <= _valuesArea.end) {
-                              setState(() {
-                                _valuesArea =
-                                    SfRangeValues(start, _valuesArea.end);
-                                min_sqrfeet = start.toStringAsFixed(0);
-                              });
-                              updateFilterCount();
-                            }
-                          },
-                        ),
-                      ),
+                    const Text(
+                      'Completion Status',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Text("to", style: TextStyle(fontSize: 15)),
-                    ),
-                    // Maximum area input
-                    Expanded(
-                      child: Container(
-                        height: 40,
-                        padding: const EdgeInsets.only(left: 8),
-                        decoration: _inputBoxDecoration(),
-                        child: TextFormField(
-                          controller: maxAreaController,
-                          keyboardType: TextInputType.number,
-                          decoration:
-                          const InputDecoration(border: InputBorder.none),
-                          onTap: () => isMaxAreaTyping = true,
-                          onEditingComplete: () => isMaxAreaTyping = false,
-                          onChanged: (val) {
-                            final end = double.tryParse(val) ?? 0;
-                            if (end >= _valuesArea.start) {
-                              setState(() {
-                                _valuesArea =
-                                    SfRangeValues(_valuesArea.start, end);
-                                max_sqrfeet = end.toStringAsFixed(0);
-                              });
-                              updateFilterCount();
-                            }
-                          },
-                        ),
+                    const SizedBox(height: 15),
+
+                    // Pills row (scrollable if needed)
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: List.generate(_completion.length, (i) {
+                          final bool isSelected = selectedCompletion == i;
+
+                          return GestureDetector(
+                            onTap: () async {
+                              setState(() => selectedCompletion = i);
+                              await updateFilterCount(); // keep the live count in sync
+                            },
+                            child: Container(
+                              // auto width based on label
+                              constraints: const BoxConstraints(minHeight: 34),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              margin: const EdgeInsets.only(right: 10),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFFF5F4F9)
+                                    : Colors.white,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Colors.black
+                                      : const Color(0xFFE6E4EE),
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.15),
+                                    offset: const Offset(0, 2),
+                                    blurRadius: 4,
+                                    spreadRadius: 0,
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.white.withOpacity(0.9),
+                                    offset: const Offset(-2, -2),
+                                    blurRadius: 6,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                _completion[i],
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  letterSpacing: 0.2,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Slider
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: SfRangeSelectorTheme(
-                  data: SfRangeSelectorThemeData(
-                    tooltipBackgroundColor: Colors.black,
-                    tooltipTextStyle: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                  child: SfRangeSelector(
-                    min: 0,
-                    max: 10000,
-                    interval: 1000,
-                    enableTooltip: true,
-                    shouldAlwaysShowTooltip: true,
-                    activeColor: const Color(0xFF2575D4),
-                    inactiveColor: const Color(0x80F1EEEE),
-                    controller: _areaRangeController,
-                    onChanged: (value) {
-                      setState(() {
-                        _valuesArea = SfRangeValues(value.start, value.end);
-                        min_sqrfeet = value.start.toStringAsFixed(0);
-                        max_sqrfeet = value.end.toStringAsFixed(0);
-
-                        // Sync text fields only if user isn't editing
-                        if (!isMinAreaTyping ||
-                            minAreaController.text !=
-                                value.start.toStringAsFixed(0)) {
-                          minAreaController.text =
-                              value.start.toStringAsFixed(0);
-                        }
-
-                        if (!isMaxAreaTyping ||
-                            maxAreaController.text !=
-                                value.end.toStringAsFixed(0)) {
-                          maxAreaController.text = value.end.toStringAsFixed(0);
-                        }
-                      });
-                      updateFilterCount();
-                    },
-                    child: SizedBox(
-                      height: 70,
-                      width: double.infinity,
-                      child: SfCartesianChart(
-                        plotAreaBorderColor: Colors.transparent,
-                        margin: const EdgeInsets.all(0),
-                        primaryXAxis: NumericAxis(
-                            minimum: 0, maximum: 10000, isVisible: false),
-                        primaryYAxis: NumericAxis(isVisible: false),
-                        plotAreaBorderWidth: 0,
-                        plotAreaBackgroundColor: Colors.transparent,
-                        series: <ColumnSeries<Dataarea, double>>[
-                          ColumnSeries<Dataarea, double>(
-                            dataSource: chartDataarea,
-                            selectionBehavior: SelectionBehavior(
-                              unselectedOpacity: 0,
-                              selectedOpacity: 0,
-                              unselectedColor: Colors.transparent,
-                              selectionController: _rangeControllerarea,
-                            ),
-                            xValueMapper: (Dataarea sales, int index) =>
-                            sales.x,
-                            yValueMapper: (Dataarea sales, int index) =>
-                            sales.y,
-                            pointColorMapper: (Dataarea sales, int index) =>
-                            const Color.fromARGB(255, 37, 117, 212),
-                            dashArray: const <double>[5, 3],
-                            animationDuration: 0,
-                            borderWidth: 0,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+              const Divider(
+                height: 1,
+                indent: 15,
+                endIndent: 15,
               ),
+              const SizedBox(height: 20),
             ],
-          ),
-          const SizedBox(height: 10),
-          const Divider(
-            height: 1,
-            indent: 15,
-            endIndent: 15,
-          ),
-          const SizedBox(height: 20),
-          //furnished
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: Text(
-                  "Furnished Type",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.left,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 5),
-          Padding(
-            padding: const EdgeInsets.all(5),
-            child: SizedBox(
-              height: 60,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                physics: const ScrollPhysics(),
-                itemCount: _ftype.length,
-                itemBuilder: (context, index) {
-                  final isSelected = selectedIndex == index;
-                  return GestureDetector(
-                    onTap: () async {
-                      setState(() {
-                        selectedIndex = index;
-                        ftype = _ftype[index];
-                      });
-                      await updateFilterCount(); // ✅ call API to update count
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 5),
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: isSelected
-                              ? Colors.black87
-                              : Colors.grey.shade300,
-                          width: isSelected ? 2 : 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            offset: Offset(4, 4),
-                            blurRadius: 8,
-                            spreadRadius: 2,
-                          ),
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.8),
-                            offset: Offset(-4, -4),
-                            blurRadius: 8,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (isSelected) ...[
-                            Icon(Icons.check, size: 18, color: Colors.green),
-                            SizedBox(width: 4),
-                          ],
-                          Text(
-                            _ftype[index],
-                            style: TextStyle(
-                              color: Colors.black,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-          const Divider(
-            height: 1,
-            indent: 15,
-            endIndent: 15,
-          ),
-          const SizedBox(height: 20),
-
-          // --- Completion Status ---
-          if (showHandoverBy) ...[
-            Padding(
-              padding: const EdgeInsets.only(left: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Handover By',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 15),
-
-                  // ✅ Handover By chips (4 visible + scrollable)
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      const double spacing = 10;
-                      final double chipWidth =
-                          (constraints.maxWidth - (spacing * 3)) /
-                              4; // 4 per viewport
-
-                      return SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: List.generate(_handoverOptions.length, (i) {
-                            final bool isSelected = selectedHandover == i;
-
-                            return Container(
-                              width: chipWidth,
-                              margin: EdgeInsets.only(
-                                  right: i == _handoverOptions.length - 1
-                                      ? 0
-                                      : spacing),
-                              child: GestureDetector(
-                                onTap: () async {
-                                  setState(() {
-                                    selectedHandover = i;
-                                    handoverBy = (_handoverOptions[i] == 'Any')
-                                        ? ''
-                                        : _handoverOptions[i];
-                                  });
-                                  await updateFilterCount();
-                                },
-                                child: Container(
-                                  constraints:
-                                  const BoxConstraints(minHeight: 34),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? const Color(0xFFF5F4F9)
-                                        : Colors.white,
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? Colors.black
-                                          : const Color(0xFFE6E4EE),
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.15),
-                                        offset: const Offset(0, 2),
-                                        blurRadius: 4,
-                                        spreadRadius: 0,
-                                      ),
-                                      BoxShadow(
-                                        color: Colors.white.withOpacity(0.9),
-                                        offset: const Offset(-2, -2),
-                                        blurRadius: 6,
-                                        spreadRadius: 2,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Text(
-                                    _handoverOptions[i],
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      letterSpacing: 0.2,
-                                      color: Colors.black,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(
-              height: 20,
-            ),
-
-// % Completion (under Handover By)
-            Padding(
-              padding: const EdgeInsets.only(left: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '% Completion',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 15),
-
-                  // 4 visible + scrollable, same as Handover By
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      const double spacing = 10;
-                      final double chipWidth =
-                          (constraints.maxWidth - (spacing * 3)) /
-                              4; // 4 per viewport
-
-                      return SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: List.generate(
-                              _percentCompletionOptions.length, (i) {
-                            final bool isSelected =
-                                selectedPercentCompletion == i;
-
-                            return Container(
-                              width: chipWidth,
-                              margin: EdgeInsets.only(
-                                right: i == _percentCompletionOptions.length - 1
-                                    ? 0
-                                    : spacing,
-                              ),
-                              child: GestureDetector(
-                                onTap: () async {
-                                  setState(() {
-                                    selectedPercentCompletion = i;
-                                    percentCompletion =
-                                    (_percentCompletionOptions[i] == 'Any')
-                                        ? ''
-                                        : _percentCompletionOptions[i];
-                                  });
-                                  await updateFilterCount();
-                                },
-                                child: Container(
-                                  constraints:
-                                  const BoxConstraints(minHeight: 34),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? const Color(0xFFF5F4F9)
-                                        : Colors.white,
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? Colors.black
-                                          : const Color(0xFFE6E4EE),
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.15),
-                                        offset: const Offset(0, 2),
-                                        blurRadius: 4,
-                                        spreadRadius: 0,
-                                      ),
-                                      BoxShadow(
-                                        color: Colors.white.withOpacity(0.9),
-                                        offset: const Offset(-2, -2),
-                                        blurRadius: 6,
-                                        spreadRadius: 2,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Text(
-                                    _percentCompletionOptions[i],
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      letterSpacing: 0.2,
-                                      color: Colors.black,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(
-              height: 15,
-            ),
-            //Amenities
-
-            // const SizedBox(height: 20),
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 16),
-            //   child: Container(
-            //     width: double.infinity,
-            //     height: 100,
-            //     padding: const EdgeInsets.all(16),
-            //     decoration: BoxDecoration(
-            //       color: Color(0xFFFFFBF0)
-            //       ,
-            //       borderRadius: BorderRadius.circular(10),
-            //       boxShadow: [
-            //         BoxShadow(
-            //           color: Colors.grey.withOpacity(0.2),
-            //           blurRadius: 6,
-            //           offset: Offset(0, 3),
-            //         ),
-            //       ],
-            //     ),
-            //     child: Column(
-            //       crossAxisAlignment: CrossAxisAlignment.start,
-            //       children: [
-            //         Row(
-            //           children: [
-            //             Image.asset(
-            //               "assets/images/app-icon_new.png",
-            //               width: 22,
-            //               height: 22,
-            //               fit: BoxFit.contain,
-            //             ),
-            //             const SizedBox(width: 8),
-            //             const Text(
-            //               "Explore more locations",
-            //               style: TextStyle(
-            //                 fontSize: 16,
-            //                 fontWeight: FontWeight.bold,
-            //                 color: Colors.black87,
-            //                 letterSpacing: 0.5,
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //
-            //         const SizedBox(height: 12),
-            //         Row(
-            //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //           children: ["Dubai", "AbuDhabi", "Sharjah", "Ajman", "Al Ain"].map((city) {
-            //             return Container(
-            //               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            //               decoration: BoxDecoration(
-            //                 color: Colors.white,
-            //                 borderRadius: BorderRadius.circular(12),
-            //                 boxShadow: [
-            //                   BoxShadow(
-            //                     color: Colors.grey.withOpacity(0.2),
-            //                     blurRadius: 4,
-            //                     offset: Offset(1, 2),
-            //                   ),
-            //                 ],
-            //               ),
-            //               child: Text(
-            //                 city,
-            //                 style: const TextStyle(
-            //                   fontSize: 13,
-            //                   fontWeight: FontWeight.w600,
-            //                   color: Colors.black87,
-            //                 ),
-            //               ),
-            //             );
-            //           }).toList(),
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
-            // const SizedBox(height: 20),
-
-            const Divider(
-              height: 1,
-              indent: 15,
-              endIndent: 15,
-            ),
-            SizedBox(
-              height: 8,
-            ),
-            // Container(
-            //   height: 100,
-            // ),
-            // GestureDetector(
-            //   onTap: () {
-            //     showResult();
-            //   },
-            //   child: Padding(
-            //     padding: const EdgeInsets.only(top: 25.0, left: 15, bottom: 15, right: 15),
-            //     child: Container(
-            //       width: screenSize.width * 0.9,
-            //       height: 45,
-            //       decoration: BoxDecoration(
-            //         color: Colors.red,
-            //         borderRadius: BorderRadiusDirectional.circular(6.0),
-            //         boxShadow: [
-            //           BoxShadow(
-            //             color: Colors.grey,
-            //             offset: const Offset(0.3, 0.3),
-            //             blurRadius: 0.3,
-            //             spreadRadius: 0.3,
-            //           ),
-            //           BoxShadow(
-            //             color: Colors.white,
-            //             offset: const Offset(0.0, 0.0),
-            //             blurRadius: 0.0,
-            //             spreadRadius: 0.0,
-            //           ),
-            //         ],
-            //       ),
-            //       child: Center(
-            //         child: Text(
-            //           "Showing $displayedFilterResultCount Results" ,// ✅ Live count!
-            //           style: TextStyle(
-            //             color: Colors.white,
-            //             letterSpacing: 0.5,
-            //             fontWeight: FontWeight.bold,
-            //             fontSize: 15,
-            //           ),
-            //           textAlign: TextAlign.center,
-            //         ),
-            //       ),
-            //     ),
-            //   ),
-            // ),
-          ],
-
-          // --- Amenities (always for Properties) ---
-          if (showAmenities) ...[
-            const SizedBox(height: 15),
-            Row(
-              children: const [
+            //text
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Padding(
-                  padding: EdgeInsets.only(left: 20),
+                  padding: const EdgeInsets.only(left: 20),
                   child: Text(
-                    "Amenities",
+                    "Price range",
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 16.0,
@@ -2596,141 +1653,613 @@ class _FilterDemoState extends State<FilterDemo> {
                 ),
               ],
             ),
+
             const SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              child: GridView.builder(
-                itemCount: _showAllAmenities ? amenities.length : 5,
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 4,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                ),
-                itemBuilder: (context, index) {
-                  final isSelected =
-                  selectedAmenitiesId.contains(amenities[index].id);
-
-                  return GestureDetector(
-                    onTap: () async {
-                      setState(() {
-                        isSelected
-                            ? selectedAmenitiesId.remove(amenities[index].id)
-                            : selectedAmenitiesId.add(amenities[index].id!);
-                      });
-                      await updateFilterCount();
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: isSelected
-                              ? Colors.black87
-                              : Colors.grey.shade300,
-                          width: isSelected ? 2 : 1,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 3,
-                            offset: Offset(0, 1),
+                padding: const EdgeInsets.only(top: 0, left: 20, right: 10),
+                child: Row(spacing: 15, children: [
+                  Container(
+                    width: screenSize.width * 0.38,
+                    height: 40,
+                    padding: const EdgeInsets.only(top: 8, left: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadiusDirectional.circular(6.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
                           ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Row(
-                        children: [
-                          CachedNetworkImage(
-                            imageUrl: amenities[index].icon ?? '',
-                            width: 18,
-                            height: 18,
-                            placeholder: (context, url) => const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                            errorWidget: (context, url, error) =>
-                            const Icon(Icons.broken_image, size: 18),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              amenities[index].title ?? '',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        ],
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: TextFormField(
+                        controller: minPriceController,
+                        keyboardType: TextInputType.number,
+                        decoration:
+                            const InputDecoration(border: InputBorder.none),
+                        onTap: () => isMinTyping = true, // 👈 starts typing
+                        onEditingComplete: () =>
+                            isMinTyping = false, // 👈 ends typing (on "done")
+                        onChanged: (val) {
+                          final start = double.tryParse(val) ?? 0;
+                          if (start <= _values.end) {
+                            setState(() {
+                              _values = SfRangeValues(start, _values.end);
+                              min_price = start.toStringAsFixed(0);
+                            });
+                            showResult(autoUpdate: true);
+                          }
+                        },
                       ),
                     ),
-                  );
-                },
-              ),
-            ),
-            if (amenities.length > 6)
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child: TextButton(
-                  onPressed: () async {
-                    await Future.wait(
-                      amenities.map((a) async {
-                        final url = a.icon;
-                        if (url != null && url.isNotEmpty) {
-                          try {
-                            final provider = CachedNetworkImageProvider(url);
-                            await precacheImage(provider, context);
-                          } catch (_) {}
-                        }
-                      }),
-                    );
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => FullAmenitiesScreen(
-                          allAmenities: amenities,
-                          selectedAmenitiesId: selectedAmenitiesId,
-                          onDone: (selected) async {
-                            setState(() => selectedAmenitiesId = selected);
-                            await updateFilterCount();
-                          },
-                        ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5),
+                    child: Text(
+                      "to",
+                      style: TextStyle(color: Colors.black, fontSize: 15.0),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                  Container(
+                    width: screenSize.width * 0.38,
+                    height: 40,
+                    padding: const EdgeInsets.only(top: 8, left: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadiusDirectional.circular(6.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: const Offset(
+                            0.3,
+                            0.3,
+                          ),
+                          blurRadius: 0.3,
+                          spreadRadius: 0.3,
+                        ), //BoxShadow
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: const Offset(0.0, 0.0),
+                          blurRadius: 0.0,
+                          spreadRadius: 0.0,
+                        ), //BoxShadow
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: TextFormField(
+                        controller: maxPriceController,
+                        keyboardType: TextInputType.number,
+                        decoration:
+                            const InputDecoration(border: InputBorder.none),
+                        onTap: () => isMaxTyping = true,
+                        onEditingComplete: () => isMaxTyping = false,
+                        onChanged: (val) {
+                          final end = double.tryParse(val) ?? 0;
+                          if (end >= _values.start) {
+                            setState(() {
+                              _values = SfRangeValues(_values.start, end);
+                              max_price = end.toStringAsFixed(0);
+                            });
+                            showResult(autoUpdate: true);
+                          }
+                        },
                       ),
-                    );
+                    ),
+                  ),
+                ])),
+            const SizedBox(height: 20),
+            //rangeslider
+            Padding(
+              padding: const EdgeInsets.all(0),
+              child: SfRangeSelectorTheme(
+                data: SfRangeSelectorThemeData(
+                  overlappingTooltipStrokeColor: Color(0x80E0E0E0),
+                  tooltipBackgroundColor: Colors.black,
+                  activeDividerStrokeWidth: 1,
+                  activeDividerRadius: 2,
+                  thumbStrokeWidth: 0.5, // Change tooltip background color
+                  tooltipTextStyle: TextStyle(
+                    color: Colors.white, // Change tooltip text color
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                child: SfRangeSelector(
+                  min: 500,
+                  max: 300000,
+                  interval: 10000,
+                  activeColor: Color(0xFF2575D4), // ✅ blue line
+
+                  inactiveColor: Color(0x80F1EEEE),
+                  enableTooltip: true,
+                  shouldAlwaysShowTooltip: true,
+                  controller: _priceRangeController,
+
+                  tooltipTextFormatterCallback: (actualValue, _) =>
+                      'AED ${actualValue.toInt()}',
+                  onChanged: (SfRangeValues value) {
+                    setState(() {
+                      _values = SfRangeValues(value.start, value.end);
+                      min_price = value.start.toStringAsFixed(0);
+                      max_price = value.end.toStringAsFixed(0);
+
+                      // ✅ Force update min only if not currently editing, or if value actually changed
+                      if (!isMinTyping ||
+                          minPriceController.text !=
+                              value.start.toStringAsFixed(0)) {
+                        minPriceController.text =
+                            value.start.toStringAsFixed(0);
+                      }
+
+                      if (!isMaxTyping ||
+                          maxPriceController.text !=
+                              value.end.toStringAsFixed(0)) {
+                        maxPriceController.text = value.end.toStringAsFixed(0);
+                      }
+                    });
+
+                    showResult(autoUpdate: true);
                   },
-                  child: Text(
-                    _showAllAmenities
-                        ? "Show less amenities"
-                        : "Show more amenities",
-                    style: const TextStyle(
-                      color: Colors.blueAccent,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+
+                  child: SizedBox(
+                    height: 60,
+                    width: double.infinity,
+                    child: SfCartesianChart(
+                      backgroundColor: Colors.transparent,
+                      plotAreaBorderColor: Colors.transparent,
+                      margin: const EdgeInsets.all(0),
+                      primaryXAxis: NumericAxis(
+                        minimum: 500,
+                        maximum: 10000,
+                        isVisible: false,
+                      ),
+                      primaryYAxis: NumericAxis(isVisible: false),
+                      plotAreaBorderWidth: 0,
+                      plotAreaBackgroundColor: Colors.transparent,
+                      series: <ColumnSeries<Data, double>>[
+                        ColumnSeries<Data, double>(
+                          trackColor: Colors.transparent,
+                          //color: Color.fromARGB(255, 126, 184, 253),
+                          //opacity: 0.5,
+                          dataSource: chartData,
+                          selectionBehavior: SelectionBehavior(
+                            unselectedOpacity: 0.0,
+                            selectedColor: Colors.transparent,
+                            selectedOpacity: 0.0,
+                            unselectedColor: Colors.transparent,
+                            selectionController: _rangeController,
+                          ),
+                          xValueMapper: (Data sales, int index) => sales.x,
+                          yValueMapper: (Data sales, int index) => sales.y,
+                          pointColorMapper: (Data sales, int index) {
+                            return const Color.fromARGB(255, 37, 117, 212);
+                          },
+                          // color: const Color.fromRGBO(255, 255, 255, 0),
+                          dashArray: const <double>[5, 3],
+                          // borderColor: const Color.fromRGBO(194, 194, 194, 1),
+                          animationDuration: 0,
+                          borderWidth: 0,
+                          //opacity: 0.5,
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-            if (!isBuyMode) ...[
-              const SizedBox(height: 10),
-              const Divider(height: 1, indent: 15, endIndent: 15),
-              const SizedBox(height: 20),
-            ],
-          ],
-
-          //real estate
-          if (showRentPaid) ...[
+            ),
+            const SizedBox(height: 10),
+            const Divider(
+              height: 1,
+              indent: 15,
+              endIndent: 15,
+            ),
+            const SizedBox(height: 20),
             Row(
-              children: const [
+              children: [
                 Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  // child:  Text(_values.start.toStringAsFixed(2),
+                  child: Text(
+                    "Bedrooms",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            //studio
+            Padding(
+              padding: const EdgeInsets.all(5),
+              child: SizedBox(
+                height: 60,
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _bedroom.length,
+                  itemBuilder: (context, index) {
+                    final isSelected = selectedBedrooms.contains(index);
+
+                    return GestureDetector(
+                      onTap: () async {
+                        setState(() {
+                          if (selectedBedrooms.contains(index)) {
+                            selectedBedrooms.remove(index);
+                          } else {
+                            selectedBedrooms.add(index);
+                          }
+
+                          // Convert selected values into comma-separated string
+                          bedroom = selectedBedrooms
+                              .map((i) => _bedroom[i])
+                              .join(',');
+                        });
+
+                        await updateFilterCount(); // ✅ NOW this will work
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 5),
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(
+                            color: isSelected
+                                ? Colors.black87
+                                : Colors.grey.shade300,
+                            width: isSelected ? 2 : 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              offset: Offset(0, 2),
+                              blurRadius: 4,
+                              spreadRadius: 0,
+                            ),
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.8),
+                              offset: Offset(-4, -4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (isSelected) ...[
+                              Icon(Icons.check, size: 18, color: Colors.green),
+                              SizedBox(width: 4),
+                            ],
+                            Text(
+                              _bedroom[index],
+                              style: TextStyle(
+                                color: Colors.black,
+                                letterSpacing: 0.5,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+            const Divider(
+              height: 1,
+              indent: 15,
+              endIndent: 15,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  // child:  Text(bedroom,
+                  child: Text(
+                    "Bathrooms",
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5),
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            Padding(
+              padding: const EdgeInsets.all(5),
+              child: SizedBox(
+                height: 60,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _bathroom.length,
+                  itemBuilder: (context, index) {
+                    final isSelected = selectedBathrooms.contains(index);
+
+                    return GestureDetector(
+                      onTap: () async {
+                        setState(() {
+                          if (selectedBathrooms.contains(index)) {
+                            selectedBathrooms.remove(index);
+                          } else {
+                            selectedBathrooms.add(index);
+                          }
+
+                          bathroom = selectedBathrooms
+                              .map((i) => _bathroom[i])
+                              .join(',');
+                        });
+
+                        await updateFilterCount(); // ✅ call API to update count
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 5),
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(
+                            color: isSelected
+                                ? Colors.black87
+                                : Colors.grey.shade300,
+                            width: isSelected ? 2 : 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              offset: Offset(4, 4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.8),
+                              offset: Offset(-4, -4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (isSelected) ...[
+                              Icon(Icons.check, size: 18, color: Colors.green),
+                              SizedBox(width: 4),
+                            ],
+                            Text(
+                              _bathroom[index],
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+            const Divider(
+              height: 1,
+              indent: 15,
+              endIndent: 15,
+            ),
+            const SizedBox(height: 20),
+            //area
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
                   padding: EdgeInsets.only(left: 20),
                   child: Text(
-                    "Rent is paid",
+                    "Area/Size",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      // Minimum area input
+                      Expanded(
+                        child: Container(
+                          height: 40,
+                          padding: const EdgeInsets.only(left: 8),
+                          decoration: _inputBoxDecoration(),
+                          child: TextFormField(
+                            controller: minAreaController,
+                            keyboardType: TextInputType.number,
+                            decoration:
+                                const InputDecoration(border: InputBorder.none),
+                            onTap: () => isMinAreaTyping = true,
+                            onEditingComplete: () => isMinAreaTyping = false,
+                            onChanged: (val) {
+                              final start = double.tryParse(val) ?? 0;
+                              if (start <= _valuesArea.end) {
+                                setState(() {
+                                  _valuesArea =
+                                      SfRangeValues(start, _valuesArea.end);
+                                  min_sqrfeet = start.toStringAsFixed(0);
+                                });
+                                updateFilterCount();
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Text("to", style: TextStyle(fontSize: 15)),
+                      ),
+                      // Maximum area input
+                      Expanded(
+                        child: Container(
+                          height: 40,
+                          padding: const EdgeInsets.only(left: 8),
+                          decoration: _inputBoxDecoration(),
+                          child: TextFormField(
+                            controller: maxAreaController,
+                            keyboardType: TextInputType.number,
+                            decoration:
+                                const InputDecoration(border: InputBorder.none),
+                            onTap: () => isMaxAreaTyping = true,
+                            onEditingComplete: () => isMaxAreaTyping = false,
+                            onChanged: (val) {
+                              final end = double.tryParse(val) ?? 0;
+                              if (end >= _valuesArea.start) {
+                                setState(() {
+                                  _valuesArea =
+                                      SfRangeValues(_valuesArea.start, end);
+                                  max_sqrfeet = end.toStringAsFixed(0);
+                                });
+                                updateFilterCount();
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Slider
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: SfRangeSelectorTheme(
+                    data: SfRangeSelectorThemeData(
+                      tooltipBackgroundColor: Colors.black,
+                      tooltipTextStyle: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    child: SfRangeSelector(
+                      min: 0,
+                      max: 10000,
+                      interval: 1000,
+                      enableTooltip: true,
+                      shouldAlwaysShowTooltip: true,
+                      activeColor: const Color(0xFF2575D4),
+                      inactiveColor: const Color(0x80F1EEEE),
+                      controller: _areaRangeController,
+                      onChanged: (value) {
+                        setState(() {
+                          _valuesArea = SfRangeValues(value.start, value.end);
+                          min_sqrfeet = value.start.toStringAsFixed(0);
+                          max_sqrfeet = value.end.toStringAsFixed(0);
+
+                          // Sync text fields only if user isn't editing
+                          if (!isMinAreaTyping ||
+                              minAreaController.text !=
+                                  value.start.toStringAsFixed(0)) {
+                            minAreaController.text =
+                                value.start.toStringAsFixed(0);
+                          }
+
+                          if (!isMaxAreaTyping ||
+                              maxAreaController.text !=
+                                  value.end.toStringAsFixed(0)) {
+                            maxAreaController.text =
+                                value.end.toStringAsFixed(0);
+                          }
+                        });
+                        updateFilterCount();
+                      },
+                      child: SizedBox(
+                        height: 70,
+                        width: double.infinity,
+                        child: SfCartesianChart(
+                          plotAreaBorderColor: Colors.transparent,
+                          margin: const EdgeInsets.all(0),
+                          primaryXAxis: NumericAxis(
+                              minimum: 0, maximum: 10000, isVisible: false),
+                          primaryYAxis: NumericAxis(isVisible: false),
+                          plotAreaBorderWidth: 0,
+                          plotAreaBackgroundColor: Colors.transparent,
+                          series: <ColumnSeries<Dataarea, double>>[
+                            ColumnSeries<Dataarea, double>(
+                              dataSource: chartDataarea,
+                              selectionBehavior: SelectionBehavior(
+                                unselectedOpacity: 0,
+                                selectedOpacity: 0,
+                                unselectedColor: Colors.transparent,
+                                selectionController: _rangeControllerarea,
+                              ),
+                              xValueMapper: (Dataarea sales, int index) =>
+                                  sales.x,
+                              yValueMapper: (Dataarea sales, int index) =>
+                                  sales.y,
+                              pointColorMapper: (Dataarea sales, int index) =>
+                                  const Color.fromARGB(255, 37, 117, 212),
+                              dashArray: const <double>[5, 3],
+                              animationDuration: 0,
+                              borderWidth: 0,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const Divider(
+              height: 1,
+              indent: 15,
+              endIndent: 15,
+            ),
+            const SizedBox(height: 20),
+            //furnished
+            Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: Text(
+                    "Furnished Type",
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 16.0,
@@ -2750,19 +2279,20 @@ class _FilterDemoState extends State<FilterDemo> {
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   physics: const ScrollPhysics(),
-                  itemCount: _rent.length,
+                  itemCount: _ftype.length,
                   itemBuilder: (context, index) {
-                    final isSelected = selectedrent == index;
+                    final isSelected = selectedIndex == index;
                     return GestureDetector(
                       onTap: () async {
                         setState(() {
-                          selectedrent = index;
-                          rent = _rent[index];
+                          selectedIndex = index;
+                          ftype = _ftype[index];
                         });
-                        await updateFilterCount();
+                        await updateFilterCount(); // ✅ call API to update count
                       },
                       child: Container(
-                        margin: const EdgeInsets.all(5),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 5),
                         padding: const EdgeInsets.symmetric(horizontal: 15),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -2775,13 +2305,13 @@ class _FilterDemoState extends State<FilterDemo> {
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.withOpacity(0.5),
-                              offset: const Offset(4, 4),
+                              offset: Offset(4, 4),
                               blurRadius: 8,
                               spreadRadius: 2,
                             ),
                             BoxShadow(
                               color: Colors.white.withOpacity(0.8),
-                              offset: const Offset(-4, -4),
+                              offset: Offset(-4, -4),
                               blurRadius: 8,
                               spreadRadius: 2,
                             ),
@@ -2793,13 +2323,12 @@ class _FilterDemoState extends State<FilterDemo> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (isSelected) ...[
-                              const Icon(Icons.check,
-                                  size: 18, color: Colors.green),
-                              const SizedBox(width: 4),
+                              Icon(Icons.check, size: 18, color: Colors.green),
+                              SizedBox(width: 4),
                             ],
                             Text(
-                              _rent[index],
-                              style: const TextStyle(
+                              _ftype[index],
+                              style: TextStyle(
                                 color: Colors.black,
                                 letterSpacing: 0.5,
                                 fontWeight: FontWeight.bold,
@@ -2814,22 +2343,692 @@ class _FilterDemoState extends State<FilterDemo> {
                 ),
               ),
             ),
-          ],
 
-          if (showRentPaid) ...[
-            const Divider(height: 1, indent: 15, endIndent: 15),
+            const SizedBox(height: 20),
+            const Divider(
+              height: 1,
+              indent: 15,
+              endIndent: 15,
+            ),
+            const SizedBox(height: 20),
+
+            // --- Completion Status ---
+            if (showHandoverBy) ...[
+              Padding(
+                padding: const EdgeInsets.only(left: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Handover By',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 15),
+
+                    // ✅ Handover By chips (4 visible + scrollable)
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        const double spacing = 10;
+                        final double chipWidth =
+                            (constraints.maxWidth - (spacing * 3)) /
+                                4; // 4 per viewport
+
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children:
+                                List.generate(_handoverOptions.length, (i) {
+                              final bool isSelected = selectedHandover == i;
+
+                              return Container(
+                                width: chipWidth,
+                                margin: EdgeInsets.only(
+                                    right: i == _handoverOptions.length - 1
+                                        ? 0
+                                        : spacing),
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    setState(() {
+                                      selectedHandover = i;
+                                      handoverBy =
+                                          (_handoverOptions[i] == 'Any')
+                                              ? ''
+                                              : _handoverOptions[i];
+                                    });
+                                    await updateFilterCount();
+                                  },
+                                  child: Container(
+                                    constraints:
+                                        const BoxConstraints(minHeight: 34),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? const Color(0xFFF5F4F9)
+                                          : Colors.white,
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? Colors.black
+                                            : const Color(0xFFE6E4EE),
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.15),
+                                          offset: const Offset(0, 2),
+                                          blurRadius: 4,
+                                          spreadRadius: 0,
+                                        ),
+                                        BoxShadow(
+                                          color: Colors.white.withOpacity(0.9),
+                                          offset: const Offset(-2, -2),
+                                          blurRadius: 6,
+                                          spreadRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      _handoverOptions[i],
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        letterSpacing: 0.2,
+                                        color: Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(
+                height: 20,
+              ),
+
+              // % Completion (under Handover By)
+              Padding(
+                padding: const EdgeInsets.only(left: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '% Completion',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 15),
+
+                    // 4 visible + scrollable, same as Handover By
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        const double spacing = 10;
+                        final double chipWidth =
+                            (constraints.maxWidth - (spacing * 3)) /
+                                4; // 4 per viewport
+
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: List.generate(
+                                _percentCompletionOptions.length, (i) {
+                              final bool isSelected =
+                                  selectedPercentCompletion == i;
+
+                              return Container(
+                                width: chipWidth,
+                                margin: EdgeInsets.only(
+                                  right:
+                                      i == _percentCompletionOptions.length - 1
+                                          ? 0
+                                          : spacing,
+                                ),
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    setState(() {
+                                      selectedPercentCompletion = i;
+                                      percentCompletion =
+                                          (_percentCompletionOptions[i] ==
+                                                  'Any')
+                                              ? ''
+                                              : _percentCompletionOptions[i];
+                                    });
+                                    await updateFilterCount();
+                                  },
+                                  child: Container(
+                                    constraints:
+                                        const BoxConstraints(minHeight: 34),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? const Color(0xFFF5F4F9)
+                                          : Colors.white,
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? Colors.black
+                                            : const Color(0xFFE6E4EE),
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.15),
+                                          offset: const Offset(0, 2),
+                                          blurRadius: 4,
+                                          spreadRadius: 0,
+                                        ),
+                                        BoxShadow(
+                                          color: Colors.white.withOpacity(0.9),
+                                          offset: const Offset(-2, -2),
+                                          blurRadius: 6,
+                                          spreadRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      _percentCompletionOptions[i],
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        letterSpacing: 0.2,
+                                        color: Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(
+                height: 15,
+              ),
+              //Amenities
+
+              // const SizedBox(height: 20),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 16),
+              //   child: Container(
+              //     width: double.infinity,
+              //     height: 100,
+              //     padding: const EdgeInsets.all(16),
+              //     decoration: BoxDecoration(
+              //       color: Color(0xFFFFFBF0)
+              //       ,
+              //       borderRadius: BorderRadius.circular(10),
+              //       boxShadow: [
+              //         BoxShadow(
+              //           color: Colors.grey.withOpacity(0.2),
+              //           blurRadius: 6,
+              //           offset: Offset(0, 3),
+              //         ),
+              //       ],
+              //     ),
+              //     child: Column(
+              //       crossAxisAlignment: CrossAxisAlignment.start,
+              //       children: [
+              //         Row(
+              //           children: [
+              //             Image.asset(
+              //               "assets/images/app-icon_new.png",
+              //               width: 22,
+              //               height: 22,
+              //               fit: BoxFit.contain,
+              //             ),
+              //             const SizedBox(width: 8),
+              //             const Text(
+              //               "Explore more locations",
+              //               style: TextStyle(
+              //                 fontSize: 16,
+              //                 fontWeight: FontWeight.bold,
+              //                 color: Colors.black87,
+              //                 letterSpacing: 0.5,
+              //               ),
+              //             ),
+              //           ],
+              //         ),
+              //
+              //         const SizedBox(height: 12),
+              //         Row(
+              //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //           children: ["Dubai", "AbuDhabi", "Sharjah", "Ajman", "Al Ain"].map((city) {
+              //             return Container(
+              //               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              //               decoration: BoxDecoration(
+              //                 color: Colors.white,
+              //                 borderRadius: BorderRadius.circular(12),
+              //                 boxShadow: [
+              //                   BoxShadow(
+              //                     color: Colors.grey.withOpacity(0.2),
+              //                     blurRadius: 4,
+              //                     offset: Offset(1, 2),
+              //                   ),
+              //                 ],
+              //               ),
+              //               child: Text(
+              //                 city,
+              //                 style: const TextStyle(
+              //                   fontSize: 13,
+              //                   fontWeight: FontWeight.w600,
+              //                   color: Colors.black87,
+              //                 ),
+              //               ),
+              //             );
+              //           }).toList(),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+              // const SizedBox(height: 20),
+
+              const Divider(
+                height: 1,
+                indent: 15,
+                endIndent: 15,
+              ),
+              SizedBox(
+                height: 8,
+              ),
+              // Container(
+              //   height: 100,
+              // ),
+              // GestureDetector(
+              //   onTap: () {
+              //     showResult();
+              //   },
+              //   child: Padding(
+              //     padding: const EdgeInsets.only(top: 25.0, left: 15, bottom: 15, right: 15),
+              //     child: Container(
+              //       width: screenSize.width * 0.9,
+              //       height: 45,
+              //       decoration: BoxDecoration(
+              //         color: Colors.red,
+              //         borderRadius: BorderRadiusDirectional.circular(6.0),
+              //         boxShadow: [
+              //           BoxShadow(
+              //             color: Colors.grey,
+              //             offset: const Offset(0.3, 0.3),
+              //             blurRadius: 0.3,
+              //             spreadRadius: 0.3,
+              //           ),
+              //           BoxShadow(
+              //             color: Colors.white,
+              //             offset: const Offset(0.0, 0.0),
+              //             blurRadius: 0.0,
+              //             spreadRadius: 0.0,
+              //           ),
+              //         ],
+              //       ),
+              //       child: Center(
+              //         child: Text(
+              //           "Showing $displayedFilterResultCount Results" ,// ✅ Live count!
+              //           style: TextStyle(
+              //             color: Colors.white,
+              //             letterSpacing: 0.5,
+              //             fontWeight: FontWeight.bold,
+              //             fontSize: 15,
+              //           ),
+              //           textAlign: TextAlign.center,
+              //         ),
+              //       ),
+              //     ),
+              //   ),
+              // ),
+            ],
+
+            Padding(
+              padding: EdgeInsets.only(left: 15, right: 15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(left: 5),
+                    child: Text(
+                      "Agent or Agency",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                  const SizedBox(height: 13),
+                  SizedBox(
+                      height: 48,
+                      width: double.infinity,
+                      child: TextFormField(
+                        // controller: controller,
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 16),
+                        decoration: InputDecoration(
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white, // Background red
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 8),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide:
+                                const BorderSide(color: Colors.grey, width: 1),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide:
+                                const BorderSide(color: Colors.grey, width: 1),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide:
+                                const BorderSide(color: Colors.red, width: 1),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                                color: Colors.grey, width: 1.5),
+                          ),
+                          hintText: 'Search agent or agency by name',
+                          hintStyle: const TextStyle(
+                              color: Colors.black54, fontSize: 14.7),
+                        ),
+                        cursorColor: Colors.redAccent,
+                      )),
+                  SizedBox(
+                    height: 30,
+                  ),
+                ],
+              ),
+            ),
+
+            const Divider(
+              height: 1,
+              indent: 15,
+              endIndent: 15,
+            ),
+            SizedBox(
+              height: 8,
+            ),
+
+            // --- Amenities (always for Properties) ---
+            if (showAmenities) ...[
+              const SizedBox(height: 15),
+              Row(
+                children: const [
+                  Padding(
+                    padding: EdgeInsets.only(left: 20),
+                    child: Text(
+                      "Amenities",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: GridView.builder(
+                  itemCount: _showAllAmenities ? amenities.length : 5,
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 4,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemBuilder: (context, index) {
+                    final isSelected =
+                        selectedAmenitiesId.contains(amenities[index].id);
+
+                    return GestureDetector(
+                      onTap: () async {
+                        setState(() {
+                          isSelected
+                              ? selectedAmenitiesId.remove(amenities[index].id)
+                              : selectedAmenitiesId.add(amenities[index].id!);
+                        });
+                        await updateFilterCount();
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(
+                            color: isSelected
+                                ? Colors.black87
+                                : Colors.grey.shade300,
+                            width: isSelected ? 2 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 3,
+                              offset: Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(
+                          children: [
+                            CachedNetworkImage(
+                              imageUrl: amenities[index].icon ?? '',
+                              width: 18,
+                              height: 18,
+                              placeholder: (context, url) => const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.broken_image, size: 18),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                amenities[index].title ?? '',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              if (amenities.length > 6)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: TextButton(
+                    onPressed: () async {
+                      await Future.wait(
+                        amenities.map((a) async {
+                          final url = a.icon;
+                          if (url != null && url.isNotEmpty) {
+                            try {
+                              final provider = CachedNetworkImageProvider(url);
+                              await precacheImage(provider, context);
+                            } catch (_) {}
+                          }
+                        }),
+                      );
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FullAmenitiesScreen(
+                            allAmenities: amenities,
+                            selectedAmenitiesId: selectedAmenitiesId,
+                            onDone: (selected) async {
+                              setState(() => selectedAmenitiesId = selected);
+                              await updateFilterCount();
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      _showAllAmenities
+                          ? "Show less amenities"
+                          : "Show more amenities",
+                      style: const TextStyle(
+                        color: Colors.blueAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              if (!isBuyMode) ...[
+                const SizedBox(height: 10),
+                const Divider(height: 1, indent: 15, endIndent: 15),
+                const SizedBox(height: 20),
+              ],
+            ],
+
+            //real estate
+            if (showRentPaid) ...[
+              Row(
+                children: const [
+                  Padding(
+                    padding: EdgeInsets.only(left: 20),
+                    child: Text(
+                      "Rent is paid",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 5),
+              Padding(
+                padding: const EdgeInsets.all(5),
+                child: SizedBox(
+                  height: 60,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const ScrollPhysics(),
+                    itemCount: _rent.length,
+                    itemBuilder: (context, index) {
+                      final isSelected = selectedrent == index;
+                      return GestureDetector(
+                        onTap: () async {
+                          setState(() {
+                            selectedrent = index;
+                            rent = _rent[index];
+                          });
+                          await updateFilterCount();
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(5),
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.black87
+                                  : Colors.grey.shade300,
+                              width: isSelected ? 2 : 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                offset: const Offset(4, 4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.8),
+                                offset: const Offset(-4, -4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (isSelected) ...[
+                                const Icon(Icons.check,
+                                    size: 18, color: Colors.green),
+                                const SizedBox(width: 4),
+                              ],
+                              Text(
+                                _rent[index],
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  letterSpacing: 0.5,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+
+            if (showRentPaid) ...[
+              const Divider(height: 1, indent: 15, endIndent: 15),
+              const SizedBox(height: 8),
+            ],
+
+            // ✅ always show the CTA (not inside any condition)
             const SizedBox(height: 8),
-          ],
+            _showResultsButton(context, screenSize),
+            const SizedBox(height: 90),
 
-          // ✅ always show the CTA (not inside any condition)
-          const SizedBox(height: 8),
-          _showResultsButton(context, screenSize),
-          const SizedBox(height: 90),
-
-          Container(
-            height: 10,
-          ),
-        ]),
+            Container(
+              height: 10,
+            ),
+          ]),
+        ),
       ),
     );
   }
@@ -2945,7 +3144,7 @@ class _FilterDemoState extends State<FilterDemo> {
             icon: pageIndex == 2
                 ? const Icon(Icons.favorite, color: Colors.red, size: 30)
                 : const Icon(Icons.favorite_border_outlined,
-                color: Colors.red, size: 30),
+                    color: Colors.red, size: 30),
           ),
 
           IconButton(
@@ -3001,15 +3200,15 @@ class _FilterDemoState extends State<FilterDemo> {
             },
             icon: pageIndex == 3
                 ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
+                    Icons.dehaze,
+                    color: Colors.red,
+                    size: 35,
+                  )
                 : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
-            ),
+                    Icons.dehaze_outlined,
+                    color: Colors.red,
+                    size: 35,
+                  ),
           ),
         ],
       ),
