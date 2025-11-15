@@ -1,5 +1,6 @@
 // lib/main.dart
 
+
 // Providers
 import 'package:Akarat/providers/favorite_provider.dart';
 import 'package:Akarat/providers/filter_provider.dart';
@@ -26,14 +27,47 @@ import 'package:flutter/material.dart';
 // Env (for API_BASE_URL, etc.)
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 // State management
+
+// Dart / Flutter
+import 'package:flutter/material.dart';
+
+// Env (for API_BASE_URL, etc.)
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+// Firebase
+import 'package:firebase_core/firebase_core.dart';
+
+// State management
 import 'package:provider/provider.dart';
+
+// Screens
+import 'package:Akarat/screen/splash_screen.dart';
+import 'package:Akarat/screen/home.dart'; // wraps HomeDemo inside
+import 'package:Akarat/screen/login.dart';
+import 'package:Akarat/screen/register_screen.dart';
+import 'package:Akarat/screen/my_account.dart';
+import 'package:Akarat/screen/forgot_password.dart';
+import 'package:Akarat/screen/new_projects.dart';
+import 'package:Akarat/screen/otp_verification.dart';
+import 'package:Akarat/screen/reset_password.dart';
+
+// Providers
+import 'package:Akarat/providers/favorite_provider.dart';
+import 'package:Akarat/providers/search_amenities_provider.dart';
+import 'package:Akarat/providers/profile_image_provider.dart';
+import 'package:Akarat/providers/location_picker_provider.dart';
+
+// Services / Utils
+import 'package:Akarat/services/api_service.dart';
+import 'package:Akarat/services/session.dart';
+
 
 // -------------------------------------------------------
 // Global keys
 // -------------------------------------------------------
 final GlobalKey<NavigatorState> navKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> _smKey =
-    GlobalKey<ScaffoldMessengerState>();
+GlobalKey<ScaffoldMessengerState>();
 
 // -------------------------------------------------------
 // Entry point
@@ -138,11 +172,16 @@ class MyApp extends StatelessWidget {
           // Navigator.pushNamed(context, '/verify-otp', arguments: {'email': 'x@y.com'});
           final raw = settings.arguments;
           final Map<String, dynamic> args =
+
               (raw is Map) ? Map<String, dynamic>.from(raw) : const {};
+
+
+
 
           return MaterialPageRoute(
             builder: (_) =>
-                const OtpVerificationScreen(), // reads args via ModalRoute
+            const OtpVerificationScreen(), // reads args via ModalRoute
+
             settings: RouteSettings(name: name, arguments: args),
           );
         }
@@ -150,17 +189,17 @@ class MyApp extends StatelessWidget {
         if (name == '/reset-password') {
           final raw = settings.arguments;
           final Map<String, dynamic> args =
-              (raw is Map) ? Map<String, dynamic>.from(raw) : const {};
+          (raw is Map) ? Map<String, dynamic>.from(raw) : const {};
           final email = (args['email'] ?? '').toString();
           final token = (args['token'] ?? '').toString();
 
           return MaterialPageRoute(
             builder: (_) => (email.isEmpty || token.isEmpty)
                 ? const Scaffold(
-                    body: Center(
-                      child: Text('Missing arguments for reset password.'),
-                    ),
-                  )
+              body: Center(
+                child: Text('Missing arguments for reset password.'),
+              ),
+            )
                 : ResetPasswordScreen(email: email, token: token),
             settings: RouteSettings(name: name, arguments: args),
           );
