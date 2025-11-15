@@ -1119,22 +1119,35 @@ class _AboutAgentState extends State<AboutAgent> {
                                                                                 const BoxConstraints(),
                                                                               ),
                                                                             ),
-                                                                            const Positioned(
+                                                                             Positioned(
                                                                               left: 16,
                                                                               right: 16,
                                                                               bottom: 12,
                                                                               child: Row(
                                                                                 children: [
-                                                                                  Expanded(
+                                                                                  const Expanded(
                                                                                     child: Text(
                                                                                       'Login required to add favorites.',
-                                                                                      style: TextStyle(
-                                                                                          color: Colors.white,
-                                                                                          fontSize: 13),
+                                                                                      style: TextStyle(color: Colors.white, fontSize: 13),
                                                                                     ),
                                                                                   ),
-                                                                                  SizedBox(width: 12),
-                                                                                  // Tap handler below
+                                                                                  const SizedBox(width: 12),
+                                                                                  GestureDetector(
+                                                                                    onTap: () {
+                                                                                      Navigator.of(ctx).pop();
+                                                                                      Navigator.of(ctx).pushNamed('/login');
+                                                                                    },
+                                                                                    child: const Text(
+                                                                                      'Login',
+                                                                                      style: TextStyle(
+                                                                                        color: Colors.white,
+                                                                                        fontWeight: FontWeight.bold,
+                                                                                        decoration: TextDecoration.underline,
+                                                                                        decorationColor: Colors.white,
+                                                                                        decorationThickness: 1.5,
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
                                                                                 ],
                                                                               ),
                                                                             ),
@@ -1362,7 +1375,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                                       Image.asset("assets/images/messure.png",
                                                           height: 13),
                                                       const SizedBox(width: 5),
-                                                      Text(property.squareFeet.toString()),
+                                                      Text(property.squareFeet ?? '-'),
                                                     ],
                                                   ),
                                                 ),

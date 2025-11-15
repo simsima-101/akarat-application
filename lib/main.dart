@@ -1,32 +1,39 @@
-// Dart / Flutter
-// Providers
-import 'package:Akarat/providers/favorite_provider.dart';
+// lib/main.dart
 
-import 'package:Akarat/providers/search_amenities_provider.dart';
-import 'package:Akarat/screen/forgot_password.dart';
-import 'package:Akarat/screen/home.dart'; // wraps HomeDemo inside
-import 'package:Akarat/screen/login.dart';
-import 'package:Akarat/screen/my_account.dart';
-import 'package:Akarat/screen/new_projects.dart';
-import 'package:Akarat/screen/otp_verification.dart';
-import 'package:Akarat/screen/register_screen.dart';
-import 'package:Akarat/screen/reset_password.dart';
-// Screens
-import 'package:Akarat/screen/splash_screen.dart';
-// Utils / Services
-import 'package:Akarat/services/api_service.dart';
-// Firebase
-import 'package:firebase_core/firebase_core.dart';
+// Dart / Flutter
+import 'package:Akarat/services/session.dart';
 import 'package:flutter/material.dart';
-// If you used `flutterfire configure`, consider:
-// import 'firebase_options.dart';
 
 // Env (for API_BASE_URL, etc.)
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+// Firebase
+import 'package:firebase_core/firebase_core.dart';
+// If you used `flutterfire configure`, prefer:
+// import 'firebase_options.dart';
+
 // State management
 import 'package:provider/provider.dart';
 
-import 'providers/profile_image_provider.dart';
+// Screens
+import 'package:Akarat/screen/splash_screen.dart';
+import 'package:Akarat/screen/home.dart'; // wraps HomeDemo inside
+import 'package:Akarat/screen/login.dart';
+import 'package:Akarat/screen/register_screen.dart';
+import 'package:Akarat/screen/my_account.dart';
+import 'package:Akarat/screen/forgot_password.dart';
+import 'package:Akarat/screen/new_projects.dart';
+import 'package:Akarat/screen/otp_verification.dart';
+import 'package:Akarat/screen/reset_password.dart';
+
+// Providers
+import 'package:Akarat/providers/favorite_provider.dart';
+import 'package:Akarat/providers/search_amenities_provider.dart';
+import 'package:Akarat/providers/profile_image_provider.dart';
+
+// Services / Utils
+import 'package:Akarat/services/api_service.dart';
+
 
 // -------------------------------------------------------
 // Global keys
@@ -41,7 +48,7 @@ GlobalKey<ScaffoldMessengerState>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1) Load environment variables (safe if .env missing; you may use --dart-define instead)
+  // 1) Load environment variables (safe if .env is missing; you may use --dart-define instead)
   try {
     await dotenv.load(fileName: ".env");
   } catch (_) {
@@ -51,10 +58,13 @@ Future<void> main() async {
   // 2) Initialize Firebase (required for Google Sign-In, FCM, etc.)
   await _initFirebase();
 
-  // 3) Optional: log effective base URL once at startup
+  // 3) Hydrate Session from SecureStorage so UI knows login state immediately
+  await Session().hydrate();
+
+  // 4) Optional: log effective base URL once at startup
   ApiService.debugPrintBaseUrl();
 
-  // 4) Initialize providers that need async setup before runApp
+  // 5) Initialize providers that need async setup before runApp
   final profileProvider = ProfileImageProvider();
   await profileProvider.initialize();
 
@@ -70,7 +80,6 @@ Future<void> main() async {
           },
         ),
         ChangeNotifierProvider.value(value: profileProvider),
-
         ChangeNotifierProvider(create: (_) => SearchAmenitiesProvider()),
       ],
       child: const MyApp(),
@@ -86,10 +95,10 @@ Future<void> _initFirebase() async {
     // Prefer this if you have firebase_options.dart:
     // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-    // Otherwise, rely on native config files (GoogleService-Info.plist / google-services.json)
+    // Otherwise rely on native config files (GoogleService-Info.plist / google-services.json)
     await Firebase.initializeApp();
   } catch (e) {
-    // Don't crash; log and allow the app to continue (non-Firebase features still work)
+    // Don't crash; log and allow app to continue (non-Firebase features still work)
     // ignore: avoid_print
     print('⚠️ Firebase initialization failed: $e');
   }
@@ -117,6 +126,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const Login(),
         '/register': (context) => const RegisterScreen(),
+        // Keep both spellings for safety; prefer '/my-account'
+        '/my-account': (context) => const My_Account(),
         '/my_accounts': (context) => const My_Account(),
         '/home': (context) => const Home(),
         '/forgot-password': (context) => const ForgotPasswordScreen(),
@@ -128,15 +139,13 @@ class MyApp extends StatelessWidget {
         final name = settings.name ?? '';
 
         if (name == '/verify-otp') {
-          // You can pass args when pushing:
+          // Push with (optional) args:
           // Navigator.pushNamed(context, '/verify-otp', arguments: {'email': 'x@y.com'});
           final raw = settings.arguments;
           final Map<String, dynamic> args =
           (raw is Map) ? Map<String, dynamic>.from(raw) : const {};
-
           return MaterialPageRoute(
-            builder: (_) =>
-            const OtpVerificationScreen(), // reads args via ModalRoute
+            builder: (_) => const OtpVerificationScreen(), // reads args via ModalRoute
             settings: RouteSettings(name: name, arguments: args),
           );
         }

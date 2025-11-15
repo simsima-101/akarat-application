@@ -75,7 +75,7 @@ class Data {
 
   int? bedrooms;
   int? bathrooms;
-  int? squareFeet;
+  String? squareFeet;
 
   Data(
       {this.id,
@@ -123,7 +123,8 @@ class Data {
 
     bedrooms = int.tryParse(json['bedrooms']?.toString() ?? '');
     bathrooms = int.tryParse(json['bathrooms']?.toString() ?? '');
-    squareFeet = int.tryParse(json['square_feet']?.toString() ?? '');
+
+    squareFeet = json['square_feet']?.toString();
 
 
     if (json['media'] != null) {

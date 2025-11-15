@@ -2,89 +2,50 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
 
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 import '../model/agencypropertiesmodel.dart'; // for Property
-import '../secure_storage.dart'; // so we can read/write api_host
 
 class ApiService {
   // =========================================================
-  // BASE URL RESOLUTION (define > .env > runtime override > default)
+  // BASE URL RESOLUTION (define > .env > default) + runtime override
   // =========================================================
-
-  // In-memory runtime override (set after login to lock host: QA/PROD)
   static String? _runtimeBaseUrl;
 
-  /// Call this right after a successful login to pin the host used there.
-  /// Example: ApiService.setRuntimeBase('https://qa.akarat.com/api');
   static void setRuntimeBase(String base) {
     final clean = base.trim().replaceFirst(RegExp(r'/+$'), '');
     _runtimeBaseUrl = clean;
-
-    // Persist so future app runs reuse the same host.
-    SecureStorage.write('api_host', clean);
-    if (kDebugMode) {
-      print('ApiService runtime base set → $_runtimeBaseUrl');
-    }
+    if (kDebugMode) print('ApiService runtime base set → $_runtimeBaseUrl');
   }
 
-  /// Clears the runtime override (e.g., on logout)
   static void clearRuntimeBase() {
     _runtimeBaseUrl = null;
-    SecureStorage.delete('api_host');
     if (kDebugMode) print('ApiService runtime base cleared.');
   }
 
-  /// Best-effort: read persisted host from storage on app start (call once in main()).
-  static Future<void> ensureBaseFromStorage() async {
-    if (_runtimeBaseUrl != null) return;
-    final stored = (await SecureStorage.read('api_host'))?.trim();
-    if (stored != null && stored.isNotEmpty) {
-      _runtimeBaseUrl = stored.replaceFirst(RegExp(r'/+$'), '');
-      if (kDebugMode) {
-        print(
-          'ApiService restored runtime base from storage → $_runtimeBaseUrl',
-        );
-      }
-    }
-  }
-
-  // 1) Compile-time define / dart-define
   static String get _rawBaseUrl {
     const fromDefine = String.fromEnvironment('API_BASE_URL');
     if (fromDefine.trim().isNotEmpty) {
       return fromDefine.replaceFirst(RegExp(r'/+$'), '');
     }
-
-    // 2) .env at runtime (if loaded in main before first access)
     final fromEnv = (dotenv.env['API_BASE_URL'] ?? '').trim();
     if (fromEnv.isNotEmpty) {
       return fromEnv.replaceFirst(RegExp(r'/+$'), '');
     }
-
-    // 3) Fallback → default to QA
     return 'https://qa.akarat.com/api';
   }
 
-  /// Returns the currently effective base:
-  /// - prefers in-memory runtime override (pinned host),
-  /// - else compile/env value,
-  /// - Android emulator localhost rewrite is applied.
   static String get _effectiveBaseUrl {
     var url = (_runtimeBaseUrl ?? _rawBaseUrl);
-
-    // Android emulator localhost adjustment
     if (!kIsWeb &&
         Platform.isAndroid &&
         (url.contains('127.0.0.1') || url.contains('localhost'))) {
       try {
         final u = Uri.parse(url);
-        final host = (u.host == 'localhost' || u.host == '127.0.0.1')
-            ? '10.0.2.2'
-            : u.host;
+        final host =
+        (u.host == 'localhost' || u.host == '127.0.0.1') ? '10.0.2.2' : u.host;
         url = u.replace(host: host).toString();
       } catch (_) {
         url = url
@@ -95,15 +56,13 @@ class ApiService {
     return url;
   }
 
-  /// Public base URL getter (rarely needed directly; prefer [buildUri])
   static String get baseUrl => _effectiveBaseUrl;
 
-  /// Call once (e.g., in main()) to confirm what URL is used.
   static void debugPrintBaseUrl() {
     if (kDebugMode) {
-      print('BASE URL (define/env):          $_rawBaseUrl');
-      print('BASE URL (runtime override):    ${_runtimeBaseUrl ?? '(none)'}');
-      print('BASE URL (effective):           $_effectiveBaseUrl');
+      print('BASE URL (define/env):       $_rawBaseUrl');
+      print('BASE URL (runtime override): ${_runtimeBaseUrl ?? '(none)'}');
+      print('BASE URL (effective):        $_effectiveBaseUrl');
     }
   }
 
@@ -124,6 +83,7 @@ class ApiService {
   // =========================================================
   // UTILS
   // =========================================================
+  static const _timeout = Duration(seconds: 25);
 
   static bool _looksJson(http.Response r) {
     final ct = (r.headers['content-type'] ?? '').toLowerCase();
@@ -137,7 +97,6 @@ class ApiService {
     return body.startsWith('<!doctype') || body.startsWith('<html');
   }
 
-  /// INTERNAL Uri builder
   static Uri _buildUri(String endpoint, [Map<String, String>? queryParams]) {
     final cleanEndpoint =
     endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
@@ -146,16 +105,8 @@ class ApiService {
     return uri;
   }
 
-  /// PUBLIC Uri builder – use this in other files instead of hard-coding
-  /// "https://akarat.com/api/..." or using `$apiBase`.
-  ///
-  /// Example:
-  ///   final url = ApiService.buildUri('toggle-saved-property');
-  ///   final url = ApiService.buildUri('properties/$id');
-  ///   final url = ApiService.buildUri('saved-property-list', query: {'page': '1'});
-  static Uri buildUri(String endpoint, {Map<String, String>? query}) {
-    return _buildUri(endpoint, query);
-  }
+  static Uri buildUri(String endpoint, {Map<String, String>? query}) =>
+      _buildUri(endpoint, query);
 
   static Map<String, dynamic> _decodeMap(String body) {
     try {
@@ -166,8 +117,6 @@ class ApiService {
     }
   }
 
-  /// Safely extract a List from common API shapes:
-  /// [], { data: [] }, { data: { data: [] } }
   static List<dynamic> _decodeList(String body) {
     try {
       final decoded = jsonDecode(body);
@@ -188,13 +137,171 @@ class ApiService {
 
   static String _normEmail(String email) => email.trim().toLowerCase();
 
-  // Timeouts for all http.* calls
-  static const _timeout = Duration(seconds: 25);
+  /// Extracts token from common shapes:
+  /// {token}, {access_token}, {data:{token}}, {data:{access_token}}
+  static String? extractToken(Map<String, dynamic> m) {
+    final t1 = (m['token'] ?? '').toString().trim();
+    if (t1.isNotEmpty) return t1;
+    final t2 = (m['access_token'] ?? '').toString().trim();
+    if (t2.isNotEmpty) return t2;
+    final d = m['data'];
+    if (d is Map<String, dynamic>) {
+      final t3 = (d['token'] ?? '').toString().trim();
+      if (t3.isNotEmpty) return t3;
+      final t4 = (d['access_token'] ?? '').toString().trim();
+      if (t4.isNotEmpty) return t4;
+    }
+    return null;
+  }
 
   // =========================================================
-  // GOOGLE LOGIN ONLY
+  // IDENTITY HELPERS (fixes name fallback issues on re-login)
   // =========================================================
 
+  /// Extract “best available” identity from a typical backend JSON.
+  /// Supports:
+  ///  - flat: { first_name,last_name,name,email }
+  ///  - nested: { user:{...} } / { data:{ user:{...} } }
+  ///
+  ///
+  ///
+
+
+  // --- compatibility wrapper so existing call sites can use extractIdentity(...) ---
+  static ({String first, String last, String name, String email}) extractIdentity(
+      Map<String, dynamic> src) {
+    return extractIdentityFromAny(src);
+  }
+
+
+
+  static ({String first, String last, String name, String email}) extractIdentityFromAny(
+      Map<String, dynamic> src) {
+    String pickStr(List<List<String>> paths) {
+      for (final p in paths) {
+        dynamic cur = src;
+        for (final k in p) {
+          if (cur is Map && cur.containsKey(k)) {
+            cur = cur[k];
+          } else {
+            cur = null;
+            break;
+          }
+        }
+        if (cur is String && cur.trim().isNotEmpty) {
+          return cur.trim();
+        }
+      }
+      return '';
+    }
+
+    final first = pickStr([
+      ['first_name'],
+      ['user', 'first_name'],
+      ['data', 'first_name'],
+      ['data', 'user', 'first_name'],
+    ]);
+
+    final last = pickStr([
+      ['last_name'],
+      ['user', 'last_name'],
+      ['data', 'last_name'],
+      ['data', 'user', 'last_name'],
+    ]);
+
+    String name = pickStr([
+      ['name'],
+      ['user', 'name'],
+      ['data', 'name'],
+      ['data', 'user', 'name'],
+    ]);
+
+    String email = pickStr([
+      ['email'],
+      ['user', 'email'],
+      ['data', 'email'],
+      ['data', 'user', 'email'],
+    ]);
+
+    // Synthesize missing pieces from name when possible
+    String f = first, l = last;
+    if ((f.isEmpty || l.isEmpty) && name.isNotEmpty) {
+      final parts = name.split(RegExp(r'\s+'));
+      f = f.isEmpty ? (parts.isNotEmpty ? parts.first : '') : f;
+      l = l.isEmpty ? (parts.length > 1 ? parts.sublist(1).join(' ') : '') : l;
+    }
+    if (name.isEmpty) {
+      name = [f, l].where((s) => s.isNotEmpty).join(' ').trim();
+    }
+
+    return (first: f, last: l, name: name, email: email);
+  }
+
+  /// Try `/me` to fetch canonical identity if the login payload is thin.
+  static Future<({String first, String last, String name, String email})?>
+  tryFetchMe(String token) async {
+    try {
+      final resp = await _getAuth('/me', token);
+      if (!_looksJson(resp)) return null;
+      final data = _decodeMap(resp.body);
+      final id = extractIdentityFromAny(data);
+      // If everything is empty, treat as failure.
+      if (id.first.isEmpty && id.last.isEmpty && id.name.isEmpty && id.email.isEmpty) {
+        return null;
+      }
+      return id;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Convenience: perform `/login`, return token + best-available identity.
+  /// UI can use this to avoid guessing name from email on re-login.
+  static Future<({
+  String token,
+  String first,
+  String last,
+  String name,
+  String email,
+  Map<String, dynamic> raw
+  })> loginWithIdentity({
+    required String email,
+    required String password,
+  }) async {
+    final res = await login(email: email, password: password);
+    final status = res['__status'] as int? ?? 500;
+    if (status != 200) {
+      throw Exception(res['message']?.toString().isNotEmpty == true
+          ? res['message'].toString()
+          : 'Login failed ($status)');
+    }
+
+    final token = extractToken(res);
+    if (token == null || token.isEmpty) {
+      throw Exception('Login succeeded but token missing.');
+    }
+
+    // Extract identity from login body first
+    var id = extractIdentityFromAny(res);
+
+    // If first/last missing, try /me
+    if (id.first.isEmpty && id.last.isEmpty) {
+      final fetched = await tryFetchMe(token);
+      if (fetched != null) id = fetched;
+    }
+
+    // Final fallback: synthesize from email local-part (only if still empty)
+    if (id.first.isEmpty && id.last.isEmpty) {
+      final local = (id.email.isNotEmpty ? id.email : _normEmail(email)).split('@').first;
+      id = (first: local, last: '', name: id.name.isNotEmpty ? id.name : local, email: id.email.isNotEmpty ? id.email : _normEmail(email));
+    }
+
+    return (token: token, first: id.first, last: id.last, name: id.name, email: id.email, raw: res);
+  }
+
+  // =========================================================
+  // GOOGLE LOGIN
+  // =========================================================
   static Future<bool> checkUserExistsByEmail(String email) async {
     final normalized = _normEmail(email);
     final resp = await _get('/users/check', {'email': normalized});
@@ -206,16 +313,12 @@ class ApiService {
       if (v is String) return v.toLowerCase() == 'true' || v == '1';
       return false;
     }
-    if (resp.statusCode == 422 || resp.statusCode == 404) {
-      return false;
-    }
+    if (resp.statusCode == 422 || resp.statusCode == 404) return false;
     throw Exception('Check failed: ${resp.statusCode} ${resp.body}');
   }
 
-  /// Main Google login (sends { "google_id_token": "<Firebase ID token>" }).
   static Future<Map<String, dynamic>> loginWithGoogleIdToken(
-      String firebaseIdToken,
-      ) async {
+      String firebaseIdToken) async {
     final resp =
     await _post('/login-google', {"google_id_token": firebaseIdToken});
 
@@ -227,8 +330,6 @@ class ApiService {
 
     final data = _decodeMap(resp.body);
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
-      // If backend returns host hints (not required), you could pin here:
-      // setRuntimeBase(baseUrl);
       return data;
     }
     throw Exception(
@@ -236,7 +337,34 @@ class ApiService {
     );
   }
 
-  /// If some legacy caller uses "tryLoginGoogle", keep this safe version.
+  /// Convenience: Google login + identity (mirrors loginWithIdentity).
+  static Future<({
+  String token,
+  String first,
+  String last,
+  String name,
+  String email,
+  Map<String, dynamic> raw
+  })> loginWithGoogleIdentity(String firebaseIdToken) async {
+    final data = await loginWithGoogleIdToken(firebaseIdToken);
+    final token = extractToken(data);
+    if (token == null || token.isEmpty) {
+      throw Exception('Google login succeeded but token missing.');
+    }
+
+    var id = extractIdentityFromAny(data);
+    if (id.first.isEmpty && id.last.isEmpty) {
+      final fetched = await tryFetchMe(token);
+      if (fetched != null) id = fetched;
+    }
+    if (id.first.isEmpty && id.last.isEmpty) {
+      final local = (id.email.isNotEmpty ? id.email : '').split('@').first;
+      id = (first: local, last: '', name: id.name.isNotEmpty ? id.name : local, email: id.email);
+    }
+
+    return (token: token, first: id.first, last: id.last, name: id.name, email: id.email, raw: data);
+  }
+
   static Future<String?> tryLoginGoogle(String firebaseIdToken) async {
     try {
       final r =
@@ -246,13 +374,7 @@ class ApiService {
       }
       if (r.statusCode >= 200 && r.statusCode < 300) {
         final m = _decodeMap(r.body);
-        final t = ((m['token'] ??
-            m['access_token'] ??
-            m['data']?['token'] ??
-            m['data']?['access_token']) ??
-            '')
-            .toString();
-        if (t.isNotEmpty) return t;
+        return extractToken(m);
       }
     } catch (e) {
       if (kDebugMode) print('[/login-google] error: $e');
@@ -260,87 +382,58 @@ class ApiService {
     return null;
   }
 
-  /// Logout with an existing token.
   static Future<void> logoutUser(String token) async {
-    final dio = Dio(
-      BaseOptions(
-        baseUrl: _effectiveBaseUrl,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-        connectTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 20),
-      ),
-    );
-    final r = await dio.post('/logout');
-    if (r.statusCode != 200) throw Exception('Logout failed');
+    final resp = await _postAuth('/logout', token, const {});
+    if (resp.statusCode != 200) {
+      throw Exception('Logout failed: ${resp.statusCode}');
+    }
   }
 
   // =========================================================
-  // DISABLED LEGACY AUTH ENDPOINTS (to avoid accidental calls)
+  // EMAIL/PASSWORD + OTP REGISTRATION
   // =========================================================
 
-  @Deprecated('Disabled: Google login only')
-  static Future<Never> socialAuthGoogle({
-    required String idToken,
-    String? email,
-    String? name,
-    String? photo,
-    String? providerUid,
-  }) async {
-    throw UnimplementedError(
-      '/social-auth/google is not supported. Use /login-google with google_id_token.',
-    );
-  }
-
-  @Deprecated('Disabled: Google login only')
-  static Future<Never> registerUser({
-    required String name,
+  /// Thin register call (JSON). Prefer `registerStart()` which normalizes output.
+  static Future<Map<String, dynamic>> register({
+    required String firstName,
+    required String lastName,
     required String email,
+    required String phoneCode, // '971' or '+971'
+    required String phone,
     required String password,
     required String passwordConfirmation,
   }) async {
-    throw UnimplementedError('/register disabled. Use Google login only.');
+    final cc = phoneCode.trim().startsWith('+')
+        ? phoneCode.trim()
+        : '+${phoneCode.trim()}';
+
+    final res = await http
+        .post(
+      _buildUri('/register'),
+      headers: _jsonHeaders,
+      body: jsonEncode({
+        'first_name': firstName,
+        'last_name': lastName,
+        'email': email,
+        'phone_country_code': cc,
+        'phone': phone,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      }),
+    )
+        .timeout(_timeout);
+    return _decorateStatus(res);
   }
 
-  @Deprecated('Disabled: Google login only')
-  static Future<Never> loginUser({
-    required String email,
-    required String password,
-  }) async {
-    throw UnimplementedError('/login disabled. Use Google login only.');
-  }
-
-  @Deprecated('Disabled: Google login only')
-  static Future<Never> forgotPassword(String email) async {
-    throw UnimplementedError(
-      'Password reset disabled. Use Google login only.',
-    );
-  }
-
-  @Deprecated('Disabled: Google login only')
-  static Future<Never> resetPassword({
-    required String email,
-    required String token,
-    required String password,
-    required String passwordConfirmation,
-  }) async {
-    throw UnimplementedError(
-      'Password reset disabled. Use Google login only.',
-    );
-  }
-
-  // =========================================================
-  // ✅ OTP + REGISTRATION (ENABLED)
-  // =========================================================
-
-  /// Start registration (returns normalized shape incl. otp/expires/resendAfter/name/email)
+  /// Start registration. Returns a normalized shape and includes token if backend returns it.
+  ///
+  /// Output keys:
+  /// { '__status', 'message', 'otp', 'expires_in', 'resend_after', 'email', 'user', 'token', '__raw' }
   static Future<Map<String, dynamic>> registerStart({
     required String firstName,
     required String lastName,
     required String email,
-    required String phoneCountryCode,
+    required String phoneCountryCode, // include '+'
     required String phone,
     required String password,
     required String passwordConfirmation,
@@ -369,7 +462,7 @@ class ApiService {
       return int.tryParse(v);
     }
 
-    String? _extractFirstErrorMessage(Map<String, dynamic> data) {
+    String? _firstErr(Map<String, dynamic> data) {
       final errs = data['errors'];
       if (errs is Map) {
         for (final entry in errs.entries) {
@@ -383,11 +476,15 @@ class ApiService {
       return null;
     }
 
+    final cc = phoneCountryCode.trim().startsWith('+')
+        ? phoneCountryCode.trim()
+        : '+${phoneCountryCode.trim()}';
+
     final resp = await _postForm('/register', {
       'first_name': firstName.trim(),
       'last_name': lastName.trim(),
       'email': _normEmail(email),
-      'phone_country_code': phoneCountryCode.trim(),
+      'phone_country_code': cc,
       'phone': phone.trim(),
       'password': password,
       'password_confirmation': passwordConfirmation,
@@ -401,88 +498,79 @@ class ApiService {
 
     final data = _decodeMap(resp.body);
 
+    if (kDebugMode) {
+      print('[POST-FORM] ${resp.request?.url} -> ${resp.statusCode} ${resp.body}');
+    }
+
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       final otp = _pick(data, ['otp', 'data.otp', 'meta.otp']);
-      final emailOut = _pick(data, ['email', 'data.email', 'user.email']) ??
-          _normEmail(email);
+      final emailOut =
+          _pick(data, ['email', 'data.email', 'user.email']) ?? _normEmail(email);
       final expiresIn =
           _pickInt(data, ['expires_in', 'meta.expires_in']) ?? 300;
       final resendAfter =
           _pickInt(data, ['resend_after', 'meta.resend_after']) ?? 60;
       final nameOut =
           _pick(data, ['user', 'name', 'data.name']) ?? '$firstName $lastName';
+      final tokenOut = extractToken(data);
 
       return {
+        '__status': resp.statusCode,
+        'message': (data['message'] ?? '').toString(),
         'otp': otp,
-        'email': emailOut,
         'expires_in': expiresIn,
         'resend_after': resendAfter,
+        'email': emailOut,
         'user': nameOut,
-        'raw': data,
+        'token': tokenOut, // may be null if not issued at register step
+        '__raw': data,
       };
     }
 
     if (resp.statusCode == 422 || resp.statusCode == 409) {
-      final msg = _extractFirstErrorMessage(data) ??
+      final msg = _firstErr(data) ??
           'This email is already registered or the data is invalid.';
       throw Exception(msg);
     }
 
-    final backendMsg = _extractFirstErrorMessage(data);
+    final backendMsg = _firstErr(data);
     throw Exception(backendMsg ?? 'Registration failed (${resp.statusCode}).');
   }
 
-  /// Verify OTP
-  static Future<bool> verifyOtp({
+  /// Verify OTP — returns raw body so the OTP screen can extract token/name/email.
+  ///
+  /// Output keys:
+  /// { '__status', 'message', '__raw' }
+  static Future<Map<String, dynamic>> verifyOtp({
     required String email,
     required String otp,
   }) async {
-    const candidates = <String>[
-      '/verify-otp',
-      '/register/verify-otp',
-      '/auth/verify-otp',
-      '/register/verify',
-      '/auth/verify',
-    ];
+    final res = await http
+        .post(
+      _buildUri('/verify-otp'),
+      headers: _jsonHeaders,
+      body: jsonEncode({'email': email, 'otp': otp}),
+    )
+        .timeout(_timeout);
 
-    for (final ep in candidates) {
-      final resp = await _postForm(ep, {
-        'email': _normEmail(email),
-        'otp': otp.trim(),
-      });
-
-      if (_looksHtml(resp)) continue;
-
-      final code = resp.statusCode;
-      if (code >= 200 && code < 300) {
-        final j = _decodeMap(resp.body);
-        final success = (j['success'] == true) ||
-            (j['verified'] == true) ||
-            (j['status']?.toString().toLowerCase() == 'ok') ||
-            (j['message']?.toString().toLowerCase().contains('verified') ??
-                false);
-        return success;
-      }
-
-      if (code == 422 || code == 409) {
-        final j = _decodeMap(resp.body);
-        final msg = (j['message'] ??
-            (j['errors'] is Map
-                ? (j['errors'] as Map).values.first
-                : null))
-            ?.toString();
-        throw Exception(msg ?? 'Invalid or expired OTP.');
-      }
-
-      if (code == 404 || code == 405) continue;
+    Map<String, dynamic> raw;
+    try {
+      raw = jsonDecode(res.body) as Map<String, dynamic>;
+    } catch (_) {
+      raw = <String, dynamic>{};
     }
 
-    throw Exception(
-      'OTP verify endpoint not found. Ask backend for POST /verify-otp.',
-    );
+    if (kDebugMode) {
+      print('[POST-JSON] ${res.request?.url} -> ${res.statusCode} ${res.body}');
+    }
+
+    return {
+      '__status': res.statusCode,
+      'message': (raw['message'] ?? '').toString(),
+      '__raw': raw,
+    };
   }
 
-  /// Resend OTP
   static Future<bool> resendOtp({required String email}) async {
     const candidates = <String>[
       '/resend-otp',
@@ -498,8 +586,7 @@ class ApiService {
         final j = _decodeMap(resp.body);
         final ok = (j['success'] == true) ||
             (j['status']?.toString().toLowerCase() == 'ok') ||
-            (j['message']?.toString().toLowerCase().contains('sent') ??
-                false);
+            (j['message']?.toString().toLowerCase().contains('sent') ?? false);
         return ok;
       }
       if (resp.statusCode == 404 || resp.statusCode == 405) continue;
@@ -513,7 +600,7 @@ class ApiService {
     );
   }
 
-  /// Complete registration (optional token if your backend uses it)
+  /// Optional "complete registration" helper, tries a few common endpoints.
   static Future<Map<String, dynamic>> completeRegistration({
     required String firstName,
     required String lastName,
@@ -548,16 +635,18 @@ class ApiService {
       '/auth/register/complete',
     ];
 
+    final cc = (phoneCountryCode ?? '').trim();
+    final ccFixed = cc.isEmpty ? null : (cc.startsWith('+') ? cc : '+$cc');
+
     final fields = <String, String>{
       'first_name': firstName.trim(),
       'last_name': lastName.trim(),
       'name': name.trim().isNotEmpty ? name.trim() : '$firstName $lastName',
       'email': _normEmail(email),
       'password': password,
-      if (phoneCountryCode != null && phoneCountryCode.trim().isNotEmpty)
-        'phone_country_code': phoneCountryCode.trim(),
-      if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
-      if (token != null && token.trim().isNotEmpty) 'token': token.trim(),
+      if (ccFixed != null) 'phone_country_code': ccFixed,
+      if ((phone ?? '').trim().isNotEmpty) 'phone': (phone ?? '').trim(),
+      if ((token ?? '').trim().isNotEmpty) 'token': (token ?? '').trim(),
     };
 
     for (final ep in candidates) {
@@ -579,10 +668,11 @@ class ApiService {
             _pick(data, ['user', 'name', 'data.name']) ?? '$firstName $lastName';
 
         return {
-          'token': t, // may be null if backend doesn’t issue at this step
+          '__status': resp.statusCode,
+          'token': t,
           'email': userEmail,
           'user': userName,
-          'raw': data,
+          '__raw': data,
         };
       }
 
@@ -604,11 +694,25 @@ class ApiService {
   }
 
   // =========================================================
-  // Profile helpers
+  // LOGIN (email/password)
   // =========================================================
+  static Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
+    final res = await http
+        .post(
+      _buildUri('/login'),
+      headers: const {'Accept': 'application/json'},
+      body: {'email': _normEmail(email), 'password': password},
+    )
+        .timeout(_timeout);
+    return _decorateStatus(res);
+  }
 
-  /// Fetch current user profile. Normalizes the most common shapes.
-  /// (Call with the Sanctum token you got from /login-google)
+  // =========================================================
+  // Profile (/me)
+  // =========================================================
   static Future<Map<String, dynamic>> getMe(String token) async {
     final resp = await _getAuth('/me', token);
 
@@ -622,79 +726,14 @@ class ApiService {
     }
 
     final data = _decodeMap(resp.body);
-
-    dynamic pick(List<List<String>> paths) {
-      for (final p in paths) {
-        dynamic cur = data;
-        for (final k in p) {
-          if (cur is Map && cur.containsKey(k)) {
-            cur = cur[k];
-          } else {
-            cur = null;
-            break;
-          }
-        }
-        if (cur != null) return cur;
-      }
-      return null;
-    }
-
-    final first = (pick([
-      ['first_name'],
-      ['data', 'first_name'],
-      ['user', 'first_name'],
-      ['data', 'user', 'first_name'],
-    ]) ??
-        '')
-        .toString()
-        .trim();
-
-    final last = (pick([
-      ['last_name'],
-      ['data', 'last_name'],
-      ['user', 'last_name'],
-      ['data', 'user', 'last_name'],
-    ]) ??
-        '')
-        .toString()
-        .trim();
-
-    String name = (pick([
-      ['name'],
-      ['data', 'name'],
-      ['user', 'name'],
-      ['data', 'user', 'name'],
-    ]) ??
-        '')
-        .toString()
-        .trim();
-
-    final email = (pick([
-      ['email'],
-      ['data', 'email'],
-      ['user', 'email'],
-      ['data', 'user', 'email'],
-    ]) ??
-        '')
-        .toString()
-        .trim();
-
-    // If backend only returns `name`, synthesize first/last
-    String f = first, l = last;
-    if ((f.isEmpty || l.isEmpty) && name.isNotEmpty) {
-      final parts = name.split(RegExp(r'\s+'));
-      f = f.isEmpty ? (parts.isNotEmpty ? parts.first : '') : f;
-      l = l.isEmpty ? (parts.length > 1 ? parts.sublist(1).join(' ') : '') : l;
-    }
-    if (name.isEmpty) {
-      name = [f, l].where((s) => s.isNotEmpty).join(' ').trim();
-    }
+    // Normalize via the same extractor so callers always get the same shape
+    final id = extractIdentityFromAny(data);
 
     return {
-      'first_name': f,
-      'last_name': l,
-      'name': name,
-      'email': email,
+      'first_name': id.first,
+      'last_name': id.last,
+      'name': id.name,
+      'email': id.email,
       'raw': data,
     };
   }
@@ -702,7 +741,6 @@ class ApiService {
   // =========================================================
   // Properties & other existing calls
   // =========================================================
-
   static Future<List<Property>> getSavedProperties(String token) async {
     final resp = await _getAuth('/saved-property-list', token);
     if (resp.statusCode == 200 && _looksJson(resp)) {
@@ -742,8 +780,7 @@ class ApiService {
   }
 
   static Future<List<dynamic>> getFeaturedProperties({int page = 1}) async {
-    final resp =
-    await _get('/featured-properties', {"page": page.toString()});
+    final resp = await _get('/featured-properties', {"page": page.toString()});
     if (resp.statusCode == 200) return _decodeList(resp.body);
     throw Exception('Failed to get featured properties');
   }
@@ -771,9 +808,7 @@ class ApiService {
       'message': message.trim(),
     });
     if (kDebugMode) {
-      print(
-        '[POST-FORM] ${resp.request?.url} -> ${resp.statusCode} ${resp.body}',
-      );
+      print('[POST-FORM] ${resp.request?.url} -> ${resp.statusCode} ${resp.body}');
     }
     return resp.statusCode == 200 || resp.statusCode == 201;
   }
@@ -785,7 +820,7 @@ class ApiService {
         required String frequency,
         required String purpose,
         required String propertyType,
-        Map<String, dynamic>? extra, // min_price, max_price, etc.
+        Map<String, dynamic>? extra,
       }) async {
     final body = {
       "name": name.trim(),
@@ -809,8 +844,7 @@ class ApiService {
       if (decoded is List) return decoded;
       if (decoded is Map) {
         if (decoded['data'] is List) return decoded['data'];
-        if (decoded['data'] is Map &&
-            decoded['data']['data'] is List) {
+        if (decoded['data'] is Map && decoded['data']['data'] is List) {
           return decoded['data']['data'];
         }
         if (decoded['saved_searches'] is List) {
@@ -821,15 +855,13 @@ class ApiService {
     }
     final body = _decodeMap(resp.body);
     throw Exception(
-      body['message'] ??
-          'Failed to fetch saved alerts (${resp.statusCode})',
+      body['message'] ?? 'Failed to fetch saved alerts (${resp.statusCode})',
     );
   }
 
   // =========================================================
   // Generic HTTP
   // =========================================================
-
   static Future<http.Response> _post(
       String endpoint,
       Map<String, dynamic> body,
@@ -882,9 +914,7 @@ class ApiService {
       } else {
         final head =
         resp.body.substring(0, resp.body.length > 120 ? 120 : resp.body.length);
-        print(
-          '[GET*]  $url -> ${resp.statusCode} (Non-JSON) head: $head',
-        );
+        print('[GET*]  $url -> ${resp.statusCode} (Non-JSON) head: $head');
       }
     }
     if (resp.statusCode == 401) {
@@ -898,16 +928,13 @@ class ApiService {
         Map<String, String>? qs,
       ]) async {
     final url = _buildUri(endpoint, qs);
-    final resp =
-    await http.get(url, headers: _jsonHeaders).timeout(_timeout);
+    final resp = await http.get(url, headers: _jsonHeaders).timeout(_timeout);
     if (kDebugMode) {
       final ct = resp.headers['content-type'] ?? '';
       if (!ct.contains('application/json')) {
         final head =
         resp.body.substring(0, resp.body.length > 120 ? 120 : resp.body.length);
-        print(
-          '[GET]   $url -> ${resp.statusCode} (Non-JSON) body: $head',
-        );
+        print('[GET]   $url -> ${resp.statusCode} (Non-JSON) body: $head');
       } else {
         print('[GET]   $url -> ${resp.statusCode}');
       }
@@ -915,7 +942,7 @@ class ApiService {
     return resp;
   }
 
-  // --- Helpers for form-encoded posting (Laravel friendly) ---
+  // --- Laravel-friendly form posts ---
   static const Map<String, String> _formHeaders = {
     'Accept': 'application/json',
     'Content-Type': 'application/x-www-form-urlencoded',
@@ -927,12 +954,21 @@ class ApiService {
       Map<String, String> fields,
       ) async {
     final url = _buildUri(endpoint);
-    final resp = await http
-        .post(url, headers: _formHeaders, body: fields)
-        .timeout(_timeout);
+    final resp =
+    await http.post(url, headers: _formHeaders, body: fields).timeout(_timeout);
     if (kDebugMode) {
       print('[POST-FORM] $url -> ${resp.statusCode} ${resp.body}');
     }
     return resp;
+  }
+
+  static Map<String, dynamic> _decorateStatus(http.Response r) {
+    Map<String, dynamic> m = {};
+    try {
+      final v = jsonDecode(r.body);
+      if (v is Map<String, dynamic>) m = v;
+    } catch (_) {}
+    m['__status'] = r.statusCode;
+    return m;
   }
 }

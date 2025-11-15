@@ -8,10 +8,11 @@ import 'package:Akarat/services/api_service.dart'; // central base URL
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-/// Read the auth token from your secure storage.
+/// ✅ Read the auth token from your secure storage correctly.
 Future<String?> readToken() async {
   try {
-    return await SecureStorage.read('token'); // or SecureStorage.readToken()
+    // IMPORTANT: use the same helper you use everywhere else
+    return await SecureStorage.getToken();
   } catch (_) {
     return null;
   }
@@ -127,8 +128,9 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
 
   String _mapTypeForApi(String t) {
     final s = t.trim().toLowerCase();
-    if (s.isEmpty || s == 'all residential' || s == 'any' || s == 'all')
+    if (s.isEmpty || s == 'all residential' || s == 'any' || s == 'all') {
       return '';
+    }
     if (s.startsWith('office')) return 'office';
     if (s.startsWith('commercial')) return 'commercial';
     if (s.startsWith('apart')) return 'apartment';
@@ -144,6 +146,8 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
     final token = await readToken();
     if (!mounted) return null;
 
+    // If token is missing, still go to Login (this will only happen
+    // if user is REALLY logged out; otherwise it will now get the token correctly)
     if (token == null || token.isEmpty) {
       await Navigator.of(context)
           .push(MaterialPageRoute(builder: (_) => const Login()));
@@ -157,7 +161,8 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
     final token = await _requireAuth();
     if (token == null || !mounted) return;
     Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => SavedAlertsScreen(token: token)));
+      MaterialPageRoute(builder: (_) => SavedAlertsScreen(token: token)),
+    );
   }
 
   // Make 'New Projects' == 'new_projects', 'Buy' == 'Sale', trim, etc.
@@ -205,12 +210,13 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
       final data = body['data'];
       if (data is List) {
         list = data;
-      } else if (data is Map && data['data'] is List)
+      } else if (data is Map && data['data'] is List) {
         list = data['data']; // paginator
-      else if (body['saved_searches'] is List)
+      } else if (body['saved_searches'] is List) {
         list = body['saved_searches'];
-      else
+      } else {
         list = const [];
+      }
     } else {
       list = const [];
     }
@@ -221,8 +227,8 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
     for (final e in list) {
       final m = Map<String, dynamic>.from(e);
       final p = _canonPurpose((m['purpose'] ?? '').toString());
-      final t = _canonType(
-          (m['property_type'] ?? m['propertyType'] ?? '').toString());
+      final t =
+      _canonType((m['property_type'] ?? m['propertyType'] ?? '').toString());
 
       // Duplicate if BOTH match
       if (p == cp && t == ct) return true;
@@ -252,12 +258,13 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
         final data = body['data'];
         if (data is List) {
           list = data;
-        } else if (data is Map && data['data'] is List)
+        } else if (data is Map && data['data'] is List) {
           list = data['data'];
-        else if (body['saved_searches'] is List)
+        } else if (body['saved_searches'] is List) {
           list = body['saved_searches'];
-        else
+        } else {
           list = const [];
+        }
       } else {
         list = const [];
       }
@@ -297,7 +304,6 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
         _propertyType); // apartment|villa|studio|office|commercial or ''
 
     // 🔑 Composite key so the server treats each combo as unique
-    // Examples: rent|apartment, buy|villa, new projects|office, rent|any
     final purposeServerKey =
         '${_canonPurpose(purposeForUi)}|${typeSlug.isEmpty ? 'any' : typeSlug}';
 
@@ -311,7 +317,7 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
     // Avoid name-only clashes
     alertName = await _uniqueName(alertName, token);
 
-    // 2) Build payload (send composite purpose; still include property_type)
+    // 2) Build payload
     final payload = <String, dynamic>{
       'alert_name': alertName,
       'time_period':
@@ -350,6 +356,7 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
       if (!mounted) return;
 
       if (res.statusCode >= 200 && res.statusCode < 300) {
+        // ✅ On success, go to SavedAlertsScreen (as you wanted)
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => SavedAlertsScreen(token: token)),
         );
@@ -488,7 +495,8 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Color(0xFFE7E7E7)),
+                                border:
+                                Border.all(color: Color(0xFFE7E7E7)),
                               ),
                               child: Text(_purpose,
                                   style: const TextStyle(fontSize: 16)),
@@ -506,7 +514,8 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Color(0xFFE7E7E7)),
+                                border:
+                                Border.all(color: Color(0xFFE7E7E7)),
                               ),
                               child: Text(
                                 _propertyType.isEmpty

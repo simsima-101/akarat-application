@@ -1474,7 +1474,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                           children: [
                                             Padding(
                                               padding: const EdgeInsets.only(bottom: 2.0),
-                                              child: Image.asset("assets/images/villa-new.png",height: 35,),
+                                              child: Image.asset("assets/images/apartment.png",height: 35,),
                                             ),
                                             Padding(padding: const EdgeInsets.all(5),
                                               child:  Text("Apartment",style:

@@ -94,9 +94,9 @@ class _SupportState extends State<Support> {
 
     try {
       final ok = await ApiService.submitContactForm(
-        name:    nameController.text,
-        email:   emailController.text,
-        phone:   phoneController.text,
+        name: nameController.text,
+        email: emailController.text,
+        phone: phoneController.text,
         subject: subjectController.text,
         message: messageController.text,
       );
@@ -144,7 +144,10 @@ class _SupportState extends State<Support> {
 
     return WillPopScope(
       onWillPop: () async {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const My_Account()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const My_Account()),
+        );
         return false; // prevent default pop
       },
       child: Scaffold(
@@ -164,6 +167,8 @@ class _SupportState extends State<Support> {
           centerTitle: true,
         ),
         bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
+
+        // ✅ Let content scroll naturally, no fixed heights
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Column(
@@ -177,15 +182,17 @@ class _SupportState extends State<Support> {
                   letterSpacing: 0.5,
                 ),
               ),
+              const SizedBox(height: 12),
 
               // 🔒 Wrap all fields in a Form so validators run
               Form(
                 key: _formKey,
                 child: Container(
-                  margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
-                  height: screenSize.height * 0.75,
-                  width: screenSize.width * 0.9,
+                  // ❌ NO fixed height here – this was causing overflow
+                  width: screenSize.width, // let padding manage insets
+                  margin: const EdgeInsets.only(top: 10),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       // Name
                       _label("Name"),
@@ -194,7 +201,11 @@ class _SupportState extends State<Support> {
                           controller: nameController,
                           keyboardType: TextInputType.name,
                           validator: (v) => _required(v, 'Name'),
-                          decoration: const InputDecoration(border: InputBorder.none),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          ),
                           textAlign: TextAlign.left,
                         ),
                       ),
@@ -206,7 +217,11 @@ class _SupportState extends State<Support> {
                           controller: emailController,
                           keyboardType: TextInputType.emailAddress,
                           validator: _validateEmail,
-                          decoration: const InputDecoration(border: InputBorder.none),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          ),
                           textAlign: TextAlign.left,
                         ),
                       ),
@@ -218,7 +233,11 @@ class _SupportState extends State<Support> {
                           controller: phoneController,
                           keyboardType: TextInputType.phone,
                           validator: (v) => _required(v, 'Phone Number'),
-                          decoration: const InputDecoration(border: InputBorder.none),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          ),
                           textAlign: TextAlign.left,
                         ),
                       ),
@@ -230,7 +249,11 @@ class _SupportState extends State<Support> {
                           controller: subjectController,
                           keyboardType: TextInputType.text,
                           validator: (v) => _required(v, 'Subject'),
-                          decoration: const InputDecoration(border: InputBorder.none),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          ),
                           textAlign: TextAlign.left,
                         ),
                       ),
@@ -240,37 +263,48 @@ class _SupportState extends State<Support> {
                       _boxedField(
                         child: TextFormField(
                           controller: messageController,
-                          maxLines: 3,
+                          maxLines: 4,
                           keyboardType: TextInputType.multiline,
                           validator: (v) => _required(v, 'Message'),
-                          decoration: const InputDecoration(border: InputBorder.none),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          ),
                           textAlign: TextAlign.left,
                         ),
                       ),
 
+                      const SizedBox(height: 24),
+
                       // Submit
                       SizedBox(
-                        width: screenSize.width * 0.9,
-                        height: screenSize.height * 0.1,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 40, left: 10, right: 20),
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : sendMessage,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(8)),
-                              ),
+                        width: double.infinity,
+                        height: 48, // ✅ fixed control height; no screenSize dependency
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : sendMessage,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(8)),
                             ),
-                            child: _isLoading
-                                ? const CircularProgressIndicator(color: Colors.white)
-                                : const Text(
-                              "Submit",
-                              style: TextStyle(color: Colors.white, fontSize: 15),
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
                             ),
+                          )
+                              : const Text(
+                            "Submit",
+                            style: TextStyle(color: Colors.white, fontSize: 15),
                           ),
                         ),
                       ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
@@ -284,18 +318,16 @@ class _SupportState extends State<Support> {
 
   // ---------- UI helpers ----------
   Widget _label(String text) {
-    return Row(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 10.0, right: 0, top: 8, bottom: 8),
-          child: Text(
-            text,
-            textAlign: TextAlign.left,
-            style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
-          ),
+    return Padding(
+      padding: const EdgeInsets.only(left: 10.0, top: 8, bottom: 4),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          text,
+          textAlign: TextAlign.left,
+          style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
         ),
-        const Text(""),
-      ],
+      ),
     );
   }
 
@@ -342,10 +374,16 @@ class _SupportState extends State<Support> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Home())),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const Home()),
+            ),
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.0),
-              child: Image(image: AssetImage("assets/images/home.png"), height: 25),
+              child: Image(
+                image: AssetImage("assets/images/home.png"),
+                height: 25,
+              ),
             ),
           ),
 
@@ -360,7 +398,10 @@ class _SupportState extends State<Support> {
                   builder: (context) => AlertDialog(
                     backgroundColor: Colors.white, // white container
                     title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    content: const Text(
+                      "Please login to access favorites.",
+                      style: TextStyle(color: Colors.black),
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
@@ -369,7 +410,10 @@ class _SupportState extends State<Support> {
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
                         },
                         child: const Text("Login", style: TextStyle(color: Colors.red)),
                       ),
@@ -434,7 +478,10 @@ class _SupportState extends State<Support> {
             child: IconButton(
               enableFeedback: false,
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const My_Account()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const My_Account()),
+                );
               },
               icon: pageIndex == 3
                   ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
