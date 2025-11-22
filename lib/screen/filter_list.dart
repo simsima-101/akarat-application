@@ -18,19 +18,16 @@ import '../model/propertytypemodel.dart';
 import '../model/searchmodel.dart';
 import '../model/togglemodel.dart';
 import '../providers/favorite_provider.dart';
-
 import '../secure_storage.dart';
 import '../services/api_service.dart';
 import '../services/favorite_service.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
-import 'ContactFormScreen.dart';
 import 'CreateAlertScreen.dart';
 import 'featured_detail.dart';
 import 'filter.dart';
 import 'home.dart';
 import 'login.dart';
-
 import 'my_account.dart';
 
 class FliterList extends StatelessWidget {
@@ -96,7 +93,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
   // paging
   int _page = 1;
   int _perPage =
-  40; // ask for 40 on first load (match your "Show results" count)
+      40; // ask for 40 on first load (match your "Show results" count)
   bool _isFetchingMore = false;
   bool _hasMore = true;
 
@@ -236,13 +233,13 @@ class _FliterListDemoState extends State<FliterListDemo> {
     final initialPurpose = purpose.isEmpty ? selectedPurposeText : purpose;
 
     final initialPropertyType = (property_type.trim().isEmpty ||
-        property_type.toLowerCase() == 'all residential')
+            property_type.toLowerCase() == 'all residential')
         ? '' // '' = Any type for API
         : property_type.trim();
 
     final availableTypes = (propertyTypeModel?.data ?? const [])
         .map((e) =>
-        (e.name ?? '').trim()) // prefer e.slug if your API expects slugs
+            (e.name ?? '').trim()) // prefer e.slug if your API expects slugs
         .where((s) => s.isNotEmpty)
         .toSet()
         .toList();
@@ -327,19 +324,19 @@ class _FliterListDemoState extends State<FliterListDemo> {
     }
 
     final effectivePurpose =
-    (purpose.isNotEmpty ? purpose : selectedPurposeText);
+        (purpose.isNotEmpty ? purpose : selectedPurposeText);
 
     final baseParams = fm.FilterParams(
       location: (selectedLocation ?? '').trim(),
       purpose: mapPurpose(purpose),
       propertyType:
-      property_type.trim() == 'All Residential' ? '' : property_type.trim(),
+          property_type.trim() == 'All Residential' ? '' : property_type.trim(),
       bedroom: (bedroom.trim().toLowerCase() != 'all') ? bedroom.trim() : '',
       bathroom: (bathroom.trim().toLowerCase() != 'all') ? bathroom.trim() : '',
       minPrice: min_price.trim(),
       maxPrice: max_price.trim(),
       paymentPeriod:
-      (rent.trim().toLowerCase() != 'all') ? rent.trim().toLowerCase() : '',
+          (rent.trim().toLowerCase() != 'all') ? rent.trim().toLowerCase() : '',
     ).toQueryMap();
 
     final params = <String, String>{
@@ -449,7 +446,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
 // Seed from caller (FliterList → FliterListDemo)
       selectedPurposeText =
-      (widget.selectedPurpose.isNotEmpty ? widget.selectedPurpose : 'Rent');
+          (widget.selectedPurpose.isNotEmpty ? widget.selectedPurpose : 'Rent');
 // Use the same label for the actual filter until user changes it in UI
       purpose = selectedPurposeText;
 
@@ -467,7 +464,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
       // 📊 Dummy chart data
       chartData = List.generate(
         96,
-            (index) => Data(
+        (index) => Data(
             500 + index * 100.0, yValues[index % yValues.length].toDouble()),
       );
 
@@ -609,7 +606,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
         debugPrint(
           "✅ Loaded property types from cache for '$purpose' "
-              "${location != null ? 'with location $location' : ''}",
+          "${location != null ? 'with location $location' : ''}",
         );
         return;
       }
@@ -619,15 +616,14 @@ class _FliterListDemoState extends State<FliterListDemo> {
     late final Uri uri;
     if (location != null && location.isNotEmpty) {
       final encodedLocation = Uri.encodeQueryComponent(location);
-      uri = ApiService.buildUri('property-types/$purpose?location=$encodedLocation');
+      uri = ApiService.buildUri(
+          'property-types/$purpose?location=$encodedLocation');
     } else {
       uri = ApiService.buildUri('property-types/$purpose');
     }
 
     try {
-      final response = await http
-          .get(uri)
-          .timeout(const Duration(seconds: 10));
+      final response = await http.get(uri).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -645,7 +641,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
         debugPrint(
           "✅ Cached property types for '$purpose' "
-              "${location != null ? 'with location $location' : ''}",
+          "${location != null ? 'with location $location' : ''}",
         );
       } else {
         debugPrint(
@@ -657,7 +653,6 @@ class _FliterListDemoState extends State<FliterListDemo> {
     }
   }
 
-
   Future<void> showResult() async {
     setState(() {
       _isLoading = true;
@@ -666,7 +661,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
     // Do not auto-filter by type
     if (property_type.trim().isEmpty || property_type == ' ') {
       property_type =
-      'All Residential'; // your buildApiUrl() already strips this to ''
+          'All Residential'; // your buildApiUrl() already strips this to ''
     }
 
     try {
@@ -725,10 +720,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
     try {
       final uri = ApiService.buildUri('locations?q=');
 
-      final response = await http
-          .get(uri)
-          .timeout(const Duration(seconds: 10));
-
+      final response = await http.get(uri).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = jsonDecode(response.body);
@@ -871,22 +863,23 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                 child: InkWell(
                                   customBorder: const CircleBorder(),
                                   onTap: () async {
-                                    // Navigator.pop(context);
-                                    final result =
-                                    await Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => Filter(
-                                            data: (purpose.isEmpty
-                                                ? selectedPurposeText
-                                                : purpose)),
-                                      ),
-                                    );
-
-                                    if (result != null) {
-                                      // Optionally update anything with result
-                                      print("Returned: $result");
-                                    }
+                                    Navigator.pop(context);
+                                    FocusScope.of(context).unfocus();
+                                    // final result =
+                                    // await Navigator.pushReplacement(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //     builder: (context) => Filter(
+                                    //         data: (purpose.isEmpty
+                                    //             ? selectedPurposeText
+                                    //             : purpose)),
+                                    //   ),
+                                    // );
+                                    //
+                                    // if (result != null) {
+                                    //   // Optionally update anything with result
+                                    //   print("Returned: $result");
+                                    // }
                                   },
                                   child: Container(
                                     height: 35,
@@ -969,7 +962,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                 //filter
                 Padding(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                   child: SizedBox(
                     // margin: const EdgeInsets.symmetric(vertical: 1),
                     height: 50,
@@ -1031,7 +1024,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                           color: Colors.white),
                                       child: Column(
                                         crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const SizedBox(height: 10),
                                           const Text("Purpose",
@@ -1057,19 +1050,19 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                       selectedproduct = index;
                                                       purpose = _product[index];
                                                       selectedPurposeText =
-                                                      _product[index];
+                                                          _product[index];
                                                     });
 
                                                     // refresh available property types for the new purpose (and location if set)
                                                     await propertyApi(purpose,
                                                         location:
-                                                        selectedLocation);
+                                                            selectedLocation);
 
                                                     // reset selection only if you want to neutralize cross-purpose types
                                                     setState(() {
                                                       selectedtype = null;
                                                       property_type =
-                                                      'All Residential'; // UI label only; query removes it
+                                                          'All Residential'; // UI label only; query removes it
                                                     });
 
                                                     await _resetPagingAndFetch();
@@ -1077,8 +1070,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                   },
                                                   child: Container(
                                                     margin:
-                                                    const EdgeInsets.only(
-                                                        right: 10),
+                                                        const EdgeInsets.only(
+                                                            right: 10),
                                                     padding: const EdgeInsets
                                                         .symmetric(
                                                         horizontal: 14,
@@ -1088,17 +1081,17 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                           ? Colors.blueAccent
                                                           : Colors.white,
                                                       borderRadius:
-                                                      BorderRadius.circular(
-                                                          6),
+                                                          BorderRadius.circular(
+                                                              6),
                                                       boxShadow: [
                                                         BoxShadow(
                                                             color: Colors.grey
                                                                 .withOpacity(
-                                                                0.3),
+                                                                    0.3),
                                                             blurRadius: 4,
                                                             offset:
-                                                            const Offset(
-                                                                0, 2)),
+                                                                const Offset(
+                                                                    0, 2)),
                                                       ],
                                                     ),
                                                     child: Center(
@@ -1109,7 +1102,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                               ? Colors.white
                                                               : Colors.black,
                                                           fontWeight:
-                                                          FontWeight.bold,
+                                                              FontWeight.bold,
                                                         ),
                                                       ),
                                                     ),
@@ -1127,7 +1120,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                             child: ListView.builder(
                                               scrollDirection: Axis.horizontal,
                                               itemCount: propertyTypeModel
-                                                  ?.availability?.length ??
+                                                      ?.availability?.length ??
                                                   0,
                                               itemBuilder: (context, index) {
                                                 bool isSelected =
@@ -1148,8 +1141,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                   },
                                                   child: Container(
                                                     margin:
-                                                    const EdgeInsets.only(
-                                                        right: 10),
+                                                        const EdgeInsets.only(
+                                                            right: 10),
                                                     padding: const EdgeInsets
                                                         .symmetric(
                                                         horizontal: 14,
@@ -1159,17 +1152,17 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                           ? Colors.blueAccent
                                                           : Colors.white,
                                                       borderRadius:
-                                                      BorderRadius.circular(
-                                                          6),
+                                                          BorderRadius.circular(
+                                                              6),
                                                       boxShadow: [
                                                         BoxShadow(
                                                             color: Colors.grey
                                                                 .withOpacity(
-                                                                0.3),
+                                                                    0.3),
                                                             blurRadius: 4,
                                                             offset:
-                                                            const Offset(
-                                                                0, 2)),
+                                                                const Offset(
+                                                                    0, 2)),
                                                       ],
                                                     ),
                                                     child: Center(
@@ -1180,7 +1173,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                               ? Colors.white
                                                               : Colors.black,
                                                           fontWeight:
-                                                          FontWeight.bold,
+                                                              FontWeight.bold,
                                                         ),
                                                       ),
                                                     ),
@@ -1199,32 +1192,32 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                               onPressed: isPurposeLoading
                                                   ? null
                                                   : () async {
-                                                // <-- add async here
-                                                await _resetPagingAndFetch();
+                                                      // <-- add async here
+                                                      await _resetPagingAndFetch();
 
-                                                Navigator.pop(context);
-                                              },
+                                                      Navigator.pop(context);
+                                                    },
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor: Colors.red,
                                                 padding:
-                                                const EdgeInsets.symmetric(
-                                                    vertical: 12),
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 12),
                                                 shape: RoundedRectangleBorder(
                                                     borderRadius:
-                                                    BorderRadius.circular(
-                                                        8)),
+                                                        BorderRadius.circular(
+                                                            8)),
                                               ),
                                               child: isPurposeLoading
                                                   ? const CircularProgressIndicator(
-                                                  color: Colors.white)
+                                                      color: Colors.white)
                                                   : const Text(
-                                                "Showing Results",
-                                                style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight:
-                                                    FontWeight.bold,
-                                                    fontSize: 15),
-                                              ),
+                                                      "Showing Results",
+                                                      style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 15),
+                                                    ),
                                             ),
                                           ),
                                         ],
@@ -1244,12 +1237,12 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                 maxHeight: 40,
                               ),
                               padding:
-                              const EdgeInsets.symmetric(horizontal: 14),
+                                  const EdgeInsets.symmetric(horizontal: 14),
                               decoration: BoxDecoration(
                                 shape: BoxShape.rectangle,
                                 border: Border.all(width: 1),
                                 borderRadius:
-                                BorderRadiusDirectional.circular(6.0),
+                                    BorderRadiusDirectional.circular(6.0),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey,
@@ -1301,7 +1294,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                           color: Colors.white),
                                       child: Column(
                                         crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Text(
                                             "Property Type",
@@ -1318,7 +1311,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                             child: ListView.builder(
                                               scrollDirection: Axis.horizontal,
                                               itemCount: propertyTypeModel
-                                                  ?.data?.length ??
+                                                      ?.data?.length ??
                                                   0,
                                               itemBuilder: (context, index) {
                                                 final item = propertyTypeModel!
@@ -1349,11 +1342,11 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                     decoration: BoxDecoration(
                                                       color: isSelected
                                                           ? const Color(
-                                                          0xFFEEEEEE)
+                                                              0xFFEEEEEE)
                                                           : Colors.white,
                                                       borderRadius:
-                                                      BorderRadius.circular(
-                                                          8),
+                                                          BorderRadius.circular(
+                                                              8),
                                                       boxShadow: [
                                                         BoxShadow(
                                                           color: Colors.grey
@@ -1366,21 +1359,21 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                     ),
                                                     child: Column(
                                                       mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .center,
+                                                          MainAxisAlignment
+                                                              .center,
                                                       children: [
                                                         CachedNetworkImage(
                                                           imageUrl: item.icon
                                                               .toString(),
                                                           height: 35,
                                                           placeholder: (context,
-                                                              url) =>
-                                                          const CircularProgressIndicator(),
+                                                                  url) =>
+                                                              const CircularProgressIndicator(),
                                                           errorWidget: (context,
-                                                              url, error) =>
-                                                          const Icon(
-                                                              Icons.error,
-                                                              size: 35),
+                                                                  url, error) =>
+                                                              const Icon(
+                                                                  Icons.error,
+                                                                  size: 35),
                                                         ),
                                                         const SizedBox(
                                                             height: 6),
@@ -1388,15 +1381,15 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                           item.name.toString(),
                                                           style: TextStyle(
                                                             fontWeight:
-                                                            FontWeight.bold,
+                                                                FontWeight.bold,
                                                             fontSize: 14,
                                                             color: isSelected
                                                                 ? Colors.black
                                                                 : Colors
-                                                                .black87,
+                                                                    .black87,
                                                           ),
                                                           textAlign:
-                                                          TextAlign.center,
+                                                              TextAlign.center,
                                                         ),
                                                       ],
                                                     ),
@@ -1419,12 +1412,12 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor: Colors.red,
                                                 padding:
-                                                const EdgeInsets.symmetric(
-                                                    vertical: 12),
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 12),
                                                 shape: RoundedRectangleBorder(
                                                     borderRadius:
-                                                    BorderRadius.circular(
-                                                        6)),
+                                                        BorderRadius.circular(
+                                                            6)),
                                               ),
                                               child: const Text(
                                                 "Showing Results",
@@ -1459,7 +1452,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                 shape: BoxShape.rectangle,
                                 border: Border.all(width: 1),
                                 borderRadius:
-                                BorderRadiusDirectional.circular(6.0),
+                                    BorderRadiusDirectional.circular(6.0),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey,
@@ -1513,7 +1506,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                           color: Colors.white),
                                       child: Column(
                                         crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Text(
                                             "Price range",
@@ -1524,13 +1517,13 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                           const SizedBox(height: 12),
                                           Row(
                                             mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                                MainAxisAlignment.spaceBetween,
                                             children: [
                                               _rangeDisplayBox(_values.start
                                                   .toStringAsFixed(0)),
                                               const Text("to",
                                                   style:
-                                                  TextStyle(fontSize: 15)),
+                                                      TextStyle(fontSize: 15)),
                                               _rangeDisplayBox(_values.end
                                                   .toStringAsFixed(0)),
                                             ],
@@ -1539,7 +1532,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                           SfRangeSelectorTheme(
                                             data: SfRangeSelectorThemeData(
                                               tooltipBackgroundColor:
-                                              Colors.black,
+                                                  Colors.black,
                                               tooltipTextStyle: const TextStyle(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.bold,
@@ -1550,27 +1543,27 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                               max: 10000,
                                               interval: 1000,
                                               activeColor:
-                                              const Color(0xFF2575D4),
+                                                  const Color(0xFF2575D4),
                                               inactiveColor:
-                                              const Color(0x80F1EEEE),
+                                                  const Color(0x80F1EEEE),
                                               enableTooltip: true,
                                               shouldAlwaysShowTooltip: true,
                                               initialValues: _values,
                                               tooltipTextFormatterCallback:
                                                   (actualValue, _) =>
-                                              'AED ${actualValue.toInt()}',
+                                                      'AED ${actualValue.toInt()}',
                                               onChanged: (value) {
                                                 setModalState(() {
                                                   double roundedMin =
-                                                  ((value.start / 100)
-                                                      .round() *
-                                                      100)
-                                                      .toDouble();
+                                                      ((value.start / 100)
+                                                                  .round() *
+                                                              100)
+                                                          .toDouble();
                                                   double roundedMax =
-                                                  ((value.end / 100)
-                                                      .round() *
-                                                      100)
-                                                      .toDouble();
+                                                      ((value.end / 100)
+                                                                  .round() *
+                                                              100)
+                                                          .toDouble();
 
                                                   _values = SfRangeValues(
                                                       roundedMin, roundedMax);
@@ -1586,11 +1579,11 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                 width: double.infinity,
                                                 child: SfCartesianChart(
                                                   backgroundColor:
-                                                  Colors.transparent,
+                                                      Colors.transparent,
                                                   plotAreaBorderColor:
-                                                  Colors.transparent,
+                                                      Colors.transparent,
                                                   margin:
-                                                  const EdgeInsets.all(0),
+                                                      const EdgeInsets.all(0),
                                                   primaryXAxis: NumericAxis(
                                                       minimum: 500,
                                                       maximum: 10000,
@@ -1599,24 +1592,24 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                       isVisible: false),
                                                   plotAreaBorderWidth: 0,
                                                   plotAreaBackgroundColor:
-                                                  Colors.transparent,
+                                                      Colors.transparent,
                                                   series: <ColumnSeries<Data,
                                                       double>>[
                                                     ColumnSeries<Data, double>(
                                                       dataSource: chartData,
                                                       xValueMapper:
                                                           (Data sales, _) =>
-                                                      sales.x,
+                                                              sales.x,
                                                       yValueMapper:
                                                           (Data sales, _) =>
-                                                      sales.y,
+                                                              sales.y,
                                                       pointColorMapper: (_,
-                                                          __) =>
-                                                      const Color.fromARGB(
-                                                          255,
-                                                          37,
-                                                          117,
-                                                          212),
+                                                              __) =>
+                                                          const Color.fromARGB(
+                                                              255,
+                                                              37,
+                                                              117,
+                                                              212),
                                                       animationDuration: 0,
                                                       borderWidth: 0,
                                                     ),
@@ -1640,8 +1633,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                 backgroundColor: Colors.red,
                                                 shape: RoundedRectangleBorder(
                                                     borderRadius:
-                                                    BorderRadius.circular(
-                                                        6)),
+                                                        BorderRadius.circular(
+                                                            6)),
                                               ),
                                               child: const Text(
                                                 "Showing Results",
@@ -1669,12 +1662,12 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                 maxHeight: 40,
                               ),
                               padding:
-                              const EdgeInsets.symmetric(horizontal: 14),
+                                  const EdgeInsets.symmetric(horizontal: 14),
                               decoration: BoxDecoration(
                                 shape: BoxShape.rectangle,
                                 border: Border.all(width: 1),
                                 borderRadius:
-                                BorderRadiusDirectional.circular(6.0),
+                                    BorderRadiusDirectional.circular(6.0),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey,
@@ -1753,7 +1746,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                               height: 60,
                                               child: ListView.builder(
                                                 scrollDirection:
-                                                Axis.horizontal,
+                                                    Axis.horizontal,
                                                 physics: const ScrollPhysics(),
                                                 itemCount: _bedroom.length,
                                                 shrinkWrap: true,
@@ -1767,12 +1760,12 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                             'studio') {
                                                           bedroom = '0';
                                                         } else if (_bedroom[
-                                                        index] ==
+                                                                index] ==
                                                             '9+') {
                                                           bedroom = '9';
                                                         } else {
                                                           bedroom =
-                                                          _bedroom[index];
+                                                              _bedroom[index];
                                                         }
 
                                                         print(
@@ -1793,51 +1786,51 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                           horizontal: 15),
                                                       decoration: BoxDecoration(
                                                         color:
-                                                        selectedbedroom ==
-                                                            index
-                                                            ? Colors
-                                                            .blueAccent
-                                                            : Colors.white,
+                                                            selectedbedroom ==
+                                                                    index
+                                                                ? Colors
+                                                                    .blueAccent
+                                                                : Colors.white,
                                                         boxShadow: [
                                                           BoxShadow(
                                                             color: Colors.grey
                                                                 .withOpacity(
-                                                                0.5),
+                                                                    0.5),
                                                             offset:
-                                                            Offset(0, 2),
+                                                                Offset(0, 2),
                                                             blurRadius: 4,
                                                             spreadRadius: 0,
                                                           ),
                                                           BoxShadow(
                                                             color: Colors.white
                                                                 .withOpacity(
-                                                                0.8),
+                                                                    0.8),
                                                             offset:
-                                                            Offset(-4, -4),
+                                                                Offset(-4, -4),
                                                             blurRadius: 8,
                                                             spreadRadius: 2,
                                                           ),
                                                         ],
                                                         borderRadius:
-                                                        BorderRadius
-                                                            .circular(8),
+                                                            BorderRadius
+                                                                .circular(8),
                                                       ),
                                                       child: Center(
                                                         child: Text(
                                                           _bedroom[index],
                                                           style: TextStyle(
                                                             color:
-                                                            selectedbedroom ==
-                                                                index
-                                                                ? Colors
-                                                                .white
-                                                                : Colors
-                                                                .black,
+                                                                selectedbedroom ==
+                                                                        index
+                                                                    ? Colors
+                                                                        .white
+                                                                    : Colors
+                                                                        .black,
                                                             letterSpacing: 0.5,
                                                             fontSize: 18,
                                                           ),
                                                           textAlign:
-                                                          TextAlign.center,
+                                                              TextAlign.center,
                                                         ),
                                                       ),
                                                     ),
@@ -1868,8 +1861,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                 decoration: BoxDecoration(
                                                   color: Colors.red,
                                                   borderRadius:
-                                                  BorderRadiusDirectional
-                                                      .circular(6.0),
+                                                      BorderRadiusDirectional
+                                                          .circular(6.0),
                                                   boxShadow: [
                                                     BoxShadow(
                                                       color: Colors.grey,
@@ -1919,7 +1912,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                 shape: BoxShape.rectangle,
                                 border: Border.all(width: 1),
                                 borderRadius:
-                                BorderRadiusDirectional.circular(6.0),
+                                    BorderRadiusDirectional.circular(6.0),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey,
@@ -1978,7 +1971,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                       color: Colors.black,
                                                       fontSize: 16.0,
                                                       fontWeight:
-                                                      FontWeight.bold,
+                                                          FontWeight.bold,
                                                       letterSpacing: 0.5),
                                                   textAlign: TextAlign.left,
                                                 ),
@@ -1995,9 +1988,9 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                 height: 60,
                                                 child: ListView.builder(
                                                   scrollDirection:
-                                                  Axis.horizontal,
+                                                      Axis.horizontal,
                                                   physics:
-                                                  const ScrollPhysics(),
+                                                      const ScrollPhysics(),
                                                   itemCount: _bathroom.length,
                                                   shrinkWrap: true,
                                                   itemBuilder:
@@ -2009,7 +2002,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                           selectedbathroom =
                                                               index;
                                                           bathroom =
-                                                          _bathroom[index];
+                                                              _bathroom[index];
                                                         });
 
                                                         await _resetPagingAndFetch();
@@ -2025,33 +2018,33 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                             top: 5,
                                                             bottom: 5),
                                                         width:
-                                                        50, // ✅ smaller fixed width (you can adjust)
+                                                            50, // ✅ smaller fixed width (you can adjust)
                                                         height: 20,
                                                         // width: screenSize.width * 0.25,
                                                         // height: 20,
                                                         padding:
-                                                        const EdgeInsets
-                                                            .only(
-                                                            top: 0,
-                                                            left: 15,
-                                                            right: 15),
+                                                            const EdgeInsets
+                                                                .only(
+                                                                top: 0,
+                                                                left: 15,
+                                                                right: 15),
                                                         decoration:
-                                                        BoxDecoration(
+                                                            BoxDecoration(
                                                           color:
-                                                          selectedbathroom ==
-                                                              index
-                                                              ? Colors
-                                                              .blueAccent
-                                                              : Colors
-                                                              .white,
+                                                              selectedbathroom ==
+                                                                      index
+                                                                  ? Colors
+                                                                      .blueAccent
+                                                                  : Colors
+                                                                      .white,
                                                           // color: Colors.white,
                                                           boxShadow: [
                                                             BoxShadow(
                                                               color: Colors.grey
                                                                   .withOpacity(
-                                                                  0.5),
+                                                                      0.5),
                                                               offset:
-                                                              Offset(4, 4),
+                                                                  Offset(4, 4),
                                                               blurRadius: 8,
                                                               spreadRadius: 2,
                                                             ),
@@ -2059,7 +2052,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                               color: Colors
                                                                   .white
                                                                   .withOpacity(
-                                                                  0.8),
+                                                                      0.8),
                                                               offset: Offset(
                                                                   -4, -4),
                                                               blurRadius: 8,
@@ -2067,22 +2060,22 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                             ),
                                                           ],
                                                           borderRadius:
-                                                          BorderRadius
-                                                              .circular(8),
+                                                              BorderRadius
+                                                                  .circular(8),
                                                         ),
                                                         child: Center(
                                                           child: Text(
                                                             _bathroom[index],
                                                             style: TextStyle(
                                                               color:
-                                                              selectedbathroom ==
-                                                                  index
-                                                                  ? Colors
-                                                                  .white
-                                                                  : Colors
-                                                                  .black,
+                                                                  selectedbathroom ==
+                                                                          index
+                                                                      ? Colors
+                                                                          .white
+                                                                      : Colors
+                                                                          .black,
                                                               letterSpacing:
-                                                              0.5,
+                                                                  0.5,
                                                               fontSize: 15,
                                                             ),
                                                             textAlign: TextAlign
@@ -2117,8 +2110,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                 decoration: BoxDecoration(
                                                   color: Colors.red,
                                                   borderRadius:
-                                                  BorderRadiusDirectional
-                                                      .circular(6.0),
+                                                      BorderRadiusDirectional
+                                                          .circular(6.0),
                                                   boxShadow: [
                                                     BoxShadow(
                                                       color: Colors.grey,
@@ -2144,7 +2137,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                                       color: Colors.white,
                                                       letterSpacing: 0.5,
                                                       fontWeight:
-                                                      FontWeight.bold,
+                                                          FontWeight.bold,
                                                       fontSize: 15),
                                                   textAlign: TextAlign.center,
                                                 ),
@@ -2172,7 +2165,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                                   width: 1,
                                 ),
                                 borderRadius:
-                                BorderRadiusDirectional.circular(6.0),
+                                    BorderRadiusDirectional.circular(6.0),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey,
@@ -2237,7 +2230,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                               ),
                               child: Row(
                                 mainAxisAlignment:
-                                MainAxisAlignment.center, // center the text
+                                    MainAxisAlignment.center, // center the text
                                 children: [
                                   Text(
                                     "All Filters",
@@ -2307,7 +2300,7 @@ class _FliterListDemoState extends State<FliterListDemo> {
                 //filter
                 Padding(
                     padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                     child: Container(
                       alignment: Alignment.topLeft,
                       height: 50,
@@ -2373,500 +2366,500 @@ class _FliterListDemoState extends State<FliterListDemo> {
 
                 _isLoading
                     ? ListView.builder(
-                  padding: const EdgeInsets.all(8.0),
-                  itemCount: 5,
-                  shrinkWrap: true,
-                  // physics:
-                  //     const NeverScrollableScrollPhysics(), // ✅ make it non-scrollable
-                  itemBuilder: (context, index) => const ShimmerCard(),
-                )
-                    : (filterModel.data == null || filterModel.data!.isEmpty)
-                    ? Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 50),
-                    child: Center(
-                      child: Text(
-                        "Property Not Found",
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                )
-                    : Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(0),
-                    scrollDirection: Axis.vertical,
-                    // physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    // 👇 add one extra "row" for the loading spinner when fetching more
-                    itemCount: (filterModel.data?.length ?? 0) +
-                        (_isFetchingMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      final items = filterModel.data ?? [];
-
-                      // 👇 if we're fetching more and this is the extra last row, show a spinner
-                      if (_isFetchingMore && index == items.length) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Center(
-                              child: CircularProgressIndicator()),
-                        );
-                      }
-
-                      final property = items[index];
-
-                      final bool isFavorited =
-                      favoriteProperties.contains(property.id);
-                      return Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Card(
-                          elevation: 20,
-                          shadowColor: Colors.white,
-                          color: Colors.white,
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      Featured_Detail(
-                                          data:
-                                          property.id.toString()),
-                                ),
-                              );
-                            },
+                        itemCount: 5,
+                        shrinkWrap: true,
+                        // physics:
+                        //     const NeverScrollableScrollPhysics(), // ✅ make it non-scrollable
+                        itemBuilder: (context, index) => const ShimmerCard(),
+                      )
+                    : (filterModel.data == null || filterModel.data!.isEmpty)
+                        ? Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 5.0, top: 1, right: 5),
-                              child: Column(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius:
-                                    BorderRadius.circular(12),
-                                    child: Stack(
-                                      children: [
-                                        AspectRatio(
-                                          aspectRatio: 1.5,
-                                          child: CachedNetworkImage(
-                                            imageUrl: filterModel
-                                                .data![index]
-                                                .media!
-                                                .isNotEmpty
-                                                ? filterModel
-                                                .data![index]
-                                                .media![0]
-                                                .originalUrl
-                                                .toString()
-                                                : 'https://via.placeholder.com/300x200?text=No+Image',
-                                            fit: BoxFit.cover,
-                                            height: 100,
-                                            placeholder: (context,
-                                                url) =>
-                                            const CircularProgressIndicator(),
-                                            errorWidget: (context,
-                                                url, error) =>
-                                            const Icon(
-                                                Icons.error,
-                                                size: 100),
+                              padding: const EdgeInsets.symmetric(vertical: 50),
+                              child: Center(
+                                child: Text(
+                                  "Property Not Found",
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Expanded(
+                            child: ListView.builder(
+                              padding: const EdgeInsets.all(0),
+                              scrollDirection: Axis.vertical,
+                              // physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              // 👇 add one extra "row" for the loading spinner when fetching more
+                              itemCount: (filterModel.data?.length ?? 0) +
+                                  (_isFetchingMore ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                final items = filterModel.data ?? [];
+
+                                // 👇 if we're fetching more and this is the extra last row, show a spinner
+                                if (_isFetchingMore && index == items.length) {
+                                  return const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 16),
+                                    child: Center(
+                                        child: CircularProgressIndicator()),
+                                  );
+                                }
+
+                                final property = items[index];
+
+                                final bool isFavorited =
+                                    favoriteProperties.contains(property.id);
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Card(
+                                    elevation: 20,
+                                    shadowColor: Colors.white,
+                                    color: Colors.white,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                Featured_Detail(
+                                                    data:
+                                                        property.id.toString()),
                                           ),
-                                        ),
-
-                                        /// ❤️ Positioned Favorite Icon
-                                        Positioned(
-                                          top: 10,
-                                          right: 10,
-                                          child: Material(
-                                            color: Colors.white,
-                                            shape:
-                                            const CircleBorder(),
-                                            elevation: 4,
-                                            child: Consumer<
-                                                FavoriteProvider>(
-                                              builder: (context,
-                                                  favProvider, _) {
-                                                final isLoggedIn =
-                                                    token.isNotEmpty;
-                                                final isFav = isLoggedIn &&
-                                                    favProvider
-                                                        .isFavorite(
-                                                        property
-                                                            .id!); // ✅ Only true for logged-in users
-
-                                                return IconButton(
-                                                    icon: Icon(
-                                                      isFav
-                                                          ? Icons
-                                                          .favorite
-                                                          : Icons
-                                                          .favorite_border,
-                                                      color: isFav
-                                                          ? Colors.red
-                                                          : Colors
-                                                          .grey, // ✅ Grey for logged-out users
-                                                      size: 20,
+                                        );
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 5.0, top: 1, right: 5),
+                                        child: Column(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              child: Stack(
+                                                children: [
+                                                  AspectRatio(
+                                                    aspectRatio: 1.5,
+                                                    child: CachedNetworkImage(
+                                                      imageUrl: filterModel
+                                                              .data![index]
+                                                              .media!
+                                                              .isNotEmpty
+                                                          ? filterModel
+                                                              .data![index]
+                                                              .media![0]
+                                                              .originalUrl
+                                                              .toString()
+                                                          : 'https://via.placeholder.com/300x200?text=No+Image',
+                                                      fit: BoxFit.cover,
+                                                      height: 100,
+                                                      placeholder: (context,
+                                                              url) =>
+                                                          const CircularProgressIndicator(),
+                                                      errorWidget: (context,
+                                                              url, error) =>
+                                                          const Icon(
+                                                              Icons.error,
+                                                              size: 100),
                                                     ),
-                                                    onPressed:
-                                                        () async {
-                                                      if (!isLoggedIn) {
-                                                        // 🔒 Show login prompt
-                                                        showDialog(
-                                                          context:
-                                                          context,
-                                                          builder:
-                                                              (ctx) =>
-                                                              Dialog(
-                                                                backgroundColor:
-                                                                Colors
-                                                                    .transparent,
-                                                                insetPadding:
-                                                                EdgeInsets
-                                                                    .zero,
-                                                                child:
-                                                                Container(
-                                                                  height:
-                                                                  70,
-                                                                  margin: const EdgeInsets
-                                                                      .only(
-                                                                      bottom:
-                                                                      80,
-                                                                      left:
-                                                                      20,
-                                                                      right:
-                                                                      20),
-                                                                  decoration:
-                                                                  BoxDecoration(
-                                                                    color:
-                                                                    Colors.red,
-                                                                    borderRadius:
-                                                                    BorderRadius.circular(10),
-                                                                  ),
-                                                                  child:
-                                                                  Stack(
-                                                                    clipBehavior:
-                                                                    Clip.none,
-                                                                    children: [
-                                                                      Positioned(
-                                                                        top: -14,
-                                                                        right: -10,
-                                                                        child: Material(
-                                                                          color: Colors.transparent,
-                                                                          child: IconButton(
-                                                                            icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                                                                            onPressed: () => Navigator.of(ctx).pop(),
-                                                                            padding: EdgeInsets.zero,
-                                                                            constraints: const BoxConstraints(),
-                                                                          ),
+                                                  ),
+
+                                                  /// ❤️ Positioned Favorite Icon
+                                                  Positioned(
+                                                    top: 10,
+                                                    right: 10,
+                                                    child: Material(
+                                                      color: Colors.white,
+                                                      shape:
+                                                          const CircleBorder(),
+                                                      elevation: 4,
+                                                      child: Consumer<
+                                                          FavoriteProvider>(
+                                                        builder: (context,
+                                                            favProvider, _) {
+                                                          final isLoggedIn =
+                                                              token.isNotEmpty;
+                                                          final isFav = isLoggedIn &&
+                                                              favProvider
+                                                                  .isFavorite(
+                                                                      property
+                                                                          .id!); // ✅ Only true for logged-in users
+
+                                                          return IconButton(
+                                                              icon: Icon(
+                                                                isFav
+                                                                    ? Icons
+                                                                        .favorite
+                                                                    : Icons
+                                                                        .favorite_border,
+                                                                color: isFav
+                                                                    ? Colors.red
+                                                                    : Colors
+                                                                        .grey, // ✅ Grey for logged-out users
+                                                                size: 20,
+                                                              ),
+                                                              onPressed:
+                                                                  () async {
+                                                                if (!isLoggedIn) {
+                                                                  // 🔒 Show login prompt
+                                                                  showDialog(
+                                                                    context:
+                                                                        context,
+                                                                    builder:
+                                                                        (ctx) =>
+                                                                            Dialog(
+                                                                      backgroundColor:
+                                                                          Colors
+                                                                              .transparent,
+                                                                      insetPadding:
+                                                                          EdgeInsets
+                                                                              .zero,
+                                                                      child:
+                                                                          Container(
+                                                                        height:
+                                                                            70,
+                                                                        margin: const EdgeInsets
+                                                                            .only(
+                                                                            bottom:
+                                                                                80,
+                                                                            left:
+                                                                                20,
+                                                                            right:
+                                                                                20),
+                                                                        decoration:
+                                                                            BoxDecoration(
+                                                                          color:
+                                                                              Colors.red,
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(10),
                                                                         ),
-                                                                      ),
-                                                                      Positioned(
-                                                                        left: 16,
-                                                                        right: 16,
-                                                                        bottom: 12,
-                                                                        child: Row(
+                                                                        child:
+                                                                            Stack(
+                                                                          clipBehavior:
+                                                                              Clip.none,
                                                                           children: [
-                                                                            const Expanded(
-                                                                              child: Text(
-                                                                                'Login required to add favorites.',
-                                                                                style: TextStyle(color: Colors.white, fontSize: 13),
+                                                                            Positioned(
+                                                                              top: -14,
+                                                                              right: -10,
+                                                                              child: Material(
+                                                                                color: Colors.transparent,
+                                                                                child: IconButton(
+                                                                                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                                                  onPressed: () => Navigator.of(ctx).pop(),
+                                                                                  padding: EdgeInsets.zero,
+                                                                                  constraints: const BoxConstraints(),
+                                                                                ),
                                                                               ),
                                                                             ),
-                                                                            const SizedBox(width: 12),
-                                                                            GestureDetector(
-                                                                              onTap: () {
-                                                                                Navigator.of(ctx).pop();
-                                                                                Navigator.of(ctx).pushNamed('/login');
-                                                                              },
-                                                                              child: const Text(
-                                                                                'Login',
-                                                                                style: TextStyle(
-                                                                                  color: Colors.white,
-                                                                                  fontWeight: FontWeight.bold,
-                                                                                  decoration: TextDecoration.underline,
-                                                                                  decorationColor: Colors.white,
-                                                                                  decorationThickness: 1.5,
-                                                                                ),
+                                                                            Positioned(
+                                                                              left: 16,
+                                                                              right: 16,
+                                                                              bottom: 12,
+                                                                              child: Row(
+                                                                                children: [
+                                                                                  const Expanded(
+                                                                                    child: Text(
+                                                                                      'Login required to add favorites.',
+                                                                                      style: TextStyle(color: Colors.white, fontSize: 13),
+                                                                                    ),
+                                                                                  ),
+                                                                                  const SizedBox(width: 12),
+                                                                                  GestureDetector(
+                                                                                    onTap: () {
+                                                                                      Navigator.of(ctx).pop();
+                                                                                      Navigator.of(ctx).pushNamed('/login');
+                                                                                    },
+                                                                                    child: const Text(
+                                                                                      'Login',
+                                                                                      style: TextStyle(
+                                                                                        color: Colors.white,
+                                                                                        fontWeight: FontWeight.bold,
+                                                                                        decoration: TextDecoration.underline,
+                                                                                        decorationColor: Colors.white,
+                                                                                        decorationThickness: 1.5,
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                ],
                                                                               ),
                                                                             ),
                                                                           ],
                                                                         ),
                                                                       ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ),
+                                                                    ),
+                                                                  );
+                                                                  return;
+                                                                }
+
+                                                                final propertyId =
+                                                                    property.id;
+                                                                if (propertyId ==
+                                                                    null) {
+                                                                  debugPrint(
+                                                                      '⚠️ property.id is null; cannot toggle favorite.');
+                                                                  return;
+                                                                }
+
+                                                                // ✅ Use Provider's API-integrated method (optimistic + revert handled inside)
+                                                                final success =
+                                                                    await favProvider.toggleFavoriteWithApi(
+                                                                        propertyId,
+                                                                        token,
+                                                                        context);
+
+                                                                // OPTIONAL (usually not needed): force-refresh from server after a successful toggle
+                                                                // if (success) {
+                                                                //   await context.read<FavoriteProvider>().fetchFavoritesFromApi(token);
+                                                                // }
+
+                                                                if (!success) {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(
+                                                                    const SnackBar(
+                                                                        content:
+                                                                            Text("Failed to update favorite.")),
+                                                                  );
+                                                                }
+                                                              });
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 5),
+                                              child: ListTile(
+                                                title: Text(
+                                                  filterModel.data![index].title
+                                                      .toString(),
+                                                  style: TextStyle(
+                                                      fontSize: 16,
+                                                      height: 1.4),
+                                                ),
+                                                subtitle: Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 8.0),
+                                                  child: Text(
+                                                    '${filterModel.data![index].price} AED',
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 22,
+                                                        height: 1.4),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Row(
+                                              children: [
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 10,
+                                                          right: 5,
+                                                          top: 0),
+                                                  child: Image.asset(
+                                                      "assets/images/map.png",
+                                                      height: 14),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 0,
+                                                          right: 0,
+                                                          top: 0),
+                                                  child: Text(
+                                                    filterModel
+                                                        .data![index].location
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                        fontSize: 13,
+                                                        height: 1.4,
+                                                        overflow: TextOverflow
+                                                            .visible),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(height: 8),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8.0),
+                                              child: Row(
+                                                children: [
+                                                  Image.asset(
+                                                      "assets/images/bed.png",
+                                                      height: 13),
+                                                  SizedBox(width: 5),
+                                                  Text(filterModel
+                                                      .data![index].bedrooms
+                                                      .toString()),
+                                                  SizedBox(width: 10),
+                                                  Image.asset(
+                                                      "assets/images/bath.png",
+                                                      height: 13),
+                                                  SizedBox(width: 5),
+                                                  Text(filterModel
+                                                      .data![index].bathrooms
+                                                      .toString()),
+                                                  SizedBox(width: 10),
+                                                  Image.asset(
+                                                      "assets/images/messure.png",
+                                                      height: 13),
+                                                  SizedBox(width: 5),
+                                                  Text(filterModel
+                                                      .data![index].squareFeet
+                                                      .toString()),
+                                                ],
+                                              ),
+                                            ),
+                                            Row(
+                                              children: [
+                                                const SizedBox(width: 10),
+                                                Expanded(
+                                                  child: ElevatedButton.icon(
+                                                    onPressed: () async {
+                                                      String phone =
+                                                          'tel:${filterModel.data![index].phoneNumber}';
+                                                      try {
+                                                        final bool launched =
+                                                            await launchUrlString(
+                                                          phone,
+                                                          mode: LaunchMode
+                                                              .externalApplication,
                                                         );
-                                                        return;
+                                                        if (!launched)
+                                                          print(
+                                                              "❌ Could not launch dialer");
+                                                      } catch (e) {
+                                                        print(
+                                                            "❌ Exception: $e");
                                                       }
+                                                    },
+                                                    icon: const Icon(Icons.call,
+                                                        color: Colors.red),
+                                                    label: const Text("Call",
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.black)),
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          Colors.grey[100],
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          10)),
+                                                      elevation: 2,
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          vertical: 10),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                Expanded(
+                                                  child: ElevatedButton.icon(
+                                                    onPressed: () async {
+                                                      final property =
+                                                          filterModel
+                                                              .data![index];
 
-                                                      final propertyId =
-                                                          property.id;
-                                                      if (propertyId ==
-                                                          null) {
-                                                        debugPrint(
-                                                            '⚠️ property.id is null; cannot toggle favorite.');
-                                                        return;
-                                                      }
+                                                      final rawNumber = property
+                                                              .whatsapp ??
+                                                          property
+                                                              .phoneNumber ??
+                                                          '';
+                                                      final phone =
+                                                          whatsAppNumber(
+                                                              rawNumber);
 
-                                                      // ✅ Use Provider's API-integrated method (optimistic + revert handled inside)
-                                                      final success =
-                                                      await favProvider.toggleFavoriteWithApi(
-                                                          propertyId,
-                                                          token,
-                                                          context);
-
-                                                      // OPTIONAL (usually not needed): force-refresh from server after a successful toggle
-                                                      // if (success) {
-                                                      //   await context.read<FavoriteProvider>().fetchFavoritesFromApi(token);
-                                                      // }
-
-                                                      if (!success) {
+                                                      if (phone.isEmpty) {
                                                         ScaffoldMessenger.of(
-                                                            context)
+                                                                context)
                                                             .showSnackBar(
                                                           const SnackBar(
-                                                              content:
-                                                              Text("Failed to update favorite.")),
+                                                              content: Text(
+                                                                  "No WhatsApp number available")),
+                                                        );
+                                                        return;
+                                                      }
+
+                                                      final message =
+                                                          Uri.encodeComponent(
+                                                              "Hello");
+                                                      final url = Uri.parse(
+                                                          "https://wa.me/$phone?text=$message");
+
+                                                      if (await canLaunchUrl(
+                                                          url)) {
+                                                        try {
+                                                          await launchUrl(url,
+                                                              mode: LaunchMode
+                                                                  .externalApplication);
+                                                        } catch (e) {
+                                                          print(
+                                                              "❌ Exception: $e");
+                                                        }
+                                                      } else {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          const SnackBar(
+                                                              content: Text(
+                                                                  "Cannot open WhatsApp")),
                                                         );
                                                       }
-                                                    });
-                                              },
+                                                    },
+                                                    icon: Image.asset(
+                                                        "assets/images/whats.png",
+                                                        height: 20),
+                                                    label: const Text(
+                                                        "WhatsApp",
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.black)),
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          Colors.grey[100],
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          10)),
+                                                      elevation: 2,
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          vertical: 10),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10),
+                                              ],
                                             ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding:
-                                    const EdgeInsets.only(top: 5),
-                                    child: ListTile(
-                                      title: Text(
-                                        filterModel.data![index].title
-                                            .toString(),
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            height: 1.4),
-                                      ),
-                                      subtitle: Padding(
-                                        padding:
-                                        const EdgeInsets.only(
-                                            top: 8.0),
-                                        child: Text(
-                                          '${filterModel.data![index].price} AED',
-                                          style: TextStyle(
-                                              fontWeight:
-                                              FontWeight.bold,
-                                              fontSize: 22,
-                                              height: 1.4),
+                                            const SizedBox(height: 10),
+                                          ],
                                         ),
                                       ),
                                     ),
                                   ),
-                                  Row(
-                                    children: [
-                                      Padding(
-                                        padding:
-                                        const EdgeInsets.only(
-                                            left: 10,
-                                            right: 5,
-                                            top: 0),
-                                        child: Image.asset(
-                                            "assets/images/map.png",
-                                            height: 14),
-                                      ),
-                                      Padding(
-                                        padding:
-                                        const EdgeInsets.only(
-                                            left: 0,
-                                            right: 0,
-                                            top: 0),
-                                        child: Text(
-                                          filterModel
-                                              .data![index].location
-                                              .toString(),
-                                          style: TextStyle(
-                                              fontSize: 13,
-                                              height: 1.4,
-                                              overflow: TextOverflow
-                                                  .visible),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 8),
-                                  Padding(
-                                    padding:
-                                    const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: Row(
-                                      children: [
-                                        Image.asset(
-                                            "assets/images/bed.png",
-                                            height: 13),
-                                        SizedBox(width: 5),
-                                        Text(filterModel
-                                            .data![index].bedrooms
-                                            .toString()),
-                                        SizedBox(width: 10),
-                                        Image.asset(
-                                            "assets/images/bath.png",
-                                            height: 13),
-                                        SizedBox(width: 5),
-                                        Text(filterModel
-                                            .data![index].bathrooms
-                                            .toString()),
-                                        SizedBox(width: 10),
-                                        Image.asset(
-                                            "assets/images/messure.png",
-                                            height: 13),
-                                        SizedBox(width: 5),
-                                        Text(filterModel
-                                            .data![index].squareFeet
-                                            .toString()),
-                                      ],
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: ElevatedButton.icon(
-                                          onPressed: () async {
-                                            String phone =
-                                                'tel:${filterModel.data![index].phoneNumber}';
-                                            try {
-                                              final bool launched =
-                                              await launchUrlString(
-                                                phone,
-                                                mode: LaunchMode
-                                                    .externalApplication,
-                                              );
-                                              if (!launched)
-                                                print(
-                                                    "❌ Could not launch dialer");
-                                            } catch (e) {
-                                              print(
-                                                  "❌ Exception: $e");
-                                            }
-                                          },
-                                          icon: const Icon(Icons.call,
-                                              color: Colors.red),
-                                          label: const Text("Call",
-                                              style: TextStyle(
-                                                  color:
-                                                  Colors.black)),
-                                          style: ElevatedButton
-                                              .styleFrom(
-                                            backgroundColor:
-                                            Colors.grey[100],
-                                            shape:
-                                            RoundedRectangleBorder(
-                                                borderRadius:
-                                                BorderRadius
-                                                    .circular(
-                                                    10)),
-                                            elevation: 2,
-                                            padding: const EdgeInsets
-                                                .symmetric(
-                                                vertical: 10),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: ElevatedButton.icon(
-                                          onPressed: () async {
-                                            final property =
-                                            filterModel
-                                                .data![index];
-
-                                            final rawNumber = property
-                                                .whatsapp ??
-                                                property
-                                                    .phoneNumber ??
-                                                '';
-                                            final phone =
-                                            whatsAppNumber(
-                                                rawNumber);
-
-                                            if (phone.isEmpty) {
-                                              ScaffoldMessenger.of(
-                                                  context)
-                                                  .showSnackBar(
-                                                const SnackBar(
-                                                    content: Text(
-                                                        "No WhatsApp number available")),
-                                              );
-                                              return;
-                                            }
-
-                                            final message =
-                                            Uri.encodeComponent(
-                                                "Hello");
-                                            final url = Uri.parse(
-                                                "https://wa.me/$phone?text=$message");
-
-                                            if (await canLaunchUrl(
-                                                url)) {
-                                              try {
-                                                await launchUrl(url,
-                                                    mode: LaunchMode
-                                                        .externalApplication);
-                                              } catch (e) {
-                                                print(
-                                                    "❌ Exception: $e");
-                                              }
-                                            } else {
-                                              ScaffoldMessenger.of(
-                                                  context)
-                                                  .showSnackBar(
-                                                const SnackBar(
-                                                    content: Text(
-                                                        "Cannot open WhatsApp")),
-                                              );
-                                            }
-                                          },
-                                          icon: Image.asset(
-                                              "assets/images/whats.png",
-                                              height: 20),
-                                          label: const Text(
-                                              "WhatsApp",
-                                              style: TextStyle(
-                                                  color:
-                                                  Colors.black)),
-                                          style: ElevatedButton
-                                              .styleFrom(
-                                            backgroundColor:
-                                            Colors.grey[100],
-                                            shape:
-                                            RoundedRectangleBorder(
-                                                borderRadius:
-                                                BorderRadius
-                                                    .circular(
-                                                    10)),
-                                            elevation: 2,
-                                            padding: const EdgeInsets
-                                                .symmetric(
-                                                vertical: 10),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                ],
-                              ),
+                                );
+                              },
                             ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                )
+                          )
               ]),
             ),
 
@@ -2899,17 +2892,19 @@ class _FliterListDemoState extends State<FliterListDemo> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        mainAxisAlignment:
+            MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Home())),
+            onTap: () => Navigator.push(
+                context, MaterialPageRoute(builder: (context) => const Home())),
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.0),
-              child: Image(image: AssetImage("assets/images/home.png"), height: 25),
+              child: Image(
+                  image: AssetImage("assets/images/home.png"), height: 25),
             ),
           ),
-
           IconButton(
             enableFeedback: false,
             onPressed: () async {
@@ -2920,19 +2915,26 @@ class _FliterListDemoState extends State<FliterListDemo> {
                   context: context,
                   builder: (context) => AlertDialog(
                     backgroundColor: Colors.white, // white container
-                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    title: const Text("Login Required",
+                        style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.",
+                        style: TextStyle(color: Colors.black)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+                        child: const Text("Cancel",
+                            style: TextStyle(color: Colors.red)),
                       ),
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const LoginDemo()));
                         },
-                        child: const Text("Login", style: TextStyle(color: Colors.red)),
+                        child: const Text("Login",
+                            style: TextStyle(color: Colors.red)),
                       ),
                     ],
                   ),
@@ -2944,7 +2946,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                   MaterialPageRoute(builder: (_) => const Fav_Logout()),
                 ).then((_) async {
                   // 🔁 Re-sync when coming back
-                  final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
+                  final updatedFavorites =
+                      await FavoriteService.fetchApiFavorites(token);
                   if (mounted) {
                     setState(() {
                       FavoriteService.loggedInFavorites = updatedFavorites;
@@ -2955,9 +2958,9 @@ class _FliterListDemoState extends State<FliterListDemo> {
             },
             icon: pageIndex == 2
                 ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+                : const Icon(Icons.favorite_border_outlined,
+                    color: Colors.red, size: 30),
           ),
-
           IconButton(
             tooltip: "Email",
             icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
@@ -2973,7 +2976,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                   context: context,
                   builder: (context) => AlertDialog(
                     backgroundColor: Colors.white,
-                    title: const Text('Email not available', style: TextStyle(color: Colors.black)),
+                    title: const Text('Email not available',
+                        style: TextStyle(color: Colors.black)),
                     content: const Text(
                       'No email app is configured on this device. Please add a mail account first.',
                       style: TextStyle(color: Colors.black),
@@ -2981,7 +2985,8 @@ class _FliterListDemoState extends State<FliterListDemo> {
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('OK', style: TextStyle(color: Colors.red)),
+                        child: const Text('OK',
+                            style: TextStyle(color: Colors.red)),
                       ),
                     ],
                   ),
@@ -2989,17 +2994,21 @@ class _FliterListDemoState extends State<FliterListDemo> {
               }
             },
           ),
-
           Padding(
-            padding: const EdgeInsets.only(right: 20.0), // consistent spacing from right edge
+            padding: const EdgeInsets.only(
+                right: 20.0), // consistent spacing from right edge
             child: IconButton(
               enableFeedback: false,
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const My_Account()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const My_Account()));
               },
               icon: pageIndex == 3
                   ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+                  : const Icon(Icons.dehaze_outlined,
+                      color: Colors.red, size: 35),
             ),
           ),
         ],

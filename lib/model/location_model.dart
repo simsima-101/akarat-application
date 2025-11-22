@@ -3,9 +3,10 @@ class LocationModel {
   final String? slug;
   final String? country;
   final String? location;
-  final int? emirateId; // Parent emirate ID (for sub-locations and last search)
+  final int? emirateId;
 
-  LocationModel({this.id, this.slug, this.country, this.location, this.emirateId});
+  LocationModel(
+      {this.id, this.slug, this.country, this.location, this.emirateId});
 
   Map<String, dynamic> toJson() {
     return {
@@ -23,7 +24,7 @@ class LocationModel {
       slug: json['slug'],
       country: json['country'],
       location: json['location'],
-      emirateId: json['emirate_id'] ?? json['emirateId'],
+      emirateId: json['emirate_id'],
     );
   }
 }

@@ -10,15 +10,22 @@ import '../secure_storage.dart';
 import '../services/api_service.dart';
 
 class LocationPickerProvider extends ChangeNotifier {
-  TextEditingController searchController = TextEditingController();
-  String searchQuery = '';
-
   Future<void> clearAll() async {
+    List<LocationModel> snapshot = [];
+    if (selectedLocationList.isNotEmpty) {
+      snapshot = List<LocationModel>.from(selectedLocationList);
+    }
+
+    clearSearchSuggestions();
     selectedLocationList.clear();
-    searchController.clear();
-    searchQuery = '';
+
     // Reset popular search to show emirates
     popularLocationList = await fetchEmirates();
+    notifyListeners();
+
+    if (snapshot.isNotEmpty) {
+      await saveLastSearch(snapshot);
+    }
     notifyListeners();
   }
 
@@ -35,9 +42,6 @@ class LocationPickerProvider extends ChangeNotifier {
       return;
     }
 
-    // Store emirateId before removing (needed to determine where to add back)
-    final emirateId = locModel.emirateId;
-
     // Remove using ID and type comparison (not object equality)
     selectedLocationList.removeWhere((loc) =>
         loc.id == locModel.id &&
@@ -45,51 +49,9 @@ class LocationPickerProvider extends ChangeNotifier {
 
     debugPrint(
         '🗑️ Removed location: ${locModel.location ?? locModel.country} (ID: ${locModel.id})');
-    await saveLastSearch(locModel.location ?? locModel.country!);
 
-    // Add back to the appropriate list based on what we're currently showing
-    // Check if we're currently showing sub-locations (i.e., an emirate is in selected list)
-    final hasEmirateSelected =
-        selectedLocationList.any((loc) => loc.location == null);
-    final currentlyShowingSubLocations = hasEmirateSelected;
-
-    if (locModel.location != null) {
-      // Removed a sub-location
-      if (currentlyShowingSubLocations) {
-        // We're showing sub-locations, add it back to popular list
-        updatePopularSearchLocally(locModel);
-        debugPrint('↩️ Added sub-location back to popular list');
-      } else {
-        // We're showing emirates, add sub-location back to last search (if it has emirateId)
-        if (emirateId != null) {
-          final existsInLastSearch = lastSearchList.any((lastSearch) =>
-              lastSearch.id == locModel.id &&
-              (lastSearch.location == null) == (locModel.location == null));
-          if (!existsInLastSearch) {
-            updateLastSearchLocally(locModel);
-            debugPrint('↩️ Added sub-location back to last search');
-          }
-        }
-      }
-    } else {
-      // Removed an emirate
-      if (!currentlyShowingSubLocations) {
-        // We're showing emirates, add it back to popular list
-        updatePopularSearchLocally(locModel);
-        debugPrint('↩️ Added emirate back to popular list');
-      } else {
-        // We're showing sub-locations, add emirate back to last search (if it has emirateId)
-        if (emirateId != null) {
-          final existsInLastSearch = lastSearchList.any((lastSearch) =>
-              lastSearch.id == locModel.id &&
-              (lastSearch.location == null) == (locModel.location == null));
-          if (!existsInLastSearch) {
-            updateLastSearchLocally(locModel);
-            debugPrint('↩️ Added emirate back to last search');
-          }
-        }
-      }
-    }
+    // Save to last search via API
+    await saveLastSearch([locModel]);
 
     // Update popular search based on the new first item in selectedLocationList
     debugPrint('🔄 Updating popular search based on first item after removal');
@@ -100,12 +62,86 @@ class LocationPickerProvider extends ChangeNotifier {
       debugPrint('📌 No items in selected list after removal');
     }
     await updatePopularSearchBasedOnFirstItem();
+
+    // Add back to popular search if appropriate (after updating)
+    // Check what we're currently showing in popular search
+    // If popularLocationList contains items with location == null, we're showing emirates
+    final isShowingEmirates = popularLocationList.isNotEmpty &&
+        popularLocationList.any((loc) => loc.location == null);
+
+    if (locModel.location != null) {
+      // Removed a sub-location
+      // Add it back if we're showing sub-locations (not emirates)
+      if (!isShowingEmirates && popularLocationList.isNotEmpty) {
+        // Check if it belongs to the emirate we're showing sub-locations for
+        // All sub-locations in popularLocationList should have the same emirateId
+        final firstSubLocation = popularLocationList.firstWhere(
+          (loc) => loc.location != null,
+          orElse: () => LocationModel(),
+        );
+        if (firstSubLocation.emirateId != null &&
+            locModel.emirateId == firstSubLocation.emirateId) {
+          updatePopularSearchLocally(locModel);
+        }
+      }
+    } else {
+      // Removed an emirate
+      // Add it back if we're showing emirates
+      if (isShowingEmirates) {
+        updatePopularSearchLocally(locModel);
+      }
+    }
   }
 
   ////////////////////////// ⬇⬇⬇  FETCH LAST SEARCH FUNCTIONALITY  ⬇⬇⬇ //////////////////////////
 
   bool isLoadingLastSearch = false;
   List<LocationModel> lastSearchList = [];
+
+  LocationModel _normalizeLocationForLastSearch(LocationModel locModel) {
+    if (locModel.location == null) {
+      return LocationModel(
+        id: locModel.id,
+        slug: locModel.slug,
+        country: locModel.country ?? locModel.location,
+        location: null,
+        emirateId: locModel.emirateId ?? locModel.id,
+      );
+    }
+    return LocationModel(
+      id: locModel.id,
+      slug: locModel.slug,
+      country: locModel.country,
+      location: locModel.location,
+      emirateId: locModel.emirateId,
+    );
+  }
+
+  LocationModel _mapLastSearchItem(Map<String, dynamic> data) {
+    final sublocationId = data['sublocation_id'];
+    final emirateId = data['emirate_id'];
+    final locationName = data['location'];
+    final countryName = data['country'];
+
+    if (sublocationId == null || sublocationId == 0) {
+      // Treat as emirate
+      return LocationModel(
+        id: emirateId,
+        slug: data['slug'],
+        country: locationName ?? countryName,
+        location: null,
+        emirateId: emirateId,
+      );
+    } else {
+      return LocationModel(
+        id: sublocationId,
+        slug: data['slug'],
+        country: countryName,
+        location: locationName ?? countryName,
+        emirateId: emirateId,
+      );
+    }
+  }
 
   Future<void> fetchLastSearch() async {
     try {
@@ -142,45 +178,11 @@ class LocationPickerProvider extends ChangeNotifier {
         final decoded = jsonDecode(response.body);
 
         if (decoded is Map && decoded['data'] is List) {
-          // Parse last search API response
-          // API format: {id: search_record_id, location: name, emirate_id: X, sublocation_id: Y or null}
-          // Convert to LocationModel format:
-          // - Emirates: id = emirate_id, location = null, country = location name, emirateId = emirate_id
-          // - Sub-locations: id = sublocation_id, location = location name, country = null, emirateId = emirate_id
-          lastSearchList = (decoded['data'] as List).map((e) {
-            final emirateId = e['emirate_id'] as int?;
-            final sublocationId = e['sublocation_id'] as int?;
-            final locationName = e['location'] as String?;
-
-            if (sublocationId == null) {
-              // It's an emirate
-              return LocationModel(
-                id: emirateId,
-                location: null,
-                country: locationName,
-                emirateId: emirateId,
-              );
-            } else {
-              // It's a sub-location
-              return LocationModel(
-                id: sublocationId,
-                location: locationName,
-                country: null,
-                emirateId: emirateId,
-              );
-            }
-          }).toList();
-
-          // Filter out already selected items
-          lastSearchList.removeWhere((lastSearchItem) {
-            final isSelected = selectedLocationList.any((selected) =>
-                selected.id == lastSearchItem.id &&
-                (selected.location == null) ==
-                    (lastSearchItem.location == null));
-            return isSelected;
-          });
-
-          debugPrint('📋 Last Search list length: ${lastSearchList.length}');
+          lastSearchList = (decoded['data'] as List)
+              .whereType<Map<String, dynamic>>()
+              .map(_mapLastSearchItem)
+              .toList();
+          debugPrint('👀👀👀👀: ${lastSearchList.length}');
         } else {
           lastSearchList = [];
           debugPrint('⚠️ Unexpected JSON format: $decoded');
@@ -201,23 +203,11 @@ class LocationPickerProvider extends ChangeNotifier {
   }
 
   void updateLastSearchLocally(LocationModel locModel) {
-    // Check if item already exists (by ID and type)
-    final exists = lastSearchList.any((lastSearch) =>
-        lastSearch.id == locModel.id &&
-        (lastSearch.location == null) == (locModel.location == null));
-
-    if (!exists) {
-      lastSearchList.insert(0, locModel);
-      // Keep only last 5 items (as per API limit)
-      if (lastSearchList.length > 5) {
-        lastSearchList = lastSearchList.take(5).toList();
-      }
-      debugPrint(
-          '✅ Added to last search: ${locModel.location ?? locModel.country} (ID: ${locModel.id})');
-    } else {
-      debugPrint(
-          '⚠️ Item already in last search: ${locModel.location ?? locModel.country} (ID: ${locModel.id})');
-    }
+    final normalized = _normalizeLocationForLastSearch(locModel);
+    lastSearchList.removeWhere((loc) =>
+        loc.id == normalized.id &&
+        (loc.location == null) == (normalized.location == null));
+    lastSearchList.insert(0, normalized);
     notifyListeners();
   }
 
@@ -245,18 +235,7 @@ class LocationPickerProvider extends ChangeNotifier {
         final decoded = jsonDecode(response.body);
 
         if (decoded is List) {
-          // Set emirateId for emirates (same as id)
-          emiratesList = decoded.map((e) {
-            final model = LocationModel.fromJson(e);
-            // For emirates, emirateId should be the same as id
-            return LocationModel(
-              id: model.id,
-              slug: model.slug,
-              country: model.country,
-              location: model.location,
-              emirateId: model.emirateId ?? model.id,
-            );
-          }).toList();
+          emiratesList = decoded.map((e) => LocationModel.fromJson(e)).toList();
           log('All Emirates: $emiratesList');
         } else {
           emiratesList = [];
@@ -307,18 +286,8 @@ class LocationPickerProvider extends ChangeNotifier {
         final decoded = jsonDecode(response.body);
 
         if (decoded is List) {
-          // Set emirateId for all sub-locations
-          emiratesSubLocationList = decoded.map((e) {
-            final model = LocationModel.fromJson(e);
-            // Ensure emirateId is set (in case API doesn't return it)
-            return LocationModel(
-              id: model.id,
-              slug: model.slug,
-              country: model.country,
-              location: model.location,
-              emirateId: model.emirateId ?? emirateId,
-            );
-          }).toList();
+          emiratesSubLocationList =
+              decoded.map((e) => LocationModel.fromJson(e)).toList();
           log('All Emirates Sub Location: $emiratesSubLocationList');
         } else {
           emiratesSubLocationList = [];
@@ -389,8 +358,29 @@ class LocationPickerProvider extends ChangeNotifier {
 
   ////////////////////////// ⬇⬇⬇ SAVE LAST SEARCH FUNCTIONALITY ⬇⬇⬇ //////////////////////////
 
-  Future<void> saveLastSearch(String location) async {
+  Future<void> saveLastSearch(List<LocationModel> locations) async {
     final uri = Uri.parse('${ApiService.baseUrl}/save-last-search');
+
+    if (locations.isEmpty) return;
+
+    final normalizedLocations =
+        locations.map(_normalizeLocationForLastSearch).toList();
+
+    // Optimistically update UI so removing a location immediately places it in last search
+    for (final item in normalizedLocations.reversed) {
+      updateLastSearchLocally(item);
+    }
+
+    final locationTexts = normalizedLocations
+        .map((loc) => loc.location ?? loc.country ?? loc.slug)
+        .where((name) => name != null && name.trim().isNotEmpty)
+        .map((name) => name!.trim())
+        .toList();
+
+    if (locationTexts.isEmpty) {
+      debugPrint('⚠️ Cannot save last search, missing location text(s)');
+      return;
+    }
 
     final token = await SecureStorage.getToken();
     debugPrint('token: $token');
@@ -404,39 +394,54 @@ class LocationPickerProvider extends ChangeNotifier {
     }
 
     try {
+      final headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Device-ID': deviceId,
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
+
       final response = await http.post(
         uri,
-        headers: token != null
-            ? {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer $token',
-                'X-Device-ID': deviceId,
-              }
-            : {
-                'Accept': 'application/json',
-                'X-Device-ID': deviceId,
-              },
-        body: {'location': location},
+        headers: headers,
+        body: jsonEncode({'locations': locationTexts}),
       );
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
 
         if (decoded['success'] == true) {
-          if (decoded['data'] is Map) {
-            final data = decoded['data'];
+          final data = decoded['data'];
 
-            // Convert to model
-            final newItem = LocationModel.fromJson(data);
+          if (data is List) {
+            final mapped = data
+                .whereType<Map<String, dynamic>>()
+                .map(_mapLastSearchItem)
+                .toList();
 
-            // Add to local variable
-            updateLastSearchLocally(newItem);
-
+            if (mapped.isNotEmpty) {
+              for (final item in mapped.reversed) {
+                if (item.id != null) {
+                  updateLastSearchLocally(item);
+                }
+              }
+              debugPrint(
+                  '🎯 Added ${mapped.length} search item(s) to last search list');
+              return;
+            }
+          } else if (data is Map<String, dynamic>) {
+            final newItem = _mapLastSearchItem(data);
+            if (newItem.id != null) {
+              updateLastSearchLocally(newItem);
+            }
             debugPrint('🎯 Added new search to list: ${newItem.location}');
             debugPrint('📌 Total items: ${lastSearchList.length}');
-          } else {
-            debugPrint('⚠️ Unexpected format for data: ${decoded['data']}');
+            return;
           }
+
+          // If API response doesn't include usable data, fallback to normalized list
+          debugPrint(
+              '⚠️ API response missing usable data, fallback to local update');
         } else {
           debugPrint('⚠️ Save failed: ${decoded['message']}');
         }
@@ -477,45 +482,20 @@ class LocationPickerProvider extends ChangeNotifier {
   /// Updates popular search based on the first item in selectedLocationList
   /// Logic:
   /// - If selectedLocationList is empty → show emirates
-  /// - If first item has emirateId → always fetch sub-locations using emirateId
   /// - If first item is emirate (location == null) → show its sub-locations
-  /// - If first item is sub-location (location != null) → find parent emirate in list → show parent's sub-locations
+  /// - If first item is sub-location (location != null) → find parent emirate using emirateId → show parent's sub-locations
   /// - If no parent emirate found → show all emirates
   Future<void> updatePopularSearchBasedOnFirstItem() async {
     try {
       if (selectedLocationList.isEmpty) {
         // No selection → show emirates
         popularLocationList = await fetchEmirates();
-        // Filter out already selected items
-        popularLocationList.removeWhere((loc) =>
-            selectedLocationList.any((selected) => selected.id == loc.id));
         notifyListeners();
         return;
       }
 
       // Get the first item (most recently selected)
       final firstItem = selectedLocationList.first;
-
-      // If item has emirateId, always fetch sub-locations using that emirateId
-      if (firstItem.emirateId != null) {
-        popularLocationList =
-            await fetchEmiratesSubLocations(emirateId: firstItem.emirateId!);
-
-        // Filter out already selected sub-locations
-        final selectedSubLocationIds = selectedLocationList
-            .where((s) => s.location != null && s.id != null)
-            .map((s) => s.id!)
-            .toSet();
-        popularLocationList.removeWhere((loc) =>
-            loc.location != null &&
-            loc.id != null &&
-            selectedSubLocationIds.contains(loc.id));
-
-        debugPrint(
-            '📋 Fetched sub-locations for emirate ${firstItem.emirateId} (from first item)');
-        notifyListeners();
-        return;
-      }
 
       if (firstItem.location == null) {
         // First item is an emirate → show its sub-locations
@@ -529,7 +509,6 @@ class LocationPickerProvider extends ChangeNotifier {
                 '📋 First item before filter: ${popularLocationList.first.location} (ID: ${popularLocationList.first.id})');
           }
           // Filter out already selected SUB-LOCATIONS only (not emirates)
-          // Only filter sub-locations that match SELECTED SUB-LOCATIONS (not emirates)
           final beforeFilter = popularLocationList.length;
           final selectedSubLocationIds = selectedLocationList
               .where((s) =>
@@ -565,18 +544,32 @@ class LocationPickerProvider extends ChangeNotifier {
         }
         notifyListeners();
       } else {
-        // First item is a sub-location → find its parent emirate in the selected list
-        final parentEmirate = selectedLocationList.firstWhere(
-          (loc) => loc.location == null,
-          orElse: () => LocationModel(),
-        );
+        // First item is a sub-location → find its parent emirate
+        // First try to find parent emirate in selected list
+        LocationModel? parentEmirate;
+        if (firstItem.emirateId != null) {
+          parentEmirate = selectedLocationList.firstWhere(
+            (loc) => loc.location == null && loc.id == firstItem.emirateId,
+            orElse: () => LocationModel(),
+          );
 
-        if (parentEmirate.id != null && parentEmirate.location == null) {
-          // Found parent emirate in the list → show its sub-locations
+          // If not found in selected list, use emirateId directly
+          if (parentEmirate?.id == null && firstItem.emirateId != null) {
+            parentEmirate = LocationModel(
+              id: firstItem.emirateId,
+              country: null,
+              location: null,
+            );
+          }
+        }
+
+        if (parentEmirate?.id != null) {
+          // Found parent emirate → show its sub-locations
           popularLocationList =
-              await fetchEmiratesSubLocations(emirateId: parentEmirate.id!);
+              await fetchEmiratesSubLocations(emirateId: parentEmirate!.id!);
+          debugPrint(
+              '📋 Fetched ${popularLocationList.length} sub-locations for parent emirate ${parentEmirate.id}');
           // Filter out already selected SUB-LOCATIONS only (not emirates)
-          // Only filter sub-locations that match SELECTED SUB-LOCATIONS (not emirates)
           final selectedSubLocationIds = selectedLocationList
               .where((s) =>
                   s.location != null &&
@@ -590,7 +583,7 @@ class LocationPickerProvider extends ChangeNotifier {
                   .contains(loc.id)); // Only if matches a selected sub-location
           notifyListeners();
         } else {
-          // No parent emirate found in selection → show all emirates
+          // No parent emirate found → show all emirates
           popularLocationList = await fetchEmirates();
           // Filter out already selected items
           popularLocationList.removeWhere((loc) =>
@@ -624,51 +617,117 @@ class LocationPickerProvider extends ChangeNotifier {
       return;
     }
 
-    // Check if this item is from last search list
-    final isFromLastSearch = lastSearchList.any((lastSearch) =>
-        lastSearch.id == locationModel.id &&
-        (lastSearch.location == null) == (locationModel.location == null));
-
     // Add to selected list (insert at index 0 to make it first)
     selectedLocationList.insert(0, locationModel);
     debugPrint(
         '✅ Added location: ${locationModel.location ?? locationModel.country} (ID: ${locationModel.id})');
 
-    // Remove from last search list if it came from there
-    if (isFromLastSearch) {
-      lastSearchList.removeWhere((e) =>
-          e.id == locationModel.id &&
-          (e.location == null) == (locationModel.location == null));
-      debugPrint('🗑️ Removed from last search list');
+    // Remove from popular list locally - only remove if it matches both ID and type
+    final beforePopularCount = popularLocationList.length;
+    popularLocationList.removeWhere((e) =>
+        e.id == locationModel.id &&
+        (e.location == null) == (locationModel.location == null));
+    final afterPopularCount = popularLocationList.length;
+    if (beforePopularCount != afterPopularCount) {
+      debugPrint(
+          '🗑️ Removed from popular search: ${locationModel.location ?? locationModel.country} (ID: ${locationModel.id})');
     }
 
-    // Remove from popular list locally - only remove if it matches both ID and type
+    // Remove from last search list locally - only remove if it matches both ID and type
+    final beforeLastCount = lastSearchList.length;
+    lastSearchList.removeWhere((e) =>
+        e.id == locationModel.id &&
+        (e.location == null) == (locationModel.location == null));
+    final afterLastCount = lastSearchList.length;
+    if (beforeLastCount != afterLastCount) {
+      debugPrint(
+          '🗑️ Removed from last search: ${locationModel.location ?? locationModel.country} (ID: ${locationModel.id})');
+    } else {
+      debugPrint(
+          '⚠️ Could not remove from last search: ${locationModel.location ?? locationModel.country} (ID: ${locationModel.id})');
+      debugPrint(
+          '   Last search list IDs: ${lastSearchList.map((e) => '${e.id}(${e.location == null ? "emirate" : "sub-loc"})').join(", ")}');
+      debugPrint(
+          '   Trying to remove: ID=${locationModel.id}, type=${locationModel.location == null ? "emirate" : "sub-loc"}');
+    }
+
+    // Update popular search based on the first item (which is now the newly added item)
+    await updatePopularSearchBasedOnFirstItem();
+  }
+
+  /// Selects a location from last search - always fetches sub-locations
+  /// regardless of whether the selected item is an emirate or sub-location
+  Future<void> addSelectedLocationFromLastSearch(
+      {required LocationModel locationModel}) async {
+    // Check if already selected - must match both ID and type (emirate vs sub-location)
+    final isAlreadySelected = selectedLocationList.any((loc) =>
+        loc.id == locationModel.id &&
+        (loc.location == null) == (locationModel.location == null));
+
+    if (isAlreadySelected) {
+      debugPrint(
+          '⚠️ Location already selected: ${locationModel.location ?? locationModel.country} (ID: ${locationModel.id})');
+      notifyListeners();
+      return;
+    }
+
+    // Add to selected list (insert at index 0 to make it first)
+    selectedLocationList.insert(0, locationModel);
+    debugPrint(
+        '✅ Added location from last search: ${locationModel.location ?? locationModel.country} (ID: ${locationModel.id})');
+
+    // Remove from popular list locally
     popularLocationList.removeWhere((e) =>
         e.id == locationModel.id &&
         (e.location == null) == (locationModel.location == null));
 
-    // Update popular search based on the first item (which is now the newly added item)
-    // If item has emirateId, always fetch sub-locations using that emirateId
-    if (locationModel.emirateId != null) {
-      // Always fetch sub-locations when selecting from last search (or any item with emirateId)
-      popularLocationList =
-          await fetchEmiratesSubLocations(emirateId: locationModel.emirateId!);
+    // Remove from last search list locally
+    lastSearchList.removeWhere((e) =>
+        e.id == locationModel.id &&
+        (e.location == null) == (locationModel.location == null));
 
-      // Filter out already selected sub-locations
-      final selectedSubLocationIds = selectedLocationList
-          .where((s) => s.location != null && s.id != null)
-          .map((s) => s.id!)
-          .toSet();
-      popularLocationList.removeWhere((loc) =>
-          loc.location != null &&
-          loc.id != null &&
-          selectedSubLocationIds.contains(loc.id));
+    // Always fetch sub-locations when selecting from last search
+    // Determine which emirate's sub-locations to fetch
+    int? emirateIdToFetch;
 
-      debugPrint(
-          '📋 Fetched sub-locations for emirate ${locationModel.emirateId}');
+    if (locationModel.location == null) {
+      // It's an emirate, use its ID
+      emirateIdToFetch = locationModel.id;
+    } else {
+      // It's a sub-location, use its emirateId
+      emirateIdToFetch = locationModel.emirateId;
+    }
+
+    if (emirateIdToFetch != null) {
+      // Fetch sub-locations for the determined emirate
+      isLoadingPopularSearch = true;
+      notifyListeners();
+
+      try {
+        popularLocationList =
+            await fetchEmiratesSubLocations(emirateId: emirateIdToFetch);
+        debugPrint(
+            '📋 Fetched ${popularLocationList.length} sub-locations for emirate $emirateIdToFetch');
+
+        // Filter out already selected sub-locations
+        final selectedSubLocationIds = selectedLocationList
+            .where((s) => s.location != null && s.id != null)
+            .map((s) => s.id!)
+            .toSet();
+        popularLocationList.removeWhere((loc) =>
+            loc.location != null &&
+            loc.id != null &&
+            selectedSubLocationIds.contains(loc.id));
+      } catch (e) {
+        debugPrint('❌ Error fetching sub-locations: $e');
+        // Fallback to updating based on first item
+        await updatePopularSearchBasedOnFirstItem();
+      }
+
+      isLoadingPopularSearch = false;
       notifyListeners();
     } else {
-      // Use standard logic for items without emirateId
+      // Fallback to updating based on first item
       await updatePopularSearchBasedOnFirstItem();
     }
   }
@@ -678,6 +737,56 @@ class LocationPickerProvider extends ChangeNotifier {
     if (!popularLocationList.any((loc) => loc.id == locModel.id)) {
       popularLocationList.insert(0, locModel);
     }
+    notifyListeners();
+  }
+
+  ////////////////////////// ⬇⬇⬇ FETCH LOCATIONS SUGGESTIONS ⬇⬇⬇ //////////////////////////
+
+  TextEditingController searchController = TextEditingController();
+
+  List<LocationModel> locationSuggestionsList = [];
+
+  Future<void> fetchLocationSuggestions(String query) async {
+    final q = query.toString().toLowerCase().trim();
+
+    final uri = Uri.parse('${ApiService.baseUrl}/locations?q=$q');
+
+    try {
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+
+        locationSuggestionsList =
+            data.map((e) => LocationModel.fromJson(e)).toList();
+
+        // Remove already-selected items from suggestions
+        locationSuggestionsList.removeWhere((suggestion) {
+          return selectedLocationList.any((selected) {
+            // CASE 1: Country (parent) suggestion
+            if (suggestion.location == null) {
+              return selected.country == suggestion.location;
+            }
+
+            // CASE 2: Sub-location suggestion
+            return selected.location == suggestion.location;
+          });
+        });
+
+        notifyListeners();
+        debugPrint(
+            ' Suggestion list Length: ${locationSuggestionsList.length}');
+      } else {
+        print('❌ Failed to load suggestions: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Error while fetching locations: $e');
+    }
+  }
+
+  void clearSearchSuggestions() {
+    searchController.clear();
+    locationSuggestionsList.clear();
     notifyListeners();
   }
 }

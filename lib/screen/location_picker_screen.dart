@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
 
 import '../model/location_model.dart';
+import '../providers/filter_provider.dart';
 
 class LocationPickerScreen extends StatefulWidget {
   const LocationPickerScreen({super.key});
@@ -14,89 +15,53 @@ class LocationPickerScreen extends StatefulWidget {
 }
 
 class _LocationPickerScreenState extends State<LocationPickerScreen> {
-  final TextEditingController _controller = TextEditingController();
-
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
-        context.read<LocationPickerProvider>().fetchLastSearch();
-        context.read<LocationPickerProvider>().fetchPopularSearch();
+        final locProvider = context.read<LocationPickerProvider>();
+
+        locProvider.clearSearchSuggestions();
+
+        if (locProvider.selectedLocationList.isEmpty) {
+          locProvider.fetchLastSearch();
+        }
+
+        locProvider.updatePopularSearchBasedOnFirstItem();
+
+        // if (locProvider.selectedLocationList.isEmpty) {
+        //   locProvider.fetchPopularSearch();
+        // } else {
+        //   int? locationID;
+        //   final firstLocation = locProvider.selectedLocationList.first;
+        //   if (firstLocation.location == null) {
+        //     locationID = firstLocation.id;
+        //   } else {
+        //     locationID = firstLocation.emirateId;
+        //   }
+        //   locProvider.fetchPopularSearch(locationId: locationID);
+        // }
       },
     );
     super.initState();
   }
 
-  // Example data sets (replace with your real data)
-  final List<String> _lastSearches = [
-    'Dubai',
-    'Al Huboob 2',
-    'Al Salamah',
-    'Green Belt',
-    'Abu Dhabi',
-  ];
-
-  // "All locations" used for search results in example — replace with your backend list
-  final List<String> _allLocations = [
-    'Dubai',
-    'Downtown Dubai',
-    'Dubai Marina',
-    'Dubai Land Residence Complex',
-    'Dubai South',
-    'Dubai Hills Estate',
-    'Dubai Creek Harbour',
-    'Dubai Islands',
-    'Ajman',
-    'Sharjah',
-    'Abu Dhabi',
-    'Ras Al Khaimah',
-  ];
-
   // State
-  String _query = '';
-  // List<LocationModel> _selected = []; // multiple selections (chips)
+  // String _query = '';
 
   // UI / Styling helpers
   static const _chipRadius = 9.0;
   static const _sheetRadius = 20.0;
   static const _borderColor = Color(0xFFBDBDBD);
 
-  // --- Business logic: filtered results thzat DO NOT include already-selected top-level names
-  // List<String> get _filteredResults {
-  //   final q = _query.trim().toLowerCase();
-  //   if (q.isEmpty) return [];
-  //
-  //   return _allLocations.where((loc) {
-  //     final lower = loc.toLowerCase();
-  //     final matchesQuery = lower.contains(q);
-  //     final alreadySelected = _selected.any(
-  //         (sel) => sel.toLowerCase() == loc.toLowerCase()); // exact top-level
-  //     return matchesQuery && !alreadySelected;
-  //   }).toList();
-  // }
-
-  // // Clear everything
-  // void _clearAll() {
-  //   setState(() {
-  //     _selected.clear();
-  //     _controller.clear();
-  //     _query = '';
-  //   });
-  // }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
   // --------------------- BUILD ---------------------
   @override
   Widget build(BuildContext context) {
+    // final filterProvider = context.read<FilterProvider>();
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
-      child: Consumer<LocationPickerProvider>(
-          builder: (context, locationProvider, _) {
+      child: Consumer2<LocationPickerProvider, FilterProvider>(
+          builder: (context, locationProvider, filterProvider, _) {
         return Container(
           // Outer sheet container
           decoration: const BoxDecoration(
@@ -107,7 +72,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildHeader(context, locationProvider),
+              _buildHeader(context, locationProvider, filterProvider),
               const SizedBox(height: 1),
               const Divider(
                 thickness: 0.8,
@@ -118,9 +83,60 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
               const SizedBox(height: 12),
               Column(
                 children: [
-                  _buildSearchField(),
+                  // SEARCH FIELD
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: SizedBox(
+                      height: 49,
+                      child: TextFormField(
+                        controller: locationProvider.searchController,
+                        onChanged: (q) async {
+                          // EasyDebounce.debounce(
+                          //   'fetch location',
+                          //   Duration(milliseconds: 0),
+                          //   () {
+                          locationProvider.fetchLocationSuggestions(q);
+                          // },
+                          // );
+                        },
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(
+                            Icons.place_sharp,
+                            size: 23,
+                          ),
+                          hintText: 'e.g. Dubai Marina',
+                          hintStyle: const TextStyle(color: Colors.black45),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 14),
+                          suffixIcon: locationProvider
+                                  .searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.close),
+                                  onPressed: () {
+                                    locationProvider.clearSearchSuggestions();
+                                  },
+                                )
+                              : null,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: _borderColor),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: _borderColor),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.black),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 12),
-                  _buildSelectedChipsRow(locationProvider),
+                  _buildSelectedChipsRow(locationProvider, filterProvider),
                   if (locationProvider.selectedLocationList.isNotEmpty)
                     const SizedBox(height: 15),
                   if (locationProvider.selectedLocationList.isNotEmpty)
@@ -133,14 +149,14 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 ],
               ),
               const SizedBox(height: 5),
-              Expanded(child: _buildBody(locationProvider)),
+              Expanded(child: _buildBody(locationProvider, filterProvider)),
               const Divider(
                 thickness: 0.8,
                 height: 1,
                 indent: 0,
                 endIndent: 0,
               ),
-              _buildFooter(locationProvider),
+              _buildFooter(locationProvider, filterProvider),
             ],
           ),
         );
@@ -149,7 +165,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   }
 
   Widget _buildHeader(
-      BuildContext context, LocationPickerProvider locationProvider) {
+    BuildContext context,
+    LocationPickerProvider locationProvider,
+    FilterProvider filterProvider,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(top: 8, left: 4, right: 4, bottom: 0),
       child: Row(
@@ -175,6 +194,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 ? null
                 : () async {
                     await locationProvider.clearAll();
+                    await filterProvider.updateFilterCount(context);
                   },
             child: Text('Clear All',
                 style: TextStyle(
@@ -190,53 +210,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     );
   }
 
-  Widget _buildSearchField() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: SizedBox(
-        height: 49,
-        child: TextField(
-          controller: _controller,
-          onChanged: (v) => setState(() => _query = v),
-          decoration: InputDecoration(
-            prefixIcon: const Icon(
-              Icons.place_sharp,
-              size: 23,
-            ),
-            hintText: 'e.g. Dubai Marina',
-            hintStyle: const TextStyle(color: Colors.black45),
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            suffixIcon: _controller.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () {
-                      _controller.clear();
-                      setState(() => _query = '');
-                    },
-                  )
-                : null,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: _borderColor),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: _borderColor),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.black),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSelectedChipsRow(LocationPickerProvider locationProvider) {
+  Widget _buildSelectedChipsRow(
+    LocationPickerProvider locationProvider,
+    FilterProvider filterProvider,
+  ) {
     if (locationProvider.selectedLocationList.isEmpty)
       return const SizedBox.shrink();
 
@@ -253,6 +230,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
               locModel: item,
               onTap: () async {
                 await locationProvider.removeSelectedLocations(item);
+                await filterProvider.updateFilterCount(context);
               });
         },
       ),
@@ -282,26 +260,45 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     );
   }
 
-  Widget _buildBody(LocationPickerProvider locationProvider) {
-    // if (_query.trim().isNotEmpty) {
-    //   final results = _filteredResults;
-    //   return results.isEmpty
-    //       ? _emptySearchView()
-    //       : ListView.separated(
-    //           padding: const EdgeInsets.only(top: 0),
-    //           itemCount: results.length,
-    //           separatorBuilder: (_, __) =>
-    //               const Divider(height: 1, color: Color(0xFFE0E0E0)),
-    //           itemBuilder: (_, idx) {
-    //             final title = results[idx];
-    //             return ListTile(
-    //               title: _buildResultTitle(title),
-    //               subtitle: Text(_deriveSubtitle(title)),
-    //               onTap: () => _addSelection(title),
-    //             );
-    //           },
-    //         );
-    // }
+  Widget _buildBody(
+      LocationPickerProvider locationProvider, FilterProvider filterProvider) {
+    if (locationProvider.searchController.text.isNotEmpty) {
+      return locationProvider.locationSuggestionsList.isEmpty
+          ? Center(
+              child: Text(
+                'No results found for "${locationProvider.searchController.text}"',
+                style: const TextStyle(
+                  color: Colors.black54,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.only(top: 0),
+              itemCount: locationProvider.locationSuggestionsList.length,
+              separatorBuilder: (_, __) =>
+                  const Divider(height: 1, color: Color(0xFFE0E0E0)),
+              itemBuilder: (_, index) {
+                final locModel =
+                    locationProvider.locationSuggestionsList[index];
+                return ListTile(
+                  title: Text(
+                    locModel.location ?? '',
+                    style: const TextStyle(color: Colors.black, fontSize: 15),
+                  ),
+                  subtitle: Text(locModel.country ?? ''),
+                  onTap: () async {
+                    await locationProvider.addSelectedLocation(
+                      locationModel: locModel,
+                    );
+                    locationProvider.clearSearchSuggestions();
+                    await filterProvider.updateFilterCount(context);
+                  },
+                );
+              },
+            );
+    }
 
     // --- Dynamic popular section based on selected cities ---
 
@@ -329,43 +326,37 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                     separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       final lastSearch = locationProvider.lastSearchList[index];
-                      final isSelected = locationProvider.selectedLocationList
-                          .any((loc) =>
-                              loc.id == lastSearch.id &&
-                              (loc.location == null) ==
-                                  (lastSearch.location == null));
-                      return Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            locationProvider.addSelectedLocation(
-                                locationModel: lastSearch);
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: isSelected ? Colors.black : Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: _borderColor),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  lastSearch.location ??
-                                      lastSearch.country ??
-                                      'null',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Colors.black87,
-                                  ),
+
+                      return GestureDetector(
+                        onTap: () async {
+                          await locationProvider
+                              .addSelectedLocationFromLastSearch(
+                            locationModel: lastSearch,
+                          );
+
+                          await filterProvider.updateFilterCount(context);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: _borderColor),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                lastSearch.location ??
+                                    lastSearch.country ??
+                                    'null',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.black87,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -403,9 +394,11 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                         key: ValueKey('popular_${popularLoc.id}_$index'),
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: () {
-                            locationProvider.addSelectedLocation(
+                          onTap: () async {
+                            await locationProvider.addSelectedLocation(
                                 locationModel: popularLoc);
+
+                            await filterProvider.updateFilterCount(context);
                           },
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
@@ -440,15 +433,6 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     );
   }
 
-  Widget _emptySearchView() {
-    return Center(
-      child: Text(
-        'No results for "${_query.trim()}"',
-        style: const TextStyle(color: Colors.black54),
-      ),
-    );
-  }
-
   Widget _sectionTitle(IconData icon, String title) {
     return Row(
       children: [
@@ -461,7 +445,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     );
   }
 
-  Widget _buildResultTitle(String full) {
+  Widget _buildResultTitl(String full) {
     final parts = full.split(' ');
     if (parts.isEmpty) return Text(full);
 
@@ -483,14 +467,8 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     );
   }
 
-  String _deriveSubtitle(String title) {
-    if (title.toLowerCase().contains('dubai')) return 'Dubai';
-    if (title.toLowerCase().contains('abudhabi') ||
-        title.toLowerCase().contains('abu dhabi')) return 'Abu Dhabi';
-    return '';
-  }
-
-  Widget _buildFooter(LocationPickerProvider locationProvider) {
+  Widget _buildFooter(
+      LocationPickerProvider locationProvider, FilterProvider filterProvider) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18)
           .copyWith(bottom: 50, top: 10),
@@ -498,9 +476,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         children: [
           Expanded(
             child: Text(
-              locationProvider.selectedLocationList.isNotEmpty
-                  ? '88,795 results'
-                  : '107,617 results',
+              "${filterProvider.displayedFilterResultCount} results",
+              // locationProvider.selectedLocationList.isNotEmpty
+              // ? '88,795 results'
+              // : '107,617 results',
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
             ),
           ),
