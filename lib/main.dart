@@ -19,14 +19,28 @@ import 'package:Akarat/screen/new_projects.dart';
 import 'package:Akarat/screen/otp_verification.dart';
 import 'package:Akarat/screen/reset_password.dart';
 
+
+// Providers
+import 'package:Akarat/providers/favorite_provider.dart';
+import 'package:Akarat/providers/filter_provider.dart';
+import 'package:Akarat/providers/search_amenities_provider.dart';
+import 'package:Akarat/providers/profile_image_provider.dart';
+import 'package:Akarat/providers/location_picker_provider.dart';
+import 'package:Akarat/providers/email_enquiry_provider.dart';
+
+
 // Services
 import 'package:Akarat/services/session.dart';
+
 
 // Other imports
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+
+
+// Global keys (consistent with the rest of the app)
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -45,10 +59,22 @@ Future<void> main() async {
   // Initialize Firebase
   await _initFirebase();
 
+
   // Restore session from secure storage
   await Session().restore();
 
   // Initialize profile image provider
+
+  // 3. Restore session (critical for login state)
+
+
+  final bool isLoggedIn = Session().isAuthenticated;
+  final String? userName = Session().userName;
+
+  developer.log("App start → LoggedIn: $isLoggedIn | Name: '$userName'");
+
+  // 4. Initialize profile image early
+
   final profileProvider = ProfileImageProvider();
   await profileProvider.initialize();
 
@@ -68,6 +94,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => LocationPickerProvider()),
         ChangeNotifierProvider(create: (_) => FilterProvider()),
         ChangeNotifierProvider(create: (_) => EmailEnquiryProvider()),
+        ChangeNotifierProvider(create: (_) => FilterProvider()), // ← Kept from remote (needed for filter screen)
       ],
       child: const MyApp(),
     ),

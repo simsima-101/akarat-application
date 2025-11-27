@@ -23,15 +23,12 @@ import 'login.dart';
 import 'my_account.dart';
 
 class FliterList extends StatefulWidget {
-
-  final String selectedPurpose;      // Add this parameter
-  final String selectedPropertyType; // Add this parameter
+  final String selectedPurpose;
+  final String selectedPropertyType;
   const FliterList({
     super.key,
-    this.selectedPurpose = '',        // Default value provided
-    this.selectedPropertyType = '', // Default value provided
-
-
+    this.selectedPurpose = 'All',       // default value
+    this.selectedPropertyType = 'All',  // default value
   });
 
   @override
@@ -186,7 +183,7 @@ class _FliterListState extends State<FliterList> {
 
     final availableTypes = (filterProvider.propertyTypeModel?.data ?? const [])
         .map((e) =>
-            (e.name ?? '').trim()) // prefer e.slug if your API expects slugs
+        (e.name ?? '').trim()) // prefer e.slug if your API expects slugs
         .where((s) => s.isNotEmpty)
         .toSet()
         .toList();
@@ -240,10 +237,10 @@ class _FliterListState extends State<FliterList> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
+          (_) {
         chartData = List.generate(
           96,
-          (index) => Data(
+              (index) => Data(
               500 + index * 100.0, yValues[index % yValues.length].toDouble()),
         );
         // final filterProvider = context.read<FilterProvider>();
@@ -383,7 +380,7 @@ class _FliterListState extends State<FliterList> {
                               color: Colors.transparent,
                               shape: const CircleBorder(),
                               clipBehavior:
-                                  Clip.hardEdge, // ✅ Needed for proper tap area
+                              Clip.hardEdge, // ✅ Needed for proper tap area
                               child: InkWell(
                                 customBorder: const CircleBorder(),
                                 onTap: () async {
@@ -435,27 +432,27 @@ class _FliterListState extends State<FliterList> {
                                   return TextButton(
                                     onPressed: canReset
                                         ? resetState.isResetLoading
-                                            ? null
-                                            : () async {
-                                                await resetState
-                                                    .resetAll(context);
-                                                resetState
-                                                    .captureInitialSnapshot(); // NEW SNAPSHOT
-                                              }
+                                        ? null
+                                        : () async {
+                                      await resetState
+                                          .resetAll(context);
+                                      resetState
+                                          .captureInitialSnapshot(); // NEW SNAPSHOT
+                                    }
                                         : null,
                                     child: resetState.isResetLoading
                                         ? CupertinoActivityIndicator(
-                                            radius: 13,
-                                          )
+                                      radius: 13,
+                                    )
                                         : Text(
-                                            "Reset",
-                                            style: TextStyle(
-                                              color: canReset
-                                                  ? Colors.red
-                                                  : Colors.grey,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
+                                      "Reset",
+                                      style: TextStyle(
+                                        color: canReset
+                                            ? Colors.red
+                                            : Colors.grey,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   );
                                 },
                               )),
@@ -585,210 +582,210 @@ class _FliterListState extends State<FliterList> {
                             builder: (context) {
                               return Consumer<FilterProvider>(
                                   builder: (context, purposeState, _) {
-                                return Container(
-                                  height: screenSize.height * 0.3,
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
-                                  decoration:
+                                    return Container(
+                                      height: screenSize.height * 0.3,
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 12),
+                                      decoration:
                                       const BoxDecoration(color: Colors.white),
-                                  child: Column(
-                                    crossAxisAlignment:
+                                      child: Column(
+                                        crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    children: [
-                                      const SizedBox(height: 10),
-                                      const Text("Purpose",
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold)),
-                                      const SizedBox(height: 4),
-                                      const Text("Choose your purpose"),
-                                      const SizedBox(height: 10),
+                                        children: [
+                                          const SizedBox(height: 10),
+                                          const Text("Purpose",
+                                              style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold)),
+                                          const SizedBox(height: 4),
+                                          const Text("Choose your purpose"),
+                                          const SizedBox(height: 10),
 
-                                      // Purpose list
-                                      SizedBox(
-                                        height: 50,
-                                        child: ListView.builder(
-                                          shrinkWrap: true,
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount:
+                                          // Purpose list
+                                          SizedBox(
+                                            height: 50,
+                                            child: ListView.builder(
+                                              shrinkWrap: true,
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount:
                                               purposeState.product.length,
-                                          itemBuilder: (context, index) {
-                                            bool isSelected = purposeState
+                                              itemBuilder: (context, index) {
+                                                bool isSelected = purposeState
                                                     .filterListSelectedProduct ==
-                                                index;
-                                            return GestureDetector(
-                                              onTap: () {
-                                                purposeState
-                                                    .setSelectedFilterListProductLocally(
+                                                    index;
+                                                return GestureDetector(
+                                                  onTap: () {
+                                                    purposeState
+                                                        .setSelectedFilterListProductLocally(
                                                         index);
-                                                // selectedproduct = index;
-                                                // purpose = _product[index];
-                                                // selectedPurposeText =
-                                                //     _product[index];
-                                                //
-                                                // // refresh available property types for the new purpose (and location if set)
-                                                // await propertyApi(purpose,
-                                                //     location:
-                                                //         selectedLocation);
-                                                //
-                                                // // reset selection only if you want to neutralize cross-purpose types
-                                                // setState(() {
-                                                //   selectedtype = null;
-                                                //   property_type =
-                                                //       'All Residential'; // UI label only; query removes it
-                                                // });
+                                                    // selectedproduct = index;
+                                                    // purpose = _product[index];
+                                                    // selectedPurposeText =
+                                                    //     _product[index];
+                                                    //
+                                                    // // refresh available property types for the new purpose (and location if set)
+                                                    // await propertyApi(purpose,
+                                                    //     location:
+                                                    //         selectedLocation);
+                                                    //
+                                                    // // reset selection only if you want to neutralize cross-purpose types
+                                                    // setState(() {
+                                                    //   selectedtype = null;
+                                                    //   property_type =
+                                                    //       'All Residential'; // UI label only; query removes it
+                                                    // });
 
-                                                // Navigator.pop(context);
-                                              },
-                                              child: Container(
-                                                margin: const EdgeInsets.only(
-                                                    right: 10),
-                                                padding:
+                                                    // Navigator.pop(context);
+                                                  },
+                                                  child: Container(
+                                                    margin: const EdgeInsets.only(
+                                                        right: 10),
+                                                    padding:
                                                     const EdgeInsets.symmetric(
                                                         horizontal: 14,
                                                         vertical: 10),
-                                                decoration: BoxDecoration(
-                                                  color: isSelected
-                                                      ? Colors.blueAccent
-                                                      : Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(6),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                        color: Colors.grey
-                                                            .withOpacity(0.3),
-                                                        blurRadius: 4,
-                                                        offset:
-                                                            const Offset(0, 2)),
-                                                  ],
-                                                ),
-                                                child: Center(
-                                                  child: Text(
-                                                    purposeState.product[index],
-                                                    style: TextStyle(
+                                                    decoration: BoxDecoration(
                                                       color: isSelected
-                                                          ? Colors.white
-                                                          : Colors.black,
-                                                      fontWeight:
+                                                          ? Colors.blueAccent
+                                                          : Colors.white,
+                                                      borderRadius:
+                                                      BorderRadius.circular(6),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                            color: Colors.grey
+                                                                .withOpacity(0.3),
+                                                            blurRadius: 4,
+                                                            offset:
+                                                            const Offset(0, 2)),
+                                                      ],
+                                                    ),
+                                                    child: Center(
+                                                      child: Text(
+                                                        purposeState.product[index],
+                                                        style: TextStyle(
+                                                          color: isSelected
+                                                              ? Colors.white
+                                                              : Colors.black,
+                                                          fontWeight:
                                                           FontWeight.bold,
+                                                        ),
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
+                                                );
+                                              },
+                                            ),
+                                          ),
 
-                                      const SizedBox(height: 15),
+                                          const SizedBox(height: 15),
 
-                                      // Availability list
-                                      // SizedBox(
-                                      //   height: 50,
-                                      //   child: ListView.builder(
-                                      //     scrollDirection: Axis.horizontal,
-                                      //     itemCount: propertyTypeModel
-                                      //             ?.availability?.length ??
-                                      //         0,
-                                      //     itemBuilder: (context, index) {
-                                      //       bool isSelected =
-                                      //           selectedrent == index;
-                                      //       final label = propertyTypeModel!
-                                      //           .availability![index]
-                                      //           .toString();
-                                      //       return GestureDetector(
-                                      //         onTap: () async {
-                                      //           // setModalState(() {
-                                      //           selectedrent = index;
-                                      //           rent = label;
-                                      //           // });
-                                      //
-                                      //           await _resetPagingAndFetch();
-                                      //
-                                      //           Navigator.pop(context);
-                                      //         },
-                                      //         child: Container(
-                                      //           margin: const EdgeInsets.only(
-                                      //               right: 10),
-                                      //           padding: const EdgeInsets
-                                      //               .symmetric(
-                                      //               horizontal: 14,
-                                      //               vertical: 10),
-                                      //           decoration: BoxDecoration(
-                                      //             color: isSelected
-                                      //                 ? Colors.blueAccent
-                                      //                 : Colors.white,
-                                      //             borderRadius:
-                                      //                 BorderRadius.circular(
-                                      //                     6),
-                                      //             boxShadow: [
-                                      //               BoxShadow(
-                                      //                   color: Colors.grey
-                                      //                       .withOpacity(0.3),
-                                      //                   blurRadius: 4,
-                                      //                   offset: const Offset(
-                                      //                       0, 2)),
-                                      //             ],
-                                      //           ),
-                                      //           child: Center(
-                                      //             child: Text(
-                                      //               label,
-                                      //               style: TextStyle(
-                                      //                 color: isSelected
-                                      //                     ? Colors.white
-                                      //                     : Colors.black,
-                                      //                 fontWeight:
-                                      //                     FontWeight.bold,
-                                      //               ),
-                                      //             ),
-                                      //           ),
-                                      //         ),
-                                      //       );
-                                      //     },
-                                      //   ),
-                                      // ),
+                                          // Availability list
+                                          // SizedBox(
+                                          //   height: 50,
+                                          //   child: ListView.builder(
+                                          //     scrollDirection: Axis.horizontal,
+                                          //     itemCount: propertyTypeModel
+                                          //             ?.availability?.length ??
+                                          //         0,
+                                          //     itemBuilder: (context, index) {
+                                          //       bool isSelected =
+                                          //           selectedrent == index;
+                                          //       final label = propertyTypeModel!
+                                          //           .availability![index]
+                                          //           .toString();
+                                          //       return GestureDetector(
+                                          //         onTap: () async {
+                                          //           // setModalState(() {
+                                          //           selectedrent = index;
+                                          //           rent = label;
+                                          //           // });
+                                          //
+                                          //           await _resetPagingAndFetch();
+                                          //
+                                          //           Navigator.pop(context);
+                                          //         },
+                                          //         child: Container(
+                                          //           margin: const EdgeInsets.only(
+                                          //               right: 10),
+                                          //           padding: const EdgeInsets
+                                          //               .symmetric(
+                                          //               horizontal: 14,
+                                          //               vertical: 10),
+                                          //           decoration: BoxDecoration(
+                                          //             color: isSelected
+                                          //                 ? Colors.blueAccent
+                                          //                 : Colors.white,
+                                          //             borderRadius:
+                                          //                 BorderRadius.circular(
+                                          //                     6),
+                                          //             boxShadow: [
+                                          //               BoxShadow(
+                                          //                   color: Colors.grey
+                                          //                       .withOpacity(0.3),
+                                          //                   blurRadius: 4,
+                                          //                   offset: const Offset(
+                                          //                       0, 2)),
+                                          //             ],
+                                          //           ),
+                                          //           child: Center(
+                                          //             child: Text(
+                                          //               label,
+                                          //               style: TextStyle(
+                                          //                 color: isSelected
+                                          //                     ? Colors.white
+                                          //                     : Colors.black,
+                                          //                 fontWeight:
+                                          //                     FontWeight.bold,
+                                          //               ),
+                                          //             ),
+                                          //           ),
+                                          //         ),
+                                          //       );
+                                          //     },
+                                          //   ),
+                                          // ),
 
-                                      const SizedBox(height: 10),
+                                          const SizedBox(height: 10),
 
-                                      // Show Results button
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: ElevatedButton(
-                                          onPressed: () async {
-                                            // <-- add async here
-                                            // await _resetPagingAndFetch();
+                                          // Show Results button
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: ElevatedButton(
+                                              onPressed: () async {
+                                                // <-- add async here
+                                                // await _resetPagingAndFetch();
 
-                                            await purposeState
-                                                .setSelectedProductType(
-                                              context,
-                                              purposeState
-                                                  .filterListSelectedProduct!,
-                                            );
+                                                await purposeState
+                                                    .setSelectedProductType(
+                                                  context,
+                                                  purposeState
+                                                      .filterListSelectedProduct!,
+                                                );
 
-                                            Navigator.pop(context);
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 12),
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
+                                                Navigator.pop(context);
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                padding: const EdgeInsets.symmetric(
+                                                    vertical: 12),
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
                                                     BorderRadius.circular(8)),
+                                              ),
+                                              child: const Text(
+                                                "Showing Results",
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15),
+                                              ),
+                                            ),
                                           ),
-                                          child: const Text(
-                                            "Showing Results",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15),
-                                          ),
-                                        ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                );
-                              });
+                                    );
+                                  });
                             },
                           );
                         },
@@ -805,7 +802,7 @@ class _FliterListState extends State<FliterList> {
                               shape: BoxShape.rectangle,
                               border: Border.all(width: 1),
                               borderRadius:
-                                  BorderRadiusDirectional.circular(6.0),
+                              BorderRadiusDirectional.circular(6.0),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey,
@@ -842,7 +839,7 @@ class _FliterListState extends State<FliterList> {
                         onTap: () async {
                           await filterProvider
                               .setSelectedFilterListPropertyType(
-                                  index: filterProvider.selectedPropType);
+                              index: filterProvider.selectedPropType);
 
                           filterProvider.setSelectedFilterListPropertyCategory(
                             filterProvider.selectedtype,
@@ -858,328 +855,328 @@ class _FliterListState extends State<FliterList> {
                             builder: (context) {
                               return Consumer<FilterProvider>(
                                   builder: (context, propertyTypeState, _) {
-                                return Container(
-                                  height: screenSize.height * 0.35,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 20),
-                                  decoration:
+                                    return Container(
+                                      height: screenSize.height * 0.35,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 20),
+                                      decoration:
                                       const BoxDecoration(color: Colors.white),
-                                  child: Column(
-                                    crossAxisAlignment:
+                                      child: Column(
+                                        crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        "Property Type",
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 0.5),
-                                      ),
-                                      const SizedBox(height: 15),
-
-                                      Row(
                                         children: [
-                                          const SizedBox(width: 12),
+                                          const Text(
+                                            "Property Type",
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 0.5),
+                                          ),
+                                          const SizedBox(height: 15),
 
-                                          // Residential
-                                          Expanded(
-                                            child: GestureDetector(
-                                              onTap: () async {
-                                                await propertyTypeState
-                                                    .setSelectedFilterListPropertyType(
+                                          Row(
+                                            children: [
+                                              const SizedBox(width: 12),
+
+                                              // Residential
+                                              Expanded(
+                                                child: GestureDetector(
+                                                  onTap: () async {
+                                                    await propertyTypeState
+                                                        .setSelectedFilterListPropertyType(
                                                         index: 0);
-                                              },
-                                              child: AnimatedContainer(
-                                                duration: const Duration(
-                                                    milliseconds: 150),
-                                                height: 40,
-                                                alignment: Alignment.center,
-                                                margin: const EdgeInsets.only(
-                                                    right: 8),
-                                                decoration: BoxDecoration(
-                                                  // selected: subtle gray gradient; unselected: white
-                                                  gradient: propertyTypeState
-                                                              .filterListSelectedPropType ==
+                                                  },
+                                                  child: AnimatedContainer(
+                                                    duration: const Duration(
+                                                        milliseconds: 150),
+                                                    height: 40,
+                                                    alignment: Alignment.center,
+                                                    margin: const EdgeInsets.only(
+                                                        right: 8),
+                                                    decoration: BoxDecoration(
+                                                      // selected: subtle gray gradient; unselected: white
+                                                      gradient: propertyTypeState
+                                                          .filterListSelectedPropType ==
                                                           0
-                                                      ? const LinearGradient(
-                                                          begin: Alignment
-                                                              .centerLeft,
-                                                          end: Alignment
-                                                              .centerRight,
-                                                          colors: [
-                                                            Color(0xFFF5F4F9),
-                                                            Color(0xFFEFEFF3)
-                                                          ],
-                                                        )
-                                                      : null,
-                                                  color: propertyTypeState
-                                                              .filterListSelectedPropType ==
+                                                          ? const LinearGradient(
+                                                        begin: Alignment
+                                                            .centerLeft,
+                                                        end: Alignment
+                                                            .centerRight,
+                                                        colors: [
+                                                          Color(0xFFF5F4F9),
+                                                          Color(0xFFEFEFF3)
+                                                        ],
+                                                      )
+                                                          : null,
+                                                      color: propertyTypeState
+                                                          .filterListSelectedPropType ==
                                                           0
-                                                      ? null
-                                                      : Colors.white,
-                                                  border: Border.all(
-                                                    color: propertyTypeState
-                                                                .filterListSelectedPropType ==
+                                                          ? null
+                                                          : Colors.white,
+                                                      border: Border.all(
+                                                        color: propertyTypeState
+                                                            .filterListSelectedPropType ==
                                                             0
-                                                        ? Colors.black
-                                                        : Color(0xFFE6E4EE),
-                                                    width: 1,
-                                                  ),
-                                                  borderRadius:
+                                                            ? Colors.black
+                                                            : Color(0xFFE6E4EE),
+                                                        width: 1,
+                                                      ),
+                                                      borderRadius:
                                                       BorderRadius.circular(14),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.black
-                                                          .withOpacity(0.06),
-                                                      offset:
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: Colors.black
+                                                              .withOpacity(0.06),
+                                                          offset:
                                                           const Offset(0, 3),
-                                                      blurRadius: 6,
-                                                      spreadRadius: 0,
-                                                    ),
-                                                    BoxShadow(
-                                                      color: Colors.white
-                                                          .withOpacity(0.9),
-                                                      offset:
+                                                          blurRadius: 6,
+                                                          spreadRadius: 0,
+                                                        ),
+                                                        BoxShadow(
+                                                          color: Colors.white
+                                                              .withOpacity(0.9),
+                                                          offset:
                                                           const Offset(-2, -2),
-                                                      blurRadius: 6,
-                                                      spreadRadius: 2,
+                                                          blurRadius: 6,
+                                                          spreadRadius: 2,
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ],
-                                                ),
-                                                child: const Text(
-                                                  'Residential',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.black,
-                                                    letterSpacing: 0.2,
+                                                    child: const Text(
+                                                      'Residential',
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: Colors.black,
+                                                        letterSpacing: 0.2,
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
+
+                                              // Commercial
+                                              Expanded(
+                                                child: GestureDetector(
+                                                  onTap: () async {
+                                                    await propertyTypeState
+                                                        .setSelectedFilterListPropertyType(
+                                                      index: 1,
+                                                    );
+                                                  },
+                                                  child: AnimatedContainer(
+                                                    duration: const Duration(
+                                                        milliseconds: 150),
+                                                    height: 40,
+                                                    alignment: Alignment.center,
+                                                    margin: const EdgeInsets.only(
+                                                        left: 8, right: 12),
+                                                    decoration: BoxDecoration(
+                                                      gradient: propertyTypeState
+                                                          .filterListSelectedPropType ==
+                                                          1
+                                                          ? const LinearGradient(
+                                                        begin: Alignment
+                                                            .centerLeft,
+                                                        end: Alignment
+                                                            .centerRight,
+                                                        colors: [
+                                                          Color(0xFFF5F4F9),
+                                                          Color(0xFFEFEFF3)
+                                                        ],
+                                                      )
+                                                          : null,
+                                                      color: propertyTypeState
+                                                          .filterListSelectedPropType ==
+                                                          1
+                                                          ? null
+                                                          : Colors.white,
+                                                      border: Border.all(
+                                                        color: propertyTypeState
+                                                            .filterListSelectedPropType ==
+                                                            1
+                                                            ? Colors.black
+                                                            : Color(0xFFE6E4EE),
+                                                        width: 1,
+                                                      ),
+                                                      borderRadius:
+                                                      BorderRadius.circular(14),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: Colors.black
+                                                              .withOpacity(0.06),
+                                                          offset:
+                                                          const Offset(0, 3),
+                                                          blurRadius: 6,
+                                                          spreadRadius: 0,
+                                                        ),
+                                                        BoxShadow(
+                                                          color: Colors.white
+                                                              .withOpacity(0.9),
+                                                          offset:
+                                                          const Offset(-2, -2),
+                                                          blurRadius: 6,
+                                                          spreadRadius: 2,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    child: const Text(
+                                                      'Commercial',
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: Colors.black,
+                                                        letterSpacing: 0.2,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          const SizedBox(height: 15),
+
+                                          // Property Type Cards
+                                          SizedBox(
+                                            height: screenSize.height * 0.12,
+                                            child: ListView.builder(
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount: propertyTypeState
+                                                  .filterListPropertyTypeModel
+                                                  ?.data
+                                                  ?.length ??
+                                                  0,
+                                              itemBuilder: (context, index) {
+                                                final item = propertyTypeState
+                                                    .filterListPropertyTypeModel!
+                                                    .data![index];
+                                                final isSelected = propertyTypeState
+                                                    .filterListSelectedType ==
+                                                    index;
+
+                                                return GestureDetector(
+                                                  onTap: () async {
+                                                    propertyTypeState
+                                                        .setSelectedFilterListPropertyCategory(
+                                                        index);
+                                                  },
+                                                  child: Container(
+                                                    margin:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8),
+                                                    padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 15,
+                                                        vertical: 10),
+                                                    decoration: BoxDecoration(
+                                                      color: isSelected
+                                                          ? const Color(0xFFEEEEEE)
+                                                          : Colors.white,
+                                                      borderRadius:
+                                                      BorderRadius.circular(8),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: Colors.grey
+                                                              .withOpacity(0.3),
+                                                          blurRadius: 4,
+                                                          offset:
+                                                          const Offset(0, 2),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                      children: [
+                                                        CachedNetworkImage(
+                                                          imageUrl:
+                                                          item.icon.toString(),
+                                                          height: 35,
+                                                          placeholder: (context,
+                                                              url) =>
+                                                          const CupertinoActivityIndicator(
+                                                            radius: 14,
+                                                          ),
+                                                          errorWidget: (context,
+                                                              url, error) =>
+                                                          const Icon(
+                                                              Icons.error,
+                                                              size: 35),
+                                                        ),
+                                                        const SizedBox(height: 6),
+                                                        Text(
+                                                          item.name.toString(),
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                            FontWeight.bold,
+                                                            fontSize: 14,
+                                                            color: isSelected
+                                                                ? Colors.black
+                                                                : Colors.black87,
+                                                          ),
+                                                          textAlign:
+                                                          TextAlign.center,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                );
+                                              },
                                             ),
                                           ),
 
-                                          // Commercial
-                                          Expanded(
-                                            child: GestureDetector(
-                                              onTap: () async {
+                                          const SizedBox(height: 10),
+
+                                          // Confirm Button
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: ElevatedButton(
+                                              onPressed: () async {
                                                 await propertyTypeState
-                                                    .setSelectedFilterListPropertyType(
-                                                  index: 1,
-                                                );
+                                                    .setSelectedPropertyType(
+                                                    context,
+                                                    index: propertyTypeState
+                                                        .filterListSelectedPropType);
+
+                                                if (propertyTypeState
+                                                    .filterListSelectedType !=
+                                                    null) {
+                                                  await propertyTypeState
+                                                      .setSelectedPropertyCategoryType(
+                                                    context,
+                                                    index: propertyTypeState
+                                                        .filterListSelectedType!,
+                                                  );
+                                                }
+
+                                                // await _resetPagingAndFetch();
+                                                Navigator.pop(context);
                                               },
-                                              child: AnimatedContainer(
-                                                duration: const Duration(
-                                                    milliseconds: 150),
-                                                height: 40,
-                                                alignment: Alignment.center,
-                                                margin: const EdgeInsets.only(
-                                                    left: 8, right: 12),
-                                                decoration: BoxDecoration(
-                                                  gradient: propertyTypeState
-                                                              .filterListSelectedPropType ==
-                                                          1
-                                                      ? const LinearGradient(
-                                                          begin: Alignment
-                                                              .centerLeft,
-                                                          end: Alignment
-                                                              .centerRight,
-                                                          colors: [
-                                                            Color(0xFFF5F4F9),
-                                                            Color(0xFFEFEFF3)
-                                                          ],
-                                                        )
-                                                      : null,
-                                                  color: propertyTypeState
-                                                              .filterListSelectedPropType ==
-                                                          1
-                                                      ? null
-                                                      : Colors.white,
-                                                  border: Border.all(
-                                                    color: propertyTypeState
-                                                                .filterListSelectedPropType ==
-                                                            1
-                                                        ? Colors.black
-                                                        : Color(0xFFE6E4EE),
-                                                    width: 1,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(14),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.black
-                                                          .withOpacity(0.06),
-                                                      offset:
-                                                          const Offset(0, 3),
-                                                      blurRadius: 6,
-                                                      spreadRadius: 0,
-                                                    ),
-                                                    BoxShadow(
-                                                      color: Colors.white
-                                                          .withOpacity(0.9),
-                                                      offset:
-                                                          const Offset(-2, -2),
-                                                      blurRadius: 6,
-                                                      spreadRadius: 2,
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: const Text(
-                                                  'Commercial',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.black,
-                                                    letterSpacing: 0.2,
-                                                  ),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                padding: const EdgeInsets.symmetric(
+                                                    vertical: 12),
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                    BorderRadius.circular(6)),
+                                              ),
+                                              child: const Text(
+                                                "Showing Results",
+                                                style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                  letterSpacing: 0.5,
                                                 ),
                                               ),
                                             ),
                                           ),
                                         ],
                                       ),
-
-                                      const SizedBox(height: 15),
-
-                                      // Property Type Cards
-                                      SizedBox(
-                                        height: screenSize.height * 0.12,
-                                        child: ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: propertyTypeState
-                                                  .filterListPropertyTypeModel
-                                                  ?.data
-                                                  ?.length ??
-                                              0,
-                                          itemBuilder: (context, index) {
-                                            final item = propertyTypeState
-                                                .filterListPropertyTypeModel!
-                                                .data![index];
-                                            final isSelected = propertyTypeState
-                                                    .filterListSelectedType ==
-                                                index;
-
-                                            return GestureDetector(
-                                              onTap: () async {
-                                                propertyTypeState
-                                                    .setSelectedFilterListPropertyCategory(
-                                                        index);
-                                              },
-                                              child: Container(
-                                                margin:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 8),
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 15,
-                                                        vertical: 10),
-                                                decoration: BoxDecoration(
-                                                  color: isSelected
-                                                      ? const Color(0xFFEEEEEE)
-                                                      : Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.grey
-                                                          .withOpacity(0.3),
-                                                      blurRadius: 4,
-                                                      offset:
-                                                          const Offset(0, 2),
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    CachedNetworkImage(
-                                                      imageUrl:
-                                                          item.icon.toString(),
-                                                      height: 35,
-                                                      placeholder: (context,
-                                                              url) =>
-                                                          const CupertinoActivityIndicator(
-                                                        radius: 14,
-                                                      ),
-                                                      errorWidget: (context,
-                                                              url, error) =>
-                                                          const Icon(
-                                                              Icons.error,
-                                                              size: 35),
-                                                    ),
-                                                    const SizedBox(height: 6),
-                                                    Text(
-                                                      item.name.toString(),
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 14,
-                                                        color: isSelected
-                                                            ? Colors.black
-                                                            : Colors.black87,
-                                                      ),
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 10),
-
-                                      // Confirm Button
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: ElevatedButton(
-                                          onPressed: () async {
-                                            await propertyTypeState
-                                                .setSelectedPropertyType(
-                                                    context,
-                                                    index: propertyTypeState
-                                                        .filterListSelectedPropType);
-
-                                            if (propertyTypeState
-                                                    .filterListSelectedType !=
-                                                null) {
-                                              await propertyTypeState
-                                                  .setSelectedPropertyCategoryType(
-                                                context,
-                                                index: propertyTypeState
-                                                    .filterListSelectedType!,
-                                              );
-                                            }
-
-                                            // await _resetPagingAndFetch();
-                                            Navigator.pop(context);
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 12),
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(6)),
-                                          ),
-                                          child: const Text(
-                                            "Showing Results",
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                              letterSpacing: 0.5,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              });
+                                    );
+                                  });
                             },
                           );
                         },
@@ -1197,7 +1194,7 @@ class _FliterListState extends State<FliterList> {
                               shape: BoxShape.rectangle,
                               border: Border.all(width: 1),
                               borderRadius:
-                                  BorderRadiusDirectional.circular(6.0),
+                              BorderRadiusDirectional.circular(6.0),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey,
@@ -1218,10 +1215,10 @@ class _FliterListState extends State<FliterList> {
                               child: Text(
                                 (filterProvider.property_type.trim().isEmpty
                                     ? filterProvider
-                                                .filterListSelectedPropType ==
-                                            0
-                                        ? 'Residential'
-                                        : 'Commercial'
+                                    .filterListSelectedPropType ==
+                                    0
+                                    ? 'Residential'
+                                    : 'Commercial'
                                     : filterProvider.property_type.trim()),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
@@ -1260,210 +1257,210 @@ class _FliterListState extends State<FliterList> {
                             builder: (context) {
                               return Consumer<FilterProvider>(
                                   builder: (context, priceRangeState, _) {
-                                return Container(
-                                  height: screenSize.height * 0.38,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 20),
-                                  decoration:
+                                    return Container(
+                                      height: screenSize.height * 0.38,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20, vertical: 20),
+                                      decoration:
                                       const BoxDecoration(color: Colors.white),
-                                  child: Column(
-                                    crossAxisAlignment:
+                                      child: Column(
+                                        crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        "Price range",
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          _rangeDisplayBox(priceRangeState
-                                              .filterListValues.start
-                                              .toStringAsFixed(0)),
-                                          const Text("to",
-                                              style: TextStyle(fontSize: 15)),
-                                          _rangeDisplayBox(priceRangeState
-                                              .filterListValues.end
-                                              .toStringAsFixed(0)),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      SfRangeSelectorTheme(
-                                        data: SfRangeSelectorThemeData(
-                                          tooltipBackgroundColor: Colors.black,
-                                          tooltipTextStyle: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        child: SfRangeSelector(
-                                          min: 500,
-                                          max: 300000,
-                                          interval: 10000,
-                                          activeColor: const Color(0xFF2575D4),
-                                          inactiveColor:
-                                              const Color(0x80F1EEEE),
-                                          enableTooltip: true,
-                                          shouldAlwaysShowTooltip: true,
-                                          initialValues:
-                                              priceRangeState.filterListValues,
-                                          tooltipTextFormatterCallback:
-                                              (actualValue, _) =>
-                                                  'AED ${actualValue.toInt()}',
-                                          onChanged: (value) {
-                                            // setModalState(() {
-                                            double roundedMin =
-                                                ((value.start / 100).round() *
-                                                        100)
-                                                    .toDouble();
-                                            double roundedMax =
-                                                ((value.end / 100).round() *
-                                                        100)
-                                                    .toDouble();
-
-                                            // priceRangeState.filterListValues =
-                                            //     SfRangeValues(
-                                            //         roundedMin, roundedMax);
-                                            //
-                                            // min_price =
-                                            //     roundedMin.toStringAsFixed(0);
-                                            // max_price =
-                                            //     roundedMax.toStringAsFixed(0);
-
-                                            filterProvider
-                                                .setSelectedFilterRangePriceRange(
-                                              minPrice: roundedMin,
-                                              maxPrice: roundedMax,
-                                            );
-                                            // });
-                                          },
-                                          child: SizedBox(
-                                            height: 60,
-                                            width: double.infinity,
-                                            child: SfCartesianChart(
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              plotAreaBorderColor:
-                                                  Colors.transparent,
-                                              margin: const EdgeInsets.all(0),
-                                              primaryXAxis: NumericAxis(
-                                                  minimum: 500,
-                                                  maximum: 10000,
-                                                  isVisible: false),
-                                              primaryYAxis:
-                                                  NumericAxis(isVisible: false),
-                                              plotAreaBorderWidth: 0,
-                                              plotAreaBackgroundColor:
-                                                  Colors.transparent,
-                                              series: <ColumnSeries<Data,
-                                                  double>>[
-                                                ColumnSeries<Data, double>(
-                                                  dataSource: chartData,
-                                                  xValueMapper:
-                                                      (Data sales, _) =>
-                                                          sales.x,
-                                                  yValueMapper:
-                                                      (Data sales, _) =>
-                                                          sales.y,
-                                                  pointColorMapper: (_, __) =>
-                                                      const Color.fromARGB(
-                                                          255, 37, 117, 212),
-                                                  animationDuration: 0,
-                                                  borderWidth: 0,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: 45,
-                                        child: ElevatedButton(
-                                          onPressed: () async {
-                                            // await _resetPagingAndFetch();
-
-                                            double finalMinPrice = double.parse(
-                                                filterProvider
-                                                    .filterList_Min_price);
-                                            double finalMaxPrice = double.parse(
-                                                filterProvider
-                                                    .filterList_Max_price);
-
-                                            // filterProvider
-                                            //     .setSelectedFilterRangePriceRange(
-                                            //         minPrice: finalMinPrice,
-                                            //         maxPrice: finalMaxPrice);
-
-                                            setState(() {
-                                              filterProvider.values =
-                                                  SfRangeValues(finalMinPrice,
-                                                      finalMaxPrice);
-                                              filterProvider.min_price =
-                                                  finalMinPrice
-                                                      .toStringAsFixed(0);
-                                              filterProvider.max_price =
-                                                  finalMaxPrice
-                                                      .toStringAsFixed(0);
-
-                                              // ✅ Force update min only if not currently editing, or if value actually changed
-                                              if (!filterProvider.isMinTyping ||
-                                                  filterProvider
-                                                          .minPriceController
-                                                          .text !=
-                                                      finalMinPrice
-                                                          .toStringAsFixed(0)) {
-                                                filterProvider
-                                                        .minPriceController
-                                                        .text =
-                                                    finalMinPrice
-                                                        .toStringAsFixed(0);
-                                              }
-
-                                              if (!filterProvider.isMaxTyping ||
-                                                  filterProvider
-                                                          .maxPriceController
-                                                          .text !=
-                                                      finalMaxPrice
-                                                          .toStringAsFixed(0)) {
-                                                filterProvider
-                                                        .maxPriceController
-                                                        .text =
-                                                    finalMaxPrice
-                                                        .toStringAsFixed(0);
-                                              }
-                                            });
-
-                                            await filterProvider
-                                                .updateFilterCount(context);
-
-                                            Navigator.pop(
-                                                context); // Close the bottom sheet after showing result
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(6)),
-                                          ),
-                                          child: const Text(
-                                            "Showing Results",
+                                          const Text(
+                                            "Price range",
                                             style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Row(
+                                            mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              _rangeDisplayBox(priceRangeState
+                                                  .filterListValues.start
+                                                  .toStringAsFixed(0)),
+                                              const Text("to",
+                                                  style: TextStyle(fontSize: 15)),
+                                              _rangeDisplayBox(priceRangeState
+                                                  .filterListValues.end
+                                                  .toStringAsFixed(0)),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 16),
+                                          SfRangeSelectorTheme(
+                                            data: SfRangeSelectorThemeData(
+                                              tooltipBackgroundColor: Colors.black,
+                                              tooltipTextStyle: const TextStyle(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: 15),
+                                              ),
+                                            ),
+                                            child: SfRangeSelector(
+                                              min: 500,
+                                              max: 300000,
+                                              interval: 10000,
+                                              activeColor: const Color(0xFF2575D4),
+                                              inactiveColor:
+                                              const Color(0x80F1EEEE),
+                                              enableTooltip: true,
+                                              shouldAlwaysShowTooltip: true,
+                                              initialValues:
+                                              priceRangeState.filterListValues,
+                                              tooltipTextFormatterCallback:
+                                                  (actualValue, _) =>
+                                              'AED ${actualValue.toInt()}',
+                                              onChanged: (value) {
+                                                // setModalState(() {
+                                                double roundedMin =
+                                                ((value.start / 100).round() *
+                                                    100)
+                                                    .toDouble();
+                                                double roundedMax =
+                                                ((value.end / 100).round() *
+                                                    100)
+                                                    .toDouble();
+
+                                                // priceRangeState.filterListValues =
+                                                //     SfRangeValues(
+                                                //         roundedMin, roundedMax);
+                                                //
+                                                // min_price =
+                                                //     roundedMin.toStringAsFixed(0);
+                                                // max_price =
+                                                //     roundedMax.toStringAsFixed(0);
+
+                                                filterProvider
+                                                    .setSelectedFilterRangePriceRange(
+                                                  minPrice: roundedMin,
+                                                  maxPrice: roundedMax,
+                                                );
+                                                // });
+                                              },
+                                              child: SizedBox(
+                                                height: 60,
+                                                width: double.infinity,
+                                                child: SfCartesianChart(
+                                                  backgroundColor:
+                                                  Colors.transparent,
+                                                  plotAreaBorderColor:
+                                                  Colors.transparent,
+                                                  margin: const EdgeInsets.all(0),
+                                                  primaryXAxis: NumericAxis(
+                                                      minimum: 500,
+                                                      maximum: 10000,
+                                                      isVisible: false),
+                                                  primaryYAxis:
+                                                  NumericAxis(isVisible: false),
+                                                  plotAreaBorderWidth: 0,
+                                                  plotAreaBackgroundColor:
+                                                  Colors.transparent,
+                                                  series: <ColumnSeries<Data,
+                                                      double>>[
+                                                    ColumnSeries<Data, double>(
+                                                      dataSource: chartData,
+                                                      xValueMapper:
+                                                          (Data sales, _) =>
+                                                      sales.x,
+                                                      yValueMapper:
+                                                          (Data sales, _) =>
+                                                      sales.y,
+                                                      pointColorMapper: (_, __) =>
+                                                      const Color.fromARGB(
+                                                          255, 37, 117, 212),
+                                                      animationDuration: 0,
+                                                      borderWidth: 0,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
                                           ),
-                                        ),
+                                          const SizedBox(height: 20),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            height: 45,
+                                            child: ElevatedButton(
+                                              onPressed: () async {
+                                                // await _resetPagingAndFetch();
+
+                                                double finalMinPrice = double.parse(
+                                                    filterProvider
+                                                        .filterList_Min_price);
+                                                double finalMaxPrice = double.parse(
+                                                    filterProvider
+                                                        .filterList_Max_price);
+
+                                                // filterProvider
+                                                //     .setSelectedFilterRangePriceRange(
+                                                //         minPrice: finalMinPrice,
+                                                //         maxPrice: finalMaxPrice);
+
+                                                setState(() {
+                                                  filterProvider.values =
+                                                      SfRangeValues(finalMinPrice,
+                                                          finalMaxPrice);
+                                                  filterProvider.min_price =
+                                                      finalMinPrice
+                                                          .toStringAsFixed(0);
+                                                  filterProvider.max_price =
+                                                      finalMaxPrice
+                                                          .toStringAsFixed(0);
+
+                                                  // ✅ Force update min only if not currently editing, or if value actually changed
+                                                  if (!filterProvider.isMinTyping ||
+                                                      filterProvider
+                                                          .minPriceController
+                                                          .text !=
+                                                          finalMinPrice
+                                                              .toStringAsFixed(0)) {
+                                                    filterProvider
+                                                        .minPriceController
+                                                        .text =
+                                                        finalMinPrice
+                                                            .toStringAsFixed(0);
+                                                  }
+
+                                                  if (!filterProvider.isMaxTyping ||
+                                                      filterProvider
+                                                          .maxPriceController
+                                                          .text !=
+                                                          finalMaxPrice
+                                                              .toStringAsFixed(0)) {
+                                                    filterProvider
+                                                        .maxPriceController
+                                                        .text =
+                                                        finalMaxPrice
+                                                            .toStringAsFixed(0);
+                                                  }
+                                                });
+
+                                                await filterProvider
+                                                    .updateFilterCount(context);
+
+                                                Navigator.pop(
+                                                    context); // Close the bottom sheet after showing result
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                    BorderRadius.circular(6)),
+                                              ),
+                                              child: const Text(
+                                                "Showing Results",
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                );
-                              });
+                                    );
+                                  });
                             },
                           );
                         },
@@ -1480,7 +1477,7 @@ class _FliterListState extends State<FliterList> {
                               shape: BoxShape.rectangle,
                               border: Border.all(width: 1),
                               borderRadius:
-                                  BorderRadiusDirectional.circular(6.0),
+                              BorderRadiusDirectional.circular(6.0),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey,
@@ -1538,220 +1535,220 @@ class _FliterListState extends State<FliterList> {
                             builder: (context) {
                               return Consumer<FilterProvider>(
                                   builder: (context, areaSizeState, _) {
-                                return Container(
-                                  height: screenSize.height * 0.38,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 20),
-                                  decoration:
+                                    return Container(
+                                      height: screenSize.height * 0.38,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20, vertical: 20),
+                                      decoration:
                                       const BoxDecoration(color: Colors.white),
-                                  child: Column(
-                                    crossAxisAlignment:
+                                      child: Column(
+                                        crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        "Area Range",
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          _rangeDisplayBox(areaSizeState
-                                              .filterListValuesArea.start
-                                              .toStringAsFixed(0)),
-                                          const Text("to",
-                                              style: TextStyle(fontSize: 15)),
-                                          _rangeDisplayBox(areaSizeState
-                                              .filterListValuesArea.end
-                                              .toStringAsFixed(0)),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      SfRangeSelectorTheme(
-                                        data: SfRangeSelectorThemeData(
-                                          tooltipBackgroundColor: Colors.black,
-                                          tooltipTextStyle: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        child: SfRangeSelector(
-                                          min: 0,
-                                          max: 10000,
-                                          interval: 1000,
-                                          initialValues: areaSizeState
-                                              .filterListValuesArea,
-                                          enableTooltip: true,
-                                          shouldAlwaysShowTooltip: true,
-                                          activeColor: const Color(0xFF2575D4),
-                                          inactiveColor:
+                                          const Text(
+                                            "Area Range",
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Row(
+                                            mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              _rangeDisplayBox(areaSizeState
+                                                  .filterListValuesArea.start
+                                                  .toStringAsFixed(0)),
+                                              const Text("to",
+                                                  style: TextStyle(fontSize: 15)),
+                                              _rangeDisplayBox(areaSizeState
+                                                  .filterListValuesArea.end
+                                                  .toStringAsFixed(0)),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 16),
+                                          SfRangeSelectorTheme(
+                                            data: SfRangeSelectorThemeData(
+                                              tooltipBackgroundColor: Colors.black,
+                                              tooltipTextStyle: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            child: SfRangeSelector(
+                                              min: 0,
+                                              max: 10000,
+                                              interval: 1000,
+                                              initialValues: areaSizeState
+                                                  .filterListValuesArea,
+                                              enableTooltip: true,
+                                              shouldAlwaysShowTooltip: true,
+                                              activeColor: const Color(0xFF2575D4),
+                                              inactiveColor:
                                               const Color(0x80F1EEEE),
-                                          // controller:
-                                          //     areaSizeState.areaRangeController,
-                                          onChanged: (value) async {
-                                            // await filterProvider
-                                            //     .setSelectedAreaRange(context,
-                                            //         value: value);
+                                              // controller:
+                                              //     areaSizeState.areaRangeController,
+                                              onChanged: (value) async {
+                                                // await filterProvider
+                                                //     .setSelectedAreaRange(context,
+                                                //         value: value);
 
-                                            double roundedMin =
+                                                double roundedMin =
                                                 ((value.start / 100).round() *
-                                                        100)
+                                                    100)
                                                     .toDouble();
-                                            double roundedMax =
+                                                double roundedMax =
                                                 ((value.end / 100).round() *
-                                                        100)
+                                                    100)
                                                     .toDouble();
 
-                                            areaSizeState
-                                                .setSelectedFilterListAreaSize(
-                                              minSqrFeet: roundedMin,
-                                              maxSqrFeet: roundedMax,
-                                            );
-                                          },
-                                          child: SizedBox(
-                                            height: 70,
-                                            width: double.infinity,
-                                            child: SfCartesianChart(
-                                              plotAreaBorderColor:
+                                                areaSizeState
+                                                    .setSelectedFilterListAreaSize(
+                                                  minSqrFeet: roundedMin,
+                                                  maxSqrFeet: roundedMax,
+                                                );
+                                              },
+                                              child: SizedBox(
+                                                height: 70,
+                                                width: double.infinity,
+                                                child: SfCartesianChart(
+                                                  plotAreaBorderColor:
                                                   Colors.transparent,
-                                              margin: const EdgeInsets.all(0),
-                                              primaryXAxis: NumericAxis(
-                                                  minimum: 0,
-                                                  maximum: 10000,
-                                                  isVisible: false),
-                                              primaryYAxis:
+                                                  margin: const EdgeInsets.all(0),
+                                                  primaryXAxis: NumericAxis(
+                                                      minimum: 0,
+                                                      maximum: 10000,
+                                                      isVisible: false),
+                                                  primaryYAxis:
                                                   NumericAxis(isVisible: false),
-                                              plotAreaBorderWidth: 0,
-                                              plotAreaBackgroundColor:
+                                                  plotAreaBorderWidth: 0,
+                                                  plotAreaBackgroundColor:
                                                   Colors.transparent,
-                                              series: <ColumnSeries<Dataarea,
-                                                  double>>[
-                                                ColumnSeries<Dataarea, double>(
-                                                  dataSource: areaSizeState
-                                                      .chartDataarea,
-                                                  selectionBehavior:
+                                                  series: <ColumnSeries<Dataarea,
+                                                      double>>[
+                                                    ColumnSeries<Dataarea, double>(
+                                                      dataSource: areaSizeState
+                                                          .chartDataarea,
+                                                      selectionBehavior:
                                                       SelectionBehavior(
-                                                    unselectedOpacity: 0,
-                                                    selectedOpacity: 0,
-                                                    unselectedColor:
+                                                        unselectedOpacity: 0,
+                                                        selectedOpacity: 0,
+                                                        unselectedColor:
                                                         Colors.transparent,
-                                                    // selectionController:
-                                                    // areaSizeState
-                                                    //     .rangeControllerarea,
-                                                  ),
-                                                  xValueMapper: (Dataarea sales,
+                                                        // selectionController:
+                                                        // areaSizeState
+                                                        //     .rangeControllerarea,
+                                                      ),
+                                                      xValueMapper: (Dataarea sales,
                                                           int index) =>
                                                       sales.x,
-                                                  yValueMapper: (Dataarea sales,
+                                                      yValueMapper: (Dataarea sales,
                                                           int index) =>
                                                       sales.y,
-                                                  pointColorMapper:
-                                                      (Dataarea sales,
-                                                              int index) =>
-                                                          const Color.fromARGB(
-                                                              255,
-                                                              37,
-                                                              117,
-                                                              212),
-                                                  dashArray: const <double>[
-                                                    5,
-                                                    3
+                                                      pointColorMapper:
+                                                          (Dataarea sales,
+                                                          int index) =>
+                                                      const Color.fromARGB(
+                                                          255,
+                                                          37,
+                                                          117,
+                                                          212),
+                                                      dashArray: const <double>[
+                                                        5,
+                                                        3
+                                                      ],
+                                                      animationDuration: 0,
+                                                      borderWidth: 0,
+                                                    ),
                                                   ],
-                                                  animationDuration: 0,
-                                                  borderWidth: 0,
                                                 ),
-                                              ],
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: 45,
-                                        child: ElevatedButton(
-                                          onPressed: () async {
-                                            // await _resetPagingAndFetch();
+                                          const SizedBox(height: 20),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            height: 45,
+                                            child: ElevatedButton(
+                                              onPressed: () async {
+                                                // await _resetPagingAndFetch();
 
-                                            double finalMinSqrFeet =
+                                                double finalMinSqrFeet =
                                                 double.parse(filterProvider
                                                     .filterList_Min_sqr_feet);
-                                            double finalMaxSqrFeet =
+                                                double finalMaxSqrFeet =
                                                 double.parse(filterProvider
                                                     .filterList_Max_sqr_feet);
 
-                                            // filterProvider
-                                            //     .setSelectedFilterRangePriceRange(
-                                            //         minPrice: finalMinPrice,
-                                            //         maxPrice: finalMaxPrice);
+                                                // filterProvider
+                                                //     .setSelectedFilterRangePriceRange(
+                                                //         minPrice: finalMinPrice,
+                                                //         maxPrice: finalMaxPrice);
 
-                                            setState(() {
-                                              filterProvider
-                                                      .filterListValuesArea =
-                                                  SfRangeValues(finalMinSqrFeet,
-                                                      finalMaxSqrFeet);
-                                              filterProvider.min_sqrfeet =
-                                                  finalMinSqrFeet
-                                                      .toStringAsFixed(0);
-                                              filterProvider.max_sqrfeet =
-                                                  finalMaxSqrFeet
-                                                      .toStringAsFixed(0);
-
-                                              // ✅ Force update min only if not currently editing, or if value actually changed
-                                              if (!filterProvider
-                                                      .isMinAreaTyping ||
+                                                setState(() {
                                                   filterProvider
+                                                      .filterListValuesArea =
+                                                      SfRangeValues(finalMinSqrFeet,
+                                                          finalMaxSqrFeet);
+                                                  filterProvider.min_sqrfeet =
+                                                      finalMinSqrFeet
+                                                          .toStringAsFixed(0);
+                                                  filterProvider.max_sqrfeet =
+                                                      finalMaxSqrFeet
+                                                          .toStringAsFixed(0);
+
+                                                  // ✅ Force update min only if not currently editing, or if value actually changed
+                                                  if (!filterProvider
+                                                      .isMinAreaTyping ||
+                                                      filterProvider
                                                           .minAreaController
                                                           .text !=
-                                                      finalMinSqrFeet
-                                                          .toStringAsFixed(0)) {
-                                                filterProvider.minAreaController
+                                                          finalMinSqrFeet
+                                                              .toStringAsFixed(0)) {
+                                                    filterProvider.minAreaController
                                                         .text =
-                                                    finalMinSqrFeet
-                                                        .toStringAsFixed(0);
-                                              }
+                                                        finalMinSqrFeet
+                                                            .toStringAsFixed(0);
+                                                  }
 
-                                              if (!filterProvider
+                                                  if (!filterProvider
                                                       .isMaxAreaTyping ||
-                                                  filterProvider
+                                                      filterProvider
                                                           .maxAreaController
                                                           .text !=
-                                                      finalMaxSqrFeet
-                                                          .toStringAsFixed(0)) {
-                                                filterProvider.maxAreaController
+                                                          finalMaxSqrFeet
+                                                              .toStringAsFixed(0)) {
+                                                    filterProvider.maxAreaController
                                                         .text =
-                                                    finalMaxSqrFeet
-                                                        .toStringAsFixed(0);
-                                              }
-                                            });
+                                                        finalMaxSqrFeet
+                                                            .toStringAsFixed(0);
+                                                  }
+                                                });
 
-                                            await filterProvider
-                                                .updateFilterCount(context);
+                                                await filterProvider
+                                                    .updateFilterCount(context);
 
-                                            Navigator.pop(
-                                                context); // Close the bottom sheet after showing result
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
+                                                Navigator.pop(
+                                                    context); // Close the bottom sheet after showing result
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
                                                     BorderRadius.circular(6)),
+                                              ),
+                                              child: const Text(
+                                                "Showing Results",
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15),
+                                              ),
+                                            ),
                                           ),
-                                          child: const Text(
-                                            "Showing Results",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15),
-                                          ),
-                                        ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                );
-                              });
+                                    );
+                                  });
                             },
                           );
                         },
@@ -1768,7 +1765,7 @@ class _FliterListState extends State<FliterList> {
                               shape: BoxShape.rectangle,
                               border: Border.all(width: 1),
                               borderRadius:
-                                  BorderRadiusDirectional.circular(6.0),
+                              BorderRadiusDirectional.circular(6.0),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey,
@@ -1815,170 +1812,170 @@ class _FliterListState extends State<FliterList> {
                             builder: (context) {
                               return Consumer<FilterProvider>(
                                   builder: (context, bedroomState, _) {
-                                return Container(
-                                  height: screenSize.height * 0.3,
-                                  width: double.infinity,
-                                  color: Colors.white,
-                                  child: Column(
-                                    children: [
-                                      Row(
+                                    return Container(
+                                      height: screenSize.height * 0.3,
+                                      width: double.infinity,
+                                      color: Colors.white,
+                                      child: Column(
                                         children: [
+                                          Row(
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 40.0, left: 20, bottom: 0),
+                                                child: Text(
+                                                  "Bedrooms",
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 15.0,
+                                                    fontWeight: FontWeight.bold,
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                                  textAlign: TextAlign.left,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          // Bedroom list
                                           Padding(
                                             padding: const EdgeInsets.only(
-                                                top: 40.0, left: 20, bottom: 0),
-                                            child: Text(
-                                              "Bedrooms",
-                                              style: TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 15.0,
-                                                fontWeight: FontWeight.bold,
-                                                letterSpacing: 0.5,
+                                                top: 5, left: 15, right: 10),
+                                            child: SizedBox(
+                                              height: 60,
+                                              child: ListView.builder(
+                                                scrollDirection: Axis.horizontal,
+                                                physics: const ScrollPhysics(),
+                                                itemCount:
+                                                bedroomState.bedroomList.length,
+                                                shrinkWrap: true,
+                                                itemBuilder: (context, index) {
+                                                  final isSelected = bedroomState
+                                                      .selectedFilterListBedroomsList
+                                                      .contains(bedroomState
+                                                      .bedroomList[index]);
+                                                  return GestureDetector(
+                                                    onTap: () async {
+                                                      bedroomState
+                                                          .setSelectedFilterListBedrooms(
+                                                          index: index);
+                                                    },
+                                                    child: Container(
+                                                      margin: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 5),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 15),
+                                                      decoration: BoxDecoration(
+                                                        color: isSelected
+                                                            ? Colors.blueAccent
+                                                            : Colors.white,
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: Colors.grey
+                                                                .withOpacity(0.5),
+                                                            offset: Offset(0, 2),
+                                                            blurRadius: 4,
+                                                            spreadRadius: 0,
+                                                          ),
+                                                          BoxShadow(
+                                                            color: Colors.white
+                                                                .withOpacity(0.8),
+                                                            offset: Offset(-4, -4),
+                                                            blurRadius: 8,
+                                                            spreadRadius: 2,
+                                                          ),
+                                                        ],
+                                                        borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                      ),
+                                                      child: Center(
+                                                        child: Text(
+                                                          bedroomState
+                                                              .bedroomList[index],
+                                                          style: TextStyle(
+                                                            color: isSelected
+                                                                ? Colors.white
+                                                                : Colors.black,
+                                                            letterSpacing: 0.5,
+                                                            fontSize: 18,
+                                                          ),
+                                                          textAlign:
+                                                          TextAlign.center,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
                                               ),
-                                              textAlign: TextAlign.left,
+                                            ),
+                                          ),
+                                          // Show Results button
+                                          GestureDetector(
+                                            onTap: () async {
+                                              filterProvider.selectedBedrooms =
+                                                  List.from(filterProvider
+                                                      .selectedFilterListBedroomsList);
+
+                                              await filterProvider
+                                                  .updateFilterCount(context);
+                                              // await _resetPagingAndFetch();
+
+                                              Navigator.pop(
+                                                  context); // ✅ Close BottomSheet after API call
+                                            },
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 25.0,
+                                                  left: 15,
+                                                  bottom: 15,
+                                                  right: 15),
+                                              child: Container(
+                                                width: screenSize.width * 0.9,
+                                                height: 45,
+                                                padding:
+                                                const EdgeInsets.only(top: 10),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red,
+                                                  borderRadius:
+                                                  BorderRadiusDirectional
+                                                      .circular(6.0),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey,
+                                                      offset:
+                                                      const Offset(0.3, 0.3),
+                                                      blurRadius: 0.3,
+                                                      spreadRadius: 0.3,
+                                                    ),
+                                                    BoxShadow(
+                                                      color: Colors.white,
+                                                      offset:
+                                                      const Offset(0.0, 0.0),
+                                                      blurRadius: 0.0,
+                                                      spreadRadius: 0.0,
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Text(
+                                                  "Showing Results",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    letterSpacing: 0.5,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ],
                                       ),
-                                      // Bedroom list
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            top: 5, left: 15, right: 10),
-                                        child: SizedBox(
-                                          height: 60,
-                                          child: ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            physics: const ScrollPhysics(),
-                                            itemCount:
-                                                bedroomState.bedroomList.length,
-                                            shrinkWrap: true,
-                                            itemBuilder: (context, index) {
-                                              final isSelected = bedroomState
-                                                  .selectedFilterListBedroomsList
-                                                  .contains(bedroomState
-                                                      .bedroomList[index]);
-                                              return GestureDetector(
-                                                onTap: () async {
-                                                  bedroomState
-                                                      .setSelectedFilterListBedrooms(
-                                                          index: index);
-                                                },
-                                                child: Container(
-                                                  margin: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 5,
-                                                      vertical: 5),
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 15),
-                                                  decoration: BoxDecoration(
-                                                    color: isSelected
-                                                        ? Colors.blueAccent
-                                                        : Colors.white,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.grey
-                                                            .withOpacity(0.5),
-                                                        offset: Offset(0, 2),
-                                                        blurRadius: 4,
-                                                        spreadRadius: 0,
-                                                      ),
-                                                      BoxShadow(
-                                                        color: Colors.white
-                                                            .withOpacity(0.8),
-                                                        offset: Offset(-4, -4),
-                                                        blurRadius: 8,
-                                                        spreadRadius: 2,
-                                                      ),
-                                                    ],
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
-                                                  ),
-                                                  child: Center(
-                                                    child: Text(
-                                                      bedroomState
-                                                          .bedroomList[index],
-                                                      style: TextStyle(
-                                                        color: isSelected
-                                                            ? Colors.white
-                                                            : Colors.black,
-                                                        letterSpacing: 0.5,
-                                                        fontSize: 18,
-                                                      ),
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                      // Show Results button
-                                      GestureDetector(
-                                        onTap: () async {
-                                          filterProvider.selectedBedrooms =
-                                              List.from(filterProvider
-                                                  .selectedFilterListBedroomsList);
-
-                                          await filterProvider
-                                              .updateFilterCount(context);
-                                          // await _resetPagingAndFetch();
-
-                                          Navigator.pop(
-                                              context); // ✅ Close BottomSheet after API call
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 25.0,
-                                              left: 15,
-                                              bottom: 15,
-                                              right: 15),
-                                          child: Container(
-                                            width: screenSize.width * 0.9,
-                                            height: 45,
-                                            padding:
-                                                const EdgeInsets.only(top: 10),
-                                            decoration: BoxDecoration(
-                                              color: Colors.red,
-                                              borderRadius:
-                                                  BorderRadiusDirectional
-                                                      .circular(6.0),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey,
-                                                  offset:
-                                                      const Offset(0.3, 0.3),
-                                                  blurRadius: 0.3,
-                                                  spreadRadius: 0.3,
-                                                ),
-                                                BoxShadow(
-                                                  color: Colors.white,
-                                                  offset:
-                                                      const Offset(0.0, 0.0),
-                                                  blurRadius: 0.0,
-                                                  spreadRadius: 0.0,
-                                                ),
-                                              ],
-                                            ),
-                                            child: Text(
-                                              "Showing Results",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                letterSpacing: 0.5,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              });
+                                    );
+                                  });
                             },
                           );
                         },
@@ -1993,7 +1990,7 @@ class _FliterListState extends State<FliterList> {
                               shape: BoxShape.rectangle,
                               border: Border.all(width: 1),
                               borderRadius:
-                                  BorderRadiusDirectional.circular(6.0),
+                              BorderRadiusDirectional.circular(6.0),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey,
@@ -2071,7 +2068,7 @@ class _FliterListState extends State<FliterList> {
                                               height: 60,
                                               child: ListView.builder(
                                                 scrollDirection:
-                                                    Axis.horizontal,
+                                                Axis.horizontal,
                                                 physics: const ScrollPhysics(),
                                                 itemCount: bathRoomState
                                                     .bathroomList.length,
@@ -2080,32 +2077,32 @@ class _FliterListState extends State<FliterList> {
                                                   final isSelected = bathRoomState
                                                       .selectedFilterListBathroomsList
                                                       .contains(bathRoomState
-                                                          .bathroomList[index]);
+                                                      .bathroomList[index]);
                                                   // Colors.grey;
                                                   return GestureDetector(
                                                     onTap: () async {
                                                       bathRoomState
                                                           .setSelectedFilterListBathrooms(
-                                                              index: index);
+                                                          index: index);
                                                     },
                                                     child: Container(
                                                       // color: selectedIndex == index ? Colors.amber : Colors.transparent,
                                                       margin:
-                                                          const EdgeInsets.only(
-                                                              left: 5,
-                                                              right: 5,
-                                                              top: 5,
-                                                              bottom: 5),
+                                                      const EdgeInsets.only(
+                                                          left: 5,
+                                                          right: 5,
+                                                          top: 5,
+                                                          bottom: 5),
                                                       width:
-                                                          50, // ✅ smaller fixed width (you can adjust)
+                                                      50, // ✅ smaller fixed width (you can adjust)
                                                       height: 20,
                                                       // width: screenSize.width * 0.25,
                                                       // height: 20,
                                                       padding:
-                                                          const EdgeInsets.only(
-                                                              top: 0,
-                                                              left: 15,
-                                                              right: 15),
+                                                      const EdgeInsets.only(
+                                                          top: 0,
+                                                          left: 15,
+                                                          right: 15),
                                                       decoration: BoxDecoration(
                                                         color: isSelected
                                                             ? Colors.blueAccent
@@ -2115,31 +2112,31 @@ class _FliterListState extends State<FliterList> {
                                                           BoxShadow(
                                                             color: Colors.grey
                                                                 .withOpacity(
-                                                                    0.5),
+                                                                0.5),
                                                             offset:
-                                                                Offset(4, 4),
+                                                            Offset(4, 4),
                                                             blurRadius: 8,
                                                             spreadRadius: 2,
                                                           ),
                                                           BoxShadow(
                                                             color: Colors.white
                                                                 .withOpacity(
-                                                                    0.8),
+                                                                0.8),
                                                             offset:
-                                                                Offset(-4, -4),
+                                                            Offset(-4, -4),
                                                             blurRadius: 8,
                                                             spreadRadius: 2,
                                                           ),
                                                         ],
                                                         borderRadius:
-                                                            BorderRadius
-                                                                .circular(8),
+                                                        BorderRadius
+                                                            .circular(8),
                                                       ),
                                                       child: Center(
                                                         child: Text(
                                                           filterProvider
-                                                                  .bathroomList[
-                                                              index],
+                                                              .bathroomList[
+                                                          index],
                                                           style: TextStyle(
                                                             color: isSelected
                                                                 ? Colors.white
@@ -2148,7 +2145,7 @@ class _FliterListState extends State<FliterList> {
                                                             fontSize: 15,
                                                           ),
                                                           textAlign:
-                                                              TextAlign.center,
+                                                          TextAlign.center,
                                                         ),
                                                       ),
                                                     ),
@@ -2186,8 +2183,8 @@ class _FliterListState extends State<FliterList> {
                                               decoration: BoxDecoration(
                                                 color: Colors.red,
                                                 borderRadius:
-                                                    BorderRadiusDirectional
-                                                        .circular(6.0),
+                                                BorderRadiusDirectional
+                                                    .circular(6.0),
                                                 boxShadow: [
                                                   BoxShadow(
                                                     color: Colors.grey,
@@ -2201,7 +2198,7 @@ class _FliterListState extends State<FliterList> {
                                                   BoxShadow(
                                                     color: Colors.white,
                                                     offset:
-                                                        const Offset(0.0, 0.0),
+                                                    const Offset(0.0, 0.0),
                                                     blurRadius: 0.0,
                                                     spreadRadius: 0.0,
                                                   ), //BoxShadow
@@ -2240,7 +2237,7 @@ class _FliterListState extends State<FliterList> {
                                 width: 1,
                               ),
                               borderRadius:
-                                  BorderRadiusDirectional.circular(6.0),
+                              BorderRadiusDirectional.circular(6.0),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey,
@@ -2275,7 +2272,7 @@ class _FliterListState extends State<FliterList> {
               //filter
               Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                   child: Container(
                     alignment: Alignment.topLeft,
                     height: 50,
@@ -2340,485 +2337,485 @@ class _FliterListState extends State<FliterList> {
 
               filterProvider.isFilterListFilterModelLoading
                   ? Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 0, vertical: 8),
-                        itemCount: 5,
-                        shrinkWrap: true,
-                        // physics:
-                        //     const NeverScrollableScrollPhysics(), // ✅ make it non-scrollable
-                        itemBuilder: (context, index) => const ShimmerCard(),
-                      ),
-                    )
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 0, vertical: 8),
+                  itemCount: 5,
+                  shrinkWrap: true,
+                  // physics:
+                  //     const NeverScrollableScrollPhysics(), // ✅ make it non-scrollable
+                  itemBuilder: (context, index) => const ShimmerCard(),
+                ),
+              )
                   : (filterProvider.filterModel?.data == null ||
-                          filterProvider.filterModel!.data!.isEmpty)
-                      ? Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 50),
-                            child: Center(
-                              child: Text(
-                                "Property Not Found",
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold),
+                  filterProvider.filterModel!.data!.isEmpty)
+                  ? Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 50),
+                  child: Center(
+                    child: Text(
+                      "Property Not Found",
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              )
+                  : Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(0),
+                  scrollDirection: Axis.vertical,
+                  // physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  // 👇 add one extra "row" for the loading spinner when fetching more
+                  itemCount:
+                  (filterProvider.filterModel?.data?.length ??
+                      0) +
+                      0,
+                  // (_isFetchingMore ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    final items =
+                        filterProvider.filterModel?.data ?? [];
+
+                    // 👇 if we're fetching more and this is the extra last row, show a spinner
+                    // if (index == items.length) {
+                    //   return const Padding(
+                    //     padding: EdgeInsets.symmetric(vertical: 16),
+                    //     child: Center(
+                    //         child: CircularProgressIndicator()),
+                    //   );
+                    // }
+
+                    final property = items[index];
+
+                    final bool isFavorited =
+                    favoriteProperties.contains(property.id);
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                        elevation: 20,
+                        shadowColor: Colors.white,
+                        color: Colors.white,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Featured_Detail(
+                                    data: property.id.toString()),
                               ),
-                            ),
-                          ),
-                        )
-                      : Expanded(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.all(0),
-                            scrollDirection: Axis.vertical,
-                            // physics: const NeverScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            // 👇 add one extra "row" for the loading spinner when fetching more
-                            itemCount:
-                                (filterProvider.filterModel?.data?.length ??
-                                        0) +
-                                    0,
-                            // (_isFetchingMore ? 1 : 0),
-                            itemBuilder: (context, index) {
-                              final items =
-                                  filterProvider.filterModel?.data ?? [];
-
-                              // 👇 if we're fetching more and this is the extra last row, show a spinner
-                              // if (index == items.length) {
-                              //   return const Padding(
-                              //     padding: EdgeInsets.symmetric(vertical: 16),
-                              //     child: Center(
-                              //         child: CircularProgressIndicator()),
-                              //   );
-                              // }
-
-                              final property = items[index];
-
-                              final bool isFavorited =
-                                  favoriteProperties.contains(property.id);
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Card(
-                                  elevation: 20,
-                                  shadowColor: Colors.white,
-                                  color: Colors.white,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => Featured_Detail(
-                                              data: property.id.toString()),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 5.0, top: 1, right: 5),
+                            child: Column(
+                              children: [
+                                ClipRRect(
+                                  borderRadius:
+                                  BorderRadius.circular(12),
+                                  child: Stack(
+                                    children: [
+                                      AspectRatio(
+                                        aspectRatio: 1.5,
+                                        child: CachedNetworkImage(
+                                          imageUrl: property
+                                              .media!.isNotEmpty
+                                              ? property.media![0]
+                                              .originalUrl
+                                              .toString()
+                                              : 'https://via.placeholder.com/300x200?text=No+Image',
+                                          fit: BoxFit.cover,
+                                          height: 100,
+                                          placeholder: (context,
+                                              url) =>
+                                          const CupertinoActivityIndicator(
+                                            radius: 14,
+                                          ),
+                                          errorWidget: (context, url,
+                                              error) =>
+                                          const Icon(Icons.error,
+                                              size: 100),
                                         ),
-                                      );
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 5.0, top: 1, right: 5),
-                                      child: Column(
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            child: Stack(
-                                              children: [
-                                                AspectRatio(
-                                                  aspectRatio: 1.5,
-                                                  child: CachedNetworkImage(
-                                                    imageUrl: property
-                                                            .media!.isNotEmpty
-                                                        ? property.media![0]
-                                                            .originalUrl
-                                                            .toString()
-                                                        : 'https://via.placeholder.com/300x200?text=No+Image',
-                                                    fit: BoxFit.cover,
-                                                    height: 100,
-                                                    placeholder: (context,
-                                                            url) =>
-                                                        const CupertinoActivityIndicator(
-                                                      radius: 14,
-                                                    ),
-                                                    errorWidget: (context, url,
-                                                            error) =>
-                                                        const Icon(Icons.error,
-                                                            size: 100),
+                                      ),
+
+                                      /// ❤️ Positioned Favorite Icon
+                                      Positioned(
+                                        top: 10,
+                                        right: 10,
+                                        child: Material(
+                                          color: Colors.white,
+                                          shape: const CircleBorder(),
+                                          elevation: 4,
+                                          child: Consumer<
+                                              FavoriteProvider>(
+                                            builder: (context,
+                                                favProvider, _) {
+                                              final isLoggedIn =
+                                                  token.isNotEmpty;
+                                              final isFav = isLoggedIn &&
+                                                  favProvider.isFavorite(
+                                                      property
+                                                          .id!); // ✅ Only true for logged-in users
+
+                                              return IconButton(
+                                                  icon: Icon(
+                                                    isFav
+                                                        ? Icons
+                                                        .favorite
+                                                        : Icons
+                                                        .favorite_border,
+                                                    color: isFav
+                                                        ? Colors.red
+                                                        : Colors
+                                                        .grey, // ✅ Grey for logged-out users
+                                                    size: 20,
                                                   ),
-                                                ),
-
-                                                /// ❤️ Positioned Favorite Icon
-                                                Positioned(
-                                                  top: 10,
-                                                  right: 10,
-                                                  child: Material(
-                                                    color: Colors.white,
-                                                    shape: const CircleBorder(),
-                                                    elevation: 4,
-                                                    child: Consumer<
-                                                        FavoriteProvider>(
-                                                      builder: (context,
-                                                          favProvider, _) {
-                                                        final isLoggedIn =
-                                                            token.isNotEmpty;
-                                                        final isFav = isLoggedIn &&
-                                                            favProvider.isFavorite(
-                                                                property
-                                                                    .id!); // ✅ Only true for logged-in users
-
-                                                        return IconButton(
-                                                            icon: Icon(
-                                                              isFav
-                                                                  ? Icons
-                                                                      .favorite
-                                                                  : Icons
-                                                                      .favorite_border,
-                                                              color: isFav
-                                                                  ? Colors.red
-                                                                  : Colors
-                                                                      .grey, // ✅ Grey for logged-out users
-                                                              size: 20,
-                                                            ),
-                                                            onPressed:
-                                                                () async {
-                                                              if (!isLoggedIn) {
-                                                                // 🔒 Show login prompt
-                                                                showDialog(
-                                                                  context:
-                                                                      context,
-                                                                  builder:
-                                                                      (ctx) =>
-                                                                          Dialog(
-                                                                    backgroundColor:
-                                                                        Colors
-                                                                            .transparent,
-                                                                    insetPadding:
-                                                                        EdgeInsets
-                                                                            .zero,
-                                                                    child:
-                                                                        Container(
-                                                                      height:
-                                                                          70,
-                                                                      margin: const EdgeInsets
-                                                                          .only(
-                                                                          bottom:
-                                                                              80,
-                                                                          left:
-                                                                              20,
-                                                                          right:
-                                                                              20),
-                                                                      decoration:
-                                                                          BoxDecoration(
-                                                                        color: Colors
-                                                                            .red,
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(10),
-                                                                      ),
+                                                  onPressed:
+                                                      () async {
+                                                    if (!isLoggedIn) {
+                                                      // 🔒 Show login prompt
+                                                      showDialog(
+                                                        context:
+                                                        context,
+                                                        builder:
+                                                            (ctx) =>
+                                                            Dialog(
+                                                              backgroundColor:
+                                                              Colors
+                                                                  .transparent,
+                                                              insetPadding:
+                                                              EdgeInsets
+                                                                  .zero,
+                                                              child:
+                                                              Container(
+                                                                height:
+                                                                70,
+                                                                margin: const EdgeInsets
+                                                                    .only(
+                                                                    bottom:
+                                                                    80,
+                                                                    left:
+                                                                    20,
+                                                                    right:
+                                                                    20),
+                                                                decoration:
+                                                                BoxDecoration(
+                                                                  color: Colors
+                                                                      .red,
+                                                                  borderRadius:
+                                                                  BorderRadius.circular(10),
+                                                                ),
+                                                                child:
+                                                                Stack(
+                                                                  clipBehavior:
+                                                                  Clip.none,
+                                                                  children: [
+                                                                    Positioned(
+                                                                      top:
+                                                                      -14,
+                                                                      right:
+                                                                      -10,
                                                                       child:
-                                                                          Stack(
-                                                                        clipBehavior:
-                                                                            Clip.none,
+                                                                      Material(
+                                                                        color: Colors.transparent,
+                                                                        child: IconButton(
+                                                                          icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                                          onPressed: () => Navigator.of(ctx).pop(),
+                                                                          padding: EdgeInsets.zero,
+                                                                          constraints: const BoxConstraints(),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    Positioned(
+                                                                      left:
+                                                                      16,
+                                                                      right:
+                                                                      16,
+                                                                      bottom:
+                                                                      12,
+                                                                      child:
+                                                                      Row(
                                                                         children: [
-                                                                          Positioned(
-                                                                            top:
-                                                                                -14,
-                                                                            right:
-                                                                                -10,
-                                                                            child:
-                                                                                Material(
-                                                                              color: Colors.transparent,
-                                                                              child: IconButton(
-                                                                                icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                                                                                onPressed: () => Navigator.of(ctx).pop(),
-                                                                                padding: EdgeInsets.zero,
-                                                                                constraints: const BoxConstraints(),
-                                                                              ),
+                                                                          const Expanded(
+                                                                            child: Text(
+                                                                              'Login required to add favorites.',
+                                                                              style: TextStyle(color: Colors.white, fontSize: 13),
                                                                             ),
                                                                           ),
-                                                                          Positioned(
-                                                                            left:
-                                                                                16,
-                                                                            right:
-                                                                                16,
-                                                                            bottom:
-                                                                                12,
-                                                                            child:
-                                                                                Row(
-                                                                              children: [
-                                                                                const Expanded(
-                                                                                  child: Text(
-                                                                                    'Login required to add favorites.',
-                                                                                    style: TextStyle(color: Colors.white, fontSize: 13),
-                                                                                  ),
-                                                                                ),
-                                                                                const SizedBox(width: 12),
-                                                                                GestureDetector(
-                                                                                  onTap: () {
-                                                                                    Navigator.of(ctx).pop();
-                                                                                    Navigator.of(ctx).pushNamed('/login');
-                                                                                  },
-                                                                                  child: const Text(
-                                                                                    'Login',
-                                                                                    style: TextStyle(
-                                                                                      color: Colors.white,
-                                                                                      fontWeight: FontWeight.bold,
-                                                                                      decoration: TextDecoration.underline,
-                                                                                      decorationColor: Colors.white,
-                                                                                      decorationThickness: 1.5,
-                                                                                    ),
-                                                                                  ),
-                                                                                ),
-                                                                              ],
+                                                                          const SizedBox(width: 12),
+                                                                          GestureDetector(
+                                                                            onTap: () {
+                                                                              Navigator.of(ctx).pop();
+                                                                              Navigator.of(ctx).pushNamed('/login');
+                                                                            },
+                                                                            child: const Text(
+                                                                              'Login',
+                                                                              style: TextStyle(
+                                                                                color: Colors.white,
+                                                                                fontWeight: FontWeight.bold,
+                                                                                decoration: TextDecoration.underline,
+                                                                                decorationColor: Colors.white,
+                                                                                decorationThickness: 1.5,
+                                                                              ),
                                                                             ),
                                                                           ),
                                                                         ],
                                                                       ),
                                                                     ),
-                                                                  ),
-                                                                );
-                                                                return;
-                                                              }
-
-                                                              final propertyId =
-                                                                  property.id;
-                                                              if (propertyId ==
-                                                                  null) {
-                                                                debugPrint(
-                                                                    '⚠️ property.id is null; cannot toggle favorite.');
-                                                                return;
-                                                              }
-
-                                                              // ✅ Use Provider's API-integrated method (optimistic + revert handled inside)
-                                                              final success =
-                                                                  await favProvider
-                                                                      .toggleFavoriteWithApi(
-                                                                          propertyId,
-                                                                          token,
-                                                                          context);
-
-                                                              // OPTIONAL (usually not needed): force-refresh from server after a successful toggle
-                                                              // if (success) {
-                                                              //   await context.read<FavoriteProvider>().fetchFavoritesFromApi(token);
-                                                              // }
-
-                                                              if (!success) {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(
-                                                                  const SnackBar(
-                                                                      content: Text(
-                                                                          "Failed to update favorite.")),
-                                                                );
-                                                              }
-                                                            });
-                                                      },
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 5),
-                                            child: ListTile(
-                                              title: Text(
-                                                property.title.toString(),
-                                                style: TextStyle(
-                                                    fontSize: 16, height: 1.4),
-                                              ),
-                                              subtitle: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    top: 8.0),
-                                                child: Text(
-                                                  '${property.price} AED',
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 22,
-                                                      height: 1.4),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Row(
-                                            children: [
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 10, right: 5, top: 0),
-                                                child: Image.asset(
-                                                    "assets/images/map.png",
-                                                    height: 14),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 0, right: 0, top: 0),
-                                                child: Text(
-                                                  property.location.toString(),
-                                                  style: TextStyle(
-                                                      fontSize: 13,
-                                                      height: 1.4,
-                                                      overflow:
-                                                          TextOverflow.visible),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 8),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8.0),
-                                            child: Row(
-                                              children: [
-                                                Image.asset(
-                                                    "assets/images/bed.png",
-                                                    height: 13),
-                                                SizedBox(width: 5),
-                                                Text(property.bedrooms
-                                                    .toString()),
-                                                SizedBox(width: 10),
-                                                Image.asset(
-                                                    "assets/images/bath.png",
-                                                    height: 13),
-                                                SizedBox(width: 5),
-                                                Text(property.bathrooms
-                                                    .toString()),
-                                                SizedBox(width: 10),
-                                                Image.asset(
-                                                    "assets/images/messure.png",
-                                                    height: 13),
-                                                SizedBox(width: 5),
-                                                Text(property.squareFeet
-                                                    .toString()),
-                                              ],
-                                            ),
-                                          ),
-                                          Row(
-                                            children: [
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: ElevatedButton.icon(
-                                                  onPressed: () async {
-                                                    String phone =
-                                                        'tel:${property.phoneNumber}';
-                                                    try {
-                                                      final bool launched =
-                                                          await launchUrlString(
-                                                        phone,
-                                                        mode: LaunchMode
-                                                            .externalApplication,
-                                                      );
-                                                      if (!launched)
-                                                        print(
-                                                            "❌ Could not launch dialer");
-                                                    } catch (e) {
-                                                      print("❌ Exception: $e");
-                                                    }
-                                                  },
-                                                  icon: const Icon(Icons.call,
-                                                      color: Colors.red),
-                                                  label: const Text("Call",
-                                                      style: TextStyle(
-                                                          color: Colors.black)),
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.grey[100],
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10)),
-                                                    elevation: 2,
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        vertical: 10),
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: ElevatedButton.icon(
-                                                  onPressed: () async {
-                                                    final rawNumber = property
-                                                            .whatsapp ??
-                                                        property.phoneNumber ??
-                                                        '';
-                                                    final phone =
-                                                        whatsAppNumber(
-                                                            rawNumber);
-
-                                                    if (phone.isEmpty) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                        const SnackBar(
-                                                            content: Text(
-                                                                "No WhatsApp number available")),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ),
                                                       );
                                                       return;
                                                     }
 
-                                                    final message =
-                                                        Uri.encodeComponent(
-                                                            "Hello");
-                                                    final url = Uri.parse(
-                                                        "https://wa.me/$phone?text=$message");
+                                                    final propertyId =
+                                                        property.id;
+                                                    if (propertyId ==
+                                                        null) {
+                                                      debugPrint(
+                                                          '⚠️ property.id is null; cannot toggle favorite.');
+                                                      return;
+                                                    }
 
-                                                    if (await canLaunchUrl(
-                                                        url)) {
-                                                      try {
-                                                        await launchUrl(url,
-                                                            mode: LaunchMode
-                                                                .externalApplication);
-                                                      } catch (e) {
-                                                        print(
-                                                            "❌ Exception: $e");
-                                                      }
-                                                    } else {
+                                                    // ✅ Use Provider's API-integrated method (optimistic + revert handled inside)
+                                                    final success =
+                                                    await favProvider
+                                                        .toggleFavoriteWithApi(
+                                                        propertyId,
+                                                        token,
+                                                        context);
+
+                                                    // OPTIONAL (usually not needed): force-refresh from server after a successful toggle
+                                                    // if (success) {
+                                                    //   await context.read<FavoriteProvider>().fetchFavoritesFromApi(token);
+                                                    // }
+
+                                                    if (!success) {
                                                       ScaffoldMessenger.of(
-                                                              context)
+                                                          context)
                                                           .showSnackBar(
                                                         const SnackBar(
                                                             content: Text(
-                                                                "Cannot open WhatsApp")),
+                                                                "Failed to update favorite.")),
                                                       );
                                                     }
-                                                  },
-                                                  icon: Image.asset(
-                                                      "assets/images/whats.png",
-                                                      height: 20),
-                                                  label: const Text("WhatsApp",
-                                                      style: TextStyle(
-                                                          color: Colors.black)),
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.grey[100],
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10)),
-                                                    elevation: 2,
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        vertical: 10),
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10),
-                                            ],
+                                                  });
+                                            },
                                           ),
-                                          const SizedBox(height: 10),
-                                        ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding:
+                                  const EdgeInsets.only(top: 5),
+                                  child: ListTile(
+                                    title: Text(
+                                      property.title.toString(),
+                                      style: TextStyle(
+                                          fontSize: 16, height: 1.4),
+                                    ),
+                                    subtitle: Padding(
+                                      padding: const EdgeInsets.only(
+                                          top: 8.0),
+                                      child: Text(
+                                        '${property.price} AED',
+                                        style: TextStyle(
+                                            fontWeight:
+                                            FontWeight.bold,
+                                            fontSize: 22,
+                                            height: 1.4),
                                       ),
                                     ),
                                   ),
                                 ),
-                              );
-                            },
+                                Row(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 10, right: 5, top: 0),
+                                      child: Image.asset(
+                                          "assets/images/map.png",
+                                          height: 14),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 0, right: 0, top: 0),
+                                      child: Text(
+                                        property.location.toString(),
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            height: 1.4,
+                                            overflow:
+                                            TextOverflow.visible),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: Row(
+                                    children: [
+                                      Image.asset(
+                                          "assets/images/bed.png",
+                                          height: 13),
+                                      SizedBox(width: 5),
+                                      Text(property.bedrooms
+                                          .toString()),
+                                      SizedBox(width: 10),
+                                      Image.asset(
+                                          "assets/images/bath.png",
+                                          height: 13),
+                                      SizedBox(width: 5),
+                                      Text(property.bathrooms
+                                          .toString()),
+                                      SizedBox(width: 10),
+                                      Image.asset(
+                                          "assets/images/messure.png",
+                                          height: 13),
+                                      SizedBox(width: 5),
+                                      Text(property.squareFeet
+                                          .toString()),
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: () async {
+                                          String phone =
+                                              'tel:${property.phoneNumber}';
+                                          try {
+                                            final bool launched =
+                                            await launchUrlString(
+                                              phone,
+                                              mode: LaunchMode
+                                                  .externalApplication,
+                                            );
+                                            if (!launched)
+                                              print(
+                                                  "❌ Could not launch dialer");
+                                          } catch (e) {
+                                            print("❌ Exception: $e");
+                                          }
+                                        },
+                                        icon: const Icon(Icons.call,
+                                            color: Colors.red),
+                                        label: const Text("Call",
+                                            style: TextStyle(
+                                                color: Colors.black)),
+                                        style:
+                                        ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                          Colors.grey[100],
+                                          shape:
+                                          RoundedRectangleBorder(
+                                              borderRadius:
+                                              BorderRadius
+                                                  .circular(
+                                                  10)),
+                                          elevation: 2,
+                                          padding: const EdgeInsets
+                                              .symmetric(
+                                              vertical: 10),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: () async {
+                                          final rawNumber = property
+                                              .whatsapp ??
+                                              property.phoneNumber ??
+                                              '';
+                                          final phone =
+                                          whatsAppNumber(
+                                              rawNumber);
+
+                                          if (phone.isEmpty) {
+                                            ScaffoldMessenger.of(
+                                                context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                  content: Text(
+                                                      "No WhatsApp number available")),
+                                            );
+                                            return;
+                                          }
+
+                                          final message =
+                                          Uri.encodeComponent(
+                                              "Hello");
+                                          final url = Uri.parse(
+                                              "https://wa.me/$phone?text=$message");
+
+                                          if (await canLaunchUrl(
+                                              url)) {
+                                            try {
+                                              await launchUrl(url,
+                                                  mode: LaunchMode
+                                                      .externalApplication);
+                                            } catch (e) {
+                                              print(
+                                                  "❌ Exception: $e");
+                                            }
+                                          } else {
+                                            ScaffoldMessenger.of(
+                                                context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                  content: Text(
+                                                      "Cannot open WhatsApp")),
+                                            );
+                                          }
+                                        },
+                                        icon: Image.asset(
+                                            "assets/images/whats.png",
+                                            height: 20),
+                                        label: const Text("WhatsApp",
+                                            style: TextStyle(
+                                                color: Colors.black)),
+                                        style:
+                                        ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                          Colors.grey[100],
+                                          shape:
+                                          RoundedRectangleBorder(
+                                              borderRadius:
+                                              BorderRadius
+                                                  .circular(
+                                                  10)),
+                                          elevation: 2,
+                                          padding: const EdgeInsets
+                                              .symmetric(
+                                              vertical: 10),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                              ],
+                            ),
                           ),
-                        )
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              )
             ]),
 
             Positioned.fill(
@@ -2851,7 +2848,7 @@ class _FliterListState extends State<FliterList> {
       ),
       child: Row(
         mainAxisAlignment:
-            MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
@@ -2905,7 +2902,7 @@ class _FliterListState extends State<FliterList> {
                 ).then((_) async {
                   // 🔁 Re-sync when coming back
                   final updatedFavorites =
-                      await FavoriteService.fetchApiFavorites(token);
+                  await FavoriteService.fetchApiFavorites(token);
                   if (mounted) {
                     setState(() {
                       FavoriteService.loggedInFavorites = updatedFavorites;

@@ -12,8 +12,6 @@ import 'package:Akarat/screen/home.dart';             // Home screen
 import 'package:url_launcher/url_launcher.dart';      // for mailto
 import 'package:Akarat/services/favorite_service.dart';
 
-import 'filter_list.dart';
-
 // spacing
 const double _headerLeftPad    = 0;   // pull header to the very left
 const double _afterCheckboxGap = 8;   // gap after the header checkbox
@@ -172,87 +170,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       if (!mounted) return;
       setState(() => _all = list);
     });
-  }
-
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Small beautiful icon (like your edited image)
-            Icon(
-              Icons.search,
-              size: 90,
-              color: Colors.grey.shade400,
-            ),
-            const SizedBox(height: 32),
-
-            // Title
-            const Text(
-              "No saved alerts yet",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-
-            // Subtitle
-            Text(
-              "Get notified when new properties match your search criteria",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 40),
-
-            // SMALL RED "CREATE ALERT" BUTTON (no icon, clean)
-            SizedBox(
-              width: 180,
-              height: 44,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const FliterList(
-                        selectedPurpose: "Buy",
-                        selectedPropertyType: "",
-                      ),
-                    ),
-                  ).then((_) => _reload()); // Refresh when back
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF3B30), // Standard beautiful red
-                  foregroundColor: Colors.white,
-                  elevation: 6,
-                  shadowColor: Colors.red.withOpacity(0.3),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                ),
-                child: const Text(
-                  "Create Alert",
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Future<void> _reload({bool goToLast = false}) async {
@@ -766,7 +683,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
 
                             Expanded(
                               child: _all.isEmpty
-                                  ? _buildEmptyState(context)  // ← NEW EMPTY STATE
+                                  ? const Center(child: Text('No saved alerts yet.'))
                                   : ListView.builder(
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 itemCount: _pageItems.length,
@@ -794,6 +711,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                                 },
                               ),
                             ),
+
                             LayoutBuilder(
                               builder: (context, cs) {
                                 final narrow = cs.maxWidth < 420;
