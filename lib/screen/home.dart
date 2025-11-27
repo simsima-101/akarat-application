@@ -3,9 +3,11 @@ import 'dart:convert';
 
 import 'package:Akarat/model/featuredmodel.dart' as featured;
 import 'package:Akarat/model/filtermodel.dart' as filterModel;
+import 'package:Akarat/model/location_model.dart';
 import 'package:Akarat/model/propertymodel.dart' as propertyModel;
 import 'package:Akarat/model/searchmodel.dart' as search;
 import 'package:Akarat/model/togglemodel.dart';
+import 'package:Akarat/providers/filter_provider.dart';
 import 'package:Akarat/screen/featured_detail.dart';
 import 'package:Akarat/screen/filter.dart' as filter;
 import 'package:Akarat/screen/login.dart';
@@ -24,8 +26,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../model/filtermodel.dart' as filter;
 import '../providers/favorite_provider.dart';
+import '../providers/location_picker_provider.dart';
 import '../services/favorite_service.dart';
 import 'ContactFormScreen.dart';
 import 'filter_list.dart';
@@ -128,9 +130,8 @@ class _MyHomePageState extends State<HomeDemo> {
   };
 
   List<filterModel.Data> projectList = [];
-  List<String> locationList = [];
 
-  List<String> locationSuggestions = [];
+  List<LocationModel> locationSuggestions = [];
 
   bool isSearching = false;
 
@@ -180,10 +181,8 @@ class _MyHomePageState extends State<HomeDemo> {
 
         setState(() {
           // Only take location name from each item
-          locationSuggestions = data
-              .map((item) =>
-                  (item as Map<String, dynamic>)['location'].toString())
-              .toList();
+          locationSuggestions =
+              data.map((item) => LocationModel.fromJson(item)).toList();
         });
       } else {
         print('❌ Failed to load suggestions: ${response.statusCode}');
@@ -213,24 +212,6 @@ class _MyHomePageState extends State<HomeDemo> {
   Future<String> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token') ?? '';
-  }
-
-  Future<filter.FilterModel> fetchFilterData(String text) async {
-    final uri = Uri.https('akarat.com', '/api/filters', {'search': text});
-    final res = await http.get(uri);
-
-    if (res.statusCode != 200) {
-      throw Exception("Filters API failed: ${res.statusCode}");
-    }
-
-    final parsed = filter.FilterResponseModel.fromJson(jsonDecode(res.body));
-    final feature = parsed.data;
-    if (feature == null) throw Exception("Empty data");
-
-    // ❌ remove any client-side equality filter on location
-    // feature.data = feature.data!.where((it) => it.location == text).toList();
-
-    return feature;
   }
 
   void fetchProperties(String sortBy) async {
@@ -322,8 +303,7 @@ class _MyHomePageState extends State<HomeDemo> {
   }
 
   final FocusNode _focusNode = FocusNode();
-  @override
-  @override
+
   @override
   void initState() {
     super.initState();
@@ -367,34 +347,6 @@ class _MyHomePageState extends State<HomeDemo> {
     token = await getToken(); // ✅ fetch token from secure storage
     setState(() {});
   }
-
-  // Future<void> fetchPropertiesForLocation(String loc) async {
-  //   setState(() => isSearching = true);
-  //   final url = 'https://akarat.com/api/filters?location=${Uri.encodeQueryComponent(loc)}';
-  //
-  //   try {
-  //     final res = await http.get(Uri.parse(url));
-  //
-  //     if (res.statusCode == 200) {
-  //       final jsonData = jsonDecode(res.body);
-  //       final List dataList = jsonData['data']['data']; // 👈 FIX HERE
-  //
-  //       setState(() {
-  //         searchResults = dataList.map((e) {
-  //           final m = e as Map<String, dynamic>;
-  //           final searchData = search.Data.fromJson(m);
-  //           return Property.fromSearchModel(searchData);
-  //         }).toList();
-  //       });
-  //     } else {
-  //       print("❌ Filters API error: ${res.statusCode}");
-  //     }
-  //   } catch (e) {
-  //     print("❌ Exception: $e");
-  //   }
-  //
-  //   setState(() => isSearching = false);
-  // }
 
   @override
   void dispose() {
@@ -566,134 +518,6 @@ class _MyHomePageState extends State<HomeDemo> {
     }
   }
 
-  // Future<void> getFeaturedProperties({bool loadMore = false, bool forceRefresh = false}) async {
-  //   if (isLoading || !hasMore) return;
-  //
-  //   setState(() => isLoading = true);
-  //
-  //   final uri = Uri.parse("https://akarat.com/api/featured-properties?page=$currentPage");
-  //   final cacheKey = 'featured_cache_page_$currentPage';
-  //   final cacheTimeKey = 'featured_cache_time_page_$currentPage';
-  //
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final now = DateTime.now().millisecondsSinceEpoch;
-  //   final cacheValidityDuration = const Duration(hours: 6).inMilliseconds; // 6 hours cache
-  //
-  //   // If forceRefresh = true → clear cache first
-  //   if (forceRefresh) {
-  //     await prefs.remove(cacheKey);
-  //     await prefs.remove(cacheTimeKey);
-  //     debugPrint("🔄 Forced cache cleared for page $currentPage");
-  //   }
-  //
-  //   final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
-  //   final cachedData = prefs.getString(cacheKey);
-  //
-  //   // 👉 Use cache if still fresh AND not forcing refresh
-  //   if (cachedData != null && (now - lastFetched) < cacheValidityDuration && !forceRefresh) {
-  //     final jsonData = jsonDecode(cachedData);
-  //     final model = featured.FeaturedResponseModel.fromJson(jsonData);
-  //
-  //     setState(() {
-  //       if (loadMore && featuredModel != null) {
-  //         featuredModel!.data!.addAll(model.data?.data ?? []);
-  //       } else {
-  //         featuredModel = model.data;
-  //       }
-  //       currentPage = model.data?.meta?.currentPage ?? 1;
-  //       hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
-  //     });
-  //
-  //     setState(() => isLoading = false);
-  //     return; // ✅ Done using cache
-  //   }
-  //
-  //   // Else → Call fresh API
-  //   int retryCount = 0;
-  //   const maxRetries = 3;
-  //
-  //   while (retryCount < maxRetries) {
-  //     try {
-  //       final response = await http
-  //           .get(uri)
-  //           .timeout(const Duration(seconds: 10)); // Timeout for faster failure
-  //
-  //       if (response.statusCode == 200) {
-  //         final jsonData = jsonDecode(response.body);
-  //         final model = featured.FeaturedResponseModel.fromJson(jsonData);
-  //
-  //         setState(() {
-  //           if (loadMore && featuredModel != null) {
-  //             featuredModel!.data!.addAll(model.data?.data ?? []);
-  //           } else {
-  //             featuredModel = model.data;
-  //           }
-  //           currentPage = model.data?.meta?.currentPage ?? 1;
-  //           hasMore = (model.data?.meta?.currentPage ?? 1) < (model.data?.meta?.lastPage ?? 1);
-  //         });
-  //
-  //         // 👉 Save to cache
-  //         prefs.setString(cacheKey, response.body);
-  //         prefs.setInt(cacheTimeKey, now);
-  //
-  //         debugPrint("✅ Fresh API data loaded and cached for page $currentPage");
-  //
-  //         break; // ✅ Success, break retry loop
-  //       }  else {
-  //         debugPrint("❌ API Error: ${response.statusCode}");
-  //         featuredModel = null; // Clear to avoid stuck UI
-  //         break; // stop retry loop
-  //       }
-  //
-  //     } on SocketException catch (_) {
-  //       retryCount++;
-  //       debugPrint('⚠️ SocketException, retrying... ($retryCount/$maxRetries)');
-  //       if (retryCount >= maxRetries) {
-  //         debugPrint('❌ Failed after retries.');
-  //       }
-  //       await Future.delayed(const Duration(seconds: 1));
-  //     } on TimeoutException catch (_) {
-  //       retryCount++;
-  //       debugPrint('⚠️ Timeout, retrying... ($retryCount/$maxRetries)');
-  //       if (retryCount >= maxRetries) {
-  //         debugPrint('❌ Failed after retries.');
-  //       }
-  //       await Future.delayed(const Duration(seconds: 1));
-  //     }  catch (e) {
-  //       debugPrint("❌ Unexpected Exception: $e");
-  //       featuredModel = null; // Reset model
-  //       break;
-  //     }
-  //
-  //   }
-  //
-  //   setState(() => isLoading = false);
-  // }
-
-  Future<void> fetchLocations() async {
-    try {
-      final response = await http.get(
-        ApiService.buildUri('locations'),
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData =
-            jsonDecode(response.body); // API gives list directly
-
-        setState(() {
-          locationList =
-              List<String>.from(jsonData.map((item) => item.toString()));
-        });
-
-        debugPrint("✅ Locations loaded: ${locationList.length}");
-      } else {
-        debugPrint("❌ Locations API failed: ${response.statusCode}");
-      }
-    } catch (e) {
-      debugPrint("🚨 Locations API exception: $e");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
@@ -786,23 +610,20 @@ class _MyHomePageState extends State<HomeDemo> {
                                 onPressed: () async {
                                   final loc = _searchController.text.trim();
                                   if (loc.isNotEmpty) {
-                                    final filterModelData = await fetchFilterData(
-                                        loc); // ⬅️ this function you will add (explained below)
-                                    // 1) Search icon onPressed
                                     Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(
                                         builder: (_) => FliterList(
-                                          location: loc,
-                                          filterModel: filterModelData,
-                                          selectedPurpose: (purpose.isNotEmpty
-                                              ? purpose
-                                              : 'Rent'),
-                                          selectedPropertyType:
-                                              (propertyType.isNotEmpty
-                                                  ? propertyType
-                                                  : ''),
-                                        ),
+                                            // location: loc,
+                                            // filterModel: filterModelData,
+                                            // selectedPurpose: (purpose.isNotEmpty
+                                            //     ? purpose
+                                            //     : 'Rent'),
+                                            // selectedPropertyType:
+                                            //     (propertyType.isNotEmpty
+                                            //         ? propertyType
+                                            //         : ''),
+                                            ),
                                       ),
                                     );
                                   }
@@ -836,24 +657,45 @@ class _MyHomePageState extends State<HomeDemo> {
                                       fetchLocationSuggestions(value),
                                   onSubmitted: (value) async {
                                     if (value.isNotEmpty) {
-                                      final filterModelData =
-                                          await fetchFilterData(value);
-                                      // 2) onSubmitted in TextField
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => FliterList(
-                                            location: value,
-                                            filterModel: filterModelData,
-                                            selectedPurpose: (purpose.isNotEmpty
-                                                ? purpose
-                                                : 'Rent'),
-                                            selectedPropertyType:
-                                                (propertyType.isNotEmpty
-                                                    ? propertyType
-                                                    : ''),
-                                          ),
-                                        ),
+                                      final cleanedValue =
+                                          value.trim().toLowerCase();
+
+                                      final locModel =
+                                          locationSuggestions.firstWhere(
+                                        (e) =>
+                                            e.location!.trim().toLowerCase() ==
+                                            cleanedValue,
+                                        // orElse: () => ,
+                                      );
+
+                                      await context
+                                          .read<LocationPickerProvider>()
+                                          .addSelectedLocation(
+                                            locationModel: locModel,
+                                          );
+
+                                      await context
+                                          .read<FilterProvider>()
+                                          .updateFilterCount(context)
+                                          .then(
+                                        (value) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => FliterList(
+                                                  // location: value,
+                                                  // filterModel: filterModelData,
+                                                  // selectedPurpose: (purpose.isNotEmpty
+                                                  //     ? purpose
+                                                  //     : 'Rent'),
+                                                  // selectedPropertyType:
+                                                  //     (propertyType.isNotEmpty
+                                                  //         ? propertyType
+                                                  //         : ''),
+                                                  ),
+                                            ),
+                                          );
+                                        },
                                       );
                                     }
                                   },
@@ -923,11 +765,11 @@ class _MyHomePageState extends State<HomeDemo> {
                         color: Color(0xFFE0E0E0),
                       ),
                       itemBuilder: (context, index) {
-                        final loc = locationSuggestions[index];
+                        final loc = locationSuggestions[index].location!;
                         return InkWell(
                           onTap: () {
                             _searchController.text = loc;
-                            FocusScope.of(context).unfocus(); // close keyboard
+                            // FocusScope.of(context).unfocus(); // close keyboard
                             setState(() {
                               locationSuggestions = [];
                             });
@@ -1043,6 +885,12 @@ class _MyHomePageState extends State<HomeDemo> {
                                 // Rent
                                 GestureDetector(
                                   onTap: () {
+                                    context.read<FilterProvider>()
+                                      ..setInitialHomeCategory(0)
+                                      ..resetAll(
+                                        context,
+                                        isUpdate: false,
+                                      );
                                     purpose = "Rent";
                                     Navigator.push(
                                         context,
@@ -1107,6 +955,12 @@ class _MyHomePageState extends State<HomeDemo> {
                                 //logo2
                                 GestureDetector(
                                   onTap: () {
+                                    context.read<FilterProvider>()
+                                      ..setInitialHomeCategory(1)
+                                      ..resetAll(
+                                        context,
+                                        isUpdate: false,
+                                      );
                                     purpose = "Buy";
                                     Navigator.push(
                                         context,
@@ -1171,6 +1025,12 @@ class _MyHomePageState extends State<HomeDemo> {
                                 //logo2
                                 GestureDetector(
                                   onTap: () {
+                                    context.read<FilterProvider>()
+                                      ..setInitialHomeCategory(2)
+                                      ..resetAll(
+                                        context,
+                                        isUpdate: false,
+                                      );
                                     purpose = "Buy";
                                     Navigator.push(
                                         context,
@@ -1248,6 +1108,12 @@ class _MyHomePageState extends State<HomeDemo> {
                                 //logo 1
                                 GestureDetector(
                                   onTap: () {
+                                    context.read<FilterProvider>()
+                                      ..setInitialHomeCategory(3)
+                                      ..resetAll(
+                                        context,
+                                        isUpdate: false,
+                                      );
                                     purpose = "Rent";
                                     Navigator.push(
                                         context,
@@ -1317,13 +1183,20 @@ class _MyHomePageState extends State<HomeDemo> {
                                 //logo2
                                 GestureDetector(
                                   onTap: () {
+                                    context.read<FilterProvider>()
+                                      ..setInitialHomeCategory(4)
+                                      ..resetAll(
+                                        context,
+                                        isUpdate: false,
+                                      );
                                     purpose = "Rent";
                                     Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) => filter.Filter(
                                                   data: purpose,
-                                                  propertyCategoryType: 'Villa',
+                                                  propertyCategoryType:
+                                                      'Villa Compound',
                                                 )));
                                   },
                                   child: Padding(
@@ -1386,6 +1259,12 @@ class _MyHomePageState extends State<HomeDemo> {
                                 //logo2
                                 GestureDetector(
                                   onTap: () {
+                                    context.read<FilterProvider>()
+                                      ..setInitialHomeCategory(5)
+                                      ..resetAll(
+                                        context,
+                                        isUpdate: false,
+                                      );
                                     purpose = "Rent";
                                     Navigator.push(
                                         context,
@@ -1394,7 +1273,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                                   data: purpose,
                                                   propertyType: 0,
                                                   propertyCategoryType:
-                                                      'Apartments',
+                                                      'Apartment',
                                                 )));
                                   },
                                   child: Padding(

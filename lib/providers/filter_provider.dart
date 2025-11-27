@@ -86,8 +86,9 @@ class FilterProvider extends ChangeNotifier {
   int currentPage = 1;
   bool isLoading = false;
   bool isPropertyTypeLoading = false;
+  bool isFilterListFilterModelLoading = false;
   bool hasMore = true;
-  late FilterModel filterModel;
+  FilterModel? filterModel;
 
   int filterResultCount = 0;
 
@@ -253,7 +254,7 @@ class FilterProvider extends ChangeNotifier {
   int? selectedrent; // Holds the index of the selected container
   String purpose = ' ';
   String? option;
-  String category = ' ';
+  // String category = ' ';
 
   String ftype = ' ';
   String amnities = ' ';
@@ -383,6 +384,8 @@ class FilterProvider extends ChangeNotifier {
 
   Future<void> updateFilterCount(BuildContext context) async {
     try {
+      isFilterListFilterModelLoading = true;
+      notifyListeners();
       final amenitiesList = selectedAmenitiesId;
 
       final locList = navKey.currentContext!
@@ -430,7 +433,7 @@ class FilterProvider extends ChangeNotifier {
         final feature = FilterResponseModel.fromJson(data);
 
         filterModel = feature.data!;
-        debugPrint('✅ filter modell count: ${filterModel.data?.length}');
+        debugPrint('✅ filter modell count: ${filterModel?.data?.length}');
 
         filterResultCount = feature.data?.meta?.total ?? 0;
         displayedFilterResultCount = filterResultCount;
@@ -441,6 +444,7 @@ class FilterProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint("❌ Error in updateFilterCount: $e");
     }
+    isFilterListFilterModelLoading = false;
     notifyListeners();
   }
 
@@ -558,19 +562,94 @@ class FilterProvider extends ChangeNotifier {
 // Inside your State class:
   final bool showAllAmenities = false;
 
-  Future<void> resetAll(BuildContext context) async {
+  bool isResetLoading = false;
+
+  Future<void> resetAll(BuildContext context, {bool isUpdate = true}) async {
+    isResetLoading = true;
+    notifyListeners();
     // Reset all filter variables
+
+    selectedtype = null;
+    property_type = "";
+
+    if (initialHomeCategory == 0) {
+      //////// FOR RENT ////////
+      selectedproduct = 1;
+      purpose = product[selectedproduct ?? 1];
+      // final purposeType = selectedPropType == 0 ? 'Residential' : 'Commercial';
+
+      selectedPropType = 0;
+      await propertyApi('Residential');
+      selectedCompletion = 0;
+      option = null;
+    } else if (initialHomeCategory == 1) {
+      //////// FOR BUY ////////
+      selectedproduct = 0;
+      purpose = product[selectedproduct ?? 0];
+      selectedPropType = 0;
+      await propertyApi('Residential');
+      selectedCompletion = 0;
+      option = null;
+    } else if (initialHomeCategory == 2) {
+      //////// OFFPLAN PROPERTIES ////////
+      selectedproduct = 0;
+      purpose = product[selectedproduct ?? 0];
+      selectedPropType = 0;
+      await propertyApi('Residential');
+
+      selectedCompletion = 2;
+      option = 'offplan';
+    } else if (initialHomeCategory == 3) {
+      //////// COMMERCIALS ////////
+      selectedproduct = 1;
+      purpose = product[selectedproduct ?? 1];
+
+      selectedPropType = 1;
+      await propertyApi('Commercial');
+      selectedCompletion = 0;
+      option = null;
+    } else if (initialHomeCategory == 4) {
+      //////// VILLAS ////////
+      selectedproduct = 1;
+      purpose = product[selectedproduct ?? 1];
+      selectedPropType = 0;
+      await propertyApi('Residential');
+
+      String propertyCategoryType = "Villa Compound";
+      final index = propertyTypeModel!.data!.indexWhere(
+        (item) =>
+            item.name?.trim().toLowerCase() ==
+            propertyCategoryType.trim().toLowerCase(),
+      );
+      selectedtype = index;
+      property_type = propertyTypeModel!.data![index].name.toString();
+      selectedCompletion = 0;
+      option = null;
+    } else if (initialHomeCategory == 5) {
+      //////// APARTMENT ////////
+      selectedproduct = 1;
+      purpose = product[selectedproduct ?? 1];
+      selectedPropType = 0;
+      await propertyApi('Residential');
+
+      String propertyCategoryType = "Apartment";
+      final index = propertyTypeModel!.data!.indexWhere(
+        (item) =>
+            item.name?.trim().toLowerCase() ==
+            propertyCategoryType.trim().toLowerCase(),
+      );
+      selectedtype = index;
+      property_type = propertyTypeModel!.data![index].name.toString();
+      selectedCompletion = 0;
+      option = null;
+    }
+
+    selected = 0;
     completion_min = "";
     completion_max = "";
-    selectedCompletion = 0;
-    selectedPropType = 0;
     handoverQuarter = "";
     handoverYear = "";
-    purpose = '';
-    category = '';
     ftype = '';
-    option = null;
-    property_type = '';
     rent = '';
     min_price = '';
     max_price = '';
@@ -579,8 +658,6 @@ class FilterProvider extends ChangeNotifier {
     agentOrAgencyController.clear();
     // Reset selected indexes and lists
     selectedIndex = null;
-    selectedtype = null;
-    selectedproduct = null;
     selectedcategory = null;
     selectedBedrooms.clear();
     selectedBathrooms.clear();
@@ -605,8 +682,59 @@ class FilterProvider extends ChangeNotifier {
     agenciesController.clear();
     await context.read<LocationPickerProvider>().clearAll();
 
-    // Update filter count (UI)
-    updateFilterCount(context);
+    if (isUpdate) {
+      // Update filter count (UI)
+      updateFilterCount(context);
+    }
+    isResetLoading = false;
+    notifyListeners();
+  }
+
+  FilterSnapshot? initialSnapshot;
+
+  FilterSnapshot get currentSnapshot => FilterSnapshot(
+        agencyName: agentOrAgencyController.text.trim().toLowerCase(),
+        agentName: agentOrAgencyController.text.trim().toLowerCase(),
+        search: navKey.currentContext!
+            .read<LocationPickerProvider>()
+            .selectedLocationList
+            .map((e) {
+          return (e.location ?? e.country)?.toLowerCase();
+        }).toList(),
+        propertyType: property_type.trim(),
+        furnishedStatus: ftype.trim(),
+        bedrooms: List.from(selectedBedrooms),
+        bathrooms: List.from(selectedBathrooms),
+        minPrice: min_price.trim(),
+        maxPrice: max_price.trim(),
+        paymentPeriod: rent.toLowerCase().trim(),
+        minSquareFeet: min_sqrfeet.trim(),
+        maxSquareFeet: max_sqrfeet.trim(),
+        option: option?.trim(),
+        purpose: purpose,
+        propertyCategory: selectedPropType == 0 ? 'Residential' : 'Commercial',
+        amenities: List.from(selectedAmenitiesId),
+        handoverQuarter: handoverQuarter.trim(),
+        handoverYear: handoverYear.trim(),
+        completionsMax: completion_max,
+        completionsMin: completion_min,
+      );
+
+  void captureInitialSnapshot() {
+    initialSnapshot = currentSnapshot;
+    notifyListeners();
+  }
+
+  bool get hasChanges {
+    if (initialSnapshot == null) return false;
+
+    return !initialSnapshot!.isEqual(currentSnapshot);
+  }
+
+  int? initialHomeCategory;
+  void setInitialHomeCategory(int index) {
+    initialHomeCategory = index;
+
     notifyListeners();
   }
 
@@ -617,6 +745,8 @@ class FilterProvider extends ChangeNotifier {
     String? propertyCategoryType,
     String? optionType,
   }) {
+    selected = 0;
+
     priceRangeController = RangeController(start: 500, end: 300000);
     areaRangeController = RangeController(start: 0, end: 10000);
 
@@ -675,8 +805,10 @@ class FilterProvider extends ChangeNotifier {
       }
 
       // Now that we have purpose + property_type → update count
+      captureInitialSnapshot();
       updateFilterCount(context);
     });
+
     notifyListeners();
   }
 
@@ -775,6 +907,7 @@ class FilterProvider extends ChangeNotifier {
   }) async {
     if (isPropertyTypeLoading) return;
     selectedtype = null;
+    property_type = "";
     selectedPropType = index;
 
     // // fetch property types for the selected purpose
@@ -806,8 +939,8 @@ class FilterProvider extends ChangeNotifier {
 
     // After updating count — if NOT autoUpdate → navigate
     if (!autoUpdate) {
-      if (filterResultCount == 0) {
-        onFilterResultZero.call();
+      if (displayedFilterResultCount == 0) {
+        onFilterResultZero();
       } else {
         // ✅ Push Replacement with route name to avoid duplicate FliterList
         // REPLACE your current Navigator call inside the big red button:
@@ -815,7 +948,7 @@ class FilterProvider extends ChangeNotifier {
         // context
         //     .read<MainBottomNavBarProvider>()
         //     .setSelectedItemIndex(ScreenEnum.fliterListScreen);
-        onFilterResultNotZero.call();
+        onFilterResultNotZero();
       }
     }
 
@@ -979,25 +1112,6 @@ class FilterProvider extends ChangeNotifier {
     await updateFilterCount(context);
     notifyListeners();
   }
-  //
-  // String completion_min = '';
-  // String completion_max = '';
-  //
-  // Future<void> setSelectedCompletionPercentage(
-  //   BuildContext context, {
-  //   required int index,
-  // }) async {
-  //   selectedPercentCompletion = index;
-  //
-  //   percentCompletion = (percentCompletionOptions[index] == 'Any')
-  //       ? ''
-  //       : percentCompletionOptions[index];
-  //
-  //   debugPrint('selcted :${percentCompletion}');
-  //
-  //   await updateFilterCount(context);
-  //   notifyListeners();
-  // }
 
   String completion_min = '';
   String completion_max = '';
@@ -1026,6 +1140,158 @@ class FilterProvider extends ChangeNotifier {
     await updateFilterCount(context);
     notifyListeners();
   }
+
+  /////////////////////////////////  FILTER LIST SCREEN FUNCTIONALITY   /////////////////////////////////
+
+  // void initFilterListFunctions() {
+  //   setSelectedFilterListProductLocally(selectedproduct!);
+  //   notifyListeners();
+  // }
+
+  int? filterListSelectedProduct;
+
+  void setSelectedFilterListProductLocally(int index) {
+    filterListSelectedProduct = index;
+    notifyListeners();
+  }
+
+  int? filterListSelectedPropertyCategoryType;
+
+  void setSelectedFilterListPropertyCategoryType(int index) {
+    filterListSelectedPropertyCategoryType = index;
+    notifyListeners();
+  }
+
+  ////// PROPERTY TYPE ///////
+
+  int filterListSelectedPropType = 0;
+  int? filterListSelectedType;
+
+  Future<void> setSelectedFilterListPropertyType({
+    required int index,
+  }) async {
+    if (isFilterListPropertyTypeLoading) return;
+    filterListSelectedType = null;
+    filterListSelectedPropType = index;
+
+    // // fetch property types for the selected purpose
+    final purposeType =
+        filterListSelectedPropType == 0 ? 'Residential' : 'Commercial';
+    await filterListPropertyApi(purposeType);
+
+    notifyListeners();
+  }
+
+  PropertyTypeModel? filterListPropertyTypeModel;
+  bool isFilterListPropertyTypeLoading = false;
+
+  Future<void> filterListPropertyApi(String purpose) async {
+    try {
+      isFilterListPropertyTypeLoading = true;
+      notifyListeners();
+
+      final uri = ApiService.buildUri('property-types/$purpose');
+
+      final response = await http.get(uri).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final feature = PropertyTypeModel.fromJson(data);
+
+        filterListPropertyTypeModel = feature;
+      } else {
+        debugPrint("❌ Property API failed: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Property API error: $e");
+    }
+    isFilterListPropertyTypeLoading = false;
+    notifyListeners();
+  }
+
+  void setSelectedFilterListPropertyCategory(int? index) {
+    if (filterListSelectedType == index) {
+      filterListSelectedType = null;
+    } else {
+      filterListSelectedType = index;
+    }
+
+    notifyListeners();
+  }
+
+  ///// PRICE RANGE /////
+
+  SfRangeValues filterListValues =
+      SfRangeValues(500.0, 300000.0); // full range internally
+
+  String filterList_Min_price = '';
+  String filterList_Max_price = ' ';
+
+  void setSelectedFilterRangePriceRange({
+    required double minPrice,
+    required double maxPrice,
+  }) {
+    debugPrint("min price: ${minPrice} ,   maxPrice: ${maxPrice}");
+
+    filterListValues = SfRangeValues(minPrice, maxPrice);
+
+    filterList_Min_price = minPrice.toStringAsFixed(0);
+    filterList_Max_price = maxPrice.toStringAsFixed(0);
+    notifyListeners();
+  }
+
+  ///BEDROOM ////
+
+  List<String> selectedFilterListBedroomsList = [];
+
+  Future<void> setSelectedFilterListBedrooms({
+    required int index,
+  }) async {
+    final item = bedroomList[index];
+    if (selectedFilterListBedroomsList.contains(item)) {
+      selectedFilterListBedroomsList.remove(item);
+    } else {
+      selectedFilterListBedroomsList.add(item);
+    }
+
+    notifyListeners();
+  }
+
+  ///BATHROOM ////
+
+  List<String> selectedFilterListBathroomsList = [];
+
+  Future<void> setSelectedFilterListBathrooms({
+    required int index,
+  }) async {
+    final item = bathroomList[index];
+
+    if (selectedFilterListBathroomsList.contains(item)) {
+      selectedFilterListBathroomsList.remove(item);
+    } else {
+      selectedFilterListBathroomsList.add(item);
+    }
+
+    notifyListeners();
+  }
+
+//////// AREA / SIZE ////////
+
+  SfRangeValues filterListValuesArea = SfRangeValues(0.0, 10000.0);
+
+  String filterList_Min_sqr_feet = '';
+  String filterList_Max_sqr_feet = ' ';
+
+  void setSelectedFilterListAreaSize({
+    required double minSqrFeet,
+    required double maxSqrFeet,
+  }) {
+    filterListValuesArea = SfRangeValues(minSqrFeet, maxSqrFeet);
+
+    filterList_Min_sqr_feet = minSqrFeet.toStringAsFixed(0);
+    filterList_Max_sqr_feet = maxSqrFeet.toStringAsFixed(0);
+    notifyListeners();
+  }
 }
 
 class Dataarea {
@@ -1037,4 +1303,82 @@ class Dataarea {
 class Data {
   final double x, y;
   Data(this.x, this.y);
+}
+
+class FilterSnapshot {
+  final String agencyName;
+  final String agentName;
+  final List<String?> search;
+  final String propertyType;
+  final String furnishedStatus;
+  final List<String> bedrooms;
+  final List<String> bathrooms;
+  final String minPrice;
+  final String maxPrice;
+  final String paymentPeriod;
+  final String minSquareFeet;
+  final String maxSquareFeet;
+  final String? option;
+  final String purpose;
+  final String propertyCategory;
+  final List<int> amenities;
+  final String handoverQuarter;
+  final String handoverYear;
+  final String completionsMax;
+  final String completionsMin;
+
+  FilterSnapshot({
+    required this.agencyName,
+    required this.agentName,
+    required this.search,
+    required this.propertyType,
+    required this.furnishedStatus,
+    required this.bedrooms,
+    required this.bathrooms,
+    required this.minPrice,
+    required this.maxPrice,
+    required this.paymentPeriod,
+    required this.minSquareFeet,
+    required this.maxSquareFeet,
+    required this.option,
+    required this.purpose,
+    required this.propertyCategory,
+    required this.amenities,
+    required this.handoverQuarter,
+    required this.handoverYear,
+    required this.completionsMax,
+    required this.completionsMin,
+  });
+
+  bool isEqual(FilterSnapshot other) {
+    return agencyName == other.agencyName &&
+        agentName == other.agentName &&
+        _listEqual(search, other.search) &&
+        propertyType == other.propertyType &&
+        furnishedStatus == other.furnishedStatus &&
+        _listEqual(bedrooms, other.bedrooms) &&
+        _listEqual(bathrooms, other.bathrooms) &&
+        minPrice == other.minPrice &&
+        maxPrice == other.maxPrice &&
+        paymentPeriod == other.paymentPeriod &&
+        minSquareFeet == other.minSquareFeet &&
+        maxSquareFeet == other.maxSquareFeet &&
+        option == other.option &&
+        purpose == other.purpose &&
+        propertyCategory == other.propertyCategory &&
+        _listEqual(amenities, other.amenities) &&
+        handoverQuarter == other.handoverQuarter &&
+        handoverYear == other.handoverYear &&
+        completionsMax == other.completionsMax &&
+        completionsMin == other.completionsMin;
+  }
+
+  // Helper method to compare lists
+  bool _listEqual(List a, List b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 }

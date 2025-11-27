@@ -5,6 +5,7 @@ import 'package:Akarat/providers/location_picker_provider.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_debounce.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -133,18 +134,34 @@ class _FilterDemoState extends State<FilterDemo> {
                   ),
 
                   actions: [
-                    TextButton(
-                      onPressed: () async {
-                        await filterProvider.resetAll(context);
+                    Consumer<FilterProvider>(
+                      builder: (context, resetState, _) {
+                        final canReset = resetState.hasChanges;
+
+                        return TextButton(
+                          onPressed: canReset
+                              ? resetState.isResetLoading
+                                  ? null
+                                  : () async {
+                                      await resetState.resetAll(context);
+                                      resetState
+                                          .captureInitialSnapshot(); // NEW SNAPSHOT
+                                    }
+                              : null,
+                          child: resetState.isResetLoading
+                              ? CupertinoActivityIndicator(
+                                  radius: 13,
+                                )
+                              : Text(
+                                  "Reset",
+                                  style: TextStyle(
+                                    color: canReset ? Colors.red : Colors.grey,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        );
                       },
-                      child: const Text(
-                        "Reset",
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
+                    )
                   ],
                 ),
                 body: SingleChildScrollView(
@@ -720,6 +737,12 @@ class _FilterDemoState extends State<FilterDemo> {
                                             .icon
                                             .toString(),
                                         height: 35,
+                                        placeholder: (context, url) =>
+                                            const CupertinoActivityIndicator(
+                                          radius: 13,
+                                        ),
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(Icons.error, size: 35),
                                       ),
                                     ),
                                     Padding(
@@ -922,6 +945,25 @@ class _FilterDemoState extends State<FilterDemo> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
+                                            settings: const RouteSettings(
+                                                name: 'FliterList'),
+                                            builder: (context) => FliterList(
+                                                // filterModel:
+                                                //     filterProvider.filterModel,
+                                                // // forceRefresh: true,
+                                                // // 👇 send the exact UI selections forward
+                                                // selectedPurpose: filterProvider
+                                                //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
+                                                // selectedPropertyType: filterProvider
+                                                //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      onFilterResultZero: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
                                             builder: (context) => Scaffold(
                                               appBar: AppBar(
                                                 title: Text('Results'),
@@ -977,25 +1019,6 @@ class _FilterDemoState extends State<FilterDemo> {
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      onFilterResultZero: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            settings: const RouteSettings(
-                                                name: 'FliterList'),
-                                            builder: (context) => FliterList(
-                                              filterModel:
-                                                  filterProvider.filterModel,
-                                              // forceRefresh: true,
-                                              // 👇 send the exact UI selections forward
-                                              selectedPurpose: filterProvider
-                                                  .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
-                                              selectedPropertyType: filterProvider
-                                                  .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
                                             ),
                                           ),
                                         );
@@ -1066,6 +1089,25 @@ class _FilterDemoState extends State<FilterDemo> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
+                                            settings: const RouteSettings(
+                                                name: 'FliterList'),
+                                            builder: (context) => FliterList(
+                                                // filterModel:
+                                                //     filterProvider.filterModel,
+                                                // // forceRefresh: true,
+                                                // // 👇 send the exact UI selections forward
+                                                // selectedPurpose: filterProvider
+                                                //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
+                                                // selectedPropertyType: filterProvider
+                                                //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      onFilterResultZero: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
                                             builder: (context) => Scaffold(
                                               appBar: AppBar(
                                                 title: Text('Results'),
@@ -1121,25 +1163,6 @@ class _FilterDemoState extends State<FilterDemo> {
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      onFilterResultZero: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            settings: const RouteSettings(
-                                                name: 'FliterList'),
-                                            builder: (context) => FliterList(
-                                              filterModel:
-                                                  filterProvider.filterModel,
-                                              // forceRefresh: true,
-                                              // 👇 send the exact UI selections forward
-                                              selectedPurpose: filterProvider
-                                                  .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
-                                              selectedPropertyType: filterProvider
-                                                  .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
                                             ),
                                           ),
                                         );
@@ -1213,6 +1236,24 @@ class _FilterDemoState extends State<FilterDemo> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
+                                    settings:
+                                        const RouteSettings(name: 'FliterList'),
+                                    builder: (context) => FliterList(
+                                        // filterModel: filterProvider.filterModel,
+                                        // // forceRefresh: true,
+                                        // // 👇 send the exact UI selections forward
+                                        // selectedPurpose: filterProvider
+                                        //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
+                                        // selectedPropertyType: filterProvider
+                                        //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
+                                        ),
+                                  ),
+                                );
+                              },
+                              onFilterResultZero: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
                                     builder: (context) => Scaffold(
                                       appBar: AppBar(
                                         title: Text('Results'),
@@ -1260,24 +1301,6 @@ class _FilterDemoState extends State<FilterDemo> {
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                );
-                              },
-                              onFilterResultZero: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    settings:
-                                        const RouteSettings(name: 'FliterList'),
-                                    builder: (context) => FliterList(
-                                      filterModel: filterProvider.filterModel,
-                                      // forceRefresh: true,
-                                      // 👇 send the exact UI selections forward
-                                      selectedPurpose: filterProvider
-                                          .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
-                                      selectedPropertyType: filterProvider
-                                          .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
                                     ),
                                   ),
                                 );
@@ -2414,6 +2437,24 @@ class _FilterDemoState extends State<FilterDemo> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
+                                settings:
+                                    const RouteSettings(name: 'FliterList'),
+                                builder: (context) => FliterList(
+                                    // filterModel: filterProvider.filterModel,
+                                    // // forceRefresh: true,
+                                    // // 👇 send the exact UI selections forward
+                                    // selectedPurpose: filterProvider
+                                    //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
+                                    // selectedPropertyType: filterProvider
+                                    //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
+                                    ),
+                              ),
+                            );
+                          },
+                          onFilterResultZero: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
                                 builder: (context) => Scaffold(
                                   appBar: AppBar(
                                     title: Text('Results'),
@@ -2459,24 +2500,6 @@ class _FilterDemoState extends State<FilterDemo> {
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            );
-                          },
-                          onFilterResultZero: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                settings:
-                                    const RouteSettings(name: 'FliterList'),
-                                builder: (context) => FliterList(
-                                  filterModel: filterProvider.filterModel,
-                                  // forceRefresh: true,
-                                  // 👇 send the exact UI selections forward
-                                  selectedPurpose: filterProvider
-                                      .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
-                                  selectedPropertyType: filterProvider
-                                      .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
                                 ),
                               ),
                             );
