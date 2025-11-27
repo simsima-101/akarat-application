@@ -1,7 +1,7 @@
 name: Akarat
 description: "A new Flutter project."
 publish_to: 'none'
-version: 1.0.9+20
+version: 1.0.10+1
 
 
 environment:
@@ -54,6 +54,7 @@ dependencies:
   device_info_plus: ^12.2.0
 
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -103,5 +104,7 @@ flutter:
     - assets/images/my-account-profile.png
     - assets/images/alert_box_logout_icon.png
     - assets/images/alert_box_delete_icon.png
+    - assets/images/ae.png
+
 
 

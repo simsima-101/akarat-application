@@ -10,7 +10,7 @@ import 'package:Akarat/services/api_service.dart';
 import '../secure_storage.dart';
 import '../services/profile_cache.dart';
 import '../services/session.dart';
-import '../services/auth_prefs.dart'; // 🔹 NEW: track login method (password / google)
+import '../services/auth_prefs.dart';
 
 // Firebase + Google Sign-In (v7)
 import 'package:firebase_auth/firebase_auth.dart';
@@ -47,18 +47,24 @@ class _LoginDemoState extends State<LoginDemo> {
   void initState() {
     super.initState();
     ApiService.debugPrintBaseUrl();
+
+    // REMOVED: _ensureFreshGuestState() — This was destroying login persistence!
+    // We now ONLY show Login screen when user is truly logged out (handled by SplashScreen)
+
     _initGoogle();
+
     if ((widget.initialEmail ?? '').isNotEmpty) {
       emailController.text = widget.initialEmail!.trim();
     }
   }
 
   Future<void> _initGoogle() async {
-    // v7 requires clientId at initialize on iOS
-    await _googleSignIn.initialize(clientId: _IOS_CLIENT_ID);
     try {
-      await _googleSignIn.attemptLightweightAuthentication(); // optional fast path
-    } catch (_) {}
+      await _googleSignIn.initialize(clientId: _IOS_CLIENT_ID);
+      await _googleSignIn.attemptLightweightAuthentication();
+    } catch (_) {
+      // Ignore — not critical
+    }
   }
 
   @override
@@ -73,16 +79,13 @@ class _LoginDemoState extends State<LoginDemo> {
     required String token,
     required Map<String, dynamic> loginBody,
   }) async {
-    // 1) Start with what the login API returned
-    var id = ApiService.extractIdentity(loginBody); // (first,last,name,email)
+    var id = ApiService.extractIdentity(loginBody);
 
-    // 2) If names are empty, try your canonical server profile (/me or /profile)
     if (id.first.isEmpty && id.last.isEmpty) {
-      final fetched = await ApiService.tryFetchMe(token); // -> (first,last,name,email)?
+      final fetched = await ApiService.tryFetchMe(token);
       if (fetched != null) id = fetched;
     }
 
-    // 3) Client-side override: if user edited on this device, prefer it
     final override = await ProfileCache.load(id.email);
     if (override != null) {
       final first = override.first.trim();
@@ -97,7 +100,6 @@ class _LoginDemoState extends State<LoginDemo> {
       }
     }
 
-    // 4) Fallback: synthesize name from email local-part
     if (id.first.isEmpty && id.last.isEmpty) {
       final local = (id.email.isNotEmpty ? id.email : emailController.text.trim())
           .split('@')
@@ -105,9 +107,12 @@ class _LoginDemoState extends State<LoginDemo> {
       id = (first: local, last: '', name: local, email: id.email);
     }
 
-    // 5) Persist & seed session
+    // Persist to SecureStorage + in-memory Session
     await SecureStorage.setToken(token);
-    await SecureStorage.setUserProfile(name: id.name, email: id.email);
+    await SecureStorage.saveUserName(id.name.isNotEmpty ? id.name : '${id.first} ${id.last}'.trim());
+    await SecureStorage.saveUserEmail(id.email);
+    await SecureStorage.saveFirstName(id.first);
+    await SecureStorage.saveLastName(id.last);
 
     await Session().setAuth(
       token: token,
@@ -139,13 +144,10 @@ class _LoginDemoState extends State<LoginDemo> {
         final token = ApiService.extractToken(resp);
         if (token == null || token.isEmpty) {
           setState(() => errorMessage = 'Login succeeded but token missing.');
-          await SecureStorage.signOutLocal();
           return;
         }
 
         await _hydrateAfterAuth(token: token, loginBody: resp);
-
-        // 🔹 Mark: this user logged in with email/password
         await AuthPrefs.setLoginMethod(LoginMethod.password);
 
         if (!mounted) return;
@@ -156,51 +158,33 @@ class _LoginDemoState extends State<LoginDemo> {
         return;
       }
 
+      // Handle errors
+      String msg = 'Server error. Try again.';
       if (status == 401) {
-        await SecureStorage.signOutLocal();
-        setState(
-              () => errorMessage =
-              resp['message']?.toString() ?? 'Invalid email or password.',
-        );
-        return;
-      }
-
-      if (status == 422) {
-        await SecureStorage.signOutLocal();
-        String msg = 'Validation error.';
-        final body = resp['__raw'] is Map<String, dynamic>
-            ? resp['__raw'] as Map<String, dynamic>
-            : {};
-        if (body['errors'] is Map && (body['errors'] as Map).isNotEmpty) {
-          final firstErr = (body['errors'] as Map).values.first;
-          if (firstErr is List && firstErr.isNotEmpty) {
-            msg = firstErr.first.toString();
-          }
-        } else if (body['message'] != null) {
-          msg = body['message'].toString();
+        msg = resp['message']?.toString() ?? 'Invalid email or password.';
+      } else if (status == 422) {
+        final body = resp['__raw'] is Map ? resp['__raw'] as Map<String, dynamic> : {};
+        final errors = body['errors'] as Map?;
+        if (errors != null && errors.isNotEmpty) {
+          msg = (errors.values.first is List && (errors.values.first as List).isNotEmpty)
+              ? (errors.values.first as List).first.toString()
+              : 'Validation error.';
+        } else {
+          msg = body['message']?.toString() ?? msg;
         }
-        setState(() => errorMessage = msg);
-        return;
+      } else {
+        msg = resp['message']?.toString() ?? 'Server error ($status).';
       }
 
-      await SecureStorage.signOutLocal();
-      setState(
-            () => errorMessage =
-            resp['message']?.toString() ?? 'Server error ($status). Try again.',
-      );
+      setState(() => errorMessage = msg);
     } catch (_) {
-      await SecureStorage.signOutLocal();
-      if (mounted) {
-        setState(
-              () => errorMessage = 'Network error. Check internet / API_BASE_URL.',
-        );
-      }
+      setState(() => errorMessage = 'Network error. Check your connection.');
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
   }
 
-  // ----------------- Google Sign-In (v7) -----------------
+  // ----------------- Google Sign-In -----------------
   Future<void> _signInWithGoogle() async {
     if (isLoading) return;
     setState(() {
@@ -212,49 +196,39 @@ class _LoginDemoState extends State<LoginDemo> {
     try {
       final completer = Completer<gsi.GoogleSignInAccount>();
       sub = _googleSignIn.authenticationEvents.listen((event) {
-        // Helpful logs for Simulator issues:
-        // debugPrint('GI event: $event');
-        if (event is gsi.GoogleSignInAuthenticationEventSignIn &&
-            !completer.isCompleted) {
+        if (event is gsi.GoogleSignInAuthenticationEventSignIn && !completer.isCompleted) {
           completer.complete(event.user);
         }
       });
 
-      if (_googleSignIn.supportsAuthenticate()) {
-        await _googleSignIn.authenticate(); // opens the Google sheet
-      } else {
-        throw Exception('This platform does not support authenticate().');
+      if (!_googleSignIn.supportsAuthenticate()) {
+        throw Exception('Google Sign-In not supported on this platform.');
       }
 
+      await _googleSignIn.authenticate();
       final account = await completer.future;
-      await sub.cancel();
+      await sub?.cancel();
 
       final gAuth = await account.authentication;
-      final String? googleIdTokenMaybe = gAuth.idToken;
+      final googleIdToken = gAuth.idToken;
+      if (googleIdToken == null) throw Exception('Google ID token missing.');
 
-      if (googleIdTokenMaybe != null && googleIdTokenMaybe.isNotEmpty) {
-        final cred = GoogleAuthProvider.credential(idToken: googleIdTokenMaybe);
-        await FirebaseAuth.instance.signInWithCredential(cred);
-      }
+      final cred = GoogleAuthProvider.credential(idToken: googleIdToken);
+      await FirebaseAuth.instance.signInWithCredential(cred);
 
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) throw Exception('Firebase user is null after sign-in');
+      if (user == null) throw Exception('Firebase sign-in failed.');
 
-      final String? firebaseIdToken = await user.getIdToken(true);
-      if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
-        throw Exception('Failed to get Firebase ID token.');
-      }
+      final firebaseIdToken = await user.getIdToken(true);
+      if (firebaseIdToken == null) throw Exception('Failed to get Firebase token.');
 
-      // Exchange token with your backend
       final data = await ApiService.loginWithGoogleIdToken(firebaseIdToken);
       final token = ApiService.extractToken(data);
       if (token == null || token.isEmpty) {
-        throw Exception('This account has been deleted or token missing.');
+        throw Exception('Account inactive or deleted.');
       }
 
       await _hydrateAfterAuth(token: token, loginBody: data);
-
-      // 🔹 Mark: this user logged in with Google
       await AuthPrefs.setLoginMethod(LoginMethod.google);
 
       if (!mounted) return;
@@ -263,12 +237,10 @@ class _LoginDemoState extends State<LoginDemo> {
             (_) => false,
       );
     } catch (e) {
-      await SecureStorage.signOutLocal();
-      if (mounted) {
-        setState(
-              () => errorMessage = 'This account has been deleted or is inactive.\nPlease contact support to reactivate it or use a different email',
-        );
-      }
+      setState(() {
+        errorMessage =
+        'Login failed. This account may be inactive or deleted.\nPlease try another method.';
+      });
     } finally {
       await sub?.cancel();
       if (mounted) setState(() => isLoading = false);
@@ -295,148 +267,71 @@ class _LoginDemoState extends State<LoginDemo> {
                       child: Align(
                         alignment: Alignment.topRight,
                         child: GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (_) => const Home()),
-                                  (route) => false,
-                            );
-                          },
-                          child: const Icon(Icons.close,
-                              size: 28, color: Colors.black),
+                          onTap: () => Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (_) => const Home()),
+                                (_) => false,
+                          ),
+                          child: const Icon(Icons.close, size: 28, color: Colors.black),
                         ),
                       ),
                     ),
                     const SizedBox(height: 60),
                     Center(
-                      child: SizedBox(
-                        width: 150,
-                        height: 50,
-                        child: Image.asset(
-                          'assets/images/app_icon.png',
-                          errorBuilder: (_, __, ___) => const SizedBox(),
-                        ),
-                      ),
+                      child: Image.asset('assets/images/app_icon.png', width: 150, height: 50),
                     ),
                     Center(
-                      child: SizedBox(
-                        width: 150,
-                        height: 38,
-                        child: Image.asset(
-                          'assets/images/logo-text.png',
-                          errorBuilder: (_, __, ___) => const SizedBox(),
-                        ),
-                      ),
+                      child: Image.asset('assets/images/logo-text.png', width: 150, height: 38),
                     ),
                     Form(
                       key: formKey,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 30),
+                        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
                         padding: const EdgeInsets.only(top: 15),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           color: const Color(0xFFF5F5F5),
                           boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.shade300,
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
-                            ),
+                            BoxShadow(color: Colors.grey.shade300, blurRadius: 2, offset: const Offset(0, 1)),
                           ],
                         ),
                         child: Column(
                           children: [
-                            const Text("Welcome to Akarat!",
-                                style: TextStyle(fontSize: 20)),
+                            const Text("Welcome to Akarat!", style: TextStyle(fontSize: 20)),
                             const SizedBox(height: 15),
 
-                            // Email
-                            Container(
-                              width: MediaQuery.of(context).size.width * 0.8,
-                              height: 50,
-                              decoration: _boxDecoration(),
-                              padding:
-                              const EdgeInsets.symmetric(horizontal: 10),
-                              child: TextFormField(
-                                controller: emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                textInputAction: TextInputAction.next,
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: 'Email',
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter Email ID';
-                                  }
-                                  if (!RegExp(
-                                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                      .hasMatch(value)) {
-                                    return 'Invalid email address';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
+                            // Email Field
+                            _buildTextField(emailController, 'Email', TextInputType.emailAddress),
+
                             const SizedBox(height: 6),
 
-                            // Password
+                            // Password Field
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Container(
-                                  width:
-                                  MediaQuery.of(context).size.width * 0.8,
-                                  height: 50,
-                                  decoration: _boxDecoration(),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10),
-                                  child: Center(
-                                    child: TextFormField(
-                                      controller: passwordController,
-                                      obscureText: obscurePassword,
-                                      textInputAction: TextInputAction.done,
-                                      onFieldSubmitted: (_) => _login(),
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: 'Password',
-                                        contentPadding:
-                                        const EdgeInsets.only(top: 16),
-                                        suffixIcon: IconButton(
-                                          icon: Icon(
-                                            obscurePassword
-                                                ? Icons.visibility_off
-                                                : Icons.visibility,
-                                          ),
-                                          onPressed: () => setState(
-                                                () => obscurePassword =
-                                            !obscurePassword,
-                                          ),
-                                        ),
-                                      ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Enter password';
-                                        }
-                                        return null;
-                                      },
+                                // Correct call: positional optional parameters (no named syntax!)
+                                _buildTextField(
+                                  passwordController,
+                                  'Password',
+                                  TextInputType.visiblePassword,
+                                  obscurePassword,                                        // obscureText
+                                      (_) => _login(),                                        // onFieldSubmitted
+                                  IconButton(                                             // suffixIcon
+                                    icon: Icon(
+                                      obscurePassword ? Icons.visibility_off : Icons.visibility,
                                     ),
+                                    onPressed: () => setState(() => obscurePassword = !obscurePassword),
                                   ),
                                 ),
+
+                                // Forgot password link
                                 Padding(
-                                  padding: const EdgeInsets.only(
-                                      right: 10, top: 4),
+                                  padding: const EdgeInsets.only(right: 10, top: 4),
                                   child: InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                          const ForgotPasswordScreen(),
-                                        ),
-                                      );
-                                    },
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                                    ),
                                     child: const Text(
                                       "Forgot password?",
                                       style: TextStyle(
@@ -444,7 +339,6 @@ class _LoginDemoState extends State<LoginDemo> {
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13,
                                       ),
-                                      textAlign: TextAlign.right,
                                     ),
                                   ),
                                 ),
@@ -452,120 +346,48 @@ class _LoginDemoState extends State<LoginDemo> {
                             ),
                             const SizedBox(height: 15),
 
-                            // Login button
+                            // Login Button
                             isLoading
                                 ? const CircularProgressIndicator()
                                 : ElevatedButton(
                               onPressed: _login,
                               style: ElevatedButton.styleFrom(
-                                minimumSize: Size(
-                                  MediaQuery.of(context).size.width *
-                                      0.8,
-                                  50,
-                                ),
-                                backgroundColor:
-                                const Color(0xFFF1F1F1),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                elevation: 1,
+                                minimumSize: Size(MediaQuery.of(context).size.width * 0.8, 50),
+                                backgroundColor: const Color(0xFFF1F1F1),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               ),
-                              child: const Text(
-                                "Login",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF000000),
-                                ),
-                              ),
+                              child: const Text("Login", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
                             ),
 
                             const SizedBox(height: 14),
-
-                            // ---- Divider OR ----
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 20),
-                                    height: 1,
-                                    color: Colors.black12,
-                                  ),
-                                ),
-                                const Text('  or  ',
-                                    style:
-                                    TextStyle(color: Colors.black54)),
-                                Expanded(
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 20),
-                                    height: 1,
-                                    color: Colors.black12,
-                                  ),
-                                ),
-                              ],
-                            ),
-
+                            _buildDivider(),
                             const SizedBox(height: 14),
 
-                            // Google Sign-In
+                            // Google Button
                             SizedBox(
                               width: MediaQuery.of(context).size.width * 0.8,
                               height: 50,
                               child: OutlinedButton.icon(
                                 onPressed: _signInWithGoogle,
-                                icon: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: Image.asset(
-                                    'assets/images/google.png',
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (_, __, ___) =>
-                                    const Icon(
-                                        Icons.g_mobiledata_outlined,
-                                        size: 20),
-                                  ),
-                                ),
-                                label: const Text(
-                                  'Continue with Google',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w600),
-                                ),
+                                icon: Image.asset('assets/images/google.png', width: 20, height: 20),
+                                label: const Text('Continue with Google', style: TextStyle(fontWeight: FontWeight.w600)),
                                 style: OutlinedButton.styleFrom(
                                   side: const BorderSide(color: Colors.black12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  foregroundColor: Colors.black87,
-                                  backgroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
                               ),
                             ),
 
                             const SizedBox(height: 15),
 
-                            // Register
+                            // Register Link
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text(
-                                  'Not registered yet? ',
-                                  style: TextStyle(color: Color(0xFF424242)),
-                                ),
+                                const Text('Not registered yet? ', style: TextStyle(color: Color(0xFF424242))),
                                 InkWell(
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                      const RegisterScreen(),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Create new account',
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.bold),
-                                  ),
+                                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
+                                  child: const Text('Create new account', style: TextStyle(fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ),
@@ -575,27 +397,14 @@ class _LoginDemoState extends State<LoginDemo> {
                       ),
                     ),
 
+                    // Error Message
                     if (errorMessage != null)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.redAccent,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black26,
-                                blurRadius: 4,
-                                offset: Offset(2, 2),
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            errorMessage!,
-                            style: const TextStyle(color: Colors.white),
-                          ),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(8)),
+                          child: Text(errorMessage!, style: const TextStyle(color: Colors.white)),
                         ),
                       ),
                   ],
@@ -607,6 +416,57 @@ class _LoginDemoState extends State<LoginDemo> {
       ),
     );
   }
+
+  // ---------- Helper Method (Correctly Defined) ----------
+  Widget _buildTextField(
+      TextEditingController controller,
+      String hint, [
+        TextInputType? keyboardType,
+        bool obscureText = false,
+        void Function(String)? onFieldSubmitted,
+        Widget? suffixIcon,
+      ]) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.8,
+      height: 50,
+      decoration: _boxDecoration(),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        obscureText: obscureText,
+        textInputAction: keyboardType == TextInputType.emailAddress
+            ? TextInputAction.next
+            : TextInputAction.done,
+        onFieldSubmitted: onFieldSubmitted,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          hintText: hint,
+          suffixIcon: suffixIcon,
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter $hint';
+          }
+          if (hint == 'Email' &&
+              !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+            return 'Invalid email address';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Row(
+      children: [
+        Expanded(child: Container(margin: const EdgeInsets.symmetric(horizontal: 20), height: 1, color: Colors.black12)),
+        const Text('  or  ', style: TextStyle(color: Colors.black54)),
+        Expanded(child: Container(margin: const EdgeInsets.symmetric(horizontal: 20), height: 1, color: Colors.black12)),
+      ],
+    );
+  }
 }
 
 BoxDecoration _boxDecoration() {
@@ -614,12 +474,7 @@ BoxDecoration _boxDecoration() {
     borderRadius: BorderRadius.circular(10),
     color: Colors.white,
     boxShadow: [
-      BoxShadow(
-        color: Colors.grey.shade300,
-        offset: const Offset(0.3, 0.3),
-        blurRadius: 2,
-        spreadRadius: 0.2,
-      ),
+      BoxShadow(color: Colors.grey.shade300, offset: const Offset(0.3, 0.3), blurRadius: 2, spreadRadius: 0.2),
     ],
   );
 }

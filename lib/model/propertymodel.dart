@@ -2,7 +2,7 @@ import 'projectmodel.dart' as projectDetail;
 import 'productmodel.dart' as productModel;
 import 'searchmodel.dart' as search;
 
-
+/// Build a full image URL from a relative path, with a placeholder fallback.
 String getFullImageUrl(String? url) {
   if (url == null || url.isEmpty) {
     return 'https://via.placeholder.com/400x300.png?text=No+Image';
@@ -15,8 +15,14 @@ String getFullImageUrl(String? url) {
   return 'https://akarat.com/$url';
 }
 
-
-
+/// If you ever want to bypass the .webp-to-jpg logic,
+/// you can still use this helper somewhere else.
+String sanitizeImageUrl(String? url) {
+  if (url == null || url.isEmpty) {
+    return 'https://via.placeholder.com/400x300.png?text=No+Image';
+  }
+  return url;
+}
 
 class Property {
   final String id;
@@ -35,7 +41,6 @@ class Property {
   final String? agentImage;
   final String? agencyLogo;
   final String? postedOn;
-
 
   bool saved;
 
@@ -77,11 +82,9 @@ class Property {
       'agent_image': agentImage,
       'agency_logo': agencyLogo,
       'posted_on': postedOn,
-
       'saved': saved,
     };
   }
-
 
   // 🔧 1️⃣ For project detail data
   factory Property.fromProjectDetail(projectDetail.Data data) {
@@ -90,11 +93,10 @@ class Property {
       title: data.title ?? '',
       description: data.description ?? '',
       image: getFullImageUrl(
-          (data.media != null && data.media!.isNotEmpty)
-              ? data.media!.first.originalUrl
-              : null
+        (data.media != null && data.media!.isNotEmpty)
+            ? data.media!.first.originalUrl
+            : null,
       ),
-
       price: data.price ?? '',
       location: data.location ?? '',
       media: data.media?.map((m) => Media(originalUrl: m.originalUrl)).toList(),
@@ -103,6 +105,7 @@ class Property {
       squareFeet: data.squareFeet ?? '',
       phoneNumber: data.phoneNumber ?? '',
       whatsapp: data.whatsapp ?? '',
+      saved: data.saved ?? false,
     );
   }
 
@@ -117,7 +120,6 @@ class Property {
             ? data.media!.first.originalUrl
             : null,
       ),
-
       price: data.price ?? '',
       location: data.location ?? '',
       media: data.media?.map((m) => Media(originalUrl: m.originalUrl)).toList(),
@@ -126,6 +128,7 @@ class Property {
       squareFeet: data.squareFeet ?? '',
       phoneNumber: data.phoneNumber ?? '',
       whatsapp: data.whatsapp ?? '',
+      // if product model has `saved`, you can map it here too
     );
   }
 
@@ -136,15 +139,15 @@ class Property {
       title: data.title ?? '',
       description: '',
       image: getFullImageUrl(data.image),
-
       price: data.price ?? '',
       location: data.location ?? data.address ?? '',
-      media: [],
+      media: const [],
       bedrooms: data.bedrooms ?? 0,
       bathrooms: data.bathrooms ?? 0,
       squareFeet: data.squareFeet ?? '',
       phoneNumber: data.phone ?? '',
       whatsapp: data.whatsapp ?? '',
+      // search results usually don't carry `saved`
     );
   }
 
@@ -160,14 +163,19 @@ class Property {
     }
 
     rawImage ??= json['image']?.toString(); // fallback if media is not available
-
-
-
     final fullImageUrl = getFullImageUrl(rawImage);
 
     int parseInt(dynamic val) {
       if (val is int) return val;
       return int.tryParse(val?.toString() ?? '') ?? 0;
+    }
+
+    bool parseSaved(dynamic v) {
+      if (v == null) return false;
+      if (v is bool) return v;
+      if (v is num) return v != 0;
+      final s = v.toString().trim();
+      return s == '1' || s.toLowerCase() == 'true';
     }
 
     return Property(
@@ -189,7 +197,7 @@ class Property {
       agentImage: json['agent_image']?.toString(),
       agencyLogo: json['agency_logo']?.toString(),
       postedOn: json['posted_on']?.toString(),
-
+      saved: parseSaved(json['saved']),
     );
   }
 }
@@ -227,11 +235,13 @@ class Data {
   int? agentId;
   String? agentImage;
   String? deliveryDate;
+
   int? paymentPlan;
-  Null governmentFee;
-  Null downPayment;
-  Null duringConstruction;
-  Null onHandover;
+  String? governmentFee;
+  String? downPayment;
+  String? duringConstruction;
+  String? onHandover;
+
   String? projectAnnouncement;
   String? constructionStarted;
   String? expectedCompletion;
@@ -239,6 +249,9 @@ class Data {
   String? location;
   String? squareFeet;
   bool? saved;
+
+  /// ✅ Akarat listing reference (P20251113-LUVH)
+  String? reference;
 
   Data({
     this.id,
@@ -267,6 +280,7 @@ class Data {
     this.location,
     this.squareFeet,
     this.saved,
+    this.reference,
   });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -284,23 +298,34 @@ class Data {
     agentId = json['agent_id'];
     agentImage = json['agent_image'];
     deliveryDate = json['delivery_date'];
-    paymentPlan = json['payment_plan'];
-    governmentFee = json['government_fee'];
-    downPayment = json['down_payment'];
-    duringConstruction = json['during_construction'];
-    onHandover = json['on_handover'];
+
+    // payment_plan sometimes might be string/int
+    final pp = json['payment_plan'];
+    if (pp is int) {
+      paymentPlan = pp;
+    } else if (pp != null) {
+      paymentPlan = int.tryParse(pp.toString());
+    }
+
+    governmentFee = json['government_fee']?.toString();
+    downPayment = json['down_payment']?.toString();
+    duringConstruction = json['during_construction']?.toString();
+    onHandover = json['on_handover']?.toString();
+
     projectAnnouncement = json['project_announcement'];
     constructionStarted = json['construction_started'];
     expectedCompletion = json['expected_completion'];
     location = json['location'];
     squareFeet = json['square_feet'];
     saved = json['saved'];
-    if (json['media'] != null && json['media'] is List) {
-      media = (json['media'] as List)
-          .map((v) => Media.fromJson(v))
-          .toList();
-    }
 
+    /// ✅ Correct assignment
+    reference = json['reference'];
+
+    if (json['media'] != null && json['media'] is List) {
+      media =
+          (json['media'] as List).map((v) => Media.fromJson(v)).toList();
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -329,6 +354,9 @@ class Data {
     data['expected_completion'] = expectedCompletion;
     data['location'] = location;
     data['square_feet'] = squareFeet;
+    data['saved'] = saved;
+    data['reference'] = reference;
+
     if (media != null) {
       data['media'] = media!.map((v) => v.toJson()).toList();
     }
@@ -336,14 +364,13 @@ class Data {
   }
 }
 
-
 class Media {
   String? originalUrl;
 
   Media({this.originalUrl});
 
   Media.fromJson(Map<String, dynamic> json) {
-    originalUrl = json['original_url'];
+    originalUrl = json['original_url']?.toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -352,14 +379,3 @@ class Media {
     return data;
   }
 }
-
-
-String sanitizeImageUrl(String? url) {
-  if (url == null || url.isEmpty) {
-    return 'https://via.placeholder.com/400x300.png?text=No+Image';
-  }
-
-  return url; // Just return the URL as-is (even if it's a .webp or thumbnail)
-}
-
-

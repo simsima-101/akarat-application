@@ -1,136 +1,101 @@
 // lib/secure_storage.dart
-// Token-only facade (no PII persisted). Backward-compatible method names.
-
 import 'package:flutter/foundation.dart';
-import 'secure_storage_token.dart'; // must provide AuthStorage.{saveToken,readToken,clear}()
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorage {
-  // =========================
-  // AUTH TOKEN (real storage)
-  // =========================
-  static Future<String?> getToken() => AuthStorage.readToken();
+  // Private storage instance
+  static final _storage = const FlutterSecureStorage();
 
-  static Future<void> setToken(String token) async {
-    final t = token.trim();
-    if (t.isEmpty) {
-      await deleteToken();
-    } else {
-      await AuthStorage.saveToken(t);
-    }
+  // ========================================
+  // AUTH TOKEN
+  // ========================================
+  static Future<void> saveToken(String token) async {
+    await _storage.write(key: 'token', value: token.trim());
+  }
+
+  static Future<String?> getToken() async {
+    return await _storage.read(key: 'token');
   }
 
   static Future<void> deleteToken() async {
-    await AuthStorage.clear();
+    await _storage.delete(key: 'token');
   }
 
-  // Legacy aliases (do not remove if older code calls these)
-  static Future<void> saveToken(String token) => setToken(token);
-  static Future<void> writeToken(String token) => setToken(token);
-
-  static Future<bool> isLoggedIn() async {
-    final t = await getToken();
-    return (t != null && t.trim().isNotEmpty);
+  // ========================================
+  // USER PROFILE (Name, Email, First/Last)
+  // ========================================
+  static Future<void> saveUserName(String name) async {
+    await _storage.write(key: 'user_name', value: name.trim());
   }
 
-  static Future<void> signOutLocal() => deleteToken();
-
-  // ==========================================
-  // Generic key-value API (NO-OPs by design)
-  // ==========================================
-  static Future<String?> read(String key) async {
-    _warn('read("$key")');
-    return null;
+  static Future<String?> getUserName() async {
+    return await _storage.read(key: 'user_name');
   }
 
-  static Future<void> write(String key, String value) async {
-    _warn('write("$key", "...")');
+  static Future<void> saveUserEmail(String email) async {
+    await _storage.write(key: 'user_email', value: email.trim().toLowerCase());
   }
 
-  static Future<void> delete(String key) async {
-    _warn('delete("$key")');
+  static Future<String?> getUserEmail() async {
+    return await _storage.read(key: 'user_email');
   }
 
-  // ==========================================
-  // Deprecated PII helpers (true NO-OPs)
-  // Keep these to avoid breaking older call sites.
-  // ==========================================
-  @deprecated
+  static Future<void> saveFirstName(String name) async {
+    await _storage.write(key: 'first_name', value: name.trim());
+  }
+
+  static Future<String?> getFirstName() async {
+    return await _storage.read(key: 'first_name');
+  }
+
+  static Future<void> saveLastName(String name) async {
+    await _storage.write(key: 'last_name', value: name.trim());
+  }
+
+  static Future<String?> getLastName() async {
+    return await _storage.read(key: 'last_name');
+  }
+
+  // ========================================
+  // BACKWARD COMPATIBILITY (Legacy Methods)
+  // Keep these so old code doesn't crash
+  // ========================================
+  @Deprecated('Use saveToken() instead')
+  static Future<void> setToken(String token) => saveToken(token);
+
+  @Deprecated('Use saveUserName() + saveUserEmail() instead')
   static Future<void> setUserProfile({
     required String name,
     required String email,
     String? firstName,
     String? lastName,
   }) async {
-    // Intentionally not storing PII locally.
-    _warn('setUserProfile(name:"$name", email:"$email")');
+    await saveUserName(name);
+    await saveUserEmail(email);
+    if (firstName != null) await saveFirstName(firstName);
+    if (lastName != null) await saveLastName(lastName);
   }
 
-  @deprecated
-  static Future<void> clearProfile() async {
-    _warn('clearProfile');
+  static Future<bool> isLoggedIn() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
   }
 
-  @deprecated
-  static Future<String?> getUserName() async {
-    _warn('getUserName');
-    return null;
+  // ========================================
+  // LOGOUT & CLEANUP
+  // ========================================
+  static Future<void> deleteAll() async {
+    await _storage.deleteAll();
   }
 
-  @deprecated
-  static Future<String?> getUserEmail() async {
-    _warn('getUserEmail');
-    return null;
+  static Future<void> signOutLocal() async {
+    await deleteAll();
   }
 
-  @deprecated
-  static Future<String?> getUserImage() async {
-    _warn('getUserImage');
-    return null;
-  }
-
-  @deprecated
-  static Future<void> setFirstName(String first) async {
-    _warn('setFirstName("$first")');
-  }
-
-  @deprecated
-  static Future<void> setLastName(String last) async {
-    _warn('setLastName("$last")');
-  }
-
-  @deprecated
-  static Future<String?> getFirstName() async {
-    _warn('getFirstName');
-    return null;
-  }
-
-  @deprecated
-  static Future<String?> getLastName() async {
-    _warn('getLastName');
-    return null;
-  }
-
-  @deprecated
-  static Future<void> setDraftNameEmail({
-    required String first,
-    required String last,
-    required String email,
-  }) async {
-    _warn('setDraftNameEmail(first:"$first", last:"$last", email:"$email")');
-  }
-
-  @deprecated
-  static Future<void> setFirstLastLoose({
-    required String first,
-    required String last,
-  }) async {
-    _warn('setFirstLastLoose(first:"$first", last:"$last")');
-  }
-
-  // ===== debug helper =====
-  static void _warn(String method) {
-    if (kDebugMode) {
-      debugPrint('⚠️ SecureStorage.$method is a NO-OP (PII not stored locally).');
-    }
+  // Optional: Debug helper (only in debug mode)
+  static void debugPrintAll() async {
+    if (!kDebugMode) return;
+    final all = await _storage.readAll();
+    debugPrint('SecureStorage contents: $all');
   }
 }

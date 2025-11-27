@@ -1,9 +1,13 @@
+// lib/screen/splash_screen.dart
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
-import 'home.dart';
+
+import 'package:Akarat/screen/home.dart';
+import 'package:Akarat/services/session.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
@@ -12,37 +16,34 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
-  // Match brand red if needed
   static const Color akaratRed = Color(0xFFE01E26);
 
-  late final Animation<double> _scale;        // icon zoom
-  late final Animation<double> _fade;         // icon opacity 0 -> 1
-  late final Animation<double> _saturation;   // icon color 0 (gray) -> 1 (full)
-  late final Animation<Color?> _bgColor;      // bg white -> red
-  late final Animation<double> _outline;      // white outline strength
+  late final Animation<double> _scale;
+  late final Animation<double> _fade;
+  late final Animation<double> _saturation;
+  late final Animation<Color?> _bgColor;
+  late final Animation<double> _outline;
 
   @override
   void initState() {
     super.initState();
 
+    // === Your beautiful animation stays 100% intact ===
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1700),
     );
 
-    // Fade is very clear now: starts at 0 and rises for ~70% of the timeline
     _fade = CurvedAnimation(
       parent: _controller,
       curve: const Interval(0.00, 0.70, curve: Curves.easeInOut),
     );
 
-    // Desaturated -> full color over roughly the same window
     _saturation = CurvedAnimation(
       parent: _controller,
       curve: const Interval(0.05, 0.80, curve: Curves.easeInOutCubic),
     );
 
-    // Gentle zoom
     _scale = Tween<double>(begin: 0.90, end: 1.18).animate(
       CurvedAnimation(
         parent: _controller,
@@ -50,7 +51,6 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    // Background turns red later so fade is visible first
     _bgColor = ColorTween(begin: Colors.white, end: akaratRed).animate(
       CurvedAnimation(
         parent: _controller,
@@ -58,25 +58,45 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    // White outline blooms in after the fade has started
     _outline = CurvedAnimation(
       parent: _controller,
       curve: const Interval(0.50, 0.95, curve: Curves.easeInOut),
     );
 
-    // Precache the icon so the very first frame can start at opacity 0 smoothly
+    // Precache icon and start animation
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await precacheImage(const AssetImage('assets/images/app_icon.png'), context);
       if (mounted) _controller.forward();
     });
 
+    // === After animation → ALWAYS go to Home() ===
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed && mounted) {
+        _goToHome();
+      }
+    });
+  }
+
+  /// Always navigate to Home — this is the new behavior you wanted!
+  Future<void> _goToHome() async {
+    try {
+      // Still restore session in background (for profile, favorites, etc.)
+      await Session().restore();
+
+      if (!mounted) return;
+
+      // Always go to Home — guest or logged in
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const Home()),
+      );
+    } catch (e) {
+      // Even if something fails → still go to Home
+      if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const Home()),
         );
       }
-    });
+    }
   }
 
   @override
@@ -85,27 +105,17 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
-  // Build a saturation ColorFilter matrix (0 = grayscale, 1 = full color)
   ColorFilter _saturationFilter(double s) {
-    // Luma coefficients
-    const r = 0.2126;
-    const g = 0.7152;
-    const b = 0.0722;
-
+    const r = 0.2126, g = 0.7152, b = 0.0722;
     final inv = 1 - s;
-    final rInv = inv * r;
-    final gInv = inv * g;
-    final bInv = inv * b;
-
     return ColorFilter.matrix(<double>[
-      rInv + s, gInv,     bInv,     0, 0,
-      rInv,     gInv + s, bInv,     0, 0,
-      rInv,     gInv,     bInv + s, 0, 0,
-      0,        0,        0,        1, 0,
+      r * inv + s, g * inv,     b * inv,     0, 0,
+      r * inv,     g * inv + s, b * inv,     0, 0,
+      r * inv,     g * inv,     b * inv + s, 0, 0,
+      0,           0,           0,           1, 0,
     ]);
   }
 
-  // Tinted copy that follows PNG shape (used for outline/glow)
   Widget _tintedIcon({
     required double size,
     required Color color,
@@ -142,12 +152,11 @@ class _SplashScreenState extends State<SplashScreen>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
-        // Outline tuning tied to _outline value
-        final glowScale    = 1.0 + 0.14 * _outline.value;
-        final strokeScale  = 1.0 + 0.08 * _outline.value;
-        final glowOpacity  = 0.38 * _outline.value;
-        final strokeOpacity= 1.00 * _outline.value;
-        final glowBlur     = 18.0 * _outline.value;
+        final glowScale = 1.0 + 0.14 * _outline.value;
+        final strokeScale = 1.0 + 0.08 * _outline.value;
+        final glowOpacity = 0.38 * _outline.value;
+        final strokeOpacity = 1.00 * _outline.value;
+        final glowBlur = 18.0 * _outline.value;
 
         return Container(
           color: _bgColor.value,
@@ -157,7 +166,6 @@ class _SplashScreenState extends State<SplashScreen>
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Soft white glow (PNG shape)
                 _tintedIcon(
                   size: baseSize,
                   color: Colors.white,
@@ -165,16 +173,12 @@ class _SplashScreenState extends State<SplashScreen>
                   blur: glowBlur,
                   extraScale: glowScale,
                 ),
-
-                // Crisp white "stroke" (PNG shape)
                 _tintedIcon(
                   size: baseSize,
                   color: Colors.white,
                   opacity: strokeOpacity,
                   extraScale: strokeScale,
                 ),
-
-                // Actual icon: FADE + SATURATION animated together
                 FadeTransition(
                   opacity: _fade,
                   child: ColorFiltered(

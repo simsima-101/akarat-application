@@ -1,5 +1,4 @@
 // lib/screen/personal_information.dart
-import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,17 +7,15 @@ import '../secure_storage.dart';
 import '../services/api_service.dart';
 import '../services/session.dart';
 import '../services/profile_cache.dart';
-import '../services/auth_prefs.dart'; // 🔹 NEW: to read LoginMethod
+import '../services/auth_prefs.dart';
 import 'login.dart';
+
+// Add this import if not already there
+import '../widgets/custom_alert_box.dart'; // Make sure this file exists
 
 class PersonalInformationScreen extends StatefulWidget {
   final String? name;
   final String? email;
-  final String? firstName;
-  final String? lastName;
-
-  /// 🔹 This is injected from My_Account:
-  /// PersonalInformationScreen(onDeleteAccount: deleteAccount, ...)
   final Future<void> Function() onDeleteAccount;
   final String? afterSaveRouteName;
 
@@ -26,421 +23,321 @@ class PersonalInformationScreen extends StatefulWidget {
     super.key,
     this.name,
     this.email,
-    this.firstName,
-    this.lastName,
     required this.onDeleteAccount,
     this.afterSaveRouteName,
   });
 
   @override
-  State<PersonalInformationScreen> createState() =>
-      _PersonalInformationScreenState();
+  State<PersonalInformationScreen> createState() => _PersonalInformationScreenState();
+}
+
+class AlwaysDisabledFocusNode extends FocusNode {
+  @override
+  bool get hasFocus => false;
 }
 
 class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  late final TextEditingController _nameCtrl;
-  late final TextEditingController _emailCtrl;
   late final TextEditingController _firstNameCtrl;
   late final TextEditingController _lastNameCtrl;
+  late final TextEditingController _emailCtrl;
 
-  final TextEditingController _currentPwdCtrl = TextEditingController();
-  final TextEditingController _newPwdCtrl = TextEditingController();
-  final TextEditingController _confirmPwdCtrl = TextEditingController();
+  final _currentPwdCtrl = TextEditingController();
+  final _newPwdCtrl = TextEditingController();
+  final _confirmPwdCtrl = TextEditingController();
 
   bool _loading = false;
   bool _editMode = false;
+  bool _isPasswordAuth = false;
 
-  // visibility toggles
+  bool _obscureCurrent = true;
   bool _obscureNew = true;
   bool _obscureConfirm = true;
-  bool _obscureCurrent = true;
-
-  // only show password area for email/password auth
-  bool _isPasswordAuth = false;
 
   @override
   void initState() {
     super.initState();
-
-    _firstNameCtrl = TextEditingController(text: widget.firstName ?? '');
-    _lastNameCtrl  = TextEditingController(text: widget.lastName  ?? '');
-    _nameCtrl      = TextEditingController(text: widget.name      ?? '');
-    _emailCtrl     = TextEditingController(text: widget.email     ?? '');
-
-    _newPwdCtrl.addListener(() => setState(() {}));
-
-    _hydrateFromLocal(); // loads names + auth provider
+    _firstNameCtrl = TextEditingController();
+    _lastNameCtrl = TextEditingController();
+    _emailCtrl = TextEditingController(text: widget.email ?? '');
+    _loadUserData();
   }
 
-  Future<void> _hydrateFromLocal() async {
-    final s = Session();
-
-    final fullFromSession  = (s.userName  ?? '').trim();
-    final emailFromSession = (s.userEmail ?? '').trim();
-
-    String first = (s.firstName ?? '').trim();
-    String last  = (s.lastName  ?? '').trim();
-
-    // Derive first/last from full name if needed
-    if ((first.isEmpty && last.isEmpty) && fullFromSession.isNotEmpty) {
-      final parts = fullFromSession
-          .split(RegExp(r'\s+'))
-          .where((p) => p.isNotEmpty)
-          .toList();
-      first = parts.isNotEmpty ? parts.first : '';
-      last  = parts.length > 1 ? parts.sublist(1).join(' ') : '';
-    }
-
-    // Prefer client override if present
-    final override = await ProfileCache.load(
-      emailFromSession.isNotEmpty ? emailFromSession : _emailCtrl.text.trim(),
+  Future<void> _confirmAndDelete() async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2C2C2C), // dark like your app
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text(
+            'Delete Account?',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
+          content: const Text(
+            'You will lose all your saved alerts,\nsaved properties, etc.',
+            style: TextStyle(color: Colors.white70),
+            textAlign: TextAlign.center,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.blue, fontSize: 17),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red, fontSize: 17, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
     );
-    if (override != null) {
-      final oFirst = override.first.trim();
-      final oLast  = override.last.trim();
-      if (oFirst.isNotEmpty || oLast.isNotEmpty) {
-        first = oFirst.isNotEmpty ? oFirst : first;
-        last  = oLast.isNotEmpty  ? oLast  : last;
+
+    if (confirmed == true && mounted) {
+      await widget.onDeleteAccount();
+    }
+  }
+
+  Future<void> _loadUserData() async {
+    final session = Session();
+    String first = session.firstName?.trim() ?? '';
+    String last = session.lastName?.trim() ?? '';
+    String email = session.userEmail?.trim() ?? widget.email ?? '';
+
+    if (email.isEmpty) email = await SecureStorage.getUserEmail() ?? '';
+    if (first.isEmpty && last.isEmpty) {
+      final name = await SecureStorage.getUserName() ?? '';
+      if (name.isNotEmpty) {
+        final parts = name.split(RegExp(r'\s+'));
+        first = parts.isNotEmpty ? parts.first : '';
+        last = parts.length > 1 ? parts.sublist(1).join(' ') : '';
       }
     }
 
-    // 🔹 Read login method via AuthPrefs instead of SecureStorage.read()
-    final method = await AuthPrefs.getLoginMethod();
-    // FINAL RULE:
-    // - Hide password section ONLY when method == LoginMethod.google
-    // - For everything else (null, password, legacy) → treat as password auth
-    bool isPasswordAuth = true;
-    if (method == LoginMethod.google) {
-      isPasswordAuth = false;
+    if (email.isNotEmpty) {
+      final override = await ProfileCache.load(email);
+      if (override != null) {
+        first = override.first.trim().isNotEmpty ? override.first.trim() : first;
+        last = override.last.trim().isNotEmpty ? override.last.trim() : last;
+      }
     }
 
+    final method = await AuthPrefs.getLoginMethod();
+    final isPasswordAuth = method != LoginMethod.google;
+
     if (!mounted) return;
+
     setState(() {
       _isPasswordAuth = isPasswordAuth;
       _firstNameCtrl.text = first;
-      _lastNameCtrl.text  = last;
-      _emailCtrl.text     =
-      emailFromSession.isNotEmpty ? emailFromSession : _emailCtrl.text;
-      if (_nameCtrl.text.trim().isEmpty) {
-        final joined = [first, last].where((s) => s.isNotEmpty).join(' ');
-        _nameCtrl.text = joined.isNotEmpty ? joined : fullFromSession;
-      }
+      _lastNameCtrl.text = last;
+      _emailCtrl.text = email;
     });
-
-    debugPrint(
-      'PI hydrate → loginMethod=${method?.name ?? '(none)'} '
-          'isPasswordAuth=$_isPasswordAuth '
-          'first="$first" last="$last" email="${_emailCtrl.text}" name="${_nameCtrl.text}"',
-    );
-  }
-
-  String _joinName(String first, String last) {
-    final f = first.trim();
-    final l = last.trim();
-    return (f.isEmpty || l.isEmpty) ? ('$f $l').trim() : '$f $l';
   }
 
   @override
   void dispose() {
-    _nameCtrl.dispose();
-    _emailCtrl.dispose();
     _firstNameCtrl.dispose();
     _lastNameCtrl.dispose();
-
+    _emailCtrl.dispose();
+    _currentPwdCtrl.dispose();
     _newPwdCtrl.dispose();
     _confirmPwdCtrl.dispose();
-    _currentPwdCtrl.dispose();
-
     super.dispose();
+  }
+
+  String _joinName() {
+    final f = _firstNameCtrl.text.trim();
+    final l = _lastNameCtrl.text.trim();
+    return [f, l].where((s) => s.isNotEmpty).join(' ');
   }
 
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
+    setState(() => _loading = true);
 
     try {
-      setState(() => _loading = true);
-
       final token = await SecureStorage.getToken();
       if (token == null || token.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('You are not logged in')),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Session expired. Please login again.')),
+        );
+        _goToLogin();
         return;
       }
 
-      final base = ApiService.baseUrl; // e.g. https://qa.akarat.com/api
-      final url  = Uri.parse('$base/update'); // adjust if your endpoint differs
+      final url = Uri.parse('${ApiService.baseUrl}/update');
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'first_name': _firstNameCtrl.text.trim(),
+          'last_name': _lastNameCtrl.text.trim(),
+          'name': _joinName(),
+          'email': _emailCtrl.text.trim(),
+          if (_isPasswordAuth && _newPwdCtrl.text.trim().isNotEmpty) ...{
+            'password': _newPwdCtrl.text,
+            'password_confirmation': _confirmPwdCtrl.text,
+            'current_password': _currentPwdCtrl.text,
+          },
+        }),
+      );
 
-      final headers = <String, String>{
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-        'Content-Type': 'application/json; charset=UTF-8',
-      };
-
-      final first = _firstNameCtrl.text.trim();
-      final last  = _lastNameCtrl.text.trim();
-      final joinedName = _joinName(first, last);
-
-      final newPwd     = _newPwdCtrl.text.trim();
-      final confirmPwd = _confirmPwdCtrl.text.trim();
-      final currentPwd = _currentPwdCtrl.text.trim();
-
-      final payload = <String, dynamic>{
-        'first_name': first,
-        'last_name' : last,
-        'name'      : joinedName,
-        'email'     : _emailCtrl.text.trim(),
-      };
-
-      // Only include password fields if this is a password-auth user
-      if (_isPasswordAuth && newPwd.isNotEmpty) {
-        if (newPwd.length < 8) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('New password must be at least 8 characters')),
-            );
-          }
-          return;
-        }
-        if (newPwd != confirmPwd) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('New password and confirmation do not match')),
-            );
-          }
-          return;
-        }
-        if (currentPwd.isEmpty) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content:
-                  Text('Enter your current password to change it')),
-            );
-          }
-          return;
-        }
-
-        payload['password']              = newPwd;
-        payload['password_confirmation'] = confirmPwd;
-        payload['current_password']      = currentPwd;
-      }
-
-      final resp =
-      await http.post(url, headers: headers, body: jsonEncode(payload));
-
-      if (resp.statusCode == 200) {
-        final body = json.decode(resp.body);
-
-        // Persist profile (legacy helper – now a NO-OP, but kept for compatibility)
-        await SecureStorage.setUserProfile(
-          name: joinedName,
-          email: _emailCtrl.text.trim(),
-        );
-
-        // Update session
-        Session().updateProfile(
-          userName: joinedName,
-          userEmail: _emailCtrl.text.trim(),
-          firstName: first,
-          lastName: last,
-        );
-
-        // Save local override (prevents Google-display-name from overriding later)
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final newName = _joinName();
         final email = _emailCtrl.text.trim();
-        if (email.isNotEmpty) {
-          await ProfileCache.save(
-            email: email,
-            firstName: first,
-            lastName:  last,
-          );
-        }
 
-        // Optional token rotation
-        final newToken = (body['token'] ?? '').toString().trim();
-        if (newToken.isNotEmpty) {
+        await SecureStorage.setUserProfile(name: newName, email: email);
+        await ProfileCache.save(email: email, firstName: _firstNameCtrl.text.trim(), lastName: _lastNameCtrl.text.trim());
+
+        Session().updateProfile(
+          userName: newName,
+          userEmail: email,
+          firstName: _firstNameCtrl.text.trim(),
+          lastName: _lastNameCtrl.text.trim(),
+        );
+
+        if (data['token'] != null) {
+          final newToken = data['token'].toString().trim();
           await SecureStorage.setToken(newToken);
           Session().setAuth(
             token: newToken,
-            userName: joinedName,
-            userEmail: _emailCtrl.text.trim(),
-            firstName: first,
-            lastName: last,
+            userName: newName,
+            userEmail: email,
+            firstName: _firstNameCtrl.text.trim(),
+            lastName: _lastNameCtrl.text.trim(),
           );
         }
 
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated')),
-        );
+        _showSuccess('Profile updated successfully');
+        setState(() => _editMode = false);
+        _clearPasswordFields();
 
-        setState(() {
-          _editMode = false;
-          _newPwdCtrl.clear();
-          _confirmPwdCtrl.clear();
-          _currentPwdCtrl.clear();
-        });
-
-        final route = widget.afterSaveRouteName;
-        if (route != null && route.isNotEmpty) {
-          if (!mounted) return;
-          Navigator.of(context).pushReplacementNamed(route);
-        } else if (Navigator.of(context).canPop()) {
-          if (!mounted) return;
-          Navigator.of(context).pop(true);
-        } else {
-          if (!mounted) return;
-          Navigator.of(context).pushReplacementNamed('/my-account');
+        if (widget.afterSaveRouteName != null) {
+          Navigator.pushReplacementNamed(context, widget.afterSaveRouteName!);
+        } else if (Navigator.canPop(context)) {
+          Navigator.pop(context, true);
         }
-        return;
-      }
-
-      if (resp.statusCode == 401 || resp.statusCode == 403) {
-        await _signOutLocalOnly();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  'Session expired (${resp.statusCode}). Please log in again.'),
-            ),
-          );
-          _goLogin();
-        }
-        return;
-      }
-
-      if (resp.statusCode == 422) {
-        try {
-          final m = json.decode(resp.body);
-          String msg = (m['message'] ?? 'Validation error').toString();
-          if (m['errors'] is Map && (m['errors'] as Map).isNotEmpty) {
-            final firstKey = (m['errors'] as Map).keys.first;
-            final list = m['errors'][firstKey];
-            if (list is List && list.isNotEmpty) {
-              msg = list.first.toString();
-            }
-          }
-          if (mounted) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(msg)));
-          }
-        } catch (_) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Validation error')),
-            );
-          }
-        }
-        return;
-      }
-
-      String msg = 'Update failed: ${resp.statusCode}';
-      try {
-        final m = json.decode(resp.body);
-        final s =
-        (m['message'] ?? m['error'] ?? '').toString().trim();
-        if (s.isNotEmpty) msg = s;
-      } catch (_) {}
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(msg)));
+      } else if (response.statusCode == 401) {
+        await SecureStorage.signOutLocal();
+        Session().clear();
+        _goToLogin();
+      } else {
+        _showError(_parseError(response));
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Update failed: $e')),
-        );
-      }
+      _showError('Network error. Please try again.');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
-  /// 🔹 Still used for profile-update 401/403 case
-  Future<void> _signOutLocalOnly() async {
-    await SecureStorage.signOutLocal();
-    await SecureStorage.clearProfile();
+  String _parseError(http.Response resp) {
+    try {
+      final json = jsonDecode(resp.body);
+      return json['message'] ?? (json['errors'] is Map ? (json['errors'] as Map).values.first[0] : 'Update failed');
+    } catch (_) {}
+    return 'Update failed (${resp.statusCode})';
   }
 
-  /// 🔹 Still used for profile-update 401/403 case
-  void _goLogin() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginDemo()),
-            (_) => false,
-      );
-    });
+  void _showError(String msg) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
+  void _showSuccess(String msg) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.green));
+  void _clearPasswordFields() {
+    _currentPwdCtrl.clear();
+    _newPwdCtrl.clear();
+    _confirmPwdCtrl.clear();
   }
 
-  InputDecoration _dec(String label, {Widget? suffix}) {
+  void _goToLogin() {
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginDemo()),
+          (route) => false,
+    );
+  }
+
+  // Reusable UI components — same as My Account
+  Widget _settingsContainer(List<Widget> children) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))],
+        ),
+        child: Column(children: children),
+      ),
+    );
+  }
+
+  Widget _settingsTile(
+      String title,
+      String iconPath,
+      VoidCallback onTap, {
+        TextStyle? titleStyle,
+        Widget? trailing,
+      }) {
+    return ListTile(
+      onTap: onTap,
+      leading: iconPath.isNotEmpty ? Image.asset(iconPath, width: 28) : null,
+      title: Text(title, style: titleStyle ?? const TextStyle(fontSize: 16)),
+      trailing: trailing ?? const Icon(Icons.arrow_forward_ios, size: 16),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label, {Widget? suffix}) {
     return InputDecoration(
       labelText: label,
       filled: true,
       fillColor: Colors.white,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE7E7E7)),
-      ),
-      contentPadding:
-      const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE7E7E7))),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
       suffixIcon: suffix,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final canEdit = _editMode && !_loading;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Personal Information',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
+        title: const Text('Personal Information', style: TextStyle(fontWeight: FontWeight.w600)),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0.5,
         actions: [
           if (!_editMode)
             TextButton(
-              onPressed:
-              _loading ? null : () => setState(() => _editMode = true),
-              child: const Text(
-                'Edit',
-                style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
-              ),
+              onPressed: _loading ? null : () => setState(() => _editMode = true),
+              child: const Text('Edit', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
             ),
           if (_editMode) ...[
+            TextButton(onPressed: _loading ? null : _saveProfile, child: const Text('Save', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
             TextButton(
-              onPressed: _loading ? null : _saveProfile,
-              child: const Text(
-                'Save',
-                style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
-              ),
-            ),
-            TextButton(
-              onPressed: _loading
-                  ? null
-                  : () {
-                setState(() {
-                  _editMode = false;
-                  _newPwdCtrl.clear();
-                  _confirmPwdCtrl.clear();
-                  _currentPwdCtrl.clear();
-                });
+              onPressed: _loading ? null : () {
+                setState(() => _editMode = false);
+                _clearPasswordFields();
+                _loadUserData();
               },
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.black87),
-              ),
+              child: const Text('Cancel'),
             ),
           ],
         ],
@@ -449,160 +346,121 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       body: AbsorbPointer(
         absorbing: _loading,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.all(20),
           child: Form(
             key: _formKey,
             child: Column(
               children: [
+                // Name Fields
                 Row(
                   children: [
                     Expanded(
                       child: TextFormField(
                         controller: _firstNameCtrl,
-                        readOnly: !canEdit,
-                        decoration: _dec('First name'),
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'First name is required'
-                            : null,
+                        readOnly: !_editMode,
+                        decoration: _inputDecoration('First Name'),
+                        validator: (v) => v?.trim().isEmpty == true ? 'Required' : null,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _lastNameCtrl,
-                        readOnly: !canEdit,
-                        decoration: _dec('Last name'),
-                        validator: (v) => null,
-                      ),
-                    ),
+                    Expanded(child: TextFormField(controller: _lastNameCtrl, readOnly: !_editMode, decoration: _inputDecoration('Last Name'))),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
+
+                // Email — Fully disabled
                 TextFormField(
                   controller: _emailCtrl,
                   readOnly: true,
-                  enableInteractiveSelection: false,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: _dec('Email').copyWith(
+                  enabled: false,
+                  decoration: _inputDecoration('Email').copyWith(
                     helperText: 'Email cannot be changed',
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
                   ),
-                  validator: (v) {
-                    final value = v?.trim() ?? '';
-                    if (value.isEmpty) return 'Email is required';
-                    final emailOk = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-                        .hasMatch(value);
-                    return emailOk ? null : 'Enter a valid email';
-                  },
+                  style: const TextStyle(color: Colors.grey),
+                  enableInteractiveSelection: false,
+                  showCursor: false,
+                  focusNode: AlwaysDisabledFocusNode(),
                 ),
-                const SizedBox(height: 12),
 
-                // 🔹 Show password controls ONLY if this is a password-auth user
+                // Password Fields
                 if (_editMode && _isPasswordAuth) ...[
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Change password (optional)',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
+                  const SizedBox(height: 24),
+                  const Align(alignment: Alignment.centerLeft, child: Text('Change Password (Optional)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
+                  const SizedBox(height: 12),
                   TextFormField(
                     controller: _newPwdCtrl,
-                    readOnly: !_editMode,
                     obscureText: _obscureNew,
-                    decoration: _dec('New password').copyWith(
-                      suffixIcon: IconButton(
-                        icon: Icon(_obscureNew
-                            ? Icons.visibility_off
-                            : Icons.visibility),
-                        onPressed: () =>
-                            setState(() => _obscureNew = !_obscureNew),
-                      ),
-                      helperText:
-                      'Leave blank to keep your current password',
+                    decoration: _inputDecoration('New Password').copyWith(
+                      suffixIcon: IconButton(icon: Icon(_obscureNew ? Icons.visibility_off : Icons.visibility), onPressed: () => setState(() => _obscureNew = !_obscureNew)),
                     ),
                   ),
                   const SizedBox(height: 12),
-
                   TextFormField(
                     controller: _confirmPwdCtrl,
-                    readOnly: !_editMode,
                     obscureText: _obscureConfirm,
-                    decoration: _dec('Confirm new password').copyWith(
-                      suffixIcon: IconButton(
-                        icon: Icon(_obscureConfirm
-                            ? Icons.visibility_off
-                            : Icons.visibility),
-                        onPressed: () => setState(
-                                () => _obscureConfirm = !_obscureConfirm),
-                      ),
+                    decoration: _inputDecoration('Confirm New Password').copyWith(
+                      suffixIcon: IconButton(icon: Icon(_obscureConfirm ? Icons.visibility_off : Icons.visibility), onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm)),
                     ),
-                    validator: (v) {
-                      if (_editMode &&
-                          _newPwdCtrl.text.trim().isNotEmpty) {
-                        if ((v ?? '').trim().isEmpty) {
-                          return 'Please confirm the new password';
-                        }
-                        if (v!.trim() != _newPwdCtrl.text.trim()) {
-                          return 'Passwords do not match';
-                        }
-                      }
-                      return null;
-                    },
                   ),
-
-                  if (_newPwdCtrl.text.trim().isNotEmpty) ...[
+                  if (_newPwdCtrl.text.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _currentPwdCtrl,
-                      readOnly: !_editMode,
                       obscureText: _obscureCurrent,
-                      decoration: _dec(
-                        'Current password (required to change)',
-                      ).copyWith(
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscureCurrent
-                              ? Icons.visibility_off
-                              : Icons.visibility),
-                          onPressed: () => setState(
-                                  () => _obscureCurrent = !_obscureCurrent),
-                        ),
+                      decoration: _inputDecoration('Current Password (Required)').copyWith(
+                        suffixIcon: IconButton(icon: Icon(_obscureCurrent ? Icons.visibility_off : Icons.visibility), onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent)),
                       ),
-                      validator: (v) {
-                        if (_newPwdCtrl.text.trim().isNotEmpty &&
-                            (v ?? '').trim().isEmpty) {
-                          return 'Enter your current password';
-                        }
-                        return null;
-                      },
                     ),
                   ],
                 ],
 
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black87,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 32),
+
+                // DELETE ACCOUNT — NOW 100% MATCHES LOGOUT/LOGIN STYLE
+                // DELETE ACCOUNT — 100% consistent with Logout/Login style
+                // DELETE ACCOUNT — Centered & Compact (Beautiful!)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20), // exact match from your screenshot
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () => _confirmAndDelete(), // ← now uses clean native AlertDialog
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Center(
+                            child: Text(
+                              'Delete Account',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                    onPressed: _confirmAndDelete,
-                    child: const Text('Delete your account'),
                   ),
                 ),
 
                 if (_loading) ...[
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 20),
                   const LinearProgressIndicator(),
                 ],
               ],
@@ -611,38 +469,5 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         ),
       ),
     );
-  }
-
-  /// 🔹 Only confirmation is handled here; actual delete logic
-  /// is delegated to `widget.onDeleteAccount` (from My_Account.deleteAccount).
-  Future<void> _confirmAndDelete() async {
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Account'),
-        content:
-        const Text('Are you sure? This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (!mounted) return;
-    if (confirmed == true) {
-      // 🔹 Use EXACT SAME delete logic as My_Account
-      await widget.onDeleteAccount();
-    }
   }
 }

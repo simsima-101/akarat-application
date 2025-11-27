@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 // Screens
 import 'package:Akarat/screen/about_us.dart';
@@ -16,14 +15,16 @@ import 'package:Akarat/screen/support.dart';
 import 'package:Akarat/screen/terms_condition.dart';
 import 'package:Akarat/utils/fav_logout.dart';
 
+import '../secure_storage.dart';
+import '../services/favorite_service.dart';
 import '../services/session.dart';
+import 'ContactFormScreen.dart';
 import 'login.dart';
 import 'personal_information.dart';
 
-// Providers / Models / Services
+// Providers / Services
 import '../providers/profile_image_provider.dart';
 import '../services/api_service.dart';
-import '../model/agencypropertiesmodel.dart' show Property; // if you still need it
 import '../widgets/custom_alert_box.dart';
 
 class My_Account extends StatefulWidget {
@@ -34,111 +35,59 @@ class My_Account extends StatefulWidget {
 }
 
 class _My_AccountState extends State<My_Account> {
-  int pageIndex = 0;
-
-  // Local mirrors for quick display (purely UI; source = Session)
+  // These will be filled from Session().restore()
   String? userName;
   String? userEmail;
-  String? firstName;
-  String? lastName;
-  String? profileImageUrl; // reserved for later (CDN/avatar)
+  int pageIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _hydrateFromSession();
+    _loadUserData(); // Now fully async + restores real name
   }
 
-  /// Read only from in-memory session (no storage, no /me).
-  void _hydrateFromSession() {
-    final s = Session();
+  /// Load real user data from Session (which restores from SecureStorage)
+  Future<void> _loadUserData() async {
+    await Session().restore(); // This is the magic fix
 
-    final display = (s.userName ?? '').trim();
-    final email = (s.userEmail ?? '').trim();
-
-    String f = (s.firstName ?? '').trim();
-    String l = (s.lastName ?? '').trim();
-
-    // Derive first/last from full name if not provided
-    if ((f.isEmpty && l.isEmpty) && display.isNotEmpty) {
-      final parts = display.split(RegExp(r'\s+'));
-      f = parts.isNotEmpty ? parts.first : '';
-      l = parts.length > 1 ? parts.sublist(1).join(' ') : '';
-    }
+    if (!mounted) return;
 
     setState(() {
-      userName = display;
-      userEmail = email;
-      firstName = f;
-      lastName = l;
-      // profileImageUrl can be wired later from a provider/cache
+      userName = Session().userName?.trim().isNotEmpty == true
+          ? Session().userName!.trim()
+          : 'User';
+      userEmail = Session().userEmail?.trim().isNotEmpty == true
+          ? Session().userEmail!.trim()
+          : '';
     });
   }
 
-  Future<bool> _hasSession() async {
-    // Fast future, no IO
-    return Future<bool>.value(Session().isAuthenticated);
-  }
-
+  /// Smart display name — never shows "User" unless truly not logged in
   String get _displayName {
-    final f = (firstName ?? '').trim();
-    final l = (lastName ?? '').trim();
-    if (f.isNotEmpty || l.isNotEmpty) {
-      return [f, l].where((s) => s.isNotEmpty).join(' ');
+    if (userName == null || userName == 'User' || userName!.trim().isEmpty) {
+      return 'Welcome! Login / Sign up';
     }
-    return (userName ?? '').trim();
+    return userName!;
   }
 
-  // --- If you still need saved properties later; currently not used in UI ---
-  Future<List<Property>> _fetchSavedProperties() async {
-    try {
-      final token = Session().token;
-      if (token == null || token.isEmpty) return <Property>[];
-
-      final uri = Uri.parse('${ApiService.baseUrl}/saved-property-list?page=1');
-      final response = await http.get(
-        uri,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseJson = json.decode(response.body);
-        final List<dynamic> propertiesJsonList =
-            responseJson['data']?['data'] ?? [];
-        return propertiesJsonList
-            .map((item) => Property.fromJson(item))
-            .toList();
-      } else {
-        throw Exception('Failed to fetch properties: ${response.statusCode}');
-      }
-    } catch (e) {
-      debugPrint('Error fetching saved properties: $e');
-      return <Property>[];
-    }
-  }
+  /// Check if user is truly logged in (uses Session)
+  bool get _isLoggedIn => Session().isAuthenticated && userName != 'User' && userName?.isNotEmpty == true;
 
   // ===================== LOGOUT =====================
   Future<void> _logout() async {
     try {
       final token = Session().token;
       if (token != null && token.isNotEmpty) {
-        // Best-effort server logout (ignore failures)
         try {
           await ApiService.logoutUser(token);
         } catch (_) {}
       }
     } finally {
-      // Clear in-memory session
-      Session().clear();
-      // Clear provider avatar, etc.
+      await Session().signOut(); // Full clear
       if (mounted) context.read<ProfileImageProvider>().clear();
 
       if (!mounted) return;
+
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const LoginDemo()),
@@ -152,72 +101,48 @@ class _My_AccountState extends State<My_Account> {
     try {
       final token = Session().token;
       if (token == null || token.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('You are not logged in')),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You are not logged in')),
+        );
         return;
       }
 
-      final base = ApiService.baseUrl; // e.g. https://qa.akarat.com/api
-      final uri = Uri.parse('$base/delete');
+      final uri = Uri.parse('${ApiService.baseUrl}/delete');
+      var resp = await http.delete(uri, headers: {'Authorization': 'Bearer $token'});
 
-      http.Response resp = await http.delete(
-        uri,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-      );
-
-      // Some backends respond 405/404 for DELETE → use POST + _method override
       if (resp.statusCode == 405 || resp.statusCode == 404) {
         resp = await http.post(
           uri,
           headers: {
             'Authorization': 'Bearer $token',
-            'Accept': 'application/json',
-            'Content-Type': 'application/json; charset=UTF-8',
+            'Content-Type': 'application/json',
           },
           body: jsonEncode({'_method': 'DELETE'}),
         );
       }
 
       if (resp.statusCode == 200 || resp.statusCode == 204) {
-        // Clear session + providers
-        Session().clear();
+        await Session().signOut();
         if (mounted) context.read<ProfileImageProvider>().clear();
 
-        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Account deleted successfully')),
         );
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginDemo()),
-              (route) => false,
-        );
-      } else if (resp.statusCode == 401) {
-        // Treat as forced logout
-        Session().clear();
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Session expired. Please login again.')),
-        );
+
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LoginDemo()),
               (route) => false,
         );
       } else {
-        throw Exception('Failed with status ${resp.statusCode}');
+        throw Exception('Failed: ${resp.statusCode}');
       }
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Account deletion failed: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Deletion failed: $e')),
+        );
+      }
     }
   }
 
@@ -226,204 +151,151 @@ class _My_AccountState extends State<My_Account> {
     return Scaffold(
       bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
       backgroundColor: Colors.white,
-      body: SafeArea( // ✅ handles top notch / status bar area
-        child: FutureBuilder<bool>(
-          future: _hasSession(),
-          builder: (context, snap) {
-            final waiting = snap.connectionState == ConnectionState.waiting;
-            final isLoggedIn = snap.data ?? false;
+      body: SafeArea(
+        child: _isLoggedIn == false && userName == null
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('My Account', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
 
-            if (waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title
-                  const Text(
-                    'My Account',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              // Profile Card
+              Padding(
+                padding: const EdgeInsets.only(top: 30, bottom: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
                   ),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          if (!_isLoggedIn) {
+                            _showLoginDialog(context);
+                            return;
+                          }
 
-                  // Profile Card
-                  Padding(
-                    padding: const EdgeInsets.only(top: 30.0, bottom: 16),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
-                          BoxShadow(color: Colors.black12, blurRadius: 6)
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          // Avatar → open Personal Information if logged in
-                          GestureDetector(
-                            onTap: () async {
-                              if (!Session().isAuthenticated) {
-                                _showLoginDialog(context);
-                                return;
-                              }
-
-                              _hydrateFromSession();
-
-                              final changed =
-                              await Navigator.of(context).push<bool>(
-                                MaterialPageRoute(
-                                  builder: (_) => PersonalInformationScreen(
-                                    name: (userName ?? ''),
-                                    email: (userEmail ?? ''),
-                                    onDeleteAccount: deleteAccount,
-                                  ),
-                                ),
-                              );
-
-                              if (changed == true && mounted) {
-                                _hydrateFromSession();
-                                setState(() {});
-                              }
-                            },
-                            child: const CircleAvatar(
-                              radius: 30,
-                              backgroundColor: Colors.transparent,
-                              backgroundImage:
-                              AssetImage('assets/images/avatar.png'),
-                            ),
-                          ),
-
-                          const SizedBox(width: 16),
-
-                          Expanded(
-                            child: isLoggedIn
-                                ? Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _displayName.isNotEmpty
-                                      ? _displayName
-                                      : 'User',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  "Registered User",
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            )
-                                : GestureDetector(
-                              onTap: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const LoginDemo(),
-                                  ),
-                                );
-                                if (mounted) {
-                                  _hydrateFromSession();
-                                  setState(() {});
-                                }
-                              },
-                              child: const Text(
-                                "Welcome!  Login / Sign up",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red,
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: Colors.red,
-                                ),
+                          final changed = await Navigator.push<bool>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PersonalInformationScreen(
+                                name: userName ?? '',
+                                email: userEmail ?? '',
+                                onDeleteAccount: deleteAccount,
                               ),
                             ),
+                          );
+
+                          if (changed == true && mounted) {
+                            await _loadUserData();
+                          }
+                        },
+                        child: CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.transparent,
+                          child: ClipOval(
+                            child: Consumer<ProfileImageProvider>(
+                              builder: (context, provider, child) {
+                                if (provider.remoteImageUrl != null) {
+                                  return Image.network(
+                                    provider.remoteImageUrl!,
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Image.asset(
+                                      'assets/images/avatar.png',
+                                      width: 60,
+                                      height: 60,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  );
+                                }
+                                return Image.asset(
+                                  'assets/images/avatar.png',
+                                  width: 60,
+                                  height: 60,
+                                  fit: BoxFit.cover,
+                                );
+                              },
+                            ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _isLoggedIn
+                            ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _displayName,
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              userEmail ?? '',
+                              style: const TextStyle(fontSize: 13, color: Colors.grey),
+                            ),
+                          ],
+                        )
+                            : GestureDetector(
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const LoginDemo()),
+                            );
+                            if (mounted) await _loadUserData();
+                          },
+                          child: const Text(
+                            "Welcome! Login / Sign up",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-
-                  const SizedBox(height: 10),
-
-                  // Settings
-                  _buildSettings(isLoggedIn),
-                ],
+                ),
               ),
-            );
-          },
+
+              const SizedBox(height: 10),
+              _buildSettings(_isLoggedIn),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// Login dialog for restricted actions when not logged in
   void _showLoginDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          constraints: const BoxConstraints(minHeight: 70), // ✅ no hard fixed height
-          decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.circular(10),
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.red,
+        title: const Text("Login Required", style: TextStyle(color: Colors.white)),
+        content: const Text("Please login to edit your profile.", style: TextStyle(color: Colors.white)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel", style: TextStyle(color: Colors.white)),
           ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                top: -14,
-                right: -10,
-                child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  padding: EdgeInsets.zero,
-                ),
-              ),
-              Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'Login required to upload profile image.',
-                      style: TextStyle(color: Colors.white, fontSize: 13),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(ctx).pop();
-                      Navigator.of(ctx).push(
-                        MaterialPageRoute(
-                          builder: (_) => const LoginDemo(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline,
-                        decorationColor: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
+            },
+            child: const Text("Login", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -433,112 +305,58 @@ class _My_AccountState extends State<My_Account> {
       children: [
         _settingsContainer([
           if (!isLoggedIn)
-            _settingsTile("My Account", "assets/images/my-account-profile.png",
-                    () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                  );
-                }),
+            _settingsTile("My Account", "assets/images/my-account-profile.png", () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
+            }),
           _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const FindAgentDemo()),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const FindAgentDemo()));
           }),
           _settingsTile("Favorites", "assets/images/favourites.png", () {
-            if (!Session().isAuthenticated) {
+            if (!isLoggedIn) {
               _showLoginRequiredForFavorites();
             } else {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => Fav_Logout()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (_) => Fav_Logout()));
             }
           }),
           _settingsTile("Saved Alerts", "assets/images/favourites.png", () {
-            if (!Session().isAuthenticated) {
+            if (!isLoggedIn) {
               _showLoginDialog(context);
             } else {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SavedAlertsScreen()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedAlertsScreen()));
             }
           }),
           _settingsTile("About Us", "assets/images/about.png", () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => About_Us()),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (_) => About_Us()));
           }),
           _settingsTile("Support", "assets/images/support.png", () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const Support()),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const Support()));
           }),
-          _settingsTile("Privacy Policy", "assets/images/privacy-policy.png",
-                  () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const Privacy()),
-                );
-              }),
-          _settingsTile(
-            "Terms And Conditions",
-            "assets/images/terms-and-conditions.png",
-                () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const TermsCondition()),
-              );
-            },
-          ),
+          _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const Privacy()));
+          }),
+          _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsCondition()));
+          }),
         ]),
         _settingsContainer(
           isLoggedIn
               ? [
-            // Logout
             _settingsTile("Logout", "", () async {
               customAlertBox(
                 context: context,
                 title: 'Are you sure you want to logout?',
                 onPress: () async {
-                  // Close dialog first
                   Navigator.of(context, rootNavigator: true).pop();
                   await _logout();
                 },
                 icons: 'assets/images/alert_box_logout_icon.png',
               );
             }),
-
-            // Delete account
-            _settingsTile("Delete your Account", "", () async {
-              customAlertBox(
-                context: context,
-                title:
-                'Are you sure you want to delete your account?',
-                onPress: () async {
-                  Navigator.of(context, rootNavigator: true).pop();
-                  await deleteAccount();
-                },
-                icons: 'assets/images/alert_box_delete_icon.png',
-              );
-            }),
           ]
               : [
             _settingsTile("Login", "", () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const LoginDemo(),
-                ),
-              ).then((_) {
-                if (mounted) {
-                  _hydrateFromSession();
-                  setState(() {});
-                }
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo())).then((_) {
+                if (mounted) _loadUserData();
               });
             }),
           ],
@@ -550,22 +368,15 @@ class _My_AccountState extends State<My_Account> {
   void _showLoginRequiredForFavorites() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
+      builder: (_) => AlertDialog(
         title: const Text("Login Required"),
         content: const Text("Please login to access favorites."),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginDemo()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
             },
             child: const Text("Login", style: TextStyle(color: Colors.red)),
           ),
@@ -589,99 +400,101 @@ class _My_AccountState extends State<My_Account> {
     );
   }
 
+  Widget _settingsTile(String title, String iconPath, VoidCallback onTap) {
+    return ListTile(
+      onTap: onTap,
+      leading: iconPath.isNotEmpty ? Image.asset(iconPath, width: 28) : null,
+      title: Text(title, style: const TextStyle(fontSize: 16)),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+    );
+  }
+
   Container buildMyNavBar(BuildContext context) {
     return Container(
       height: 50,
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius:
-        BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
-            onTap: () => Navigator.push(
+            onTap: () => Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => const Home()),
+              MaterialPageRoute(builder: (_) => const Home()),
+                  (route) => false,
             ),
             child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0),
-              child: Image(
-                image: AssetImage("assets/images/home.png"),
-                height: 25,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Image(image: AssetImage("assets/images/home.png"), height: 25),
             ),
           ),
           IconButton(
             enableFeedback: false,
-            onPressed: () {
-              if (!Session().isAuthenticated) {
-                _showLoginRequiredForFavorites();
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Fav_Logout()),
-                );
-              }
-            },
-            icon: pageIndex == 2
-                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-                : const Icon(Icons.favorite_border_outlined,
-                color: Colors.red, size: 30),
-          ),
-          IconButton(
-            tooltip: "Email",
-            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
             onPressed: () async {
-              final Uri emailUri = Uri.parse(
-                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
-              );
-              if (await canLaunchUrl(emailUri)) {
-                await launchUrl(emailUri);
-              } else {
+              final token = await SecureStorage.getToken();
+
+              if (token == null || token.isEmpty) {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white,
-                    title: const Text(
-                      'Email not available',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    content: const Text(
-                      'No email app is configured on this device. Please add a mail account first.',
-                      style: TextStyle(color: Colors.black),
-                    ),
+                    backgroundColor: Colors.white, // white container
+                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
                         child: const Text(
-                          'OK',
-                          style: TextStyle(color: Colors.red),
+                          "Cancel",
+                          style: TextStyle(color: Colors.red), // red text
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
+                        },
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(color: Colors.red), // red text
                         ),
                       ),
                     ],
                   ),
                 );
               }
+              else {
+                // ✅ Logged in – go to favorites
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const Fav_Logout()),
+                ).then((_) async {
+                  // 🔁 Re-sync when coming back
+                  final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
+                  setState(() {
+                    FavoriteService.loggedInFavorites = updatedFavorites;
+                  });
+                });
+
+              }
             },
+            icon: pageIndex == 2
+                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
+                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+          ),
+          IconButton(
+            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+            onPressed: () => showHomeContactDialog(context),
           ),
           const Padding(
-            padding: EdgeInsets.only(right: 20.0),
+            padding: EdgeInsets.only(right: 20),
             child: Icon(Icons.dehaze, color: Colors.red, size: 35),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _settingsTile(String title, String iconPath, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: ListTile(
-        leading: iconPath.isNotEmpty ? Image.asset(iconPath, width: 28) : null,
-        title: Text(title, style: const TextStyle(fontSize: 16)),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       ),
     );
   }

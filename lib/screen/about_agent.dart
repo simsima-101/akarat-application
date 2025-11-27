@@ -14,17 +14,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../device_id.dart';
 import '../model/togglemodel.dart';
 import '../secure_storage.dart';
 import '../services/api_service.dart';
 import '../services/favorite_service.dart';
 import '../utils/shared_preference_manager.dart';
 import '../widgets/read_more_text.dart';
+import 'ContactFormScreen.dart';
 import 'featured_detail.dart';
 
+import 'package:Akarat/providers/email_enquiry_provider.dart';   // <-- ADD THIS
+
+
 class AboutAgent extends StatefulWidget {
-  const AboutAgent({super.key, required this.data});
+  const AboutAgent({super.key, required this.data, this.initialTabIndex = 0,});
   final String data;
+  final int initialTabIndex;
   @override
   State<AboutAgent> createState() => _AboutAgentState();
 }
@@ -105,6 +111,79 @@ class _AboutAgentState extends State<AboutAgent> {
     });
   }
 
+
+  // FIXED EMAIL DIALOG FOR AGENT SCREEN
+  Future<void> _showEmailAgentDialog() async {
+    if (agentDetail == null) return;
+
+    final String agentName = agentDetail!.name ?? 'the agent';
+    final String agentId = widget.data;
+
+    String initialLocalPhone = '';
+    final existingPhone = agentDetail!.phone ?? '';
+    if (existingPhone.isNotEmpty) {
+      String digits = existingPhone.replaceAll(RegExp(r'\D'), '');
+      if (digits.startsWith('971')) digits = digits.substring(3);
+      if (digits.startsWith('0')) digits = digits.substring(1);
+      initialLocalPhone = digits;
+    }
+
+    final String initialMessage =
+        'Hi $agentName,\nI saw your profile on Akarat and would like to discuss properties or services. Please contact me.\nThank you!';
+
+    await showEmailAgentDialog(
+      context,
+      subtitle: "Contact $agentName",
+      initialMessage: initialMessage,
+      initialPhone: initialLocalPhone,
+      onSubmit: ({
+        required String name,
+        required String email,
+        required String phone,
+        required String message,
+      }) async {
+        String cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+        if (cleanPhone.startsWith('971')) {
+          cleanPhone = cleanPhone.substring(3);
+        }
+
+        final deviceId = await getDeviceId();
+        final emailProvider = Provider.of<EmailEnquiryProvider>(context, listen: false);
+
+        final int agentId = int.tryParse(widget.data) ?? 0;
+
+        final bool ok = await emailProvider.sendAgentEmail(
+          agentId: agentId,
+          name: name,
+          email: email,
+          phone: cleanPhone,
+          message: message.isEmpty ? '-' : message,
+          deviceId: deviceId,
+          token: token.isNotEmpty ? token : null,
+        );
+
+        if (!ok) {
+          final msg = emailProvider.lastError ?? 'Failed to send message.';
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(msg), backgroundColor: Colors.red),
+            );
+          }
+          return;
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Message sent successfully to agent!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context); // Close dialog
+        }
+      },
+    );
+  }
   int currentPage = 1;
   bool isLoading = false;
   bool hasMore = true;
@@ -428,7 +507,7 @@ class _AboutAgentState extends State<AboutAgent> {
     // 👉 This check must be OUTSIDE the "if (agentDetail == null)"
     String imageUrl = agentDetail?.image?.toString().trim() ?? '';
     if (imageUrl.isNotEmpty && !imageUrl.startsWith('http')) {
-      imageUrl = 'https://akarat.com$imageUrl';
+      imageUrl = 'https://qa.akarat.com$imageUrl';
     }
 
     bool isValidImage = imageUrl.isNotEmpty &&
@@ -464,8 +543,165 @@ class _AboutAgentState extends State<AboutAgent> {
       ),
       // bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
       backgroundColor: Colors.white,
+
+      /// ====== BOTTOM BAR (Email / Call / WhatsApp) ======
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // EMAIL
+              Expanded(
+                child: GestureDetector(
+                  onTap: _showEmailAgentDialog,
+                  child: Container(
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE3F2FD), // light blue
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.email_outlined, size: 20, color: Colors.blue),
+                        SizedBox(width: 6),
+                        Text(
+                          'Email',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+
+              // CALL - Fixed: now uses agentDetail instead of undefined 'property'
+              Expanded(
+                child: GestureDetector(
+                  onTap: () async {
+                    final phoneRaw = agentDetail?.phone ?? '';
+                    final phone = phoneCallNumber(phoneRaw);
+
+                    if (phone.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Phone number not available")),
+                      );
+                      return;
+                    }
+
+                    final telUrl = 'tel:$phone';
+                    if (await canLaunchUrlString(telUrl)) {
+                      await launchUrlString(telUrl, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                  child: Container(
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFEBEE), // light red
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.call_outlined, size: 20, color: Colors.red),
+                        SizedBox(width: 6),
+                        Text(
+                          'Call',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+
+// WHATSAPP - Fixed: uses agentDetail, fallback to phone, better error handling
+              Expanded(
+                child: GestureDetector(
+                  onTap: () async {
+                    // Prefer WhatsApp number, fallback to regular phone
+                    final phoneRaw = agentDetail?.whatsapp?.isNotEmpty == true
+                        ? agentDetail!.whatsapp!
+                        : agentDetail?.phone ?? '';
+
+                    if (phoneRaw.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("WhatsApp number not available")),
+                      );
+                      return;
+                    }
+
+                    final phone = whatsAppNumber(phoneRaw);
+                    if (phone.isEmpty || phone.length < 9) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Invalid WhatsApp number")),
+                      );
+                      return;
+                    }
+
+                    final message = Uri.encodeComponent("Hello, I found you on Akarat and would like to connect.");
+                    final waUrl = Uri.parse("https://wa.me/$phone?text=$message");
+
+                    if (await canLaunchUrl(waUrl)) {
+                      final success = await launchUrl(
+                        waUrl,
+                        mode: LaunchMode.externalApplication,
+                      );
+                      if (!success) {
+                        debugPrint("Could not launch WhatsApp");
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("WhatsApp is not installed")),
+                      );
+                    }
+                  },
+                  child: Container(
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F5E9), // light green
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          "assets/images/whats.png",
+                          height: 20,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.message, size: 20, color: Colors.green),
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'WhatsApp',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       body: DefaultTabController(
         length: 3,
+        initialIndex: widget.initialTabIndex,
         child: Column(
           children: [
             // --- TOP STACK ---
@@ -553,21 +789,21 @@ class _AboutAgentState extends State<AboutAgent> {
               ),
             ),
 
-            // --- TAGS ROW ---
-            Container(
-              height: screenSize.height * 0.04,
-              margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  buildTag("Prime Agent", Icons.check_circle, Colors.blueAccent,
-                      Colors.white),
-                  buildTag("Quality Listener", Icons.stars, Color(0xFFEAD893),
-                      Colors.black),
-                  // buildTag("Responsive Broker", Icons.call_outlined, Colors.white, Colors.black, border: true),
-                ],
-              ),
-            ),
+            // // --- TAGS ROW ---
+            // Container(
+            //   height: screenSize.height * 0.04,
+            //   margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+            //   child: ListView(
+            //     scrollDirection: Axis.horizontal,
+            //     children: [
+            //       buildTag("Prime Agent", Icons.check_circle, Colors.blueAccent,
+            //           Colors.white),
+            //       buildTag("Quality Listener", Icons.stars, Color(0xFFEAD893),
+            //           Colors.black),
+            //       // buildTag("Responsive Broker", Icons.call_outlined, Colors.white, Colors.black, border: true),
+            //     ],
+            //   ),
+            // ),
 
             // --- TAB BAR ---
             TabBar(
@@ -692,12 +928,13 @@ class _AboutAgentState extends State<AboutAgent> {
                                 ),
 
                                 const SizedBox(height: 10),
+
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 10.0),
                                   child: Row(
                                     children: const [
                                       Text(
-                                        "Language(s)",
+                                        "Description",
                                         style: TextStyle(
                                           fontSize: 16,
                                           color: Colors.grey,
@@ -708,6 +945,37 @@ class _AboutAgentState extends State<AboutAgent> {
                                     ],
                                   ),
                                 ),
+                                const SizedBox(height: 5),
+
+                                agentDetail!.about != null && agentDetail!.about!.trim().isNotEmpty
+                                    ? Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  child: ReadMoreText(
+                                    agentDetail!.about ?? '',
+                                    trimMode: TrimMode.line,
+                                    trimLines: 4,
+                                    trimCollapsedText: ' Read more',
+                                    trimExpandedText: ' Read less',
+                                    style: const TextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.5),
+                                    moreStyle: const TextStyle(fontSize: 15, color: Colors.blue, letterSpacing: 0.5, fontWeight: FontWeight.w600),
+                                    lessStyle: const TextStyle(fontSize: 15, color: Colors.blue, letterSpacing: 0.5, fontWeight: FontWeight.w600),
+                                  ),
+
+                                )
+                                    : const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 15.0),
+                                  child: Text(
+                                    "No description available",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black54,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+
+
+
                                 const SizedBox(height: 5),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -783,29 +1051,30 @@ class _AboutAgentState extends State<AboutAgent> {
                                       ),
                                       const SizedBox(height: 5),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                                        child: ReadMoreText(
-                                          agentDetail!.serviceAreas?.toString() ?? '',
-                                          trimMode: TrimMode.line,
-                                          trimLines: 4,
-                                          trimCollapsedText: ' Read more',
-                                          trimExpandedText: ' Read less',
-                                          style: const TextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.5),
-                                          moreStyle: const TextStyle(fontSize: 15, color: Colors.blue, letterSpacing: 0.5, fontWeight: FontWeight.w600),
-                                          lessStyle: const TextStyle(fontSize: 15, color: Colors.blue, letterSpacing: 0.5, fontWeight: FontWeight.w600),
-                                        )
+                                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                                          child: ReadMoreText(
+                                            agentDetail!.serviceAreas?.toString() ?? '',
+                                            trimMode: TrimMode.line,
+                                            trimLines: 4,
+                                            trimCollapsedText: ' Read more',
+                                            trimExpandedText: ' Read less',
+                                            style: const TextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.5),
+                                            moreStyle: const TextStyle(fontSize: 15, color: Colors.blue, letterSpacing: 0.5, fontWeight: FontWeight.w600),
+                                            lessStyle: const TextStyle(fontSize: 15, color: Colors.blue, letterSpacing: 0.5, fontWeight: FontWeight.w600),
+                                          )
 
                                       ),
                                     ],
                                   ),
 
                                 const SizedBox(height: 12),
+
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 10.0),
                                   child: Row(
                                     children: const [
                                       Text(
-                                        "Description",
+                                        "Language(s)",
                                         style: TextStyle(
                                           fontSize: 16,
                                           color: Colors.grey,
@@ -814,34 +1083,6 @@ class _AboutAgentState extends State<AboutAgent> {
                                       ),
                                       Text(""),
                                     ],
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-
-                                agentDetail!.about != null && agentDetail!.about!.trim().isNotEmpty
-                                    ? Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                                  child: ReadMoreText(
-                                    agentDetail!.about ?? '',
-                                    trimMode: TrimMode.line,
-                                    trimLines: 4,
-                                    trimCollapsedText: ' Read more',
-                                    trimExpandedText: ' Read less',
-                                    style: const TextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.5),
-                                    moreStyle: const TextStyle(fontSize: 15, color: Colors.blue, letterSpacing: 0.5, fontWeight: FontWeight.w600),
-                                    lessStyle: const TextStyle(fontSize: 15, color: Colors.blue, letterSpacing: 0.5, fontWeight: FontWeight.w600),
-                                  ),
-
-                                )
-                                    : const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 15.0),
-                                  child: Text(
-                                    "No description available",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black54,
-                                      fontStyle: FontStyle.italic,
-                                    ),
                                   ),
                                 ),
 
@@ -921,7 +1162,7 @@ class _AboutAgentState extends State<AboutAgent> {
                       ),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 35),
-                        child: buildMyNavBar(context),
+
                       ),
                     ],
                   ),
@@ -1119,7 +1360,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                                                                 const BoxConstraints(),
                                                                               ),
                                                                             ),
-                                                                             Positioned(
+                                                                            Positioned(
                                                                               left: 16,
                                                                               right: 16,
                                                                               bottom: 12,
@@ -1498,7 +1739,7 @@ class _AboutAgentState extends State<AboutAgent> {
                   //------------------------- Agent Reviews ----------------------------------
                   SingleChildScrollView(
                     child: Padding(
-                      padding: const EdgeInsets.all(15.0),
+                      padding: const EdgeInsets.all(20.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1510,75 +1751,45 @@ class _AboutAgentState extends State<AboutAgent> {
                               letterSpacing: 0.5,
                             ),
                           ),
-                          const SizedBox(height: 15),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.3),
-                                  offset: const Offset(2, 2),
-                                  blurRadius: 6,
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                          const SizedBox(height: 40), // Space before "Coming Soon"
+
+                          // Centered "Coming Soon" message
+                          Center(
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  children: [
-                                    // Avatar initials
-                                    Container(
-                                      height: 30,
-                                      width: 30,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[300],
-                                        borderRadius: BorderRadius.circular(15),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.3),
-                                            offset: const Offset(0.5, 0.5),
-                                            blurRadius: 1,
-                                          ),
-                                        ],
-                                      ),
-                                      child: const Text(
-                                        "DM",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    const Expanded(
-                                      child: Text(
-                                        "Bilsay Citak",
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ),
-                                    const Icon(Icons.star, color: Colors.amber),
-                                  ],
+                                Icon(
+                                  Icons.rate_review_outlined,
+                                  size: 60,
+                                  color: Colors.grey[400],
                                 ),
-                                const SizedBox(height: 10),
-                                const Text(
-                                  "In the realm of real estate, Ben Caballero's name is synonymous with unparalleled success, particularly in the new homes market.",
-                                  style: TextStyle(fontSize: 14, height: 1.4),
+                                const SizedBox(height: 16),
+                                Text(
+                                  "Coming Soon",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[600],
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  "Agent reviews will be available here soon",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[500],
+                                  ),
                                 ),
                               ],
                             ),
                           ),
+
+                          const SizedBox(height: 100), // Extra bottom space (optional)
                         ],
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             )
@@ -1665,83 +1876,5 @@ class _AboutAgentState extends State<AboutAgent> {
     );
   }
 
-  Container buildMyNavBar(BuildContext context) {
-    return Container(
-      height: 50,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      padding: const EdgeInsets.only(left: 15, right: 15, top: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                final phone = phoneCallNumber(agentDetail?.phone ?? '');
-                if (phone.isNotEmpty) {
-                  final telUrl = 'tel:$phone';
-                  if (await canLaunchUrlString(telUrl)) {
-                    await launchUrlString(telUrl, mode: LaunchMode.externalApplication);
-                  }
-                }
-              },
-              icon: const Center(
-                child: Icon(Icons.call, color: Colors.red, size: 22),
-              ),
-              label: const Text("Call", style: TextStyle(color: Colors.black)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[100],
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                elevation: 2,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                final phoneRaw = agentDetail?.whatsapp ?? '';
-                final phone = whatsAppNumber(phoneRaw); // 971XXXXXXXXX
 
-                final message = Uri.encodeComponent("Hello");
-                final waUrl = Uri.parse("https://wa.me/$phone?text=$message");
-
-                if (await canLaunchUrl(waUrl)) {
-                  try {
-                    final launched = await launchUrl(
-                      waUrl,
-                      mode: LaunchMode.externalApplication,
-                    );
-                    if (!launched) {
-                      // ignore: avoid_print
-                      print("❌ Could not launch WhatsApp");
-                    }
-                  } catch (e) {
-                    // ignore: avoid_print
-                    print("❌ Exception: $e");
-                  }
-                } else {
-                  // ignore: avoid_print
-                  print("❌ WhatsApp not available or URL not supported");
-                }
-              },
-              icon: Image.asset("assets/images/whats.png", height: 20),
-              label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[100],
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                elevation: 2,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

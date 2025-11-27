@@ -60,7 +60,7 @@ class FilterProvider extends ChangeNotifier {
   int selectedPercentCompletion = 0; // index
 
   SfRangeValues values =
-      SfRangeValues(500.0, 300000.0); // full range internally
+  SfRangeValues(500.0, 300000.0); // full range internally
 
   final TextEditingController minPriceController = TextEditingController();
   final TextEditingController maxPriceController = TextEditingController();
@@ -388,7 +388,7 @@ class FilterProvider extends ChangeNotifier {
       notifyListeners();
       final amenitiesList = selectedAmenitiesId;
 
-      final locList = navKey.currentContext!
+      final locList = navigatorKey.currentContext!
           .read<LocationPickerProvider>()
           .selectedLocationList;
 
@@ -536,13 +536,13 @@ class FilterProvider extends ChangeNotifier {
       // FETCH PROPERTY
 
       final initialPropertyType =
-          selectedPropType == 0 ? 'Residential' : 'Commercial';
+      selectedPropType == 0 ? 'Residential' : 'Commercial';
 
       final propertyUri =
-          ApiService.buildUri('property-types/$initialPropertyType');
+      ApiService.buildUri('property-types/$initialPropertyType');
 
       final propertyResponse =
-          await http.get(propertyUri).timeout(const Duration(seconds: 8));
+      await http.get(propertyUri).timeout(const Duration(seconds: 8));
       if (propertyResponse.statusCode == 200) {
         final data = json.decode(propertyResponse.body);
         propertyTypeModel = PropertyTypeModel.fromJson(data);
@@ -617,8 +617,8 @@ class FilterProvider extends ChangeNotifier {
 
       String propertyCategoryType = "Villa Compound";
       final index = propertyTypeModel!.data!.indexWhere(
-        (item) =>
-            item.name?.trim().toLowerCase() ==
+            (item) =>
+        item.name?.trim().toLowerCase() ==
             propertyCategoryType.trim().toLowerCase(),
       );
       selectedtype = index;
@@ -634,8 +634,8 @@ class FilterProvider extends ChangeNotifier {
 
       String propertyCategoryType = "Apartment";
       final index = propertyTypeModel!.data!.indexWhere(
-        (item) =>
-            item.name?.trim().toLowerCase() ==
+            (item) =>
+        item.name?.trim().toLowerCase() ==
             propertyCategoryType.trim().toLowerCase(),
       );
       selectedtype = index;
@@ -693,32 +693,32 @@ class FilterProvider extends ChangeNotifier {
   FilterSnapshot? initialSnapshot;
 
   FilterSnapshot get currentSnapshot => FilterSnapshot(
-        agencyName: agentOrAgencyController.text.trim().toLowerCase(),
-        agentName: agentOrAgencyController.text.trim().toLowerCase(),
-        search: navKey.currentContext!
-            .read<LocationPickerProvider>()
-            .selectedLocationList
-            .map((e) {
-          return (e.location ?? e.country)?.toLowerCase();
-        }).toList(),
-        propertyType: property_type.trim(),
-        furnishedStatus: ftype.trim(),
-        bedrooms: List.from(selectedBedrooms),
-        bathrooms: List.from(selectedBathrooms),
-        minPrice: min_price.trim(),
-        maxPrice: max_price.trim(),
-        paymentPeriod: rent.toLowerCase().trim(),
-        minSquareFeet: min_sqrfeet.trim(),
-        maxSquareFeet: max_sqrfeet.trim(),
-        option: option?.trim(),
-        purpose: purpose,
-        propertyCategory: selectedPropType == 0 ? 'Residential' : 'Commercial',
-        amenities: List.from(selectedAmenitiesId),
-        handoverQuarter: handoverQuarter.trim(),
-        handoverYear: handoverYear.trim(),
-        completionsMax: completion_max,
-        completionsMin: completion_min,
-      );
+    agencyName: agentOrAgencyController.text.trim().toLowerCase(),
+    agentName: agentOrAgencyController.text.trim().toLowerCase(),
+    search: navigatorKey.currentContext!
+        .read<LocationPickerProvider>()
+        .selectedLocationList
+        .map((e) {
+      return (e.location ?? e.country)?.toLowerCase();
+    }).toList(),
+    propertyType: property_type.trim(),
+    furnishedStatus: ftype.trim(),
+    bedrooms: List.from(selectedBedrooms),
+    bathrooms: List.from(selectedBathrooms),
+    minPrice: min_price.trim(),
+    maxPrice: max_price.trim(),
+    paymentPeriod: rent.toLowerCase().trim(),
+    minSquareFeet: min_sqrfeet.trim(),
+    maxSquareFeet: max_sqrfeet.trim(),
+    option: option?.trim(),
+    purpose: purpose,
+    propertyCategory: selectedPropType == 0 ? 'Residential' : 'Commercial',
+    amenities: List.from(selectedAmenitiesId),
+    handoverQuarter: handoverQuarter.trim(),
+    handoverYear: handoverYear.trim(),
+    completionsMax: completion_max,
+    completionsMin: completion_min,
+  );
 
   void captureInitialSnapshot() {
     initialSnapshot = currentSnapshot;
@@ -739,12 +739,12 @@ class FilterProvider extends ChangeNotifier {
   }
 
   void initFilterFields(
-    BuildContext context, {
-    required dynamic data,
-    required int propertyType,
-    String? propertyCategoryType,
-    String? optionType,
-  }) {
+      BuildContext context, {
+        required dynamic data,
+        required int propertyType,
+        String? propertyCategoryType,
+        String? optionType,
+      }) {
     selected = 0;
 
     priceRangeController = RangeController(start: 500, end: 300000);
@@ -778,7 +778,7 @@ class FilterProvider extends ChangeNotifier {
     // Build chart data
     chartData = List.generate(
       96,
-      (index) =>
+          (index) =>
           Data(500 + index * 100.0, yValues[index % yValues.length].toDouble()),
     );
 
@@ -787,8 +787,8 @@ class FilterProvider extends ChangeNotifier {
       // After loading property types → set first type
       if (propertyCategoryType != null) {
         final index = propertyTypeModel!.data!.indexWhere(
-          (item) =>
-              item.name?.trim().toLowerCase() ==
+              (item) =>
+          item.name?.trim().toLowerCase() ==
               propertyCategoryType?.trim().toLowerCase(),
         );
 
@@ -886,9 +886,9 @@ class FilterProvider extends ChangeNotifier {
   }
 
   Future<void> setSelectedPropertyCategoryType(
-    BuildContext context, {
-    required int index,
-  }) async {
+      BuildContext context, {
+        required int index,
+      }) async {
     if (selectedtype == index) {
       selectedtype = null;
       property_type = "";
@@ -902,9 +902,9 @@ class FilterProvider extends ChangeNotifier {
   }
 
   Future<void> setSelectedPropertyType(
-    BuildContext context, {
-    required int index,
-  }) async {
+      BuildContext context, {
+        required int index,
+      }) async {
     if (isPropertyTypeLoading) return;
     selectedtype = null;
     property_type = "";
@@ -927,11 +927,11 @@ class FilterProvider extends ChangeNotifier {
   }
 
   Future<void> showResult(
-    BuildContext context, {
-    bool autoUpdate = false,
-    required VoidCallback onFilterResultZero,
-    required VoidCallback onFilterResultNotZero,
-  }) async {
+      BuildContext context, {
+        bool autoUpdate = false,
+        required VoidCallback onFilterResultZero,
+        required VoidCallback onFilterResultNotZero,
+      }) async {
     isLoading = true;
     notifyListeners();
 
@@ -957,9 +957,9 @@ class FilterProvider extends ChangeNotifier {
   }
 
   Future<void> setSelectedBedrooms(
-    BuildContext context, {
-    required int index,
-  }) async {
+      BuildContext context, {
+        required int index,
+      }) async {
     final item = bedroomList[index];
     if (selectedBedrooms.contains(item)) {
       selectedBedrooms.remove(item);
@@ -972,9 +972,9 @@ class FilterProvider extends ChangeNotifier {
   }
 
   Future<void> setSelectedBathrooms(
-    BuildContext context, {
-    required int index,
-  }) async {
+      BuildContext context, {
+        required int index,
+      }) async {
     final item = bathroomList[index];
 
     if (selectedBathrooms.contains(item)) {
@@ -988,9 +988,9 @@ class FilterProvider extends ChangeNotifier {
   }
 
   Future<void> setSelectedFurnishedType(
-    BuildContext context, {
-    required int index,
-  }) async {
+      BuildContext context, {
+        required int index,
+      }) async {
     selectedIndex = index;
     ftype = formateSelectedFurnishedType(ftypeList[index]);
     await updateFilterCount(context); // ✅ call API to update count
@@ -1034,9 +1034,9 @@ class FilterProvider extends ChangeNotifier {
   }
 
   Future<void> setSelectedAmenities(
-    BuildContext context, {
-    required int index,
-  }) async {
+      BuildContext context, {
+        required int index,
+      }) async {
     if (selectedAmenitiesId.contains(amenities[index].id)) {
       selectedAmenitiesId.remove(amenities[index].id);
     } else {
@@ -1047,9 +1047,9 @@ class FilterProvider extends ChangeNotifier {
   }
 
   Future<void> setSelectedRentType(
-    BuildContext context, {
-    required int index,
-  }) async {
+      BuildContext context, {
+        required int index,
+      }) async {
     selectedrent = index;
     rent = rentList[index];
     await updateFilterCount(context);
@@ -1057,9 +1057,9 @@ class FilterProvider extends ChangeNotifier {
   }
 
   Future<void> setSelectedCompletionStatus(
-    BuildContext context, {
-    required int index,
-  }) async {
+      BuildContext context, {
+        required int index,
+      }) async {
     selectedCompletion = index;
     final name = completion[selectedCompletion];
 
@@ -1087,12 +1087,12 @@ class FilterProvider extends ChangeNotifier {
   String handoverQuarter = '';
 
   Future<void> setSelectedHandOverBy(
-    BuildContext context, {
-    required int index,
-  }) async {
+      BuildContext context, {
+        required int index,
+      }) async {
     selectedHandover = index;
     final handoverBy =
-        (handoverOptions[index] == 'Any') ? '' : handoverOptions[index];
+    (handoverOptions[index] == 'Any') ? '' : handoverOptions[index];
 
     final reg = RegExp(r'^(Q\d)\s+(\d{4})$');
     final match = reg.firstMatch(handoverBy);
@@ -1117,9 +1117,9 @@ class FilterProvider extends ChangeNotifier {
   String completion_max = '';
 
   Future<void> setSelectedCompletionPercentage(
-    BuildContext context, {
-    required int index,
-  }) async {
+      BuildContext context, {
+        required int index,
+      }) async {
     selectedPercentCompletion = index;
 
     final selected = percentCompletionOptions[index];
@@ -1176,7 +1176,7 @@ class FilterProvider extends ChangeNotifier {
 
     // // fetch property types for the selected purpose
     final purposeType =
-        filterListSelectedPropType == 0 ? 'Residential' : 'Commercial';
+    filterListSelectedPropType == 0 ? 'Residential' : 'Commercial';
     await filterListPropertyApi(purposeType);
 
     notifyListeners();
@@ -1222,7 +1222,7 @@ class FilterProvider extends ChangeNotifier {
   ///// PRICE RANGE /////
 
   SfRangeValues filterListValues =
-      SfRangeValues(500.0, 300000.0); // full range internally
+  SfRangeValues(500.0, 300000.0); // full range internally
 
   String filterList_Min_price = '';
   String filterList_Max_price = ' ';

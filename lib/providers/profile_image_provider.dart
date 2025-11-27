@@ -1,10 +1,13 @@
+// lib/providers/profile_image_provider.dart
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+
 import '../secure_storage.dart';
+import '../services/api_service.dart';
 
 class ProfileImageProvider extends ChangeNotifier {
   File? _image;
@@ -19,223 +22,208 @@ class ProfileImageProvider extends ChangeNotifier {
 
   final ImagePicker _picker = ImagePicker();
 
-  /// Initialize profile image provider
+  /// Initialize: load user info
   Future<void> initialize() async {
     try {
-      final username = await SecureStorage.read('user_name');
-      final email = await SecureStorage.read('user_email');
-      _currentEmail = email;
+      final username = await SecureStorage.getUserName();
+      final email = await SecureStorage.getUserEmail();
 
-      if (username != null && username.isNotEmpty) {
-        await loadImageForUser(username);
+      _currentEmail = email?.trim().isNotEmpty == true ? email : null;
+      _currentUser = username?.trim().isNotEmpty == true ? username!.trim().toLowerCase() : null;
+
+      if (_currentUser != null) {
+        await loadImageForUser(_currentUser!);
       } else {
         _clearLocal();
       }
     } catch (e) {
-      debugPrint("❌ Error initializing profile image: $e");
+      debugPrint("Error initializing profile image: $e");
     } finally {
       _initialized = true;
       notifyListeners();
     }
   }
 
-  /// Fetch remote agent image by email
+  /// Fetch profile image from backend (agent image)
   Future<void> fetchRemoteProfileImage(String email) async {
     try {
       final token = await SecureStorage.getToken();
+      final baseHost = ApiService.baseUrl.replaceFirst(RegExp(r'^https?://'), '');
 
-      // Try direct email filter (adjust if your API uses a different param name)
-      Uri uri = Uri.https('akarat.com', '/api/agents', {
+      final uri = Uri.https(baseHost, '/agents', {
         'email': email,
-        'per_page': '1', // keep it small
+        'per_page': '1',
       });
 
-      http.Response response = await http.get(uri, headers: {
+      final response = await http.get(uri, headers: {
         'Accept': 'application/json',
         if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-      });
+      }).timeout(const Duration(seconds: 15));
 
-      Map<String, dynamic>? dataMap;
-      List<dynamic> list = [];
+      List<dynamic> agents = [];
 
       if (response.statusCode == 200) {
-        dataMap = json.decode(response.body) as Map<String, dynamic>;
-        final d = dataMap['data'];
-        if (d is Map && d['data'] is List) list = d['data'];
-        if (d is List) list = d;
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final data = json['data'];
+        if (data is Map && data['data'] is List) agents = data['data'] as List;
+        if (data is List) agents = data;
       }
 
-      // Fallback: use search if 'email' filter not supported / empty result
-      if (list.isEmpty) {
-        uri = Uri.https('akarat.com', '/api/agents', {
+      // Fallback: search by email
+      if (agents.isEmpty) {
+        final searchUri = Uri.https(baseHost, '/agents', {
           'search': email,
           'per_page': '1',
         });
-        response = await http.get(uri, headers: {
+        final resp = await http.get(searchUri, headers: {
           'Accept': 'application/json',
           if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-        });
-        if (response.statusCode == 200) {
-          dataMap = json.decode(response.body) as Map<String, dynamic>;
-          final d = dataMap['data'];
-          if (d is Map && d['data'] is List) list = d['data'];
-          if (d is List) list = d;
+        }).timeout(const Duration(seconds: 15));
+
+        if (resp.statusCode == 200) {
+          final json = jsonDecode(resp.body);
+          final data = json['data'];
+          if (data is Map && data['data'] is List) agents = data['data'];
+          if (data is List) agents = data;
         }
       }
 
       String? url;
-      if (list.isNotEmpty) {
-        final a = list.first as Map<String, dynamic>;
-        url = (a['image'] ?? a['agent_image'])?.toString();
+      if (agents.isNotEmpty) {
+        final agent = agents.first as Map<String, dynamic>;
+        url = (agent['image'] ?? agent['agent_image'] ?? agent['profile_image'])?.toString();
       }
 
       if (url != null && url.isNotEmpty) {
-        // Force HTTPS (devices may block http)
-        if (url.startsWith('http://')) {
-          url = url.replaceFirst('http://', 'https://');
-        }
-        // Cache-buster to avoid stale CDN images on device
+        if (url.startsWith('http://')) url = url.replaceFirst('http://', 'https://');
         final sep = url.contains('?') ? '&' : '?';
-        _remoteImageUrl = '$url${sep}v=${DateTime.now().millisecondsSinceEpoch}';
+        _remoteImageUrl = '$url${sep}ts=${DateTime.now().millisecondsSinceEpoch}';
       } else {
         _remoteImageUrl = null;
       }
     } catch (e) {
-      debugPrint("❌ Error fetching remote profile image: $e");
+      debugPrint("Error fetching remote image: $e");
       _remoteImageUrl = null;
     }
   }
 
-
-  /// Load image for current user (local takes priority)
+  /// Load image: remote → local cache → nothing
   Future<void> loadImageForUser(String username) async {
-    try {
-      _currentUser = username.trim().toLowerCase();
+    _currentUser = username.trim().toLowerCase();
 
-      // 1) Try remote first so it works across devices
-      if (_currentEmail != null && _currentEmail!.isNotEmpty) {
-        await fetchRemoteProfileImage(_currentEmail!);
-      }
+    // 1. Try remote first (best: works across devices)
+    if (_currentEmail != null && _currentEmail!.isNotEmpty) {
+      await fetchRemoteProfileImage(_currentEmail!);
+    }
 
-      // 2) If remote is not available, use local base64 (device-local fallback)
-      if (_remoteImageUrl == null) {
-        final base64String = await SecureStorage.read('profile_image_base64_$_currentUser');
-        if (base64String != null && base64String.isNotEmpty) {
-          final bytes = base64Decode(base64String);
-          final tempDir = await getTemporaryDirectory();
-          final tempPath = '${tempDir.path}/profile_$_currentUser.png';
-          _image = await File(tempPath).writeAsBytes(bytes);
-        } else {
-          _image = null;
-        }
+    // 2. Local fallback (optional: you can remove this block entirely if you want server-only)
+    if (_remoteImageUrl == null) {
+      final tempDir = await getTemporaryDirectory();
+      final localPath = '${tempDir.path}/profile_image_cache.png';
+      final localFile = File(localPath);
+
+      if (await localFile.exists()) {
+        _image = localFile;
       } else {
-        _image = null; // show network image in the UI
-      }
-
-      notifyListeners();
-    } catch (e) {
-      debugPrint("❌ Error loading profile image for $_currentUser: $e");
-    }
-  }
-
-
-
-  /// Pick & save a new local profile image
-  /// Pick & save a new local profile image
-  /// Pick & save a new local profile image
-  Future<void> pickImage() async {
-    try {
-      _currentUser = await SecureStorage.read('user_name');
-      if (_currentUser == null || _currentUser!.isEmpty) return;
-
-      final XFile? picked = await _picker.pickImage(source: ImageSource.gallery);
-      if (picked == null) return;
-
-      _image = File(picked.path);
-      _remoteImageUrl = null;
-
-      // Save local base64 (so current device shows immediately)
-      final bytes = await _image!.readAsBytes();
-      final base64String = base64Encode(bytes);
-      await SecureStorage.write('profile_image_base64_$_currentUser', base64String);
-      notifyListeners();
-
-      // ⬇️ Make it available on all devices
-      await uploadPickedImageToServer(_image!);
-
-    } catch (e) {
-      debugPrint("❌ Error picking/saving profile image: $e");
-    }
-  }
-
-
-
-  Future<void> uploadPickedImageToServer(File file) async {
-    final token = await SecureStorage.getToken();
-    final uri = Uri.https('akarat.com', '/api/agent/profile-image'); // <-- change to your real endpoint
-    final req = http.MultipartRequest('POST', uri)
-      ..headers.addAll({
-        'Accept': 'application/json',
-        if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-      })
-      ..files.add(await http.MultipartFile.fromPath('image', file.path));
-
-    // If your API needs extra fields, uncomment/adjust:
-    // if (_currentEmail != null) req.fields['email'] = _currentEmail!;
-    // req.fields['agent_id'] = '...';
-
-    final res = await req.send();
-    final body = await res.stream.bytesToString();
-
-    if (res.statusCode == 200 || res.statusCode == 201) {
-      final map = json.decode(body) as Map<String, dynamic>;
-      final url = (map['image_url'] ?? map['url'])?.toString();
-      if (url != null && url.isNotEmpty) {
-        final httpsUrl = url.startsWith('http://') ? url.replaceFirst('http://', 'https://') : url;
-        // cache-bust so device doesn’t show stale image
-        final sep = httpsUrl.contains('?') ? '&' : '?';
-        _remoteImageUrl = '$httpsUrl${sep}v=${DateTime.now().millisecondsSinceEpoch}';
-        _image = null; // prefer server image across devices
-        notifyListeners();
+        _image = null;
       }
     } else {
-      debugPrint('❌ Upload failed: ${res.statusCode} $body');
+      _image = null; // show network image
+    }
+
+    notifyListeners();
+  }
+
+  /// Pick new image
+  Future<void> pickImage() async {
+    try {
+      final username = await SecureStorage.getUserName();
+      if (username == null || username.isEmpty) return;
+
+      final pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      final file = File(pickedFile.path);
+      _image = file;
+      _remoteImageUrl = null;
+
+      // Cache locally for instant display
+      final tempDir = await getTemporaryDirectory();
+      final cachePath = '${tempDir.path}/profile_image_cache.png';
+      await file.copy(cachePath);
+
+      notifyListeners();
+
+      // Upload to server
+      await uploadPickedImageToServer(file);
+    } catch (e) {
+      debugPrint("Error picking image: $e");
     }
   }
 
+  /// Upload to backend
+  Future<void> uploadPickedImageToServer(File file) async {
+    try {
+      final token = await SecureStorage.getToken();
+      if (token == null) return;
 
+      final uri = Uri.parse('${ApiService.baseUrl}/agent/profile-image');
 
-  /// Delete the profile image
+      final request = http.MultipartRequest('POST', uri)
+        ..headers['Authorization'] = 'Bearer $token'
+        ..files.add(await http.MultipartFile.fromPath('image', file.path));
+
+      final response = await request.send();
+      final body = await response.stream.bytesToString();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final json = jsonDecode(body);
+        final url = (json['image_url'] ?? json['url'] ?? json['image'])?.toString();
+        if (url != null && url.isNotEmpty) {
+          final cleanUrl = url.startsWith('http://') ? url.replaceFirst('http://', 'https://') : url;
+          final sep = cleanUrl.contains('?') ? '&' : '?';
+          _remoteImageUrl = '$cleanUrl${sep}ts=${DateTime.now().millisecondsSinceEpoch}';
+          _image = null;
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint("Upload failed: $e");
+    }
+  }
+
+  /// Delete image
   Future<void> deleteImage() async {
     try {
-      if (_currentUser == null || _currentUser!.isEmpty) return;
-
-      await SecureStorage.delete('profile_image_base64_$_currentUser');
-      _image = null;
-
       final tempDir = await getTemporaryDirectory();
-      final tempPath = '${tempDir.path}/profile_$_currentUser.png';
-      final tempFile = File(tempPath);
-      if (await tempFile.exists()) {
-        await tempFile.delete();
-      }
+      final cacheFile = File('${tempDir.path}/profile_image_cache.png');
+      if (await cacheFile.exists()) await cacheFile.delete();
 
-      // If no local, fall back to remote
-      if (_currentEmail != null && _currentEmail!.isNotEmpty) {
+      _image = null;
+      _remoteImageUrl = null;
+
+      if (_currentEmail != null) {
         await fetchRemoteProfileImage(_currentEmail!);
       }
 
       notifyListeners();
     } catch (e) {
-      debugPrint("❌ Error deleting profile image: $e");
+      debugPrint("Error deleting image: $e");
     }
   }
 
-  /// Clear all on logout
+  /// Clear on logout
   Future<void> clear() async {
-    if (_currentUser != null && _currentUser!.isNotEmpty) {
-      await SecureStorage.delete('profile_image_base64_$_currentUser');
-    }
+    final tempDir = await getTemporaryDirectory();
+    final cacheFile = File('${tempDir.path}/profile_image_cache.png');
+    if (await cacheFile.exists()) await cacheFile.delete();
+
     _clearLocal();
     notifyListeners();
   }
@@ -247,9 +235,8 @@ class ProfileImageProvider extends ChangeNotifier {
     _remoteImageUrl = null;
   }
 
-  /// Refresh image
   Future<void> refreshImage() async {
-    if (_currentUser != null && _currentUser!.isNotEmpty) {
+    if (_currentUser != null) {
       await loadImageForUser(_currentUser!);
     }
   }

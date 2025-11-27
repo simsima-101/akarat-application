@@ -65,8 +65,13 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   final ScrollController _agentScroll = ScrollController();
   final ScrollController _agencyScroll = ScrollController();
 
+
+
+
   final TextEditingController _agentSearchController = TextEditingController();
   final TextEditingController _agencySearchController = TextEditingController();
+
+
   int pageIndex = 0;
   String token = '';
   String email = '';
@@ -177,10 +182,37 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     _agencyScroll.dispose();
     _agentSearchController.dispose();
     _agencySearchController.dispose();
-    locationController.dispose();
     super.dispose();
   }
 
+
+  // ADD THIS METHOD HERE (inside the class, before build())
+  void _performAgentSearch() {
+    setState(() {
+      agentsPage = 1;
+      agentsHasMore = true;
+      isAgentsLoading = false;
+      agentsmodel.clear();
+    });
+
+    final term = _agentSearchController.text.trim();
+    debugPrint("Searching agents for: '$term'");
+    agentfetch(); // now reads from _agentSearchController inside
+  }
+
+
+  void _performAgencySearch() {
+    setState(() {
+      agenciesPage = 1;
+      agenciesHasMore = true;
+      isAgencyLoading = false;
+      agencyList.clear();
+    });
+
+    final term = _agencySearchController.text.trim();
+    debugPrint("Searching agencies for: '$term'");
+    agencyfetch();
+  }
 
 
   Future<void> agentfetch({bool loadMore = false}) async {
@@ -190,11 +222,12 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     final requestedPage = (loadMore ? agentsPage : 1);
 
     // Build qp WITHOUT empty values
+    final searchText = _agentSearchController.text.trim();
+
     final qp = <String, String>{
       'page': requestedPage.toString(),
       'per_page': '10',
-      if (locationController.text.trim().isNotEmpty)
-        'search': locationController.text.trim(),
+      if (searchText.isNotEmpty) 'search': searchText,
       if (selectedService != null && serviceValueToId[selectedService!] != null)
         'service_needed': serviceValueToId[selectedService!]!,
       if (selectedLanguage?.trim().isNotEmpty == true)
@@ -203,7 +236,8 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
         'nationality': selectedNationality!.trim(),
     };
 
-    final uri = Uri.https(kApiBase, '/api/agents', qp);
+
+    final uri = Uri.https('qa.akarat.com', '/api/agents', qp);
     debugPrint('🌐 [Agents] GET $uri (loadMore=$loadMore, requestedPage=$requestedPage)');
 
     try {
@@ -311,17 +345,20 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
     final requestedPage = (loadMore ? agenciesPage : 1);
 
+    final searchText = _agencySearchController.text.trim();
+
     final qp = <String, String>{
       'page': requestedPage.toString(),
       'per_page': '10',
-      if (locationController.text.trim().isNotEmpty)
-        'search': locationController.text.trim(),
+      if (searchText.isNotEmpty) 'search': searchText,
       if (selectedAgencyService != null &&
           serviceValueToId[selectedAgencyService!] != null)
         'service_needed': serviceValueToId[selectedAgencyService!]!,
     };
 
-    final uri = Uri.https(kApiBase, '/api/companies', qp);
+
+    final uri = Uri.https('qa.akarat.com', '/api/companies', qp);
+
     debugPrint('🌐 [Companies] GET $uri (loadMore=$loadMore, requestedPage=$requestedPage)');
 
     try {
@@ -570,7 +607,8 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                 setState(() {
                   _agentSearchController.clear();
                   _agencySearchController.clear();
-                  locationController.clear();
+                  // REMOVE:
+                  // locationController.clear();
                   selectedService = null;
                   selectedAgencyService = null;
                   selectedLanguage = null;
@@ -691,6 +729,11 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // NEW: CLEAN SINGLE-ROW SEARCH BAR + BUTTON
+                          // NEW: CLEAN SEARCH BAR – Small icon, full text visible
+                          // FINAL VERSION: Tiny search icon + full hint text always visible
+                          // FINAL: Tiny icon + Small beautiful Search button
+                          // FINAL: Tiny icon in field + Small clean Search button (no icon)
                           Container(
                             padding: const EdgeInsets.all(15),
                             margin: const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
@@ -706,287 +749,64 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                               ],
                             ),
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                const SizedBox(height: 10),
-
-                                // Services Dropdown
-                                SafeArea(
-                                  child: Column(
-                                    children: [
-                                      DropdownButtonFormField<String>(
-                                        isExpanded: true,
-                                        decoration: _dropdownDecoration("Services needed"),
-                                        dropdownColor: Colors.white,
-                                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.black,
-                                        ),
-                                        value: selectedService,
-                                        items: const [
-                                          DropdownMenuItem<String>(
-                                            value: null,
-                                            enabled: false,
-                                            child: Text(
-                                              "Services needed",
-                                              style: TextStyle(
-                                                color: Colors.grey,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ].followedBy(
-                                          serviceOptions.map((option) => DropdownMenuItem<String>(
-                                            value: option['value'],
-                                            child: Text(option['label']!),
-                                          )),
-                                        ).toList(),
-                                          onChanged: (value) {
-                                            setState(() {
-                                              selectedService = value;              // ✅ correct
-                                              // reset ONLY agents state
-                                              agentsmodel.clear();
-                                              agentsPage = 1;
-                                              agentsHasMore = true;
-                                              isAgentsLoading = false;
-                                            });
-                                            agentfetch();                           // ✅ correct
-                                          }
-
-
-
-                                      ),
-                                    ],
+                                // 🔍 Full-width search bar with clear (✕) icon
+                                TextField(
+                                  controller: _agentSearchController,
+                                  textInputAction: TextInputAction.search,
+                                  onSubmitted: (_) => _performAgentSearch(),
+                                  onChanged: (_) {
+                                    setState(() {}); // just to refresh clear icon
+                                  },
+                                  decoration: InputDecoration(
+                                    hintText: "Enter location or agent name",
+                                    hintStyle: const TextStyle(color: Colors.grey, fontSize: 15),
+                                    filled: true,
+                                    fillColor: Colors.grey.shade100,
+                                    contentPadding: const EdgeInsets.fromLTRB(8, 16, 12, 16),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    prefixIcon: const Padding(
+                                      padding: EdgeInsets.only(left: 8),
+                                      child: Icon(Icons.search, color: Colors.blueAccent, size: 18),
+                                    ),
+                                    prefixIconConstraints: const BoxConstraints(
+                                      minWidth: 32,
+                                      minHeight: 32,
+                                    ),
+                                    suffixIcon: _agentSearchController.text.isNotEmpty
+                                        ? IconButton(
+                                      icon: const Icon(Icons.close, size: 18, color: Colors.grey),
+                                      onPressed: () {
+                                        _agentSearchController.clear();
+                                        setState(() {});
+                                        FocusScope.of(context).unfocus();
+                                        // optional: reload without search
+                                        _performAgentSearch();
+                                      },
+                                    )
+                                        : null,
                                   ),
-                                ),
-
-                                const SizedBox(height: 10),
-
-                                // Language
-                                FutureBuilder<Language>(
-                                  future: languageFuture,
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return DropdownButtonFormField<String>(
-                                        isExpanded: true,
-                                        decoration: _dropdownDecoration("Language"),
-                                        dropdownColor: Colors.white,
-                                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueAccent),
-                                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black),
-                                        value: selectedLanguage,
-                                        items: const [
-                                          DropdownMenuItem<String>(
-                                            value: null,
-                                            child: Text("None", style: TextStyle(color: Colors.grey)),
-                                          ),
-                                        ],
-                                        onChanged: (value) => setState(() => selectedLanguage = value),
-                                      );
-                                    } else if (snapshot.hasError) {
-                                      return Text("Error: ${snapshot.error}");
-                                    } else {
-                                      final List<String> languageList = snapshot.data?.languages
-                                          ?.where((lang) => lang.trim().isNotEmpty && lang.trim().length > 1)
-                                          .toSet()
-                                          .toList() ??
-                                          [];
-                                      return GestureDetector(
-                                        onTap: () async {
-                                          final result = await showDialog<String>(
-                                            context: context,
-                                            builder: (context) {
-                                              String searchText = '';
-                                              List<String> filteredList = ["None", ...languageList];
-                                              return StatefulBuilder(
-                                                builder: (context, setState) => AlertDialog(
-                                                  backgroundColor: Colors.white,
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                                  title: const Text("Select Language"),
-                                                  content: Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      TextField(
-                                                        decoration: const InputDecoration(
-                                                          hintText: "Search...",
-                                                          contentPadding: EdgeInsets.symmetric(horizontal: 10),
-                                                        ),
-                                                        onChanged: (value) {
-                                                          setState(() {
-                                                            searchText = value;
-                                                            filteredList = ["None", ...languageList]
-                                                                .where((lang) => lang.toLowerCase().contains(searchText.toLowerCase()))
-                                                                .toList();
-                                                          });
-                                                        },
-                                                      ),
-                                                      const SizedBox(height: 10),
-                                                      SizedBox(
-                                                        height: 400,
-                                                        width: double.maxFinite,
-                                                        child: ListView.builder(
-                                                          itemCount: filteredList.length,
-                                                          itemBuilder: (context, index) => ListTile(
-                                                            title: Text(filteredList[index]),
-                                                            onTap: () => Navigator.pop(context, filteredList[index]),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          );
-                                          if (result != null) {
-                                            setState(() {
-                                              selectedLanguage = (result == "None") ? null : result;
-                                            });
-                                          }
-                                        },
-                                        child: InputDecorator(
-                                          decoration: _dropdownDecoration("Language"),
-                                          child: Text(
-                                            selectedLanguage?.isNotEmpty == true ? selectedLanguage! : "Select Language",
-                                            style: TextStyle(
-                                              color: selectedLanguage?.isNotEmpty == true ? Colors.black : Colors.grey,
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),
-
-                                const SizedBox(height: 10),
-
-                                // Nationality
-                                FutureBuilder<Nationality>(
-                                  future: nationalityFuture,
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return DropdownButtonFormField<String>(
-                                        decoration: _dropdownDecoration("Nationality"),
-                                        items: const [
-                                          DropdownMenuItem(value: null, child: Text("Loading...")),
-                                        ],
-                                        onChanged: null,
-                                      );
-                                    } else if (snapshot.hasError) {
-                                      return Text("Error: ${snapshot.error}");
-                                    } else {
-                                      final List<String> nationalityList =
-                                          snapshot.data?.nationalities?.toSet().toList() ?? [];
-                                      return GestureDetector(
-                                        onTap: () async {
-                                          final result = await showDialog<String>(
-                                            context: context,
-                                            builder: (context) {
-                                              String searchText = '';
-                                              List<String> filteredList = ["None", ...nationalityList];
-                                              return StatefulBuilder(
-                                                builder: (context, setState) => AlertDialog(
-                                                  backgroundColor: Colors.white,
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                                  title: const Text("Select Nationality"),
-                                                  content: Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      TextField(
-                                                        decoration: const InputDecoration(
-                                                          hintText: "Search...",
-                                                          contentPadding: EdgeInsets.symmetric(horizontal: 10),
-                                                        ),
-                                                        onChanged: (value) {
-                                                          setState(() {
-                                                            searchText = value;
-                                                            filteredList = ["None", ...nationalityList]
-                                                                .where((nat) => nat.toLowerCase().contains(searchText.toLowerCase()))
-                                                                .toList();
-                                                          });
-                                                        },
-                                                      ),
-                                                      const SizedBox(height: 10),
-                                                      SizedBox(
-                                                        height: 400,
-                                                        width: double.maxFinite,
-                                                        child: ListView.builder(
-                                                          itemCount: filteredList.length,
-                                                          itemBuilder: (context, index) => ListTile(
-                                                            title: Text(filteredList[index]),
-                                                            onTap: () => Navigator.pop(context, filteredList[index]),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          );
-                                          if (result != null) {
-                                            setState(() {
-                                              selectedNationality = (result == "None") ? null : result;
-                                            });
-                                          }
-                                        },
-                                        child: InputDecorator(
-                                          decoration: _dropdownDecoration("Nationality"),
-                                          child: Text(
-                                            selectedNationality?.isNotEmpty == true ? selectedNationality! : "Select Nationality",
-                                            style: TextStyle(
-                                              color: selectedNationality?.isNotEmpty == true ? Colors.black : Colors.grey,
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
                                 ),
 
                                 const SizedBox(height: 20),
 
-                                // Search Button
-                                ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      agentsPage = 1;
-                                      agentsHasMore = true;
-                                      isAgentsLoading = false;
-                                      agentsmodel.clear();
-                                    });
-
-                                    debugPrint("Searching with:");
-                                    debugPrint("Location: ${locationController.text}");
-                                    debugPrint("Service: $selectedService");
-                                    debugPrint("Language: $selectedLanguage");
-                                    debugPrint("Nationality: $selectedNationality");
-
-                                    agentfetch();
-                                  },
-
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    minimumSize: const Size.fromHeight(45),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  ),
-                                  child: const Text("Search", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                                ),
-
-                                if (agentsmodel.isEmpty && !isAgentsLoading) ...[
-                                  const SizedBox(height: 15),
+                                if (agentsmodel.isEmpty &&
+                                    !isAgentsLoading &&
+                                    _agentSearchController.text.trim().isNotEmpty)
                                   const Center(
                                     child: Text(
-                                      "No Results",
-                                      style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                                      "No agents found",
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
-                                ],
+
                               ],
                             ),
                           ),
@@ -994,48 +814,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                           const SizedBox(height: 10),
 
                           // Prime Agent badge
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 15),
-                            child: Container(
-                              width: screenSize.width * 0.28,
-                              height: 35,
-                              padding: const EdgeInsets.only(top: 2, left: 5, right: 1),
-                              decoration: BoxDecoration(
-                                color: Colors.blueAccent,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    offset: const Offset(0, 2),
-                                    blurRadius: 4,
-                                    spreadRadius: 0,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.blueAccent.withOpacity(0.8),
-                                    offset: const Offset(0, 2),
-                                    blurRadius: 4,
-                                    spreadRadius: 0,
-                                  ),
-                                ],
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Row(
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 1),
-                                    child: Icon(Icons.check_circle, color: Colors.white, size: 17),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 1, right: 3),
-                                    child: Text(
-                                      "Prime Agent",
-                                      style: TextStyle(letterSpacing: 0.5, color: Colors.white, fontSize: 12),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+
 
                           const SizedBox(height: 10),
 
@@ -1163,75 +942,69 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 10),
-          DropdownButtonFormField<String>(
-            isExpanded: true,
-            decoration: _dropdownDecoration("Services needed"),
-            dropdownColor: Colors.white,
-            icon: const Icon(
-              Icons.keyboard_arrow_down_rounded,
-              color: Colors.blueAccent,
-            ),
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
-            ),
-            value: selectedAgencyService,
-            items: serviceOptions.map((option) {
-              return DropdownMenuItem<String>(
-                alignment: Alignment.bottomLeft,
-                value: option['value'],
-                child: Text(
-                  option['label']!,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              );
-            }).toList(),
-            onChanged: (value) {
-              if (value != null) {
-                setState(() {
-                  selectedAgencyService = value;     // agencies filter
-                  agencyList.clear();
-                  agenciesPage = 1;
-                  agenciesHasMore = true;
-                  isAgencyLoading = false;
-                });
-                agencyfetch();                        // call agencies API
-              }
+          // 🔍 Full-width search bar with clear (✕) icon
+          TextField(
+            controller: _agencySearchController,
+            textInputAction: TextInputAction.search,
+            onSubmitted: (_) => _performAgencySearch(), // ✅ agency search
+            onChanged: (_) {
+              setState(() {}); // refresh clear icon
             },
+            decoration: InputDecoration(
+              hintText: "Enter location or agent name",
+              hintStyle: const TextStyle(color: Colors.grey, fontSize: 15),
+              filled: true,
+              fillColor: Colors.grey.shade100,
+              contentPadding: const EdgeInsets.fromLTRB(8, 16, 12, 16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              prefixIcon: const Padding(
+                padding: EdgeInsets.only(left: 8),
+                child: Icon(Icons.search, color: Colors.blueAccent, size: 18),
+              ),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 32,
+                minHeight: 32,
+              ),
+              suffixIcon: _agencySearchController.text.isNotEmpty
+                  ? IconButton(
+                icon: const Icon(Icons.close, size: 18, color: Colors.grey),
+                onPressed: () {
+                  _agencySearchController.clear();
+                  setState(() {});
+                  FocusScope.of(context).unfocus();
+                  _performAgencySearch(); // reload all agencies
+                },
+              )
+                  : null,
+            ),
           ),
+
           const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                agencyList.clear();
-                agenciesPage = 1;
-                agenciesHasMore = true;
-                isAgencyLoading = false;
-              });
-              debugPrint("Searching agencies with:");
-              debugPrint("Location: ${locationController.text}");
-              debugPrint("Service: $selectedAgencyService");
-              agencyfetch();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              minimumSize: const Size.fromHeight(45),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+
+// (Optional) you can skip extra "no results" here, since you already
+// have the Sliver empty-state in the list. If you want one:
+          if (agencyList.isEmpty &&
+              !isAgencyLoading &&
+              _agencySearchController.text.trim().isNotEmpty)
+            const Center(
+              child: Text(
+                "No agencies found",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            child: const Text(
-              "Find",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-          ),
+
         ],
       ),
     );
+
   }
 
   InputDecoration _dropdownDecoration(String hint) {

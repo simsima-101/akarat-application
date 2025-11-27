@@ -1,209 +1,240 @@
+// lib/services/google_auth_service.dart
 import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../secure_storage.dart';
-import '../utils/constants.dart' as ApiService;
-import '../services/auth_prefs.dart'; // 🔹 NEW: track login method (google)
+import '../services/api_service.dart';
+import '../services/auth_prefs.dart';
+import '../services/session.dart';
 
-/// iOS client ID from GoogleService-Info.plist (CLIENT_ID)
+/// iOS Client ID from Google Cloud Console
 const String _IOS_CLIENT_ID =
     '370139668712-ema9n0o9vhq25nbqu771v5c71ehivolf.apps.googleusercontent.com';
 
 class GoogleAuthService {
-  static const _tokenKey = 'auth_token';
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final gsi.GoogleSignIn _google = gsi.GoogleSignIn.instance;
+  final gsi.GoogleSignIn _googleSignIn = gsi.GoogleSignIn.instance;
 
-  String get _baseUrl => ApiService.baseUrl;
-
-  Future<String?> signInWithGoogleOnly() async {
-    // v7 requires clientId at initialize on iOS
-    await _google.initialize(clientId: _IOS_CLIENT_ID);
-
+  /// Full Google Sign-In flow → Firebase → Backend → Save profile
+  Future<String?> signInWithGoogle() async {
     try {
-      await _google.attemptLightweightAuthentication();
-    } catch (_) {/* ignore */}
+      // Initialize Google Sign-In (required on iOS)
+      await _googleSignIn.initialize(clientId: _IOS_CLIENT_ID);
 
-    if (!_google.supportsAuthenticate()) {
-      debugPrint('This platform does not support GoogleSignIn.authenticate().');
+      // Try silent login first (re-use existing session)
+      try {
+        await _googleSignIn.attemptLightweightAuthentication();
+      } catch (_) {
+        // Ignore – silent login failed, will show UI next
+      }
+
+      if (!_googleSignIn.supportsAuthenticate()) {
+        debugPrint('Google Sign-In not supported on this platform');
+        return null;
+      }
+
+      // Full interactive sign-in
+      final gsi.GoogleSignInAccount? googleAccount = await _authenticateWithGoogle();
+      if (googleAccount == null) {
+        debugPrint('Google sign-in was canceled');
+        return null;
+      }
+
+      // Get Google ID token
+      final gsi.GoogleSignInAuthentication googleAuth = await googleAccount.authentication;
+      final String? googleIdToken = googleAuth.idToken;
+      if (googleIdToken == null || googleIdToken.isEmpty) {
+        debugPrint('Missing Google ID token');
+        return null;
+      }
+
+      // Sign in to Firebase
+      final credential = GoogleAuthProvider.credential(idToken: googleIdToken);
+      final userCredential = await _auth.signInWithCredential(credential);
+      final firebaseUser = userCredential.user;
+      if (firebaseUser == null) {
+        debugPrint('Firebase sign-in failed');
+        return null;
+      }
+
+      // Get Firebase token to send to backend
+      final firebaseIdToken = await firebaseUser.getIdToken();
+      if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
+        debugPrint('Failed to get Firebase ID token');
+        return null;
+      }
+
+      // Exchange with your backend
+      final result = await _loginWithBackend(firebaseIdToken);
+      if (result == null) {
+        debugPrint('Backend rejected Google login');
+        return null;
+      }
+
+      // Save full profile using real SecureStorage
+      await _saveUserProfile(
+        token: result.token,
+        firstName: result.first,
+        lastName: result.last,
+        email: result.email,
+        displayName: result.displayName,
+      );
+
+      // Mark login method
+      await AuthPrefs.setLoginMethod(LoginMethod.google);
+
+      // Update in-memory session
+      Session().setAuth(
+        token: result.token,
+        userName: result.displayName,
+        userEmail: result.email,
+        firstName: result.first,
+        lastName: result.last,
+      );
+
+      debugPrint('Google login successful: ${result.email}');
+      return result.token;
+    } catch (e, stack) {
+      debugPrint('Google Sign-In failed: $e\n$stack');
       return null;
     }
-
-    // Open Google sheet and wait for sign-in event
-    final gsi.GoogleSignInAccount? account = await _authenticateAccountOrNull();
-    if (account == null) {
-      debugPrint('Google sign-in canceled or no account returned.');
-      return null;
-    }
-
-    // Get Google ID token -> Firebase sign-in
-    final gsi.GoogleSignInAuthentication gAuth = await account.authentication;
-    final String? googleIdToken = gAuth.idToken;
-    if (googleIdToken == null || googleIdToken.isEmpty) {
-      debugPrint('Google idToken is null/empty.');
-      return null;
-    }
-
-    final OAuthCredential cred = GoogleAuthProvider.credential(idToken: googleIdToken);
-    final UserCredential userCred = await _auth.signInWithCredential(cred);
-    final User? fbUser = userCred.user;
-    if (fbUser == null) return null;
-
-    await _seedLocalProfileFromGoogle(account, fbUser);
-    await SecureStorage.write('api_host', _baseUrl);
-
-    // Exchange Firebase ID token with your backend
-    String? firebaseIdToken = await fbUser.getIdToken(true);
-    firebaseIdToken ??= (await fbUser.getIdTokenResult(true)).token ?? '';
-    if (firebaseIdToken.isEmpty) return null;
-
-    final result = await _postToLoginGoogle(firebaseIdToken);
-    if (result == null) return null;
-
-    await SecureStorage.write(_tokenKey, result.token);
-    if (result.first.isNotEmpty) await SecureStorage.write('user_first_name', result.first);
-    if (result.last.isNotEmpty)  await SecureStorage.write('user_last_name',  result.last);
-    if (result.email.isNotEmpty) await SecureStorage.write('user_email',      result.email);
-
-    final joined = [result.first, result.last].where((s) => s.isNotEmpty).join(' ');
-    if (joined.isNotEmpty) await SecureStorage.write('user_name', joined);
-
-    // 🔹 Mark Google login here too (for PI screen: hide Change Password)
-    await AuthPrefs.setLoginMethod(LoginMethod.google);
-
-    return result.token;
   }
 
+  /// Full logout: Google + Firebase + Local storage
   Future<void> signOut() async {
+    // Sign out from Google
     try {
-      await _google.signOut();
+      await _googleSignIn.signOut();
     } catch (_) {}
+
+    // Sign out from Firebase
     try {
       await _auth.signOut();
     } catch (_) {}
-    await SecureStorage.delete(_tokenKey);
-    await AuthPrefs.clear(); // 🔹 clear login method on logout
+
+    // Clear local data (these return void → no await needed)
+    Session().clear();
+    SecureStorage.deleteAll();
+    AuthPrefs.clear();
   }
 
-  Future<bool> hasBackendToken() async {
-    final t = await SecureStorage.read(_tokenKey);
-    return (t != null && t.isNotEmpty);
+  /// Check if user has valid backend token
+  Future<bool> isSignedIn() async {
+    final token = await SecureStorage.getToken();
+    return token != null && token.isNotEmpty;
   }
 
-  // ---------- helpers ----------
+  // ─────────────────────────────────────────────────────────────
+  // Private Helpers
+  // ─────────────────────────────────────────────────────────────
 
-  Future<gsi.GoogleSignInAccount?> _authenticateAccountOrNull() async {
+  Future<gsi.GoogleSignInAccount?> _authenticateWithGoogle() async {
     final completer = Completer<gsi.GoogleSignInAccount?>();
-    StreamSubscription? sub;
+    StreamSubscription? subscription;
+
     try {
-      sub = _google.authenticationEvents.listen((event) {
-        debugPrint('GI event: $event');
-        if (event is gsi.GoogleSignInAuthenticationEventSignIn &&
-            !completer.isCompleted) {
+      subscription = _googleSignIn.authenticationEvents.listen((event) {
+        if (event is gsi.GoogleSignInAuthenticationEventSignIn && !completer.isCompleted) {
           completer.complete(event.user);
         }
       });
 
-      try {
-        await _google.authenticate(); // opens Google UI
-      } on gsi.GoogleSignInException catch (e) {
-        if (e.code == gsi.GoogleSignInExceptionCode.canceled) {
-          completer.complete(null);
-        } else {
-          completer.completeError(e);
-        }
+      await _googleSignIn.authenticate();
+      return await completer.future.timeout(const Duration(seconds: 30));
+    } on TimeoutException {
+      completer.complete(null);
+    } on gsi.GoogleSignInException catch (e) {
+      if (e.code == gsi.GoogleSignInExceptionCode.canceled) {
+        completer.complete(null);
+      } else {
+        completer.completeError(e);
       }
-
-      return await completer.future;
+    } catch (e) {
+      completer.completeError(e);
     } finally {
-      await sub?.cancel();
-    }
-  }
-
-  Future<void> _seedLocalProfileFromGoogle(
-      gsi.GoogleSignInAccount? account,
-      User? fbUser,
-      ) async {
-    final gEmail = (account?.email ?? fbUser?.email ?? '').trim();
-    final display = (account?.displayName ?? fbUser?.displayName ?? '').trim();
-
-    String first = '';
-    String last = '';
-    if (display.isNotEmpty) {
-      final parts = display.split(RegExp(r'\s+'));
-      first = parts.isNotEmpty ? parts.first : '';
-      last = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+      await subscription?.cancel();
     }
 
-    if (gEmail.isNotEmpty) await SecureStorage.write('user_email', gEmail);
-    if (first.isNotEmpty) await SecureStorage.write('user_first_name', first);
-    if (last.isNotEmpty) await SecureStorage.write('user_last_name', last);
-
-    final joined = [first, last].where((s) => s.isNotEmpty).join(' ');
-    if (joined.isNotEmpty) await SecureStorage.write('user_name', joined);
+    return completer.future;
   }
 
-  Future<({String token, String first, String last, String email})?> _postToLoginGoogle(
-      String firebaseIdToken,
-      ) async {
-    final Uri uri = Uri.parse('$_baseUrl/login-google');
-    final http.Response r = await http.post(
-      uri,
-      headers: const {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'google_id_token': firebaseIdToken}),
-    );
+  Future<({
+  String token,
+  String first,
+  String last,
+  String email,
+  String displayName,
+  })?> _loginWithBackend(String firebaseIdToken) async {
+    final uri = Uri.parse('${ApiService.baseUrl}/login-google');
 
-    debugPrint('[/login-google] -> ${r.statusCode} ${r.body}');
-    if (r.statusCode >= 200 && r.statusCode < 300) {
-      try {
-        final m = jsonDecode(r.body) as Map<String, dynamic>;
-        final data = (m['data'] ?? const {}) as Map<String, dynamic>;
-        final user = (data['user'] ?? const {}) as Map<String, dynamic>;
+    try {
+      final response = await http.post(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'google_id_token': firebaseIdToken}),
+      ).timeout(const Duration(seconds: 25));
+
+      debugPrint('[/login-google] ${response.statusCode} ${response.body}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final data = json['data'] as Map<String, dynamic>? ?? {};
+        final user = data['user'] as Map<String, dynamic>? ?? {};
 
         final token = (data['token'] ?? data['access_token'] ?? '').toString().trim();
+        if (token.isEmpty) return null;
+
         final email = (user['email'] ?? '').toString().trim();
         final fullName = (user['name'] ?? '').toString().trim();
-
         String first = (user['first_name'] ?? '').toString().trim();
         String last = (user['last_name'] ?? '').toString().trim();
 
         if (fullName.isNotEmpty && first.isEmpty && last.isEmpty) {
-          final parts = fullName.trim().split(RegExp(r'\s+'));
-          if (parts.isNotEmpty) {
-            first = parts.first;
-            if (parts.length > 1) last = parts.sublist(1).join(' ');
-          }
+          final parts = fullName.split(RegExp(r'\s+'));
+          first = parts.isNotEmpty ? parts.first : '';
+          last = parts.length > 1 ? parts.sublist(1).join(' ') : '';
         }
 
-        if (token.isEmpty) return null;
-        return (token: token, first: first, last: last, email: email);
-      } catch (e) {
-        debugPrint('parse /login-google failed: $e');
-        return null;
+        final displayName = fullName.isNotEmpty ? fullName : '$first $last'.trim();
+
+        return (
+        token: token,
+        first: first,
+        last: last,
+        email: email,
+        displayName: displayName.isNotEmpty ? displayName : 'User',
+        );
       }
+
+      if (response.headers['content-type']?.contains('html') == true) {
+        debugPrint('HTML response → Check API_BASE_URL (QA vs PROD mismatch?)');
+      }
+    } catch (e) {
+      debugPrint('Backend request failed: $e');
     }
 
-    final ct = (r.headers['content-type'] ?? '').toLowerCase();
-    if (ct.contains('text/html')) {
-      debugPrint(
-          '⚠️ HTML returned — likely wrong API_BASE_URL host (QA vs PROD mix).');
-    } else if (r.statusCode == 422) {
-      debugPrint(
-          '422: backend expects "google_id_token" (len=${firebaseIdToken.length})');
-    } else if (r.statusCode == 401) {
-      debugPrint(
-          '401: Firebase token verification failed on backend (project mismatch / clock skew?)');
-    }
     return null;
+  }
+
+  Future<void> _saveUserProfile({
+    required String token,
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String displayName,
+  }) async {
+    await SecureStorage.saveToken(token);
+    await SecureStorage.saveUserName(displayName);
+    await SecureStorage.saveUserEmail(email);
+    await SecureStorage.saveFirstName(firstName);
+    await SecureStorage.saveLastName(lastName);
   }
 }

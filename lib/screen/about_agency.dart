@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart'; // Not url_launcher_string
+
 import 'package:Akarat/model/agency_detailModel.dart';
 import 'package:Akarat/model/agencyagentmodel.dart';
 import 'package:Akarat/model/agencypropertiesmodel.dart' as propertyModel;
@@ -10,14 +13,17 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
+import '../device_id.dart';
 import '../model/togglemodel.dart';
+import '../providers/email_enquiry_provider.dart';
 import '../secure_storage.dart';
 import '../services/api_service.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import '../widgets/read_more_text.dart';
+import 'ContactFormScreen.dart';
 import 'about_agent.dart';
 import 'featured_detail.dart';
 import 'home.dart';
@@ -58,6 +64,107 @@ class _About_AgencyState extends State<About_Agency> {
 
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
+
+
+  // Reuse your existing phone formatting functions (add if not already present)
+  String phoneCallNumber(String input) {
+    input = input.replaceAll(RegExp(r'[^\d+]'), '');
+    if (input.startsWith('+971')) return input;
+    if (input.startsWith('00971')) return '+971${input.substring(5)}';
+    if (input.startsWith('971')) return '+971${input.substring(3)}';
+    if (input.startsWith('0') && input.length == 10) return '+971${input.substring(1)}';
+    if (input.length == 9) return '+971$input';
+    return input;
+  }
+
+  String whatsAppNumber(String input) {
+    input = input.replaceAll(RegExp(r'[^\d]'), '');
+    if (input.startsWith('971')) return input;
+    if (input.startsWith('00971')) return input.substring(2);
+    if (input.startsWith('+971')) return input.substring(1);
+    if (input.startsWith('0') && input.length == 10) return '971${input.substring(1)}';
+    if (input.length == 9) return '971$input';
+    return input;
+  }
+
+// API CALL: Send email inquiry to company
+  // API CALL: Send email inquiry to company (using the beautiful dialog)
+  Future<void> _sendCompanyEmailInquiry() async {
+    if (agencyDetailmodel == null) return;
+
+    final String companyName = agencyDetailmodel!.name ?? 'the agency';
+    final int companyId = int.tryParse(widget.data) ?? 0;
+    if (companyId == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid agency ID")),
+      );
+      return;
+    }
+
+    // Extract local phone (without +971)
+    String initialLocalPhone = '';
+    final existingPhone = agencyDetailmodel!.phone ?? '';
+    if (existingPhone.isNotEmpty) {
+      String digits = existingPhone.replaceAll(RegExp(r'\D'), '');
+      if (digits.startsWith('971')) digits = digits.substring(3);
+      if (digits.startsWith('0')) digits = digits.substring(1);
+      initialLocalPhone = digits;
+    }
+
+    final String defaultMessage =
+        'Hi $companyName,\nI found your agency on Akarat and I’m interested in your properties and services. Please contact me.\nThank you!';
+
+    await showEmailAgentDialog(
+      context,
+      subtitle: "Contact $companyName",
+      initialMessage: defaultMessage,
+      initialPhone: initialLocalPhone,
+      onSubmit: ({
+        required String name,
+        required String email,
+        required String phone,
+        required String message,
+      }) async {
+        // Clean phone to local format (9 digits)
+        String cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+        if (cleanPhone.startsWith('971')) {
+          cleanPhone = cleanPhone.substring(3);
+        }
+
+        final deviceId = await getDeviceId();
+        final emailProvider = Provider.of<EmailEnquiryProvider>(context, listen: false);
+
+        final bool success = await emailProvider.sendCompanyEmail(
+          companyId: companyId,
+          name: name,
+          email: email,
+          phone: cleanPhone,
+          message: message.isEmpty ? "-" : message,
+          deviceId: deviceId,
+          token: token.isNotEmpty ? token : null,
+        );
+
+        if (!mounted) return;
+
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(emailProvider.lastMessage ?? "Message sent successfully!"),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context); // Close dialog
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(emailProvider.lastError ?? "Failed to send message"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+    );
+  }
 
   // Method to read data from shared preferences
   void readData() async {
@@ -458,8 +565,152 @@ class _About_AgencyState extends State<About_Agency> {
           },
         ),
       ),
+      /// ====== BOTTOM BAR (Email / Call / WhatsApp) ======
       bottomNavigationBar: SafeArea(
-        child: buildMyNavBar(context),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // EMAIL - Fixed: uses correct method
+              Expanded(
+                child: GestureDetector(
+                  onTap: _sendCompanyEmailInquiry,
+                  child: Container(
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE3F2FD),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.email_outlined, size: 20, color: Colors.blue),
+                        SizedBox(width: 6),
+                        Text(
+                          'Email',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+
+              // CALL - Fixed: uses agencyDetailmodel
+              Expanded(
+                child: GestureDetector(
+                  onTap: () async {
+                    final phoneRaw = agencyDetailmodel?.phone?.trim() ?? '';
+                    if (phoneRaw.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Phone number not available")),
+                      );
+                      return;
+                    }
+
+                    final phone = phoneCallNumber(phoneRaw);
+                    final uri = Uri(scheme: 'tel', path: phone);
+
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                  child: Container(
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFEBEE),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.call_outlined, size: 20, color: Colors.red),
+                        SizedBox(width: 6),
+                        Text(
+                          'Call',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+
+              // WHATSAPP - Fixed: uses agencyDetailmodel + fallback
+              Expanded(
+                child: GestureDetector(
+                  onTap: () async {
+                    final whatsappRaw = agencyDetailmodel?.whatsapp?.trim();
+                    final phoneRaw = whatsappRaw?.isNotEmpty == true
+                        ? whatsappRaw!
+                        : (agencyDetailmodel?.phone?.trim() ?? '');
+
+                    if (phoneRaw.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("WhatsApp number not available")),
+                      );
+                      return;
+                    }
+
+                    final phone = whatsAppNumber(phoneRaw);
+                    if (phone.isEmpty || phone.length < 9) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Invalid WhatsApp number")),
+                      );
+                      return;
+                    }
+
+                    final message = Uri.encodeComponent(
+                        "Hello, I found your agency on Akarat and would like to connect.");
+                    final uri = Uri.parse("https://wa.me/$phone?text=$message");
+
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("WhatsApp is not installed")),
+                      );
+                    }
+                  },
+                  child: Container(
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F5E9),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          "assets/images/whats.png",
+                          height: 20,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.message, size: 20, color: Colors.green),
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'WhatsApp',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       body: DefaultTabController(
         length: 4,
@@ -1389,215 +1640,79 @@ class _About_AgencyState extends State<About_Agency> {
                   // REVIEWS TAB
                   SingleChildScrollView(
                     child: Padding(
-                      padding:
-                      const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding:
-                            const EdgeInsets.only(
-                              top: 10,
-                              left: 10,
-                              right: 0,
+                          // Title
+                          const Text(
+                            "Reviews",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                              color: Colors.black87,
                             ),
-                            child: Row(
-                              children: const [
+                          ),
+
+                          const SizedBox(height: 50), // Nice spacing
+
+                          // Centered "Coming Soon" Section
+                          Center(
+                            child: Column(
+                              children: [
+                                // Optional: Add a subtle icon
+                                Icon(
+                                  Icons.rate_review_outlined,
+                                  size: 80,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 24),
+
+                                // Main Text
                                 Text(
-                                  "Reviews",
+                                  "Coming Soon",
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 24,
                                     fontWeight: FontWeight.bold,
+                                    color: Colors.grey[800],
                                     letterSpacing: 0.5,
                                   ),
-                                  textAlign: TextAlign.left,
+                                ),
+
+                                const SizedBox(height: 12),
+
+                                // Subtitle
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                                  child: Text(
+                                    "Agent reviews and ratings will be available here soon. Stay tuned!",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.grey[600],
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 20),
+
+                                // Optional: Add a little decorative line or dot
+                                Container(
+                                  width: 80,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blueAccent.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          Padding(
-                            padding:
-                            const EdgeInsets.only(
-                              top: 10,
-                              left: 10,
-                              right: 5,
-                            ),
-                            child: Container(
-                              height:
-                              screenSize.height *
-                                  0.17,
-                              padding:
-                              const EdgeInsets.only(
-                                  top: 5),
-                              decoration:
-                              BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey
-                                        .withOpacity(
-                                        0.5),
-                                    offset:
-                                    const Offset(
-                                        4, 4),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white
-                                        .withOpacity(
-                                        0.8),
-                                    offset:
-                                    const Offset(
-                                        -4, -4),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                                borderRadius:
-                                BorderRadius
-                                    .circular(
-                                    10),
-                              ),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        alignment:
-                                        Alignment
-                                            .topCenter,
-                                        margin:
-                                        const EdgeInsets
-                                            .only(
-                                          top: 5,
-                                          left: 15,
-                                        ),
-                                        height: 30,
-                                        width: 30,
-                                        padding:
-                                        const EdgeInsets
-                                            .only(
-                                          top: 6,
-                                        ),
-                                        decoration:
-                                        BoxDecoration(
-                                          borderRadius:
-                                          BorderRadiusDirectional.circular(
-                                              15.0),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors
-                                                  .grey,
-                                              offset:
-                                              const Offset(
-                                                0.3,
-                                                0.3,
-                                              ),
-                                              blurRadius:
-                                              0.3,
-                                              spreadRadius:
-                                              0.3,
-                                            ),
-                                            const BoxShadow(
-                                              color: Colors
-                                                  .white,
-                                              offset:
-                                              Offset(
-                                                  0.0,
-                                                  0.0),
-                                              blurRadius:
-                                              0.0,
-                                              spreadRadius:
-                                              0.0,
-                                            ),
-                                          ],
-                                        ),
-                                        child:
-                                        const Text(
-                                          "DM",
-                                          style:
-                                          TextStyle(
-                                            fontWeight:
-                                            FontWeight.bold,
-                                            fontSize:
-                                            12,
-                                            color:
-                                            Colors.black,
-                                          ),
-                                          textAlign:
-                                          TextAlign
-                                              .center,
-                                        ),
-                                      ),
-                                      Container(
-                                        alignment:
-                                        Alignment
-                                            .topCenter,
-                                        margin:
-                                        const EdgeInsets
-                                            .only(
-                                          top: 5,
-                                          left: 10,
-                                          right: 10,
-                                        ),
-                                        child:
-                                        const Text(
-                                          "Bilsay Citak",
-                                          style:
-                                          TextStyle(
-                                            color: Colors
-                                                .black,
-                                            letterSpacing:
-                                            0.5,
-                                            fontSize:
-                                            15,
-                                            fontWeight:
-                                            FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Align(
-                                          alignment:
-                                          Alignment
-                                              .topRight,
-                                          child:
-                                          Container(
-                                            margin:
-                                            const EdgeInsets
-                                                .only(
-                                              top: 5,
-                                              right:
-                                              10,
-                                            ),
-                                            child:
-                                            const Icon(
-                                              Icons.star,
-                                              color:
-                                              Colors.yellow,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const Padding(
-                                    padding:
-                                    EdgeInsets
-                                        .only(
-                                      top: 10,
-                                      left: 10,
-                                      right: 10,
-                                      bottom: 10,
-                                    ),
-                                    child: Text(
-                                      "In the realm of real estate, Ben Caballero's name is synonymous with unparalleled success, particularly in the new homes market.",
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+
+                          // Extra bottom space so it doesn't stick to the bottom
+                          const SizedBox(height: 100),
                         ],
                       ),
                     ),
@@ -1611,233 +1726,41 @@ class _About_AgencyState extends State<About_Agency> {
     );
   }
 
-  Widget _tabItem(String label) {
-    return Container(
-      margin: const EdgeInsets.only(left: 5),
-      width: 80,
-      height: 40,
-      padding: const EdgeInsets.only(top: 9),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            offset: const Offset(4, 4),
-            blurRadius: 8,
-            spreadRadius: 2,
-          ),
-          BoxShadow(
-            color: Colors.white.withOpacity(0.8),
-            offset: const Offset(-4, -4),
-            blurRadius: 8,
-            spreadRadius: 2,
-          ),
-        ],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        label,
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-
-  Container buildMyNavBar(BuildContext context) {
-    return Container(
-      height: 50,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
+    Widget _tabItem(String label) {
+      return Container(
+        margin: const EdgeInsets.only(left: 5),
+        width: 80,
+        height: 40,
+        padding: const EdgeInsets.only(top: 9),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              offset: const Offset(4, 4),
+              blurRadius: 8,
+              spreadRadius: 2,
+            ),
+            BoxShadow(
+              color: Colors.white.withOpacity(0.8),
+              offset: const Offset(-4, -4),
+              blurRadius: 8,
+              spreadRadius: 2,
+            ),
+          ],
+          borderRadius: BorderRadius.circular(10),
         ),
-      ),
-      child: Row(
-        mainAxisAlignment:
-        MainAxisAlignment.spaceBetween,
-        crossAxisAlignment:
-        CrossAxisAlignment.center,
-        children: [
-          GestureDetector(
-            onTap: () async {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => Home()),
-              );
-            },
-            child: Padding(
-              padding:
-              const EdgeInsets.symmetric(
-                  horizontal: 20.0),
-              child: Image.asset(
-                "assets/images/home.png",
-                height: 25,
-              ),
-            ),
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () async {
-              final token =
-              await SecureStorage.getToken();
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
 
-              if (token == null || token.isEmpty) {
-                showDialog(
-                  context: context,
-                  builder: (context) =>
-                      AlertDialog(
-                        backgroundColor:
-                        Colors.white,
-                        title: const Text(
-                          "Login Required",
-                          style: TextStyle(
-                              color: Colors.black),
-                        ),
-                        content: const Text(
-                          "Please login to access favorites.",
-                          style: TextStyle(
-                              color: Colors.black),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.pop(
-                                    context),
-                            child: const Text(
-                              "Cancel",
-                              style: TextStyle(
-                                  color:
-                                  Colors.red),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(
-                                  context);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                  const LoginDemo(),
-                                ),
-                              );
-                            },
-                            child: const Text(
-                              "Login",
-                              style: TextStyle(
-                                  color:
-                                  Colors.red),
-                            ),
-                          ),
-                        ],
-                      ),
-                );
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        Fav_Logout(),
-                  ),
-                );
-              }
-            },
-            icon: pageIndex == 2
-                ? const Icon(
-              Icons.favorite,
-              color: Colors.red,
-              size: 30,
-            )
-                : const Icon(
-              Icons.favorite_border_outlined,
-              color: Colors.red,
-              size: 30,
-            ),
-          ),
-          IconButton(
-            tooltip: "Email",
-            icon: const Icon(
-              Icons.email_outlined,
-              color: Colors.red,
-              size: 28,
-            ),
-            onPressed: () async {
-              final Uri emailUri =
-              Uri.parse(
-                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
-              );
 
-              if (await canLaunchUrl(
-                  emailUri)) {
-                await launchUrl(emailUri);
-              } else {
-                showDialog(
-                  context: context,
-                  builder: (context) =>
-                      AlertDialog(
-                        backgroundColor:
-                        Colors.white,
-                        title: const Text(
-                          'Email not available',
-                          style: TextStyle(
-                              color: Colors.black),
-                        ),
-                        content: const Text(
-                          'No email app is configured on this device. Please add a mail account first.',
-                          style: TextStyle(
-                              color: Colors.black),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.pop(
-                                    context),
-                            child: const Text(
-                              'OK',
-                              style: TextStyle(
-                                  color:
-                                  Colors.red),
-                            ),
-                          ),
-                        ],
-                      ),
-                );
-              }
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.only(
-                right: 20.0),
-            child: IconButton(
-              enableFeedback: false,
-              onPressed: () {
-                setState(() {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          My_Account(),
-                    ),
-                  );
-                });
-              },
-              icon: pageIndex == 3
-                  ? const Icon(
-                Icons.dehaze,
-                color: Colors.red,
-                size: 35,
-              )
-                  : const Icon(
-                Icons.dehaze_outlined,
-                color: Colors.red,
-                size: 35,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+
+
+
   }
 
   // Small label used in the Agents cards
@@ -1920,4 +1843,4 @@ class _About_AgencyState extends State<About_Agency> {
       ),
     );
   }
-}
+

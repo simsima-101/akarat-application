@@ -2443,36 +2443,40 @@ class _MyHomePageState extends State<HomeDemo> {
             onPressed: () {
               showEmailAgentDialog(
                 context,
-                subtitle:
-                    'Low Floor | Ready to Move-in | Available October 2025',
+                subtitle: 'Low Floor | Ready to Move-in | Available October 2025',
                 initialMessage:
-                    'Hi, I found your property with ref: P20250910-RPQY on Akarat. Please contact me. Thank you.',
+                'Hi, I found your property with ref: P20250910-RPQY on Akarat. Please contact me. Thank you.',
               );
             },
           ),
 
+// Example: Another dialog from Home screen
+          IconButton(
+            tooltip: "Contact",
+            icon: const Icon(Icons.contact_page_outlined, color: Colors.red, size: 28),
+            onPressed: () {
+              // This context is from your Home screen
+              showHomeContactDialog(context);
+            },
+          ),
+
+// Account / Menu Button
           Padding(
-            padding: const EdgeInsets.only(
-                right: 20.0), // consistent spacing from right edge
+            padding: const EdgeInsets.only(right: 20.0), // spacing from right edge
             child: IconButton(
               enableFeedback: false,
               onPressed: () {
-                setState(() {
-                  if (token == '') {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => My_Account()));
-                  } else {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => My_Account()));
-                  }
-                });
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => My_Account()),
+                );
               },
               icon: pageIndex == 3
                   ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-                  : const Icon(Icons.dehaze_outlined,
-                      color: Colors.red, size: 35),
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
             ),
           ),
+
         ],
       ),
     );

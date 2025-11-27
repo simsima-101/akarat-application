@@ -23,8 +23,15 @@ import 'login.dart';
 import 'my_account.dart';
 
 class FliterList extends StatefulWidget {
+
+  final String selectedPurpose;      // Add this parameter
+  final String selectedPropertyType; // Add this parameter
   const FliterList({
     super.key,
+    this.selectedPurpose = '',        // Default value provided
+    this.selectedPropertyType = '', // Default value provided
+
+
   });
 
   @override
