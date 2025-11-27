@@ -16,6 +16,7 @@ import '../secure_storage.dart';
 import '../services/api_service.dart';
 import '../services/favorite_service.dart';
 import '../utils/fav_logout.dart';
+import 'featured_detail.dart';
 import 'login.dart';
 import 'my_account.dart';
 
@@ -23,11 +24,6 @@ import 'package:provider/provider.dart';
 import '../providers/favorite_provider.dart';
 
 import 'package:Akarat/screen/new_project_detail.dart';
-
-
-
-
-
 
 void main(){
   runApp(const New_Projects());
@@ -481,7 +477,7 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => NewProjectDetail(id: id), // ✅ new
+                            builder: (context) => Featured_Detail(data: item.id.toString()),
                           ),
                         );
                       },
