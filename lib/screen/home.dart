@@ -81,15 +81,6 @@ String selectedSort = "Featured";
 class _MyHomePageState extends State<HomeDemo> {
   final ScrollController _scrollController = ScrollController();
 
-
-  void checkCurrentBuildVersion() {
-    String version = const String.fromEnvironment('FLUTTER_BUILD_NAME', defaultValue: 'unknown');
-    String buildNumber = const String.fromEnvironment('FLUTTER_BUILD_NUMBER', defaultValue: 'unknown');
-
-    print("Current Version: $version");
-    print("Current Build Number: $buildNumber");
-  }
-
   String purpose = '';
   String propertyType = ''; // <— add this
 
@@ -98,9 +89,9 @@ class _MyHomePageState extends State<HomeDemo> {
       'featured'; // 'featured' | 'newest' | 'price_asc' | 'price_desc'
 
   List<featured.Data> _mergeDedupFeatured(
-      List<featured.Data> a,
-      List<featured.Data> b,
-      ) {
+    List<featured.Data> a,
+    List<featured.Data> b,
+  ) {
     final map = <int, featured.Data>{};
     for (final p in [...a, ...b]) {
       final id = int.tryParse(p.id?.toString() ?? '') ?? -1;
@@ -258,7 +249,7 @@ class _MyHomePageState extends State<HomeDemo> {
 
     try {
       final List<Property> properties =
-      (await ApiService.getSavedProperties(token)).cast<Property>();
+          (await ApiService.getSavedProperties(token)).cast<Property>();
       setState(() {
         savedProperties = properties;
       });
@@ -317,12 +308,6 @@ class _MyHomePageState extends State<HomeDemo> {
   void initState() {
     super.initState();
 
-    String version = const String.fromEnvironment('FLUTTER_BUILD_NAME', defaultValue: 'unknown');
-    String buildNumber = const String.fromEnvironment('FLUTTER_BUILD_NUMBER', defaultValue: 'unknown');
-
-    print("🔍 Current app version: $version");
-    print("🔍 Current build number: $buildNumber");
-
     // Load token once, then fetch saved properties if logged in
     _loadToken().then((_) {
       if (_token.isNotEmpty) {
@@ -371,31 +356,31 @@ class _MyHomePageState extends State<HomeDemo> {
 
   Future<bool> _onWillPop() async {
     return (await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: Text('Are you sure?'),
-        content: Text('Do you want to exit an App'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(
-              'No',
-              style: TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.bold),
-            ),
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            title: Text('Are you sure?'),
+            content: Text('Do you want to exit an App'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(
+                  'No',
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(
+                  'Yes',
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              'Yes',
-              style: TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    )) ??
+        )) ??
         false;
   }
 
@@ -509,12 +494,12 @@ class _MyHomePageState extends State<HomeDemo> {
             final last = m.lastPage ?? 1;
             nextPageUrl = (cur < last)
                 ? ApiService.buildUri(
-              'properties',
-              query: {
-                'page': '${cur + 1}',
-                'sort_by': _currentSortKey,
-              },
-            ).toString()
+                    'properties',
+                    query: {
+                      'page': '${cur + 1}',
+                      'sort_by': _currentSortKey,
+                    },
+                  ).toString()
                 : null;
           } else {
             nextPageUrl = null;
@@ -549,9 +534,9 @@ class _MyHomePageState extends State<HomeDemo> {
           //body: pages[pageIndex],
           backgroundColor: Colors.white,
           body:
-          // SingleChildScrollView(
-          // child:
-          Column(
+              // SingleChildScrollView(
+              // child:
+              Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(
@@ -591,7 +576,7 @@ class _MyHomePageState extends State<HomeDemo> {
               // Responsive universal search bar
               Padding(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Container(
                   width: double.infinity,
                   height: 55,
@@ -629,16 +614,16 @@ class _MyHomePageState extends State<HomeDemo> {
                                       context,
                                       MaterialPageRoute(
                                         builder: (_) => FliterList(
-                                          // location: loc,
-                                          // filterModel: filterModelData,
-                                          // selectedPurpose: (purpose.isNotEmpty
-                                          //     ? purpose
-                                          //     : 'Rent'),
-                                          // selectedPropertyType:
-                                          //     (propertyType.isNotEmpty
-                                          //         ? propertyType
-                                          //         : ''),
-                                        ),
+                                            // location: loc,
+                                            // filterModel: filterModelData,
+                                            // selectedPurpose: (purpose.isNotEmpty
+                                            //     ? purpose
+                                            //     : 'Rent'),
+                                            // selectedPropertyType:
+                                            //     (propertyType.isNotEmpty
+                                            //         ? propertyType
+                                            //         : ''),
+                                            ),
                                       ),
                                     );
                                   }
@@ -653,7 +638,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                   focusNode: _focusNode,
                                   decoration: InputDecoration(
                                     hintText:
-                                    "Search for a locality, area or city",
+                                        "Search for a locality, area or city",
                                     hintStyle: TextStyle(
                                         color: Colors.grey, fontSize: 14),
                                     border: InputBorder.none,
@@ -673,12 +658,12 @@ class _MyHomePageState extends State<HomeDemo> {
                                   onSubmitted: (value) async {
                                     if (value.isNotEmpty) {
                                       final cleanedValue =
-                                      value.trim().toLowerCase();
+                                          value.trim().toLowerCase();
 
                                       final locModel =
-                                      locationSuggestions.firstWhere(
-                                            (e) =>
-                                        e.location!.trim().toLowerCase() ==
+                                          locationSuggestions.firstWhere(
+                                        (e) =>
+                                            e.location!.trim().toLowerCase() ==
                                             cleanedValue,
                                         // orElse: () => ,
                                       );
@@ -686,28 +671,28 @@ class _MyHomePageState extends State<HomeDemo> {
                                       await context
                                           .read<LocationPickerProvider>()
                                           .addSelectedLocation(
-                                        locationModel: locModel,
-                                      );
+                                            locationModel: locModel,
+                                          );
 
                                       await context
                                           .read<FilterProvider>()
                                           .updateFilterCount(context)
                                           .then(
-                                            (value) {
+                                        (value) {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) => FliterList(
-                                                // location: value,
-                                                // filterModel: filterModelData,
-                                                // selectedPurpose: (purpose.isNotEmpty
-                                                //     ? purpose
-                                                //     : 'Rent'),
-                                                // selectedPropertyType:
-                                                //     (propertyType.isNotEmpty
-                                                //         ? propertyType
-                                                //         : ''),
-                                              ),
+                                                  // location: value,
+                                                  // filterModel: filterModelData,
+                                                  // selectedPurpose: (purpose.isNotEmpty
+                                                  //     ? purpose
+                                                  //     : 'Rent'),
+                                                  // selectedPropertyType:
+                                                  //     (propertyType.isNotEmpty
+                                                  //         ? propertyType
+                                                  //         : ''),
+                                                  ),
                                             ),
                                           );
                                         },
@@ -755,7 +740,7 @@ class _MyHomePageState extends State<HomeDemo> {
                   curve: Curves.easeOut,
                   height: 220,
                   margin:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -852,12 +837,12 @@ class _MyHomePageState extends State<HomeDemo> {
                     itemCount: searchResults.length,
                     itemBuilder: (_, i) {
                       final propertyModel.Property p =
-                      searchResults[i] as propertyModel.Property;
+                          searchResults[i] as propertyModel.Property;
 
                       return ListTile(
                         leading: (p.media?.isNotEmpty ?? false)
                             ? Image.network(p.media!.first.originalUrl ?? '',
-                            width: 50)
+                                width: 50)
                             : null,
                         title: Text(p.title ?? 'No Title'),
                         subtitle: Text(
@@ -876,12 +861,12 @@ class _MyHomePageState extends State<HomeDemo> {
                   ),
                 )
               else
-              // …your existing featured-properties / grid code…
+                // …your existing featured-properties / grid code…
 
-              //images gridview
-              //   Expanded(
-              // child: SingleChildScrollView(
-              //  child:
+                //images gridview
+                //   Expanded(
+                // child: SingleChildScrollView(
+                //  child:
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: () async {
@@ -927,25 +912,25 @@ class _MyHomePageState extends State<HomeDemo> {
                                           boxShadow: [
                                             BoxShadow(
                                               color:
-                                              Colors.grey.withOpacity(0.8),
+                                                  Colors.grey.withOpacity(0.8),
                                               offset: Offset(7, 7),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                             BoxShadow(
                                               color:
-                                              Colors.white.withOpacity(0.8),
+                                                  Colors.white.withOpacity(0.8),
                                               offset: Offset(-4, -4),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                           ],
                                           borderRadius:
-                                          BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                         ),
                                         child: Column(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                              MainAxisAlignment.center,
                                           children: [
                                             Image.asset(
                                               "assets/images/ak-rent-red.png",
@@ -960,7 +945,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                                     letterSpacing: 0.5,
                                                     fontSize: 11,
                                                     fontWeight:
-                                                    FontWeight.bold),
+                                                        FontWeight.bold),
                                               ),
                                             )
                                           ],
@@ -981,8 +966,8 @@ class _MyHomePageState extends State<HomeDemo> {
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) => filter.Filter(
-                                              data: purpose,
-                                            )));
+                                                  data: purpose,
+                                                )));
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.all(8),
@@ -997,25 +982,25 @@ class _MyHomePageState extends State<HomeDemo> {
                                           boxShadow: [
                                             BoxShadow(
                                               color:
-                                              Colors.grey.withOpacity(0.8),
+                                                  Colors.grey.withOpacity(0.8),
                                               offset: Offset(7, 7),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                             BoxShadow(
                                               color:
-                                              Colors.white.withOpacity(0.8),
+                                                  Colors.white.withOpacity(0.8),
                                               offset: Offset(-4, -4),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                           ],
                                           borderRadius:
-                                          BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                         ),
                                         child: Column(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                              MainAxisAlignment.center,
                                           children: [
                                             Image.asset(
                                               "assets/images/ak-sale.png",
@@ -1030,7 +1015,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                                     letterSpacing: 0.5,
                                                     fontSize: 11,
                                                     fontWeight:
-                                                    FontWeight.bold),
+                                                        FontWeight.bold),
                                               ),
                                             )
                                           ],
@@ -1051,9 +1036,9 @@ class _MyHomePageState extends State<HomeDemo> {
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) => filter.Filter(
-                                              data: purpose,
-                                              optionType: 'offplan',
-                                            )));
+                                                  data: purpose,
+                                                  optionType: 'offplan',
+                                                )));
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.all(5),
@@ -1068,25 +1053,25 @@ class _MyHomePageState extends State<HomeDemo> {
                                           boxShadow: [
                                             BoxShadow(
                                               color:
-                                              Colors.grey.withOpacity(0.8),
+                                                  Colors.grey.withOpacity(0.8),
                                               offset: Offset(7, 7),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                             BoxShadow(
                                               color:
-                                              Colors.white.withOpacity(0.8),
+                                                  Colors.white.withOpacity(0.8),
                                               offset: Offset(-4, -4),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                           ],
                                           borderRadius:
-                                          BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                         ),
                                         child: Column(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                              MainAxisAlignment.center,
                                           children: [
                                             Padding(
                                               padding: const EdgeInsets.only(
@@ -1098,7 +1083,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                             ),
                                             Padding(
                                               padding:
-                                              const EdgeInsets.only(top: 5),
+                                                  const EdgeInsets.only(top: 5),
                                               child: Text(
                                                 "Off-Plan-Properties",
                                                 style: TextStyle(
@@ -1106,7 +1091,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                                     letterSpacing: 0.5,
                                                     fontSize: 10,
                                                     fontWeight:
-                                                    FontWeight.bold),
+                                                        FontWeight.bold),
                                               ),
                                             )
                                           ],
@@ -1134,9 +1119,9 @@ class _MyHomePageState extends State<HomeDemo> {
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) => filter.Filter(
-                                              data: purpose,
-                                              propertyType: 1,
-                                            )));
+                                                  data: purpose,
+                                                  propertyType: 1,
+                                                )));
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.all(8),
@@ -1151,25 +1136,25 @@ class _MyHomePageState extends State<HomeDemo> {
                                           boxShadow: [
                                             BoxShadow(
                                               color:
-                                              Colors.grey.withOpacity(0.8),
+                                                  Colors.grey.withOpacity(0.8),
                                               offset: Offset(7, 7),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                             BoxShadow(
                                               color:
-                                              Colors.white.withOpacity(0.8),
+                                                  Colors.white.withOpacity(0.8),
                                               offset: Offset(-4, -4),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                           ],
                                           borderRadius:
-                                          BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                         ),
                                         child: Column(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                              MainAxisAlignment.center,
                                           children: [
                                             Padding(
                                               padding: const EdgeInsets.only(
@@ -1188,7 +1173,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                                     letterSpacing: 0.5,
                                                     fontSize: 11,
                                                     fontWeight:
-                                                    FontWeight.bold),
+                                                        FontWeight.bold),
                                               ),
                                             )
                                           ],
@@ -1209,10 +1194,10 @@ class _MyHomePageState extends State<HomeDemo> {
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) => filter.Filter(
-                                              data: purpose,
-                                              propertyCategoryType:
-                                              'Villa Compound',
-                                            )));
+                                                  data: purpose,
+                                                  propertyCategoryType:
+                                                      'Villa Compound',
+                                                )));
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.all(5),
@@ -1227,25 +1212,25 @@ class _MyHomePageState extends State<HomeDemo> {
                                           boxShadow: [
                                             BoxShadow(
                                               color:
-                                              Colors.grey.withOpacity(0.8),
+                                                  Colors.grey.withOpacity(0.8),
                                               offset: Offset(7, 7),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                             BoxShadow(
                                               color:
-                                              Colors.white.withOpacity(0.8),
+                                                  Colors.white.withOpacity(0.8),
                                               offset: Offset(-4, -4),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                           ],
                                           borderRadius:
-                                          BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                         ),
                                         child: Column(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                              MainAxisAlignment.center,
                                           children: [
                                             Padding(
                                               padding: const EdgeInsets.only(
@@ -1264,7 +1249,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                                     letterSpacing: 0.5,
                                                     fontSize: 11,
                                                     fontWeight:
-                                                    FontWeight.bold),
+                                                        FontWeight.bold),
                                               ),
                                             )
                                           ],
@@ -1285,11 +1270,11 @@ class _MyHomePageState extends State<HomeDemo> {
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) => filter.Filter(
-                                              data: purpose,
-                                              propertyType: 0,
-                                              propertyCategoryType:
-                                              'Apartment',
-                                            )));
+                                                  data: purpose,
+                                                  propertyType: 0,
+                                                  propertyCategoryType:
+                                                      'Apartment',
+                                                )));
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.all(5),
@@ -1304,25 +1289,25 @@ class _MyHomePageState extends State<HomeDemo> {
                                           boxShadow: [
                                             BoxShadow(
                                               color:
-                                              Colors.grey.withOpacity(0.8),
+                                                  Colors.grey.withOpacity(0.8),
                                               offset: Offset(7, 7),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                             BoxShadow(
                                               color:
-                                              Colors.white.withOpacity(0.8),
+                                                  Colors.white.withOpacity(0.8),
                                               offset: Offset(-4, -4),
                                               blurRadius: 8,
                                               spreadRadius: 2,
                                             ),
                                           ],
                                           borderRadius:
-                                          BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                         ),
                                         child: Column(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                              MainAxisAlignment.center,
                                           children: [
                                             Padding(
                                               padding: const EdgeInsets.only(
@@ -1341,7 +1326,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                                     letterSpacing: 0.5,
                                                     fontSize: 11,
                                                     fontWeight:
-                                                    FontWeight.bold),
+                                                        FontWeight.bold),
                                               ),
                                             )
                                           ],
@@ -1398,9 +1383,9 @@ class _MyHomePageState extends State<HomeDemo> {
                                               top: 10, left: 10, right: 5),
                                           child: Column(
                                             mainAxisAlignment:
-                                            MainAxisAlignment.start,
+                                                MainAxisAlignment.start,
                                             crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 "New Projects            ",
@@ -1408,12 +1393,12 @@ class _MyHomePageState extends State<HomeDemo> {
                                                     color: Colors.black,
                                                     fontSize: 18,
                                                     fontWeight:
-                                                    FontWeight.bold),
+                                                        FontWeight.bold),
                                                 textAlign: TextAlign.left,
                                               ),
                                               Text(
                                                 "Discover more about the UAE "
-                                                    "real estate market",
+                                                "real estate market",
                                                 style: TextStyle(
                                                   color: Colors.black,
                                                   fontSize: 14,
@@ -1431,7 +1416,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                           width: screenSize.width * 0.5,
                                           decoration: BoxDecoration(
                                               borderRadius:
-                                              BorderRadius.circular(10)),
+                                                  BorderRadius.circular(10)),
                                           // color: Colors.grey,
                                           child: Image.asset(
                                             'assets/images/banner1.jpg',
@@ -1498,7 +1483,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                             color: Colors
                                                 .white, // 👈 Your dropdown background
                                             borderRadius:
-                                            BorderRadius.circular(12),
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
@@ -1507,7 +1492,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                                 onTap: () {
                                                   Navigator.pop(context);
                                                   final selectedKey =
-                                                  sortMap[option]!;
+                                                      sortMap[option]!;
                                                   setState(() {
                                                     selectedSort =
                                                         option; // for UI label
@@ -1516,13 +1501,13 @@ class _MyHomePageState extends State<HomeDemo> {
                                                     _currentSortKey =
                                                         selectedKey; // <-- persist for pagination
                                                     featuredModel =
-                                                    null; // clear existing data
+                                                        null; // clear existing data
                                                     nextPageUrl =
-                                                    null; // reset pagination
+                                                        null; // reset pagination
                                                   });
                                                   getFeaturedProperties(
                                                       forceRefresh:
-                                                      true); // will use _currentSortKey
+                                                          true); // will use _currentSortKey
                                                   _scrollController.jumpTo(0);
                                                 },
                                                 child: Column(
@@ -1534,8 +1519,8 @@ class _MyHomePageState extends State<HomeDemo> {
                                                           vertical: 12),
                                                       child: Row(
                                                         mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
                                                         children: [
                                                           Text(
                                                             option,
@@ -1599,251 +1584,251 @@ class _MyHomePageState extends State<HomeDemo> {
                               ? const Center(child: ShimmerCard())
                               :
 
-                          //Expanded(
-                          // child:
-                          /*Expanded(
+                              //Expanded(
+                              // child:
+                              /*Expanded(
                                           child:*/
-                          ListView.builder(
-                              shrinkWrap: true,
-                              padding: EdgeInsets.zero,
-                              physics: NeverScrollableScrollPhysics(),
+                              ListView.builder(
+                                  shrinkWrap: true,
+                                  padding: EdgeInsets.zero,
+                                  physics: NeverScrollableScrollPhysics(),
 
-                              // 👈 only if inside a parent scrollable view
-                              itemCount:
-                              (featuredModel?.data?.length ?? 0) +
-                                  (nextPageUrl != null ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                final properties =
-                                    featuredModel?.data ?? [];
+                                  // 👈 only if inside a parent scrollable view
+                                  itemCount:
+                                      (featuredModel?.data?.length ?? 0) +
+                                          (nextPageUrl != null ? 1 : 0),
+                                  itemBuilder: (context, index) {
+                                    final properties =
+                                        featuredModel?.data ?? [];
 
-                                // 🔄 Show loader at end if next page exists
-                                if (index == properties.length &&
-                                    nextPageUrl != null) {
-                                  //  return const CircularProgressIndicator(); previous code
-                                  return Center(
-                                      child:
-                                      const CircularProgressIndicator());
-                                } else if (index == properties.length &&
-                                    nextPageUrl == null) {
-                                  return const SizedBox
-                                      .shrink(); // Nothing more to show
-                                }
+                                    // 🔄 Show loader at end if next page exists
+                                    if (index == properties.length &&
+                                        nextPageUrl != null) {
+                                      //  return const CircularProgressIndicator(); previous code
+                                      return Center(
+                                          child:
+                                              const CircularProgressIndicator());
+                                    } else if (index == properties.length &&
+                                        nextPageUrl == null) {
+                                      return const SizedBox
+                                          .shrink(); // Nothing more to show
+                                    }
 
-                                // 🔐 Safety check (extra)
-                                if (index >= properties.length)
-                                  return const SizedBox.shrink();
+                                    // 🔐 Safety check (extra)
+                                    if (index >= properties.length)
+                                      return const SizedBox.shrink();
 
-                                final item = properties[index];
+                                    final item = properties[index];
 
-                                return GestureDetector(
-                                  onTap: () {
-                                    String id = item.id.toString();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            Featured_Detail(data: id),
-                                      ),
-                                    );
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 8),
-                                    child: Card(
-                                      color: Colors.white,
-                                      shadowColor: Colors.white,
-                                      elevation: 10,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                        BorderRadius.circular(12),
-                                      ),
+                                    return GestureDetector(
+                                      onTap: () {
+                                        String id = item.id.toString();
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                Featured_Detail(data: id),
+                                          ),
+                                        );
+                                      },
                                       child: Padding(
-                                        padding: const EdgeInsets.all(10),
-                                        child: Column(
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                            children: [
-                                              Column(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 8),
+                                        child: Card(
+                                          color: Colors.white,
+                                          shadowColor: Colors.white,
+                                          elevation: 10,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
-                                                  Stack(
-                                                    clipBehavior: Clip.none,
-                                                    // ✅ Allows the overlap outside the Stack
+                                                  Column(
                                                     children: [
-                                                      // 🖼️ Property Image Carousel with Rounded Corners
-                                                      ClipRRect(
-                                                        borderRadius:
-                                                        BorderRadius
-                                                            .circular(
-                                                            12),
-                                                        child: AspectRatio(
-                                                          aspectRatio: 1.4,
-                                                          child: PageView
-                                                              .builder(
-                                                            controller:
-                                                            _pageController,
-                                                            scrollDirection:
-                                                            Axis.horizontal,
-                                                            itemCount: item
-                                                                .media
-                                                                ?.length ??
-                                                                0,
-                                                            onPageChanged:
-                                                                (index) {
-                                                              setState(() {
-                                                                _currentImageIndex =
-                                                                    index;
-                                                              });
-                                                            },
-                                                            itemBuilder:
-                                                                (context,
-                                                                imgIndex) {
-                                                              return CachedNetworkImage(
-                                                                imageUrl: item
-                                                                    .media![
-                                                                imgIndex]
-                                                                    .originalUrl
-                                                                    .toString(),
-                                                                fit: BoxFit
-                                                                    .cover,
-                                                              );
-                                                            },
+                                                      Stack(
+                                                        clipBehavior: Clip.none,
+                                                        // ✅ Allows the overlap outside the Stack
+                                                        children: [
+                                                          // 🖼️ Property Image Carousel with Rounded Corners
+                                                          ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        12),
+                                                            child: AspectRatio(
+                                                              aspectRatio: 1.4,
+                                                              child: PageView
+                                                                  .builder(
+                                                                controller:
+                                                                    _pageController,
+                                                                scrollDirection:
+                                                                    Axis.horizontal,
+                                                                itemCount: item
+                                                                        .media
+                                                                        ?.length ??
+                                                                    0,
+                                                                onPageChanged:
+                                                                    (index) {
+                                                                  setState(() {
+                                                                    _currentImageIndex =
+                                                                        index;
+                                                                  });
+                                                                },
+                                                                itemBuilder:
+                                                                    (context,
+                                                                        imgIndex) {
+                                                                  return CachedNetworkImage(
+                                                                    imageUrl: item
+                                                                        .media![
+                                                                            imgIndex]
+                                                                        .originalUrl
+                                                                        .toString(),
+                                                                    fit: BoxFit
+                                                                        .cover,
+                                                                  );
+                                                                },
+                                                              ),
+                                                            ),
                                                           ),
-                                                        ),
-                                                      ),
 
-                                                      // ⚪ Image Indicator Dots
-                                                      Positioned(
-                                                        bottom: 12,
-                                                        left: 0,
-                                                        right: 0,
-                                                        child: Row(
-                                                          mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                          children:
-                                                          List.generate(
-                                                            item.media
-                                                                ?.length ??
-                                                                0,
+                                                          // ⚪ Image Indicator Dots
+                                                          Positioned(
+                                                            bottom: 12,
+                                                            left: 0,
+                                                            right: 0,
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              children:
+                                                                  List.generate(
+                                                                item.media
+                                                                        ?.length ??
+                                                                    0,
                                                                 (index) {
-                                                              final distance =
-                                                              (index -
-                                                                  _currentImageIndex)
-                                                                  .abs();
-                                                              double scale;
-                                                              double
-                                                              opacity;
+                                                                  final distance =
+                                                                      (index -
+                                                                              _currentImageIndex)
+                                                                          .abs();
+                                                                  double scale;
+                                                                  double
+                                                                      opacity;
 
-                                                              if (distance ==
-                                                                  0) {
-                                                                scale = 1.2;
-                                                                opacity =
-                                                                1.0;
-                                                              } else if (distance ==
-                                                                  1) {
-                                                                scale = 1.0;
-                                                                opacity =
-                                                                0.7;
-                                                              } else if (distance ==
-                                                                  2) {
-                                                                scale = 0.8;
-                                                                opacity =
-                                                                0.5;
-                                                              } else {
-                                                                scale = 0.5;
-                                                                opacity =
-                                                                0.0;
-                                                              }
+                                                                  if (distance ==
+                                                                      0) {
+                                                                    scale = 1.2;
+                                                                    opacity =
+                                                                        1.0;
+                                                                  } else if (distance ==
+                                                                      1) {
+                                                                    scale = 1.0;
+                                                                    opacity =
+                                                                        0.7;
+                                                                  } else if (distance ==
+                                                                      2) {
+                                                                    scale = 0.8;
+                                                                    opacity =
+                                                                        0.5;
+                                                                  } else {
+                                                                    scale = 0.5;
+                                                                    opacity =
+                                                                        0.0;
+                                                                  }
 
-                                                              return AnimatedOpacity(
-                                                                duration: Duration(
-                                                                    milliseconds:
-                                                                    300),
-                                                                opacity:
-                                                                opacity,
-                                                                child:
-                                                                SizedBox(
-                                                                  width: 12,
-                                                                  // fixed size for layout stability
-                                                                  height:
-                                                                  12,
-                                                                  child:
-                                                                  Center(
+                                                                  return AnimatedOpacity(
+                                                                    duration: Duration(
+                                                                        milliseconds:
+                                                                            300),
+                                                                    opacity:
+                                                                        opacity,
                                                                     child:
-                                                                    Container(
-                                                                      width:
-                                                                      8 * scale,
+                                                                        SizedBox(
+                                                                      width: 12,
+                                                                      // fixed size for layout stability
                                                                       height:
-                                                                      8 * scale,
-                                                                      decoration:
-                                                                      BoxDecoration(
-                                                                        color:
-                                                                        Colors.white,
-                                                                        shape:
-                                                                        BoxShape.circle,
+                                                                          12,
+                                                                      child:
+                                                                          Center(
+                                                                        child:
+                                                                            Container(
+                                                                          width:
+                                                                              8 * scale,
+                                                                          height:
+                                                                              8 * scale,
+                                                                          decoration:
+                                                                              BoxDecoration(
+                                                                            color:
+                                                                                Colors.white,
+                                                                            shape:
+                                                                                BoxShape.circle,
+                                                                          ),
+                                                                        ),
                                                                       ),
                                                                     ),
-                                                                  ),
-                                                                ),
-                                                              );
-                                                            },
+                                                                  );
+                                                                },
+                                                              ),
+                                                            ),
                                                           ),
-                                                        ),
-                                                      ),
 
-                                                      // ❤️ Favorite Icon
-                                                      // ❤️ Favorite Icon
-                                                      Positioned(
-                                                        top: 10,
-                                                        right: 10,
-                                                        child: Material(
-                                                          color:
-                                                          Colors.white,
-                                                          shape:
-                                                          const CircleBorder(),
-                                                          elevation: 4,
-                                                          child: Consumer<
-                                                              FavoriteProvider>(
-                                                            builder: (context,
-                                                                favProvider,
-                                                                _) {
-                                                              final isLoggedIn =
-                                                                  token
-                                                                      .isNotEmpty;
-                                                              final isFav =
-                                                                  isLoggedIn &&
-                                                                      favProvider
-                                                                          .isFavorite(item.id!); // ✅ Only true for logged-in users
+                                                          // ❤️ Favorite Icon
+                                                          // ❤️ Favorite Icon
+                                                          Positioned(
+                                                            top: 10,
+                                                            right: 10,
+                                                            child: Material(
+                                                              color:
+                                                                  Colors.white,
+                                                              shape:
+                                                                  const CircleBorder(),
+                                                              elevation: 4,
+                                                              child: Consumer<
+                                                                  FavoriteProvider>(
+                                                                builder: (context,
+                                                                    favProvider,
+                                                                    _) {
+                                                                  final isLoggedIn =
+                                                                      token
+                                                                          .isNotEmpty;
+                                                                  final isFav =
+                                                                      isLoggedIn &&
+                                                                          favProvider
+                                                                              .isFavorite(item.id!); // ✅ Only true for logged-in users
 
-                                                              return IconButton(
-                                                                icon: Icon(
-                                                                  isFav
-                                                                      ? Icons
-                                                                      .favorite
-                                                                      : Icons
-                                                                      .favorite_border,
-                                                                  color: isFav
-                                                                      ? Colors
-                                                                      .red
-                                                                      : Colors
-                                                                      .grey, // ✅ Grey for logged-out users
-                                                                  size: 20,
-                                                                ),
-                                                                onPressed:
-                                                                    () async {
-                                                                  if (!isLoggedIn) {
-                                                                    // 🔒 Show login prompt
-                                                                    showDialog(
-                                                                      context:
-                                                                      context,
-                                                                      builder: (ctx) =>
-                                                                          Dialog(
+                                                                  return IconButton(
+                                                                    icon: Icon(
+                                                                      isFav
+                                                                          ? Icons
+                                                                              .favorite
+                                                                          : Icons
+                                                                              .favorite_border,
+                                                                      color: isFav
+                                                                          ? Colors
+                                                                              .red
+                                                                          : Colors
+                                                                              .grey, // ✅ Grey for logged-out users
+                                                                      size: 20,
+                                                                    ),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      if (!isLoggedIn) {
+                                                                        // 🔒 Show login prompt
+                                                                        showDialog(
+                                                                          context:
+                                                                              context,
+                                                                          builder: (ctx) =>
+                                                                              Dialog(
                                                                             backgroundColor:
-                                                                            Colors.transparent,
+                                                                                Colors.transparent,
                                                                             insetPadding:
-                                                                            EdgeInsets.zero,
+                                                                                EdgeInsets.zero,
                                                                             child:
-                                                                            Container(
+                                                                                Container(
                                                                               height: 70,
                                                                               margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
                                                                               decoration: BoxDecoration(
@@ -1902,281 +1887,281 @@ class _MyHomePageState extends State<HomeDemo> {
                                                                               ),
                                                                             ),
                                                                           ),
-                                                                    );
-                                                                    return;
-                                                                  }
+                                                                        );
+                                                                        return;
+                                                                      }
 
-                                                                  // ✅ Use Provider's API-integrated method
-                                                                  final success = await favProvider.toggleFavoriteWithApi(
-                                                                      item.id!,
-                                                                      token,
-                                                                      context);
+                                                                      // ✅ Use Provider's API-integrated method
+                                                                      final success = await favProvider.toggleFavoriteWithApi(
+                                                                          item.id!,
+                                                                          token,
+                                                                          context);
 
-                                                                  if (!success) {
-                                                                    ScaffoldMessenger.of(context)
-                                                                        .showSnackBar(
-                                                                      const SnackBar(
-                                                                          content: Text("Failed to update favorite.")),
-                                                                    );
-                                                                  }
+                                                                      if (!success) {
+                                                                        ScaffoldMessenger.of(context)
+                                                                            .showSnackBar(
+                                                                          const SnackBar(
+                                                                              content: Text("Failed to update favorite.")),
+                                                                        );
+                                                                      }
+                                                                    },
+                                                                  );
                                                                 },
-                                                              );
-                                                            },
+                                                              ),
+                                                            ),
                                                           ),
+
+                                                          // 👈 returns an empty widget when not logged in
+
+                                                          // 👈 Return nothing if not logged in
+
+                                                          // 🧑‍💼 Overlapping Agent Profile Image
+                                                          // 🧑‍💼 Overlapping Agent Profile Image
+                                                          // 🧑‍💼 Agent Profile with Navigation to Featured_Detail
+                                                          // 🟢 Positioned Circle Avatar (left: 10)
+                                                          Positioned(
+                                                            bottom: -30,
+                                                            left: 10,
+                                                            child:
+                                                                GestureDetector(
+                                                              onTap: () {
+                                                                Navigator.push(
+                                                                  context,
+                                                                  MaterialPageRoute(
+                                                                    builder: (context) => Featured_Detail(
+                                                                        data: item
+                                                                            .id
+                                                                            .toString()),
+                                                                  ),
+                                                                );
+                                                              },
+                                                              child: Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .center,
+                                                                children: [
+                                                                  CircleAvatar(
+                                                                    radius: 28,
+                                                                    backgroundImage: (item.agentImage !=
+                                                                                null &&
+                                                                            item
+                                                                                .agentImage!.isNotEmpty)
+                                                                        ? CachedNetworkImageProvider(item
+                                                                            .agentImage!)
+                                                                        : const AssetImage("assets/images/dummy.jpg")
+                                                                            as ImageProvider,
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          6),
+                                                                  Transform
+                                                                      .translate(
+                                                                    offset: const Offset(
+                                                                        -5,
+                                                                        0), // shift 4 pixels to the left
+                                                                    child: Text(
+                                                                      "AGENT",
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontSize:
+                                                                            12,
+                                                                        fontWeight:
+                                                                            FontWeight.w500,
+                                                                        color: Color(
+                                                                            0xFF1A73E9),
+                                                                        letterSpacing:
+                                                                            0.5,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+
+                                                      // 🔽 Spacer so that the overlapping image is not clipped
+                                                      const SizedBox(
+                                                          height: 15),
+
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                left: 0,
+                                                                right: 0,
+                                                                top: 4,
+                                                                bottom: 4),
+                                                        child: Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            // Agent Name
+                                                            Expanded(
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                        left:
+                                                                            10),
+                                                                child: Text(
+                                                                  item.agentName ??
+                                                                      'Agent',
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    fontSize:
+                                                                        15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color: Colors
+                                                                        .black,
+                                                                  ),
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                ),
+                                                              ),
+                                                            ),
+
+                                                            // Listed text + agency logo
+                                                            Row(
+                                                              children: [
+                                                                if (item.postedOn !=
+                                                                        null &&
+                                                                    item.postedOn!
+                                                                        .isNotEmpty)
+                                                                  Text(
+                                                                    'Listed ${item.postedOn}',
+                                                                    style:
+                                                                        const TextStyle(
+                                                                      fontSize:
+                                                                          13,
+                                                                      color: Colors
+                                                                          .grey,
+                                                                    ),
+                                                                  ),
+                                                                const SizedBox(
+                                                                    width: 4),
+                                                                if (item.agencyLogo !=
+                                                                        null &&
+                                                                    item.agencyLogo!
+                                                                        .isNotEmpty)
+                                                                  Padding(
+                                                                    padding:
+                                                                        const EdgeInsets
+                                                                            .all(
+                                                                            8.0),
+                                                                    child:
+                                                                        Container(
+                                                                      height:
+                                                                          30,
+                                                                      width: 60,
+                                                                      decoration:
+                                                                          BoxDecoration(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(4),
+                                                                        image:
+                                                                            DecorationImage(
+                                                                          image:
+                                                                              CachedNetworkImageProvider(item.agencyLogo!),
+                                                                          fit: BoxFit
+                                                                              .contain,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                              ],
+                                                            ),
+                                                          ],
                                                         ),
                                                       ),
 
-                                                      // 👈 returns an empty widget when not logged in
+                                                      SizedBox(
+                                                        height: 5,
+                                                      ),
 
-                                                      // 👈 Return nothing if not logged in
-
-                                                      // 🧑‍💼 Overlapping Agent Profile Image
-                                                      // 🧑‍💼 Overlapping Agent Profile Image
-                                                      // 🧑‍💼 Agent Profile with Navigation to Featured_Detail
-                                                      // 🟢 Positioned Circle Avatar (left: 10)
-                                                      Positioned(
-                                                        bottom: -30,
-                                                        left: 10,
-                                                        child:
-                                                        GestureDetector(
-                                                          onTap: () {
-                                                            Navigator.push(
-                                                              context,
-                                                              MaterialPageRoute(
-                                                                builder: (context) => Featured_Detail(
-                                                                    data: item
-                                                                        .id
-                                                                        .toString()),
-                                                              ),
-                                                            );
-                                                          },
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                            children: [
-                                                              CircleAvatar(
-                                                                radius: 28,
-                                                                backgroundImage: (item.agentImage !=
-                                                                    null &&
-                                                                    item
-                                                                        .agentImage!.isNotEmpty)
-                                                                    ? CachedNetworkImageProvider(item
-                                                                    .agentImage!)
-                                                                    : const AssetImage("assets/images/dummy.jpg")
-                                                                as ImageProvider,
-                                                              ),
-                                                              const SizedBox(
-                                                                  height:
-                                                                  6),
-                                                              Transform
-                                                                  .translate(
-                                                                offset: const Offset(
-                                                                    -5,
-                                                                    0), // shift 4 pixels to the left
-                                                                child: Text(
-                                                                  "AGENT",
-                                                                  style:
-                                                                  TextStyle(
-                                                                    fontSize:
-                                                                    12,
-                                                                    fontWeight:
-                                                                    FontWeight.w500,
-                                                                    color: Color(
-                                                                        0xFF1A73E9),
-                                                                    letterSpacing:
-                                                                    0.5,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
+// 👇 Divider line here
+                                                      const Divider(
+                                                        thickness: 0.3,
+                                                        color: Colors.grey,
+                                                        height: 6,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                    height: 8,
+                                                  ),
+                                                  Text(
+                                                    item.title.toString(),
+                                                    style: TextStyle(
+                                                        fontSize: 16,
+                                                        height: 1.4),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                                  SizedBox(height: 5),
+                                                  Text(
+                                                    '${item.price} AED',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 22,
+                                                      height: 1.4,
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 5),
+                                                  Row(
+                                                    children: [
+                                                      Image.asset(
+                                                          "assets/images/map.png",
+                                                          height: 14),
+                                                      SizedBox(width: 5),
+                                                      Expanded(
+                                                        child: Text(
+                                                          item.location
+                                                              .toString(),
+                                                          style: TextStyle(
+                                                              fontSize: 13),
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          maxLines: 1,
                                                         ),
                                                       ),
                                                     ],
                                                   ),
-
-                                                  // 🔽 Spacer so that the overlapping image is not clipped
-                                                  const SizedBox(
-                                                      height: 15),
-
-                                                  Padding(
-                                                    padding:
-                                                    const EdgeInsets
-                                                        .only(
-                                                        left: 0,
-                                                        right: 0,
-                                                        top: 4,
-                                                        bottom: 4),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                      crossAxisAlignment:
-                                                      CrossAxisAlignment
-                                                          .center,
-                                                      children: [
-                                                        // Agent Name
-                                                        Expanded(
-                                                          child: Padding(
-                                                            padding:
-                                                            const EdgeInsets
-                                                                .only(
-                                                                left:
-                                                                10),
-                                                            child: Text(
-                                                              item.agentName ??
-                                                                  'Agent',
-                                                              style:
-                                                              const TextStyle(
-                                                                fontSize:
-                                                                15,
-                                                                fontWeight:
-                                                                FontWeight
-                                                                    .w600,
-                                                                color: Colors
-                                                                    .black,
-                                                              ),
-                                                              overflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                            ),
-                                                          ),
-                                                        ),
-
-                                                        // Listed text + agency logo
-                                                        Row(
-                                                          children: [
-                                                            if (item.postedOn !=
-                                                                null &&
-                                                                item.postedOn!
-                                                                    .isNotEmpty)
-                                                              Text(
-                                                                'Listed ${item.postedOn}',
-                                                                style:
-                                                                const TextStyle(
-                                                                  fontSize:
-                                                                  13,
-                                                                  color: Colors
-                                                                      .grey,
-                                                                ),
-                                                              ),
-                                                            const SizedBox(
-                                                                width: 4),
-                                                            if (item.agencyLogo !=
-                                                                null &&
-                                                                item.agencyLogo!
-                                                                    .isNotEmpty)
-                                                              Padding(
-                                                                padding:
-                                                                const EdgeInsets
-                                                                    .all(
-                                                                    8.0),
-                                                                child:
-                                                                Container(
-                                                                  height:
-                                                                  30,
-                                                                  width: 60,
-                                                                  decoration:
-                                                                  BoxDecoration(
-                                                                    borderRadius:
-                                                                    BorderRadius.circular(4),
-                                                                    image:
-                                                                    DecorationImage(
-                                                                      image:
-                                                                      CachedNetworkImageProvider(item.agencyLogo!),
-                                                                      fit: BoxFit
-                                                                          .contain,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
+                                                  SizedBox(height: 8),
+                                                  Row(
+                                                    children: [
+                                                      Image.asset(
+                                                          "assets/images/bed.png",
+                                                          height: 14),
+                                                      SizedBox(width: 5),
+                                                      Text(item.bedrooms
+                                                          .toString()),
+                                                      SizedBox(width: 10),
+                                                      Image.asset(
+                                                          "assets/images/bath.png",
+                                                          height: 14),
+                                                      SizedBox(width: 5),
+                                                      Text(item.bathrooms
+                                                          .toString()),
+                                                      SizedBox(width: 10),
+                                                      Image.asset(
+                                                          "assets/images/messure.png",
+                                                          height: 14),
+                                                      SizedBox(width: 5),
+                                                      Text(item.squareFeet
+                                                          .toString()),
+                                                    ],
                                                   ),
-
-                                                  SizedBox(
-                                                    height: 5,
-                                                  ),
-
-// 👇 Divider line here
-                                                  const Divider(
-                                                    thickness: 0.3,
-                                                    color: Colors.grey,
-                                                    height: 6,
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(
-                                                height: 8,
-                                              ),
-                                              Text(
-                                                item.title.toString(),
-                                                style: TextStyle(
-                                                    fontSize: 16,
-                                                    height: 1.4),
-                                                overflow:
-                                                TextOverflow.ellipsis,
-                                                maxLines: 1,
-                                              ),
-                                              SizedBox(height: 5),
-                                              Text(
-                                                '${item.price} AED',
-                                                style: TextStyle(
-                                                  fontWeight:
-                                                  FontWeight.bold,
-                                                  fontSize: 22,
-                                                  height: 1.4,
-                                                ),
-                                              ),
-                                              SizedBox(height: 5),
-                                              Row(
-                                                children: [
-                                                  Image.asset(
-                                                      "assets/images/map.png",
-                                                      height: 14),
-                                                  SizedBox(width: 5),
-                                                  Expanded(
-                                                    child: Text(
-                                                      item.location
-                                                          .toString(),
-                                                      style: TextStyle(
-                                                          fontSize: 13),
-                                                      overflow: TextOverflow
-                                                          .ellipsis,
-                                                      maxLines: 1,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(height: 8),
-                                              Row(
-                                                children: [
-                                                  Image.asset(
-                                                      "assets/images/bed.png",
-                                                      height: 14),
-                                                  SizedBox(width: 5),
-                                                  Text(item.bedrooms
-                                                      .toString()),
-                                                  SizedBox(width: 10),
-                                                  Image.asset(
-                                                      "assets/images/bath.png",
-                                                      height: 14),
-                                                  SizedBox(width: 5),
-                                                  Text(item.bathrooms
-                                                      .toString()),
-                                                  SizedBox(width: 10),
-                                                  Image.asset(
-                                                      "assets/images/messure.png",
-                                                      height: 14),
-                                                  SizedBox(width: 5),
-                                                  Text(item.squareFeet
-                                                      .toString()),
-                                                ],
-                                              ),
-                                              /* SizedBox(height: 15),
+                                                  /* SizedBox(height: 15),
                                                                                               Row(
                                                                                                 children: [
                                                                                                   Image.asset("assets/images/Flooring.png", height: 20),
@@ -2193,133 +2178,133 @@ class _MyHomePageState extends State<HomeDemo> {
                                                                                                   Text(item.squareFeet.toString()),
                                                                                                 ],
                                                                                               ),*/
-                                              SizedBox(
-                                                height: 15,
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child:
-                                                    ElevatedButton.icon(
-                                                      onPressed: () async {
-                                                        // Use the correct sanitizer for call (international format with +)
-                                                        String phone =
-                                                            'tel:${phoneCallNumber(item.phoneNumber ?? '')}';
-                                                        try {
-                                                          final bool
-                                                          launched =
-                                                          await launchUrlString(
-                                                            phone,
-                                                            mode: LaunchMode
-                                                                .externalApplication,
-                                                          );
-                                                          if (!launched) {
-                                                            print(
-                                                                "❌ Could not launch dialer");
-                                                          }
-                                                        } catch (e) {
-                                                          print(
-                                                              "❌ Exception: $e");
-                                                        }
-                                                      },
-                                                      icon: const Icon(
-                                                          Icons.call,
-                                                          color:
-                                                          Colors.red),
-                                                      label: const Text(
-                                                          "Call",
-                                                          style: TextStyle(
-                                                              color: Colors
-                                                                  .black)),
-                                                      style: ElevatedButton
-                                                          .styleFrom(
-                                                        backgroundColor:
-                                                        Colors
-                                                            .grey[100],
-                                                        shape: RoundedRectangleBorder(
-                                                            borderRadius:
-                                                            BorderRadius
-                                                                .circular(
-                                                                10)),
-                                                        elevation: 2,
-                                                        padding:
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                            vertical:
-                                                            10),
-                                                      ),
-                                                    ),
+                                                  SizedBox(
+                                                    height: 15,
                                                   ),
-                                                  const SizedBox(width: 10),
-                                                  Expanded(
-                                                    child:
-                                                    ElevatedButton.icon(
-                                                      onPressed: () async {
-                                                        final phone =
-                                                        whatsAppNumber(
-                                                            item.whatsapp ??
-                                                                '');
-                                                        final message = Uri
-                                                            .encodeComponent(
-                                                            "Hello"); // you can change message
-                                                        final url = Uri.parse(
-                                                            "https://wa.me/$phone?text=$message");
-                                                        if (await canLaunchUrl(
-                                                            url)) {
-                                                          try {
-                                                            final launched =
-                                                            await launchUrl(
-                                                                url,
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child:
+                                                            ElevatedButton.icon(
+                                                          onPressed: () async {
+                                                            // Use the correct sanitizer for call (international format with +)
+                                                            String phone =
+                                                                'tel:${phoneCallNumber(item.phoneNumber ?? '')}';
+                                                            try {
+                                                              final bool
+                                                                  launched =
+                                                                  await launchUrlString(
+                                                                phone,
                                                                 mode: LaunchMode
-                                                                    .externalApplication);
-                                                            if (!launched) {
+                                                                    .externalApplication,
+                                                              );
+                                                              if (!launched) {
+                                                                print(
+                                                                    "❌ Could not launch dialer");
+                                                              }
+                                                            } catch (e) {
                                                               print(
-                                                                  "❌ Could not launch WhatsApp");
+                                                                  "❌ Exception: $e");
                                                             }
-                                                          } catch (e) {
-                                                            print(
-                                                                "❌ Exception: $e");
-                                                          }
-                                                        } else {
-                                                          print(
-                                                              "❌ WhatsApp not available");
-                                                        }
-                                                      },
-                                                      icon: Image.asset(
-                                                          "assets/images/whats.png",
-                                                          height: 20),
-                                                      label: const Text(
-                                                          "WhatsApp",
-                                                          style: TextStyle(
-                                                              color: Colors
-                                                                  .black)),
-                                                      style: ElevatedButton
-                                                          .styleFrom(
-                                                        backgroundColor:
-                                                        Colors
-                                                            .grey[100],
-                                                        shape: RoundedRectangleBorder(
-                                                            borderRadius:
-                                                            BorderRadius
-                                                                .circular(
-                                                                10)),
-                                                        elevation: 2,
-                                                        padding:
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                            vertical:
-                                                            10),
+                                                          },
+                                                          icon: const Icon(
+                                                              Icons.call,
+                                                              color:
+                                                                  Colors.red),
+                                                          label: const Text(
+                                                              "Call",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .black)),
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .grey[100],
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            10)),
+                                                            elevation: 2,
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical:
+                                                                        10),
+                                                          ),
+                                                        ),
                                                       ),
-                                                    ),
+                                                      const SizedBox(width: 10),
+                                                      Expanded(
+                                                        child:
+                                                            ElevatedButton.icon(
+                                                          onPressed: () async {
+                                                            final phone =
+                                                                whatsAppNumber(
+                                                                    item.whatsapp ??
+                                                                        '');
+                                                            final message = Uri
+                                                                .encodeComponent(
+                                                                    "Hello"); // you can change message
+                                                            final url = Uri.parse(
+                                                                "https://wa.me/$phone?text=$message");
+                                                            if (await canLaunchUrl(
+                                                                url)) {
+                                                              try {
+                                                                final launched =
+                                                                    await launchUrl(
+                                                                        url,
+                                                                        mode: LaunchMode
+                                                                            .externalApplication);
+                                                                if (!launched) {
+                                                                  print(
+                                                                      "❌ Could not launch WhatsApp");
+                                                                }
+                                                              } catch (e) {
+                                                                print(
+                                                                    "❌ Exception: $e");
+                                                              }
+                                                            } else {
+                                                              print(
+                                                                  "❌ WhatsApp not available");
+                                                            }
+                                                          },
+                                                          icon: Image.asset(
+                                                              "assets/images/whats.png",
+                                                              height: 20),
+                                                          label: const Text(
+                                                              "WhatsApp",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .black)),
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .grey[100],
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            10)),
+                                                            elevation: 2,
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical:
+                                                                        10),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ],
-                                              ),
-                                            ]),
+                                                ]),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                );
-                              }),
+                                    );
+                                  }),
                         ]),
                   ),
                 )
@@ -2341,7 +2326,7 @@ class _MyHomePageState extends State<HomeDemo> {
       ),
       child: Row(
         mainAxisAlignment:
-        MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+            MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
@@ -2401,7 +2386,7 @@ class _MyHomePageState extends State<HomeDemo> {
                 ).then((_) async {
                   // 🔁 Re-sync when coming back
                   final updatedFavorites =
-                  await FavoriteService.fetchApiFavorites(token);
+                      await FavoriteService.fetchApiFavorites(token);
                   setState(() {
                     FavoriteService.loggedInFavorites = updatedFavorites;
                   });
@@ -2411,7 +2396,7 @@ class _MyHomePageState extends State<HomeDemo> {
             icon: pageIndex == 2
                 ? const Icon(Icons.favorite, color: Colors.red, size: 30)
                 : const Icon(Icons.favorite_border_outlined,
-                color: Colors.red, size: 30),
+                    color: Colors.red, size: 30),
           ),
 
           // IconButton(
@@ -2459,9 +2444,9 @@ class _MyHomePageState extends State<HomeDemo> {
               showEmailAgentDialog(
                 context,
                 subtitle:
-                'Low Floor | Ready to Move-in | Available October 2025',
+                    'Low Floor | Ready to Move-in | Available October 2025',
                 initialMessage:
-                'Hi, I found your property with ref: P20250910-RPQY on Akarat. Please contact me. Thank you.',
+                    'Hi, I found your property with ref: P20250910-RPQY on Akarat. Please contact me. Thank you.',
               );
             },
           ),
@@ -2485,7 +2470,7 @@ class _MyHomePageState extends State<HomeDemo> {
               icon: pageIndex == 3
                   ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
                   : const Icon(Icons.dehaze_outlined,
-                  color: Colors.red, size: 35),
+                      color: Colors.red, size: 35),
             ),
           ),
         ],
