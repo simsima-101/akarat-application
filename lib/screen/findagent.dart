@@ -214,6 +214,37 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     agencyfetch();
   }
 
+  // ADD THIS METHOD – fixes the "List<dynamic> is not a subtype of String?" crash
+  Future<AgentsModel?> fetchAgentDetails(int agentId) async {
+    try {
+      final uri = Uri.https('qa.akarat.com', '/api/agents/$agentId');
+      debugPrint('Fetching agent details: $uri');
+
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+
+        // Backend returns: { "data": [...] } or just [...]
+        dynamic data = jsonData is Map ? jsonData['data'] : jsonData;
+
+        if (data is List && data.isNotEmpty) {
+          return AgentsModel.fromJson(data[0]); // Most common case
+        } else if (data is Map<String, dynamic>) {
+          return AgentsModel.fromJson(data); // Rare case
+        } else {
+          debugPrint("Unexpected agent detail format");
+          return null;
+        }
+      } else {
+        debugPrint("Agent detail failed: ${response.statusCode} ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      debugPrint("Exception while fetching agent: $e");
+      return null;
+    }
+  }
 
   Future<void> agentfetch({bool loadMore = false}) async {
     if (isAgentsLoading) return;

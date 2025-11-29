@@ -190,29 +190,44 @@ class _AboutAgentState extends State<AboutAgent> {
   final ScrollController _scrollController = ScrollController();
   Timer? _debounce;
   @override
+  @override
   void initState() {
     super.initState();
 
     final String agentId = widget.data;
 
-    // 🧹 Clear old corrupted cache first
+    // ONE-TIME: Clear any old corrupted agent detail cache (run once, then you can remove these lines)
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.remove('agent_detail_$agentId');
+      prefs.remove('agent_detail_time_$agentId');
+      debugPrint("Old agent cache cleared for ID: $agentId");
+    });
+
+    // Clear old agent properties cache (you already had this — keep it)
     clearAgentPropertiesCache(agentId).then((_) {
-      // ⏬ Load agent properties after cache is cleared
       getFilesApi(agentId, loadMore: false);
     });
-    fetchProducts(widget.data); // Initial data fetch
-    getFilesApi(widget.data,
-        loadMore: false); // Load first page of agent properties
-    readData(); // Other setups
+
+    // Load the agent detail (this now works perfectly with your real API)
+    fetchProducts(agentId);
+
+    // Load first page of properties
+    getFilesApi(agentId, loadMore: false);
+
+    // Other setups
+    readData();
     _loadFavorites();
+
+    // Search listener
     _searchController.addListener(_onSearchChanged);
 
+    // Infinite scroll for properties
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent &&
           hasMore &&
           !isLoading) {
-        getFilesApi(widget.data, loadMore: true); // Load next page
+        getFilesApi(agentId, loadMore: true);
       }
     });
   }
@@ -242,50 +257,88 @@ class _AboutAgentState extends State<AboutAgent> {
     final cacheKey = 'agent_detail_$data';
     final cacheTimeKey = 'agent_detail_time_$data';
     final now = DateTime.now().millisecondsSinceEpoch;
-    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
 
-    // ⏱ If cache is valid (within 6 hours)
-    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
-      final cachedData = prefs.getString(cacheKey);
-      if (cachedData != null) {
-        final jsonData = jsonDecode(cachedData);
-        final cachedModel = AgentDetail.fromJson(jsonData);
-        setState(() {
-          agentDetail = cachedModel;
-        });
-        debugPrint("✅ Loaded agent from cache");
-        return;
+    // Check cache first
+    final cachedTime = prefs.getInt(cacheTimeKey);
+    final isCacheValid = cachedTime != null && (now - cachedTime) < Duration(hours: 6).inMilliseconds;
+
+    if (isCacheValid) {
+      final cached = prefs.getString(cacheKey);
+      if (cached != null) {
+        try {
+          final jsonMap = jsonDecode(cached);
+          setState(() {
+            agentDetail = AgentDetail.fromJson(jsonMap);
+          });
+          debugPrint("Agent loaded from cache");
+          return;
+        } catch (e) {
+          debugPrint("Cache corrupted, clearing...: $e");
+          await prefs.remove(cacheKey);
+          await prefs.remove(cacheTimeKey);
+        }
       }
     }
 
-    // 🛰 API fallback
     try {
       final uri = ApiService.buildUri('agent/$data');
       final response = await http.get(uri);
 
-      debugPrint("Status Code: ${response.statusCode}");
+      debugPrint("Agent API Status: ${response.statusCode}");
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = json.decode(response.body);
-        debugPrint("API Response: $jsonData");
-
-        final parsedModel = AgentDetail.fromJson(jsonData);
-
-        await prefs.setString(cacheKey, jsonEncode(jsonData));
-        await prefs.setInt(cacheTimeKey, now);
-
-        if (mounted) {
-          setState(() {
-            agentDetail = parsedModel;
-          });
-        }
-
-        debugPrint("📦 Agent service areas: ${agentDetail?.serviceAreas}");
-      } else {
-        debugPrint("❌ API Error Status: ${response.statusCode}");
+      if (response.statusCode != 200) {
+        debugPrint("API failed: ${response.statusCode}");
+        return;
       }
-    } catch (e) {
-      debugPrint("❌ Exception while fetching agent: $e");
+
+      final responseData = json.decode(response.body);
+      Map<String, dynamic> agentData;
+
+      // Handle both possible response structures
+      if (responseData is Map<String, dynamic>) {
+        if (responseData.containsKey('data')) {
+          // Paginated response structure
+          final dataWrapper = responseData['data'];
+          if (dataWrapper is Map<String, dynamic> && dataWrapper.containsKey('data')) {
+            final agentList = dataWrapper['data'] as List?;
+            if (agentList != null && agentList.isNotEmpty) {
+              agentData = agentList.first as Map<String, dynamic>;
+              debugPrint("Extracted agent from paginated response");
+            } else {
+              debugPrint("No agent found in paginated response");
+              return;
+            }
+          } else {
+            // Direct data object
+            agentData = dataWrapper as Map<String, dynamic>;
+            debugPrint("Using direct data object from response");
+          }
+        } else {
+          // Direct agent object without any wrapper
+          agentData = responseData;
+          debugPrint("Using direct agent object from response");
+        }
+      } else {
+        debugPrint("Unexpected response type: ${responseData.runtimeType}");
+        return;
+      }
+
+      final agent = AgentDetail.fromJson(agentData);
+
+      // Cache the individual agent data
+      await prefs.setString(cacheKey, jsonEncode(agentData));
+      await prefs.setInt(cacheTimeKey, now);
+
+      if (mounted) {
+        setState(() {
+          agentDetail = agent;
+        });
+      }
+
+      debugPrint("Agent loaded successfully");
+    } catch (e, stack) {
+      debugPrint("Exception in fetchProducts: $e");
+      debugPrint(stack.toString());
     }
   }
 
@@ -354,48 +407,35 @@ class _AboutAgentState extends State<AboutAgent> {
 
     isLoading = true;
 
-    final prefs = await SharedPreferences.getInstance();
-    final cacheKey = 'agent_properties_$user';
-    final cacheTimeKey = 'agent_properties_time_$user';
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
-
-    final uri = ApiService.buildUri('agent/properties/$user?page=$currentPage');
-
-
-    // ✅ Load from cache if valid and not loading more
-    if (!loadMore && now - lastFetched < Duration(hours: 6).inMilliseconds) {
-      final cachedData = prefs.getString(cacheKey);
-      if (cachedData != null) {
-        try {
-          final jsonData = jsonDecode(cachedData);
-          final model = AgentProperties.fromJson(jsonData);
-          setState(() {
-            agentProperties = model;
-            hasMore =
-                (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
-            if (hasMore) {
-              currentPage = (model.meta?.currentPage ?? 1) + 1;
-            }
-          });
-          debugPrint("📦 Loaded agent properties from cache");
-          isLoading = false;
-          return;
-        } catch (e) {
-          debugPrint("⚠️ Cache parsing failed: $e");
-        }
-      }
-    }
-
-    // ✅ Make HTTP call
     try {
+      final uri = ApiService.buildUri('agent/properties/$user?page=$currentPage');
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
+        final responseData = json.decode(response.body);
 
-        if (jsonData['data'] != null) {
-          final model = AgentProperties.fromJson(jsonData['data']);
+        // Check if the response contains an error about saved properties
+        if (responseData is Map<String, dynamic> && responseData.containsKey('message')) {
+          final message = responseData['message'] as String?;
+          if (message != null && message.contains('created_at')) {
+            debugPrint("Server error with saved properties: $message");
+            // Continue without saved properties or show empty list
+            if (mounted) {
+              setState(() {
+                agentProperties = AgentProperties(
+                  data: [], // Empty properties list
+                  links: null,
+                  meta: null,
+                );
+              });
+            }
+            isLoading = false;
+            return;
+          }
+        }
+
+        if (responseData['data'] != null) {
+          final model = AgentProperties.fromJson(responseData['data']);
 
           setState(() {
             if (loadMore) {
@@ -410,27 +450,26 @@ class _AboutAgentState extends State<AboutAgent> {
               agentProperties = model;
             }
 
-            hasMore =
-                (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
+            hasMore = (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
             if (hasMore) {
               currentPage = (model.meta?.currentPage ?? 1) + 1;
             }
           });
 
-          // ✅ Save to cache
+          // Cache the data
           if (!loadMore) {
-            await prefs.setString(cacheKey, jsonEncode(jsonData['data']));
-            await prefs.setInt(cacheTimeKey, now);
-            debugPrint("✅ Cached agent properties");
+            final prefs = await SharedPreferences.getInstance();
+            final cacheKey = 'agent_properties_$user';
+            final cacheTimeKey = 'agent_properties_time_$user';
+            await prefs.setString(cacheKey, jsonEncode(responseData['data']));
+            await prefs.setInt(cacheTimeKey, DateTime.now().millisecondsSinceEpoch);
           }
-        } else {
-          debugPrint("❌ Missing 'data' field in response");
         }
       } else {
-        debugPrint("❌ API Error: ${response.statusCode}");
+        debugPrint("API Error: ${response.statusCode}");
       }
     } catch (e) {
-      debugPrint("❌ Exception in getFilesApi: $e");
+      debugPrint("Exception in getFilesApi: $e");
     }
 
     isLoading = false;

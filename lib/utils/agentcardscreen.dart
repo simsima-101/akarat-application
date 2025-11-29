@@ -38,10 +38,20 @@ class Agentcardscreen extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
+        // Safety check — make sure ID exists
+        if (agentsModel.id == null || agentsModel.id.toString().isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Agent ID not available")),
+          );
+          return;
+        }
+
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AboutAgent(data: '${agentsModel.id}'),
+            builder: (context) => AboutAgent(
+              data: agentsModel.id.toString(),  // ← This is correct and safe now
+            ),
           ),
         );
       },

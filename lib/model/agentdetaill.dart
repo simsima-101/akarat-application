@@ -9,7 +9,7 @@ class AgentDetail {
   String? name;
   String? email;
   String? languages;
-  String? expertise;
+  String? expertise; // This will hold a comma-separated string of expertise names
   String? agency;
   String? about;
   String? address;
@@ -19,7 +19,6 @@ class AgentDetail {
   int? sale;
   int? rent;
   String? image;
-
   String? phone;
   String? whatsapp;
   List<Property>? properties;
@@ -40,19 +39,35 @@ class AgentDetail {
     this.sale,
     this.rent,
     this.image,
-    this.phone,       // ✅ ADD HERE
+    this.phone,
     this.whatsapp,
-    this.properties,// ✅ ADD HERE
+    this.properties,
   });
 
   factory AgentDetail.fromJson(Map<String, dynamic> json) {
+    // Handle the expertise field - it can be either a String or a List
+    String? expertiseString;
+
+    if (json['expertise'] is List) {
+      // If expertise is a list, convert it to a comma-separated string
+      final expertiseList = json['expertise'] as List;
+      expertiseString = expertiseList
+          .where((item) => item is Map && item['name'] != null)
+          .map((item) => item['name'] as String)
+          .where((name) => name.isNotEmpty)
+          .join(', ');
+    } else {
+      // If expertise is already a string, use it directly
+      expertiseString = json['expertise'] as String?;
+    }
+
     return AgentDetail(
       id: json['id'],
       userId: json['user_id'],
       name: json['name'],
       email: json['email'],
       languages: json['languages'],
-      expertise: json['expertise'],
+      expertise: expertiseString, // Use the processed string
       agency: json['agency'],
       about: json['about'],
       address: json['address'],
@@ -62,12 +77,11 @@ class AgentDetail {
       sale: json['sale'],
       rent: json['rent'],
       image: json['image'],
-      phone: json['phone'], // CORRECT ✅
+      phone: json['phone'],
       whatsapp: json['whatsapp'],
       properties: (json['properties'] as List?)
           ?.map((p) => Property.fromJson(p))
           .toList(),
-
     );
   }
 
@@ -91,7 +105,6 @@ class AgentDetail {
       'phone': phone,
       'whatsapp': whatsapp,
       'properties': properties?.map((p) => p.toJson()).toList(),
-
     };
   }
 }

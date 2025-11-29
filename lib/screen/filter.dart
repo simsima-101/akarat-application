@@ -60,17 +60,31 @@ class FilterDemo extends StatefulWidget {
 class _FilterDemoState extends State<FilterDemo> {
   int pageIndex = 0;
 
-  @override
-  void initState() {
-    super.initState();
+  // Local flag to prevent double initialization
+  bool _hasInitialized = false;
 
-    context.read<FilterProvider>().initFilterFields(
-      context,
-      data: widget.data,
-      propertyType: widget.propertyType,
-      propertyCategoryType: widget.propertyCategoryType,
-      optionType: widget.optionType,
-    );
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Prevent running multiple times + ensure context is ready
+    if (_hasInitialized || !mounted) return;
+
+    final filterProvider = context.read<FilterProvider>();
+
+    // Only initialize if provider hasn't been initialized yet
+    if (!filterProvider.isFilterInitialized) {
+      _hasInitialized = true; // Mark as initialized locally
+
+      // Call the async init method
+      filterProvider.initFilterFields(
+        context,
+        data: widget.data,
+        propertyType: widget.propertyType,
+        propertyCategoryType: widget.propertyCategoryType,
+        optionType: widget.optionType,
+      );
+    }
   }
 
   @override

@@ -81,6 +81,15 @@ String selectedSort = "Featured";
 class _MyHomePageState extends State<HomeDemo> {
   final ScrollController _scrollController = ScrollController();
 
+
+  void checkCurrentBuildVersion() {
+    String version = const String.fromEnvironment('FLUTTER_BUILD_NAME', defaultValue: 'unknown');
+    String buildNumber = const String.fromEnvironment('FLUTTER_BUILD_NUMBER', defaultValue: 'unknown');
+
+    print("Current Version: $version");
+    print("Current Build Number: $buildNumber");
+  }
+
   String purpose = '';
   String propertyType = ''; // <— add this
 
@@ -307,6 +316,12 @@ class _MyHomePageState extends State<HomeDemo> {
   @override
   void initState() {
     super.initState();
+
+    String version = const String.fromEnvironment('FLUTTER_BUILD_NAME', defaultValue: 'unknown');
+    String buildNumber = const String.fromEnvironment('FLUTTER_BUILD_NUMBER', defaultValue: 'unknown');
+
+    print("🔍 Current app version: $version");
+    print("🔍 Current build number: $buildNumber");
 
     // Load token once, then fetch saved properties if logged in
     _loadToken().then((_) {

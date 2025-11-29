@@ -17,16 +17,22 @@ import 'location_picker_provider.dart';
 
 class FilterProvider extends ChangeNotifier {
   int displayedFilterResultCount = 0;
-  // late bool isSelected = true;
+
   double start = 3000;
   double startarea = 3000;
   double endarea = 5000;
   double end = 5000;
   int selected = 0;
   bool get isNewProjects => selected == 1;
+
+  // ✅ Fixed: Proper field + initialized once
+  bool _isFilterInitialized = false;
+  bool get isFilterInitialized => _isFilterInitialized;
+
   List<Amenities> selectedAmenities = [];
 
   final List<String> completion = const ['All', 'Ready', 'Off-Plan'];
+  // ... rest of your code
 
   final List<String> handoverOptions = const [
     'Any',
@@ -744,72 +750,101 @@ class FilterProvider extends ChangeNotifier {
         required int propertyType,
         String? propertyCategoryType,
         String? optionType,
-      }) {
+      }) async {
+    // Reset initialization flag at the start
+    _isFilterInitialized = false;
+
+    // Reset UI state
     selected = 0;
-
-    priceRangeController = RangeController(start: 500, end: 300000);
-    areaRangeController = RangeController(start: 0, end: 10000);
-
-    // Set selected product index and purpose
     selectedproduct = product.indexOf(data);
     selectedtype = null;
-
     selectedPropType = propertyType;
-    purpose = data;
+    purpose = data.toString();
     selectedCompletion = 0;
     option = null;
+
+    // Handle Off-Plan case
     if (optionType != null && optionType.isNotEmpty) {
       selectedCompletion = 2;
       option = optionType;
     }
 
-    // Initially property_type empty
+    // Reset values
     property_type = '';
-
     handoverQuarter = "";
     handoverYear = "";
+    completion_min = "";
+    completion_max = "";
 
-    // Initialize range controllers
-    rangeController =
-        RangeController(start: start.toString(), end: end.toString());
-    rangeControllerarea =
-        RangeController(start: startarea.toString(), end: endarea.toString());
+    // Reset sliders & controllers
+    priceRangeController = RangeController(start: 500, end: 300000);
+    areaRangeController = RangeController(start: 0, end: 10000);
 
-    // Build chart data
+    rangeController = RangeController(start: "500", end: "300000");
+    rangeControllerarea = RangeController(start: "0", end: "10000");
+
+    minPriceController.text = "500";
+    maxPriceController.text = "300000";
+    minAreaController.text = "0";
+    maxAreaController.text = "10000";
+
+    values = const SfRangeValues(500.0, 300000.0);
+    valuesArea = const SfRangeValues(0.0, 10000.0);
+    min_price = "500";
+    max_price = "300000";
+    min_sqrfeet = "0";
+    max_sqrfeet = "10000";
+
+    // Rebuild chart data
     chartData = List.generate(
       96,
-          (index) =>
-          Data(500 + index * 100.0, yValues[index % yValues.length].toDouble()),
+          (index) => Data(
+        500 + index * 100.0,
+        yValues[index % yValues.length].toDouble(),
+      ),
     );
 
-    // Now load initial data (property types + amenities)
-    loadInitialData().then((_) {
-      // After loading property types → set first type
-      if (propertyCategoryType != null) {
+    // Critical: Show loading state
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      // Load amenities + property types
+      await loadInitialData();
+
+      // After data is loaded → set correct property category if provided
+      if (propertyCategoryType != null && propertyTypeModel?.data != null) {
         final index = propertyTypeModel!.data!.indexWhere(
               (item) =>
           item.name?.trim().toLowerCase() ==
-              propertyCategoryType?.trim().toLowerCase(),
+              propertyCategoryType.trim().toLowerCase(),
         );
 
         if (index != -1) {
           selectedtype = index;
           property_type = propertyTypeModel!.data![index].name ?? '';
-        } else {
+        } else if (propertyTypeModel!.data!.isNotEmpty) {
           selectedtype = 0;
-          property_type = propertyTypeModel!.data!.first.name ?? '';
+          property_type = propertyTypeModel!.data![0].name ?? '';
         }
-      } else {
-        // selectedtype = 0;
-        // property_type = propertyTypeModel!.data!.first.name ?? '';
       }
 
-      // Now that we have purpose + property_type → update count
+      // Capture initial state for Reset button
       captureInitialSnapshot();
-      updateFilterCount(context);
-    });
 
-    notifyListeners();
+      // Update result count
+      await updateFilterCount(context);
+
+      // Mark as fully initialized
+      _isFilterInitialized = true;
+    } catch (e) {
+      debugPrint("Error in initFilterFields: $e");
+      // Even on error — allow UI to be interactive
+    } finally {
+      isLoading = false;
+      _isFilterInitialized = true; // Always mark as initialized
+      notifyListeners();
+    }
   }
 
   Future<void> setProperties(BuildContext context) async {
