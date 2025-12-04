@@ -1,45 +1,45 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
+import 'package:Akarat/screen/home.dart'; // Home screen
+import 'package:Akarat/screen/login.dart'; // Login screen (contains LoginDemo)
+import 'package:Akarat/screen/my_account.dart'; // Account/Menu screen
 // Akarat imports
 import 'package:Akarat/secure_storage.dart';
-import 'package:Akarat/screen/login.dart';            // Login screen (contains LoginDemo)
-import 'package:Akarat/services/api_service.dart';    // central base URL
-import 'package:Akarat/utils/fav_logout.dart';        // Favorites screen
-import 'package:Akarat/screen/my_account.dart';       // Account/Menu screen
-import 'package:Akarat/screen/home.dart';             // Home screen
-import 'package:url_launcher/url_launcher.dart';      // for mailto
+import 'package:Akarat/services/api_service.dart'; // central base URL
 import 'package:Akarat/services/favorite_service.dart';
+import 'package:Akarat/utils/fav_logout.dart'; // Favorites screen
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart'; // for mailto
 
 // spacing
-const double _headerLeftPad    = 0;   // pull header to the very left
-const double _afterCheckboxGap = 8;   // gap after the header checkbox
-const double _headerColGap     = 20;  // gap between header columns
-const double _colGap           = 13;
+const double _headerLeftPad = 0; // pull header to the very left
+const double _afterCheckboxGap = 8; // gap after the header checkbox
+const double _headerColGap = 20; // gap between header columns
+const double _colGap = 13;
 
 // text sizes
-const double _headerFontSize   = 12;  // smaller header text
-const double _rowFontSize      = 11;  // reduced row text a bit
+const double _headerFontSize = 12; // smaller header text
+const double _rowFontSize = 11; // reduced row text a bit
 const FontWeight _rowFontWeight = FontWeight.w600;
 
 const double _gapBeforePurposeHeader = 4;
-const double _gapBeforePurposeRow    = 10;
+const double _gapBeforePurposeRow = 10;
 
-const double _minTableWidth          = 860;
+const double _minTableWidth = 860;
 
 // unified spacing for both header & rows
 const double _gapCheckboxToName = 8;
 
 // --- header-only gaps ---
-const double _hGapNameToTime     = 10;
-const double _hGapTimeToPurpose  = 1;
-const double _hGapPurposeToType  = 8;
+const double _hGapNameToTime = 10;
+const double _hGapTimeToPurpose = 1;
+const double _hGapPurposeToType = 8;
 
 // --- row-only gaps ---
-const double _rGapNameToTime     = 18;
-const double _rGapTimeToPurpose  = 18;
-const double _rGapPurposeToType  = 10;
+const double _rGapNameToTime = 18;
+const double _rGapTimeToPurpose = 18;
+const double _rGapPurposeToType = 10;
 
 const double _checkColW = 42.0;
 
@@ -118,7 +118,8 @@ class SavedAlert {
       typeFromPurpose = parts.length > 1 ? parts[1] : '';
     }
 
-    String propType = (j['property_type'] ?? j['propertyType'] ?? '').toString();
+    String propType =
+        (j['property_type'] ?? j['propertyType'] ?? '').toString();
     if (propType.isEmpty && typeFromPurpose.isNotEmpty) {
       propType = tidyType(typeFromPurpose);
     } else {
@@ -197,15 +198,18 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
 
     if (_token == null || _token!.isEmpty) {
       if (!mounted) throw Exception('Not authenticated');
-      await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const Login()));
+      await Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => const Login()));
       _token = await readToken();
-      if (_token == null || _token!.isEmpty) throw Exception('Not authenticated');
+      if (_token == null || _token!.isEmpty)
+        throw Exception('Not authenticated');
     }
 
     return _loadList(_token!);
   }
 
   Future<List<SavedAlert>> _loadList(String token) async {
+    debugPrint("tokensss : ${token}");
     final url = Uri.parse('${ApiService.baseUrl}/saved-searches');
     final res = await http.get(
       url,
@@ -218,7 +222,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
 
     if (res.statusCode == 401) {
       if (!mounted) throw Exception('Not authenticated');
-      await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const Login()));
+      await Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => const Login()));
       final t2 = await readToken();
       if (t2 == null || t2.isEmpty) throw Exception('Not authenticated');
       _token = t2;
@@ -226,7 +231,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
     }
 
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      final dynamic jsonBody = res.body.isNotEmpty ? jsonDecode(res.body) : null;
+      final dynamic jsonBody =
+          res.body.isNotEmpty ? jsonDecode(res.body) : null;
 
       List<dynamic> list;
       if (jsonBody is List) {
@@ -246,7 +252,9 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
         list = const [];
       }
 
-      return list.map((e) => SavedAlert.fromJson(Map<String, dynamic>.from(e))).toList();
+      return list
+          .map((e) => SavedAlert.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
     } else {
       final body = res.body.isNotEmpty ? jsonDecode(res.body) : null;
       final msg = (body is Map && body['message'] != null)
@@ -279,7 +287,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         await applyLocalDelete();
       } else {
-        final fallback = Uri.parse('${ApiService.baseUrl}/saved-searches/${a.id}');
+        final fallback =
+            Uri.parse('${ApiService.baseUrl}/saved-searches/${a.id}');
         final res2 = await http.delete(fallback, headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $_token',
@@ -332,7 +341,9 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       }
 
       final ok = (res.statusCode >= 200 && res.statusCode < 300) ||
-          (fallbackRes != null && fallbackRes.statusCode >= 200 && fallbackRes.statusCode < 300);
+          (fallbackRes != null &&
+              fallbackRes.statusCode >= 200 &&
+              fallbackRes.statusCode < 300);
 
       if (!mounted) return;
 
@@ -363,7 +374,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
     final ids = _selected.toList();
     for (final id in ids) {
       final item = _all.firstWhere(
-            (a) => a.id == id,
+        (a) => a.id == id,
         orElse: () => SavedAlert(
           id: -1,
           alertName: '',
@@ -485,28 +496,35 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                   context: context,
                   builder: (context) => AlertDialog(
                     backgroundColor: Colors.white,
-                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    title: const Text("Login Required",
+                        style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.",
+                        style: TextStyle(color: Colors.black)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+                        child: const Text("Cancel",
+                            style: TextStyle(color: Colors.red)),
                       ),
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const Login()));
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (_) => const Login()));
                         },
-                        child: const Text("Login", style: TextStyle(color: Colors.red)),
+                        child: const Text("Login",
+                            style: TextStyle(color: Colors.red)),
                       ),
                     ],
                   ),
                 );
               } else {
                 // Logged in – go to favorites
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const Fav_Logout()))
+                Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const Fav_Logout()))
                     .then((_) async {
-                  final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
+                  final updatedFavorites =
+                      await FavoriteService.fetchApiFavorites(token);
                   if (!mounted) return;
                   setState(() {
                     FavoriteService.loggedInFavorites = updatedFavorites;
@@ -514,7 +532,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                 });
               }
             },
-            icon: const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+            icon: const Icon(Icons.favorite_border_outlined,
+                color: Colors.red, size: 30),
           ),
 
           // EMAIL
@@ -533,7 +552,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                   context: context,
                   builder: (context) => AlertDialog(
                     backgroundColor: Colors.white,
-                    title: const Text('Email not available', style: TextStyle(color: Colors.black)),
+                    title: const Text('Email not available',
+                        style: TextStyle(color: Colors.black)),
                     content: const Text(
                       'No email app is configured on this device. Please add a mail account first.',
                       style: TextStyle(color: Colors.black),
@@ -541,7 +561,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('OK', style: TextStyle(color: Colors.red)),
+                        child: const Text('OK',
+                            style: TextStyle(color: Colors.red)),
                       ),
                     ],
                   ),
@@ -556,11 +577,15 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
             child: IconButton(
               enableFeedback: false,
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const My_Account()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const My_Account()));
               },
               icon: pageIndex == 3
                   ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+                  : const Icon(Icons.dehaze_outlined,
+                      color: Colors.red, size: 35),
             ),
           ),
         ],
@@ -579,7 +604,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
         child: FutureBuilder<List<SavedAlert>>(
           future: _future,
           builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting && _all.isEmpty) {
+            if (snap.connectionState == ConnectionState.waiting &&
+                _all.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
             if (snap.hasError && _all.isEmpty) {
@@ -589,7 +615,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
               );
             }
 
-            final int titleCount = snap.hasData ? (snap.data?.length ?? _all.length) : _all.length;
+            final int titleCount =
+                snap.hasData ? (snap.data?.length ?? _all.length) : _all.length;
 
             return Column(
               children: [
@@ -607,7 +634,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                           onTap: _handleBack,
                           child: const Padding(
                             padding: EdgeInsets.all(8.0),
-                            child: Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.black87),
+                            child: Icon(Icons.arrow_back_ios_new,
+                                size: 20, color: Colors.black87),
                           ),
                         ),
                       ),
@@ -625,7 +653,11 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                     children: [
                       const Text(
                         'Saved Alerts',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.black, height: 1.1),
+                        style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                            height: 1.1),
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -649,7 +681,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Manage your saved property alerts here',
-                      style: TextStyle(fontSize: 14, color: Colors.black87, height: 1.2),
+                      style: TextStyle(
+                          fontSize: 14, color: Colors.black87, height: 1.2),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -670,48 +703,55 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: const [
-                            BoxShadow(color: Color(0x14000000), blurRadius: 12, offset: Offset(0, 4)),
+                            BoxShadow(
+                                color: Color(0x14000000),
+                                blurRadius: 12,
+                                offset: Offset(0, 4)),
                           ],
                         ),
                         child: Column(
                           children: [
                             _headerRow(
-                              onSelectAll: (v) => _toggleSelectAllOnPage(v ?? false),
+                              onSelectAll: (v) =>
+                                  _toggleSelectAllOnPage(v ?? false),
                               value: _selectAll,
                             ),
                             const Divider(height: 1, color: Color(0xFFECECEC)),
-
                             Expanded(
                               child: _all.isEmpty
-                                  ? const Center(child: Text('No saved alerts yet.'))
+                                  ? const Center(
+                                      child: Text('No saved alerts yet.'))
                                   : ListView.builder(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount: _pageItems.length,
-                                itemBuilder: (_, i) {
-                                  final a = _pageItems[i];
-                                  final checked = _selected.contains(a.id);
-                                  return _dataRow(
-                                    alert: a,
-                                    checked: checked,
-                                    onCheck: (v) {
-                                      setState(() {
-                                        if (v == true) {
-                                          _selected.add(a.id);
-                                        } else {
-                                          _selected.remove(a.id);
-                                        }
-                                        final allOnPageSelected =
-                                        _pageItems.every((x) => _selected.contains(x.id));
-                                        _selectAll = allOnPageSelected;
-                                      });
-                                    },
-                                    onDelete: () => _deleteAlert(a),
-                                    createdLabel: _relativeTime(a.createdAt),
-                                  );
-                                },
-                              ),
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      itemCount: _pageItems.length,
+                                      itemBuilder: (_, i) {
+                                        final a = _pageItems[i];
+                                        final checked =
+                                            _selected.contains(a.id);
+                                        return _dataRow(
+                                          alert: a,
+                                          checked: checked,
+                                          onCheck: (v) {
+                                            setState(() {
+                                              if (v == true) {
+                                                _selected.add(a.id);
+                                              } else {
+                                                _selected.remove(a.id);
+                                              }
+                                              final allOnPageSelected =
+                                                  _pageItems.every((x) =>
+                                                      _selected.contains(x.id));
+                                              _selectAll = allOnPageSelected;
+                                            });
+                                          },
+                                          onDelete: () => _deleteAlert(a),
+                                          createdLabel:
+                                              _relativeTime(a.createdAt),
+                                        );
+                                      },
+                                    ),
                             ),
-
                             LayoutBuilder(
                               builder: (context, cs) {
                                 final narrow = cs.maxWidth < 420;
@@ -726,47 +766,75 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                                       Expanded(
                                         child: Wrap(
                                           alignment: WrapAlignment.start,
-                                          crossAxisAlignment: WrapCrossAlignment.center,
+                                          crossAxisAlignment:
+                                              WrapCrossAlignment.center,
                                           spacing: 8,
                                           runSpacing: 6,
                                           children: [
                                             Wrap(
                                               spacing: 6,
-                                              crossAxisAlignment: WrapCrossAlignment.center,
+                                              crossAxisAlignment:
+                                                  WrapCrossAlignment.center,
                                               children: [
                                                 Checkbox(
-                                                  visualDensity: VisualDensity.compact,
-                                                  value: _pageItems.isNotEmpty &&
-                                                      _pageItems.every((a) => _selected.contains(a.id)),
-                                                  onChanged: (v) => _toggleSelectAllOnPage(v ?? false),
-                                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                  value: _pageItems
+                                                          .isNotEmpty &&
+                                                      _pageItems.every((a) =>
+                                                          _selected
+                                                              .contains(a.id)),
+                                                  onChanged: (v) =>
+                                                      _toggleSelectAllOnPage(
+                                                          v ?? false),
+                                                  materialTapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
                                                 ),
                                                 Text(
-                                                  narrow ? 'Select all' : 'Select all on this page',
-                                                  style: TextStyle(fontSize: txt),
+                                                  narrow
+                                                      ? 'Select all'
+                                                      : 'Select all on this page',
+                                                  style:
+                                                      TextStyle(fontSize: txt),
                                                   softWrap: true,
                                                 ),
                                               ],
                                             ),
                                             TextButton.icon(
-                                              onPressed: _selected.isEmpty ? null : _deleteSelected,
-                                              icon: Icon(Icons.delete_outline, size: narrow ? 16 : 20),
-                                              label: Text('Delete selected', style: TextStyle(fontSize: txt)),
+                                              onPressed: _selected.isEmpty
+                                                  ? null
+                                                  : _deleteSelected,
+                                              icon: Icon(Icons.delete_outline,
+                                                  size: narrow ? 16 : 20),
+                                              label: Text('Delete selected',
+                                                  style:
+                                                      TextStyle(fontSize: txt)),
                                               style: TextButton.styleFrom(
                                                 padding: EdgeInsets.symmetric(
                                                   horizontal: narrow ? 8 : 12,
                                                   vertical: narrow ? 6 : 8,
                                                 ),
                                                 minimumSize: Size.zero,
-                                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                visualDensity: VisualDensity.compact,
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                                visualDensity:
+                                                    VisualDensity.compact,
                                               ),
                                             ),
                                             TextButton.icon(
-                                              onPressed: (_all.isEmpty || _deletingAll) ? null : _deleteAllAlerts,
-                                              icon: Icon(Icons.delete_forever_outlined, size: narrow ? 16 : 20),
+                                              onPressed:
+                                                  (_all.isEmpty || _deletingAll)
+                                                      ? null
+                                                      : _deleteAllAlerts,
+                                              icon: Icon(
+                                                  Icons.delete_forever_outlined,
+                                                  size: narrow ? 16 : 20),
                                               label: Text(
-                                                _deletingAll ? 'Deleting…' : 'Delete all alerts',
+                                                _deletingAll
+                                                    ? 'Deleting…'
+                                                    : 'Delete all alerts',
                                                 style: TextStyle(fontSize: txt),
                                               ),
                                               style: ButtonStyle(
@@ -776,20 +844,36 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                                                     vertical: narrow ? 6 : 8,
                                                   ),
                                                 ),
-                                                minimumSize: const WidgetStatePropertyAll(Size.zero),
-                                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                visualDensity: VisualDensity.compact,
-                                                foregroundColor: WidgetStateProperty.resolveWith<Color?>(
-                                                      (states) => states.contains(WidgetState.disabled)
-                                                      ? Colors.red.withOpacity(0.38)
+                                                minimumSize:
+                                                    const WidgetStatePropertyAll(
+                                                        Size.zero),
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                                visualDensity:
+                                                    VisualDensity.compact,
+                                                foregroundColor:
+                                                    WidgetStateProperty
+                                                        .resolveWith<Color?>(
+                                                  (states) => states.contains(
+                                                          WidgetState.disabled)
+                                                      ? Colors.red
+                                                          .withOpacity(0.38)
                                                       : Colors.red,
                                                 ),
                                                 backgroundColor:
-                                                const WidgetStatePropertyAll(Colors.transparent),
+                                                    const WidgetStatePropertyAll(
+                                                        Colors.transparent),
                                                 overlayColor:
-                                                WidgetStatePropertyAll(Colors.red.withOpacity(0.08)),
-                                                side: const WidgetStatePropertyAll(BorderSide.none),
-                                                shape: const WidgetStatePropertyAll(StadiumBorder()),
+                                                    WidgetStatePropertyAll(
+                                                        Colors.red
+                                                            .withOpacity(0.08)),
+                                                side:
+                                                    const WidgetStatePropertyAll(
+                                                        BorderSide.none),
+                                                shape:
+                                                    const WidgetStatePropertyAll(
+                                                        StadiumBorder()),
                                               ),
                                             ),
                                           ],
@@ -799,14 +883,16 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                                       // RIGHT pager
                                       Expanded(
                                         child: Padding(
-                                          padding: const EdgeInsets.only(right: 12),
+                                          padding:
+                                              const EdgeInsets.only(right: 12),
                                           child: Align(
                                             alignment: Alignment.centerRight,
                                             child: SingleChildScrollView(
                                               scrollDirection: Axis.horizontal,
                                               child: SizedBox(
                                                 height: 34,
-                                                child: FittedBox(child: _pager()),
+                                                child:
+                                                    FittedBox(child: _pager()),
                                               ),
                                             ),
                                           ),
@@ -817,7 +903,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                                 );
                               },
                             )
-
                           ],
                         ),
                       ),
@@ -868,7 +953,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
               child: Checkbox(
                 value: value,
                 onChanged: onSelectAll,
-                visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                visualDensity:
+                    const VisualDensity(horizontal: -4, vertical: -4),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
@@ -879,7 +965,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
           const SizedBox(width: _hGapTimeToPurpose),
           const _HeaderCell('Purpose', flex: 3, fontSize: _headerFontSize),
           const SizedBox(width: _hGapPurposeToType),
-          const _HeaderCell('Property Type', flex: 4, fontSize: _headerFontSize),
+          const _HeaderCell('Property Type',
+              flex: 4, fontSize: _headerFontSize),
         ],
       ),
     );
@@ -907,14 +994,16 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                   child: Checkbox(
                     value: checked,
                     onChanged: onCheck,
-                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                    visualDensity:
+                        const VisualDensity(horizontal: -4, vertical: -4),
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ),
               Expanded(
                 flex: 4,
-                child: _CellText(alert.alertName, fontSize: _rowFontSize, fontWeight: _rowFontWeight),
+                child: _CellText(alert.alertName,
+                    fontSize: _rowFontSize, fontWeight: _rowFontWeight),
               ),
               const SizedBox(width: _rGapNameToTime),
               Expanded(
@@ -963,7 +1052,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                   child: Text(
                     createdLabel,
                     textAlign: TextAlign.right,
-                    style: const TextStyle(fontSize: 11.5, color: Colors.grey, height: 1.2),
+                    style: const TextStyle(
+                        fontSize: 11.5, color: Colors.grey, height: 1.2),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     softWrap: false,
@@ -974,7 +1064,8 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                   tooltip: 'Delete',
                   onPressed: onDelete,
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints.tightFor(width: 28, height: 28),
+                  constraints:
+                      const BoxConstraints.tightFor(width: 28, height: 28),
                   iconSize: 16,
                   visualDensity: VisualDensity.compact,
                   icon: const Icon(Icons.delete_outline, color: Colors.black54),
@@ -1004,9 +1095,13 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.white,
-            boxShadow: [BoxShadow(color: Color(0x14000000), blurRadius: 8, offset: Offset(0, 2))],
+            boxShadow: [
+              BoxShadow(
+                  color: Color(0x14000000), blurRadius: 8, offset: Offset(0, 2))
+            ],
           ),
-          child: Icon(icon, size: 20, color: enabled ? Colors.black87 : Colors.black26),
+          child: Icon(icon,
+              size: 20, color: enabled ? Colors.black87 : Colors.black26),
         ),
       );
     }
@@ -1016,8 +1111,11 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
         width: 34,
         height: 34,
         alignment: Alignment.center,
-        decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF2D6CF6)),
-        child: Text('$_page', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        decoration: const BoxDecoration(
+            shape: BoxShape.circle, color: Color(0xFF2D6CF6)),
+        child: Text('$_page',
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.w600)),
       );
     }
 
@@ -1042,11 +1140,11 @@ class _HeaderCell extends StatelessWidget {
   final double fontSize;
 
   const _HeaderCell(
-      this.text, {
-        super.key,
-        this.flex = 1,
-        this.fontSize = _headerFontSize,
-      });
+    this.text, {
+    super.key,
+    this.flex = 1,
+    this.fontSize = _headerFontSize,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1080,15 +1178,15 @@ class _CellText extends StatelessWidget {
   final TextOverflow overflow;
 
   const _CellText(
-      this.text, {
-        super.key,
-        this.fontWeight = FontWeight.w400,
-        this.fontSize = 13,
-        this.maxLines,
-        this.softWrap = true,
-        this.overflow = TextOverflow.visible,
-        this.textAlign = TextAlign.left,
-      });
+    this.text, {
+    super.key,
+    this.fontWeight = FontWeight.w400,
+    this.fontSize = 13,
+    this.maxLines,
+    this.softWrap = true,
+    this.overflow = TextOverflow.visible,
+    this.textAlign = TextAlign.left,
+  });
 
   @override
   Widget build(BuildContext context) {

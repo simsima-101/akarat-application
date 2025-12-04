@@ -5,8 +5,11 @@ import 'package:Akarat/screen/saved_alert_screen.dart';
 // Akarat imports
 import 'package:Akarat/secure_storage.dart';
 import 'package:Akarat/services/api_service.dart'; // central base URL
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
+import '../model/propertytypemodel.dart';
 
 /// ✅ Read the auth token from your secure storage correctly.
 Future<String?> readToken() async {
@@ -20,15 +23,13 @@ Future<String?> readToken() async {
 
 class CreateAlertScreen extends StatefulWidget {
   final String
-  initialPurpose; // e.g., "Rent" | "Buy" | "New Projects" | "Commercial"
+      initialPurpose; // e.g., "Rent" | "Buy" | "New Projects" | "Commercial"
   final String initialPropertyType; // e.g., "Villa" | "Apartment" | "" (Any)
-  final List<String> availablePropertyTypes;
 
   const CreateAlertScreen({
     super.key,
     required this.initialPurpose,
     required this.initialPropertyType,
-    required this.availablePropertyTypes,
   });
 
   @override
@@ -42,7 +43,6 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
   late String _timePeriod; // UI: Hourly | Daily | Weekly | Monthly
   late String _purpose; // Locked display from caller
   late String _propertyType; // '' = Any (locked)
-  late List<String> _types; // available types (for display if needed)
 
   final _timePeriods = const ['Hourly', 'Daily', 'Weekly', 'Monthly'];
   bool _submitting = false;
@@ -51,25 +51,17 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
   void initState() {
     super.initState();
 
+    fetchAllPropertyType();
+
     _timePeriod = _timePeriods.first;
     _purpose = widget.initialPurpose.trim();
 
     final seen = <String>{};
-    _types = widget.availablePropertyTypes
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .where((e) => seen.add(e))
-        .toList();
-    if (_types.isEmpty) _types = const ['Apartment'];
 
     final raw = widget.initialPropertyType.trim();
     final rawLower = raw.toLowerCase();
     const anyMarkers = {'', 'all', 'any', 'all residential'};
     _propertyType = anyMarkers.contains(rawLower) ? '' : raw;
-
-    if (_propertyType.isNotEmpty && !_types.contains(_propertyType)) {
-      _types.insert(0, _propertyType);
-    }
 
     // default alert name reflects the combo
     final labelType = _propertyType.isEmpty ? 'Any' : _propertyType;
@@ -114,16 +106,6 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
       default:
         return 'daily';
     }
-  }
-
-  // If you still want a purpose helper, it should return display labels:
-  String _mapPurposeForApi(String p) {
-    final s = p.trim().toLowerCase();
-    if (s.contains('rent')) return 'Rent';
-    if (s.contains('buy') || s.contains('sale')) return 'Buy';
-    if (s.contains('new')) return 'New Projects';
-    if (s.contains('commercial')) return 'Commercial';
-    return p.trim();
   }
 
   String _mapTypeForApi(String t) {
@@ -175,70 +157,6 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
     return s;
   }
 
-// Normalize types and collapse plurals: 'offices' -> 'office'
-  String _canonType(String t) {
-    var s = t.trim().toLowerCase().replaceAll(RegExp(r'[_\s-]+'), ' ');
-    // common plural/synonyms
-    if (s == 'apartments') s = 'apartment';
-    if (s == 'villas') s = 'villa';
-    if (s == 'studios') s = 'studio';
-    if (s == 'offices') s = 'office';
-    if (s == 'commercials') s = 'commercial';
-    return s;
-  }
-
-  // ---------- Saved Alerts utilities ----------
-
-  Future<bool> _comboExists(
-      String token, String purpose, String typeSlug) async {
-    final url = Uri.parse('${ApiService.baseUrl}/saved-searches');
-    final res = await http.get(
-      url,
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-    );
-    if (res.statusCode < 200 || res.statusCode >= 300) return false;
-
-    final dynamic body = res.body.isNotEmpty ? jsonDecode(res.body) : null;
-    List<dynamic> list;
-    if (body is List) {
-      list = body;
-    } else if (body is Map) {
-      final data = body['data'];
-      if (data is List) {
-        list = data;
-      } else if (data is Map && data['data'] is List) {
-        list = data['data']; // paginator
-      } else if (body['saved_searches'] is List) {
-        list = body['saved_searches'];
-      } else {
-        list = const [];
-      }
-    } else {
-      list = const [];
-    }
-
-    final cp = _canonPurpose(purpose);
-    final ct = _canonType(typeSlug); // may be '' for Any
-
-    for (final e in list) {
-      final m = Map<String, dynamic>.from(e);
-      final p = _canonPurpose((m['purpose'] ?? '').toString());
-      final t =
-      _canonType((m['property_type'] ?? m['propertyType'] ?? '').toString());
-
-      // Duplicate if BOTH match
-      if (p == cp && t == ct) return true;
-
-      // Treat "Any" as empty on both sides
-      if (p == cp && t.isEmpty && ct.isEmpty) return true;
-    }
-    return false;
-  }
-
   // Ensure unique alert name (avoids “name already taken”)
   Future<String> _uniqueName(String base, String token) async {
     try {
@@ -271,9 +189,9 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
 
       final existing = list
           .map((e) => ((e as Map)['alert_name'] ?? (e)['name'] ?? '')
-          .toString()
-          .trim()
-          .toLowerCase())
+              .toString()
+              .trim()
+              .toLowerCase())
           .toSet();
 
       if (!existing.contains(base.trim().toLowerCase())) return base;
@@ -321,7 +239,7 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
     final payload = <String, dynamic>{
       'alert_name': alertName,
       'time_period':
-      _mapTimePeriodForApi(_timePeriod), // hourly|daily|weekly|monthly
+          _mapTimePeriodForApi(_timePeriod), // hourly|daily|weekly|monthly
       'purpose': purposeServerKey, // <-- composite key
       if (typeSlug.isNotEmpty) 'property_type': typeSlug,
     };
@@ -340,7 +258,7 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
       };
 
       var res =
-      await http.post(url, headers: headers, body: jsonEncode(payload));
+          await http.post(url, headers: headers, body: jsonEncode(payload));
       debugPrint('POST /alerts -> ${res.statusCode} ${res.body}');
 
       // If server still says duplicate/name conflict, auto-rename & retry once
@@ -357,9 +275,11 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
 
       if (res.statusCode >= 200 && res.statusCode < 300) {
         // ✅ On success, go to SavedAlertsScreen (as you wanted)
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => SavedAlertsScreen(token: token)),
-        );
+        // Navigator.of(context).pushReplacement(
+        //   MaterialPageRoute(builder: (_) => SavedAlertsScreen(token: token)),
+        // );
+
+        Navigator.pop(context);
         return;
       }
 
@@ -372,8 +292,8 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
             final errs = (body['errors'] as Map)
                 .values
                 .map((v) => (v is List && v.isNotEmpty)
-                ? v.first.toString()
-                : v.toString())
+                    ? v.first.toString()
+                    : v.toString())
                 .join('\n');
             msg = errs;
           } else if (body['message'] != null) {
@@ -388,6 +308,29 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
           .showSnackBar(SnackBar(content: Text('Network error: $e')));
     } finally {
       if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  PropertyTypeModel? propertyTypeModel;
+
+  Future<void> fetchAllPropertyType() async {
+    try {
+      final uri = ApiService.buildUri('property-types');
+
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final feature = PropertyTypeModel.fromJson(data);
+
+        setState(() {
+          propertyTypeModel = feature; // <-- IMPORTANT
+        });
+      } else {
+        debugPrint("❌ Property API failed: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Property API error: $e");
     }
   }
 
@@ -409,150 +352,172 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
         ],
       ),
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.grey.shade400,
-                      blurRadius: 2,
-                      spreadRadius: 2,
-                      offset: Offset(1, 1))
-                ],
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Stack(
-                children: [
-                  Positioned(
-                    right: -6,
-                    top: -8,
-                    child: IconButton(
-                      icon: const Icon(Icons.close, color: Colors.red),
-                      onPressed: () => Navigator.pop(context),
+      body: propertyTypeModel == null
+          ? Center(
+              child: CupertinoActivityIndicator(
+              radius: 14,
+            ))
+          : SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.grey.shade400,
+                            blurRadius: 2,
+                            spreadRadius: 2,
+                            offset: Offset(1, 1))
+                      ],
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Create Alert',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black,
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          right: -6,
+                          top: -8,
+                          child: IconButton(
+                            icon: const Icon(Icons.close, color: Colors.red),
+                            onPressed: () => Navigator.pop(context),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 18),
-                      Form(
-                        key: _formKey,
-                        child: Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Alert Name',
-                                style: TextStyle(fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 6),
-                            TextFormField(
-                              controller: _nameCtrl,
-                              decoration: _dec('Alert Name'),
-                              validator: (v) => (v == null || v.trim().isEmpty)
-                                  ? 'Please enter a name'
-                                  : null,
-                            ),
-                            const SizedBox(height: 16),
-
-                            const Text('Time Period',
-                                style: TextStyle(fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 6),
-                            DropdownButtonFormField<String>(
-                              dropdownColor: Colors.white,
-                              value: _timePeriod,
-                              decoration: _dec(''),
-                              icon: const Icon(Icons.keyboard_arrow_down),
-                              items: _timePeriods
-                                  .map((e) => DropdownMenuItem(
-                                  value: e, child: Text(e)))
-                                  .toList(),
-                              onChanged: (v) => setState(
-                                      () => _timePeriod = v ?? _timePeriod),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Purpose (locked)
-                            const Text('Purpose',
-                                style: TextStyle(fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 6),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 14),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border:
-                                Border.all(color: Color(0xFFE7E7E7)),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Create Alert',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black,
                               ),
-                              child: Text(_purpose,
-                                  style: const TextStyle(fontSize: 16)),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 18),
+                            Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Alert Name',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600)),
+                                  const SizedBox(height: 6),
+                                  TextFormField(
+                                    controller: _nameCtrl,
+                                    decoration: _dec('Alert Name'),
+                                    validator: (v) =>
+                                        (v == null || v.trim().isEmpty)
+                                            ? 'Please enter a name'
+                                            : null,
+                                  ),
+                                  const SizedBox(height: 16),
 
-                            // Property Type (locked)
-                            const Text('Property Type',
-                                style: TextStyle(fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 6),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 14),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border:
-                                Border.all(color: Color(0xFFE7E7E7)),
+                                  const Text('Time Period',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600)),
+                                  const SizedBox(height: 6),
+                                  DropdownButtonFormField<String>(
+                                    dropdownColor: Colors.white,
+                                    value: _timePeriod,
+                                    decoration: _dec(''),
+                                    icon: const Icon(Icons.keyboard_arrow_down),
+                                    items: _timePeriods
+                                        .map((e) => DropdownMenuItem(
+                                            value: e, child: Text(e)))
+                                        .toList(),
+                                    onChanged: (v) => setState(
+                                        () => _timePeriod = v ?? _timePeriod),
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  // Purpose (locked)
+                                  const Text('Purpose',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600)),
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 14),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border:
+                                          Border.all(color: Color(0xFFE7E7E7)),
+                                    ),
+                                    child: Text(_purpose,
+                                        style: const TextStyle(fontSize: 16)),
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  // Property Type (locked)
+                                  const Text('Property Type',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600)),
+                                  const SizedBox(height: 6),
+                                  DropdownButtonFormField<String>(
+                                    menuMaxHeight: 340,
+                                    value: _propertyType.isEmpty
+                                        ? null
+                                        : _propertyType,
+                                    decoration:
+                                        _dec('Any'), // <-- hint shows when null
+                                    hint: const Text('Any'),
+                                    dropdownColor: Colors.white,
+                                    icon: const Icon(Icons.keyboard_arrow_down),
+                                    items: propertyTypeModel!.data!.map((pt) {
+                                      return DropdownMenuItem(
+                                        value: pt.name,
+                                        child: Text(pt.name ?? ''),
+                                      );
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _propertyType = value ?? '';
+                                        final labelType = _propertyType.isEmpty
+                                            ? 'Any'
+                                            : _propertyType;
+                                        _nameCtrl.text =
+                                            '$_purpose • $labelType';
+                                      });
+                                    },
+                                  ),
+                                ],
                               ),
-                              child: Text(
-                                _propertyType.isEmpty
-                                    ? 'All Residential — Any Type'
-                                    : _propertyType,
-                                style: const TextStyle(fontSize: 16),
-                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _pillButton(
+                                    label: 'Cancel',
+                                    onTap: () => Navigator.pop(context),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _pillButton(
+                                    label:
+                                        _submitting ? 'Saving…' : 'Save Alert',
+                                    onTap: _submitting ? () {} : _save,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _pillButton(
-                              label: 'Cancel',
-                              onTap: () => Navigator.pop(context),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _pillButton(
-                              label: _submitting ? 'Saving…' : 'Save Alert',
-                              onTap: _submitting ? () {} : _save,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 

@@ -2,9 +2,7 @@ import 'dart:async';
 
 import 'package:Akarat/providers/filter_provider.dart';
 import 'package:Akarat/providers/location_picker_provider.dart';
-import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -18,13 +16,13 @@ import 'location_picker_screen.dart';
 
 class Filter extends StatelessWidget {
   final dynamic data;
-  final int propertyType;
+  final int? propertyType;
   final String? propertyCategoryType;
   final String? optionType;
   const Filter({
     super.key,
     required this.data,
-    this.propertyType = 0,
+    this.propertyType,
     this.propertyCategoryType,
     this.optionType,
   });
@@ -42,16 +40,16 @@ class Filter extends StatelessWidget {
 
 class FilterDemo extends StatefulWidget {
   final dynamic data;
-  final int propertyType;
+  final int? propertyType;
   final String? propertyCategoryType;
   final String? optionType;
 
   const FilterDemo(
       {super.key,
-        required this.data,
-        this.optionType,
-        required this.propertyType,
-        this.propertyCategoryType});
+      required this.data,
+      this.optionType,
+      this.propertyType,
+      this.propertyCategoryType});
 
   @override
   _FilterDemoState createState() => _FilterDemoState();
@@ -60,31 +58,21 @@ class FilterDemo extends StatefulWidget {
 class _FilterDemoState extends State<FilterDemo> {
   int pageIndex = 0;
 
-  // Local flag to prevent double initialization
-  bool _hasInitialized = false;
-
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
 
-    // Prevent running multiple times + ensure context is ready
-    if (_hasInitialized || !mounted) return;
-
-    final filterProvider = context.read<FilterProvider>();
-
-    // Only initialize if provider hasn't been initialized yet
-    if (!filterProvider.isFilterInitialized) {
-      _hasInitialized = true; // Mark as initialized locally
-
-      // Call the async init method
-      filterProvider.initFilterFields(
-        context,
-        data: widget.data,
-        propertyType: widget.propertyType,
-        propertyCategoryType: widget.propertyCategoryType,
-        optionType: widget.optionType,
-      );
-    }
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        context.read<FilterProvider>().initFilterFields(
+              context,
+              data: widget.data,
+              propertyType: widget.propertyType,
+              propertyCategoryType: widget.propertyCategoryType,
+              optionType: widget.optionType,
+            );
+      },
+    );
   }
 
   @override
@@ -98,7 +86,7 @@ class _FilterDemoState extends State<FilterDemo> {
       final bool isNewProjects = filterProvider.selected == 1;
       final bool isProperties = filterProvider.selected == 0;
       final bool isOffPlan = filterProvider.completion
-          .elementAt(filterProvider.selectedCompletion) ==
+              .elementAt(filterProvider.selectedCompletion) ==
           'Off-Plan';
 
       final bool showProductPills = isProperties; // Properties only
@@ -118,14 +106,16 @@ class _FilterDemoState extends State<FilterDemo> {
         onTap: () {
           FocusScope.of(context).unfocus();
         },
-        child: filterProvider.propertyTypeModel == null
-            ? Scaffold(
-            body: ListView.builder(
-              itemCount: 5,
-              itemBuilder: (context, index) => const ShimmerCard(),
-            ) // Show loading state
-        )
-            : Scaffold(
+        child:
+            // filterProvider.propertyTypeModel == null
+            //     ? Scaffold(
+            //         body: ListView.builder(
+            //         itemCount: 5,
+            //         itemBuilder: (context, index) => const ShimmerCard(),
+            //       ) // Show loading state
+            //         )
+            //     :
+            Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
             surfaceTintColor: Color(0xFFF9F9F9),
@@ -155,24 +145,25 @@ class _FilterDemoState extends State<FilterDemo> {
                   return TextButton(
                     onPressed: canReset
                         ? resetState.isResetLoading
-                        ? null
-                        : () async {
-                      await resetState.resetAll(context);
-                      resetState
-                          .captureInitialSnapshot(); // NEW SNAPSHOT
-                    }
+                            ? null
+                            : () async {
+                                await resetState.resetAll(context,
+                                    isUpdate: false);
+                                resetState
+                                    .captureInitialSnapshot(); // NEW SNAPSHOT
+                              }
                         : null,
                     child: resetState.isResetLoading
                         ? CupertinoActivityIndicator(
-                      radius: 13,
-                    )
+                            radius: 13,
+                          )
                         : Text(
-                      "Reset",
-                      style: TextStyle(
-                        color: canReset ? Colors.red : Colors.grey,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                            "Reset",
+                            style: TextStyle(
+                              color: canReset ? Colors.red : Colors.grey,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   );
                 },
               )
@@ -216,8 +207,7 @@ class _FilterDemoState extends State<FilterDemo> {
                             alignment: Alignment.center,
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 5, vertical: 5),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
                             decoration: BoxDecoration(
                               color: filterProvider.selected == 0
                                   ? const Color(0xFF3A7CED)
@@ -264,8 +254,7 @@ class _FilterDemoState extends State<FilterDemo> {
                             alignment: Alignment.center,
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 5, vertical: 5),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
                             decoration: BoxDecoration(
                               color: filterProvider.selected == 1
                                   ? const Color(0xFF3A7CED)
@@ -331,8 +320,7 @@ class _FilterDemoState extends State<FilterDemo> {
                             alignment: Alignment.center,
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 5, vertical: 5),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? const Color(0xFFF5F4F9)
@@ -432,8 +420,7 @@ class _FilterDemoState extends State<FilterDemo> {
                                 size: 26,
                               ),
                             ),
-                            labelStyle:
-                            const TextStyle(color: Colors.black),
+                            labelStyle: const TextStyle(color: Colors.black),
                             filled: true,
                             fillColor: Colors.white, // Background red
                             contentPadding: const EdgeInsets.symmetric(
@@ -450,8 +437,8 @@ class _FilterDemoState extends State<FilterDemo> {
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(5),
-                              borderSide: const BorderSide(
-                                  color: Colors.red, width: 1),
+                              borderSide:
+                                  const BorderSide(color: Colors.red, width: 1),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(5),
@@ -466,71 +453,68 @@ class _FilterDemoState extends State<FilterDemo> {
                         )),
                     Consumer<LocationPickerProvider>(
                         builder: (context, locationProvider, _) {
-                          return locationProvider.selectedLocationList.isEmpty
-                              ? SizedBox.shrink()
-                              : Column(
-                            children: [
-                              SizedBox(
-                                height: 15,
-                              ),
-                              SizedBox(
-                                height: 32,
-                                child: ListView.separated(
-                                  padding: const EdgeInsets.only(
-                                      left: 16, right: 10),
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: locationProvider
-                                      .selectedLocationList.length,
-                                  separatorBuilder: (_, __) =>
-                                  const SizedBox(width: 8),
-                                  itemBuilder: (context, index) {
-                                    final item = locationProvider
-                                        .selectedLocationList[index];
-
-                                    return Container(
-                                      padding:
-                                      const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 5),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black,
-                                        borderRadius:
-                                        BorderRadius.circular(9.0),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                              item.location ??
-                                                  item.country ??
-                                                  'null',
-                                              style: const TextStyle(
-                                                  color: Colors.white)),
-                                          const SizedBox(width: 8),
-                                          GestureDetector(
-                                            onTap: () async {
-                                              await locationProvider
-                                                  .removeSelectedLocations(
-                                                item,
-                                              );
-                                              await filterProvider
-                                                  .updateFilterCount(
-                                                  context);
-                                            },
-                                            child: const Icon(
-                                                Icons.close,
-                                                size: 19,
-                                                color: Colors.white),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
+                      return locationProvider.selectedLocationList.isEmpty
+                          ? SizedBox.shrink()
+                          : Column(
+                              children: [
+                                SizedBox(
+                                  height: 15,
                                 ),
-                              ),
-                            ],
-                          );
-                        }),
+                                SizedBox(
+                                  height: 32,
+                                  child: ListView.separated(
+                                    padding: const EdgeInsets.only(
+                                        left: 16, right: 10),
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: locationProvider
+                                        .selectedLocationList.length,
+                                    separatorBuilder: (_, __) =>
+                                        const SizedBox(width: 8),
+                                    itemBuilder: (context, index) {
+                                      final item = locationProvider
+                                          .selectedLocationList[index];
+
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 5),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black,
+                                          borderRadius:
+                                              BorderRadius.circular(9.0),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                                item.location ??
+                                                    item.country ??
+                                                    'null',
+                                                style: const TextStyle(
+                                                    color: Colors.white)),
+                                            const SizedBox(width: 8),
+                                            GestureDetector(
+                                              onTap: () async {
+                                                await locationProvider
+                                                    .removeSelectedLocations(
+                                                  item,
+                                                );
+                                                // await filterProvider
+                                                //     .updateFilterCount(
+                                                //         context);
+                                              },
+                                              child: const Icon(Icons.close,
+                                                  size: 19,
+                                                  color: Colors.white),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            );
+                    }),
                     SizedBox(
                       height: 25,
                     ),
@@ -570,8 +554,8 @@ class _FilterDemoState extends State<FilterDemo> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () async {
-                        await filterProvider
-                            .setSelectedPropertyType(context, index: 0);
+                        await filterProvider.setSelectedPropertyType(context,
+                            index: 0);
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 150),
@@ -582,13 +566,13 @@ class _FilterDemoState extends State<FilterDemo> {
                           // selected: subtle gray gradient; unselected: white
                           gradient: filterProvider.selectedPropType == 0
                               ? const LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [
-                              Color(0xFFF5F4F9),
-                              Color(0xFFEFEFF3)
-                            ],
-                          )
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                    Color(0xFFF5F4F9),
+                                    Color(0xFFEFEFF3)
+                                  ],
+                                )
                               : null,
                           color: filterProvider.selectedPropType == 0
                               ? null
@@ -645,13 +629,13 @@ class _FilterDemoState extends State<FilterDemo> {
                         decoration: BoxDecoration(
                           gradient: filterProvider.selectedPropType == 1
                               ? const LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [
-                              Color(0xFFF5F4F9),
-                              Color(0xFFEFEFF3)
-                            ],
-                          )
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                    Color(0xFFF5F4F9),
+                                    Color(0xFFEFEFF3)
+                                  ],
+                                )
                               : null,
                           color: filterProvider.selectedPropType == 1
                               ? null
@@ -693,99 +677,105 @@ class _FilterDemoState extends State<FilterDemo> {
                 ],
               ),
 
-              SizedBox(height: 10),
+              if (filterProvider.selectedPropType != null) ...[
+                SizedBox(height: 10),
+                AnimatedOpacity(
+                  opacity: filterProvider.isPropertyTypeLoading ? 0.0 : 1.0,
+                  duration: const Duration(milliseconds: 500),
+                  child: Container(
+                    margin: const EdgeInsets.all(5),
+                    height: screenSize.height * 0.125,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount:
+                          filterProvider.propertyTypeModel?.data?.length ?? 0,
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          onTap: () async {
+                            await filterProvider
+                                .setSelectedPropertyCategoryType(
+                              context,
+                              index: index,
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 5),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 15, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: filterProvider.selectedtype == index
+                                  ? Color(0xFFEEEEEE)
+                                  : Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  offset: Offset(0, 2),
+                                  blurRadius: 4,
+                                ),
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.8),
+                                  offset: Offset(-4, -4),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: Image.network(
+                                      height: 37,
+                                      filterProvider
+                                          .propertyTypeModel!.data![index].icon
+                                          .toString(),
+                                    )
 
-              AnimatedOpacity(
-                opacity: filterProvider.isPropertyTypeLoading ? 0.0 : 1.0,
-                duration: const Duration(milliseconds: 500),
-                child: Container(
-                  margin: const EdgeInsets.all(5),
-                  height: screenSize.height * 0.125,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount:
-                    filterProvider.propertyTypeModel?.data?.length ??
-                        0,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () async {
-                          await filterProvider
-                              .setSelectedPropertyCategoryType(
-                            context,
-                            index: index,
-                          );
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 5),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 15, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: filterProvider.selectedtype == index
-                                ? Color(0xFFEEEEEE)
-                                : Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                offset: Offset(0, 2),
-                                blurRadius: 4,
-                              ),
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.8),
-                                offset: Offset(-4, -4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: CachedNetworkImage(
-                                  imageUrl: filterProvider
-                                      .propertyTypeModel!
-                                      .data![index]
-                                      .icon
-                                      .toString(),
-                                  height: 35,
-                                  placeholder: (context, url) =>
-                                  const CupertinoActivityIndicator(
-                                    radius: 13,
+                                    //     CachedNetworkImage(
+                                    //   imageUrl: filterProvider
+                                    //       .propertyTypeModel!
+                                    //       .data![index]
+                                    //       .icon
+                                    //       .toString(),
+                                    //   height: 35,
+                                    //   placeholder: (context, url) =>
+                                    //       const CupertinoActivityIndicator(
+                                    //     radius: 13,
+                                    //   ),
+                                    //   errorWidget: (context, url, error) =>
+                                    //       const Icon(Icons.error, size: 35),
+                                    // ),
+                                    ),
+                                Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: Text(
+                                    filterProvider
+                                        .propertyTypeModel!.data![index].name
+                                        .toString(),
+                                    style: TextStyle(
+                                      color:
+                                          filterProvider.selectedtype == index
+                                              ? Colors.black
+                                              : Colors.black,
+                                      letterSpacing: 0.5,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
-                                  errorWidget: (context, url, error) =>
-                                  const Icon(Icons.error, size: 35),
                                 ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: Text(
-                                  filterProvider.propertyTypeModel!
-                                      .data![index].name
-                                      .toString(),
-                                  style: TextStyle(
-                                    color: filterProvider.selectedtype ==
-                                        index
-                                        ? Colors.black
-                                        : Colors.black,
-                                    letterSpacing: 0.5,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-
+              ],
               // const Divider(height: 1,indent: 15,endIndent: 15,),
               const SizedBox(height: 20),
 
@@ -823,9 +813,9 @@ class _FilterDemoState extends State<FilterDemo> {
                               child: Container(
                                 // auto width based on label
                                 constraints:
-                                const BoxConstraints(minHeight: 34),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20),
+                                    const BoxConstraints(minHeight: 34),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 20),
                                 margin: const EdgeInsets.only(right: 10),
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
@@ -841,15 +831,13 @@ class _FilterDemoState extends State<FilterDemo> {
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color:
-                                      Colors.grey.withOpacity(0.15),
+                                      color: Colors.grey.withOpacity(0.15),
                                       offset: const Offset(0, 2),
                                       blurRadius: 4,
                                       spreadRadius: 0,
                                     ),
                                     BoxShadow(
-                                      color:
-                                      Colors.white.withOpacity(0.9),
+                                      color: Colors.white.withOpacity(0.9),
                                       offset: const Offset(-2, -2),
                                       blurRadius: 6,
                                       spreadRadius: 2,
@@ -902,16 +890,14 @@ class _FilterDemoState extends State<FilterDemo> {
 
               const SizedBox(height: 10),
               Padding(
-                  padding:
-                  const EdgeInsets.only(top: 0, left: 20, right: 10),
+                  padding: const EdgeInsets.only(top: 0, left: 20, right: 10),
                   child: Row(spacing: 15, children: [
                     Container(
                       width: screenSize.width * 0.38,
                       height: 40,
                       padding: const EdgeInsets.only(top: 8, left: 8),
                       decoration: BoxDecoration(
-                        borderRadius:
-                        BorderRadiusDirectional.circular(6.0),
+                        borderRadius: BorderRadiusDirectional.circular(6.0),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.grey,
@@ -935,13 +921,12 @@ class _FilterDemoState extends State<FilterDemo> {
                         child: TextFormField(
                           controller: filterProvider.minPriceController,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                              border: InputBorder.none),
+                          decoration:
+                              const InputDecoration(border: InputBorder.none),
                           onTap: () => filterProvider.isMinTyping =
-                          true, // 👈 starts typing
-                          onEditingComplete: () =>
-                          filterProvider.isMinTyping =
-                          false, // 👈 ends typing (on "done")
+                              true, // 👈 starts typing
+                          onEditingComplete: () => filterProvider.isMinTyping =
+                              false, // 👈 ends typing (on "done")
                           onChanged: (val) async {
                             final start = double.tryParse(val) ?? 0;
                             if (start <= filterProvider.values.end) {
@@ -952,92 +937,92 @@ class _FilterDemoState extends State<FilterDemo> {
                                     start.toStringAsFixed(0);
                               });
 
-                              await filterProvider.showResult(
-                                context,
-                                autoUpdate: true,
-                                onFilterResultNotZero: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      settings: const RouteSettings(
-                                          name: 'FliterList'),
-                                      builder: (context) => FliterList(
-                                        // filterModel:
-                                        //     filterProvider.filterModel,
-                                        // // forceRefresh: true,
-                                        // // 👇 send the exact UI selections forward
-                                        // selectedPurpose: filterProvider
-                                        //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
-                                        // selectedPropertyType: filterProvider
-                                        //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
-                                      ),
-                                    ),
-                                  );
-                                },
-                                onFilterResultZero: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Scaffold(
-                                        appBar: AppBar(
-                                          title: Text('Results'),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                        body: Container(
-                                          color: Colors.white,
-                                          child: Center(
-                                            child: Column(
-                                              mainAxisAlignment:
-                                              MainAxisAlignment
-                                                  .center,
-                                              children: [
-                                                Image.asset(
-                                                    "assets/images/not_found.png",
-                                                    width: 50,
-                                                    height: 50),
-                                                SizedBox(height: 20),
-                                                Text('No Property Found',
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                        FontWeight
-                                                            .bold)),
-                                                SizedBox(height: 10),
-                                                Text(
-                                                  'Please select other filters to get results.',
-                                                  style: TextStyle(
-                                                      fontSize: 16,
-                                                      color:
-                                                      Colors.black54),
-                                                  textAlign:
-                                                  TextAlign.center,
-                                                ),
-                                                SizedBox(height: 30),
-                                                ElevatedButton(
-                                                  style: ElevatedButton
-                                                      .styleFrom(
-                                                      backgroundColor:
-                                                      Colors.red),
-                                                  onPressed: () {
-                                                    Navigator.pop(
-                                                        context);
-                                                  },
-                                                  child: Text(
-                                                      'Back to Filters',
-                                                      style: TextStyle(
-                                                          fontSize: 14,
-                                                          color: Colors
-                                                              .white)),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
+                              // await filterProvider.showResult(
+                              //   context,
+                              //   autoUpdate: true,
+                              //   onFilterResultNotZero: () {
+                              //     Navigator.push(
+                              //       context,
+                              //       MaterialPageRoute(
+                              //         settings: const RouteSettings(
+                              //             name: 'FliterList'),
+                              //         builder: (context) => FliterList(
+                              //             // filterModel:
+                              //             //     filterProvider.filterModel,
+                              //             // // forceRefresh: true,
+                              //             // // 👇 send the exact UI selections forward
+                              //             // selectedPurpose: filterProvider
+                              //             //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
+                              //             // selectedPropertyType: filterProvider
+                              //             //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
+                              //             ),
+                              //       ),
+                              //     );
+                              //   },
+                              //   onFilterResultZero: () {
+                              //     Navigator.push(
+                              //       context,
+                              //       MaterialPageRoute(
+                              //         builder: (context) => Scaffold(
+                              //           appBar: AppBar(
+                              //             title: Text('Results'),
+                              //             backgroundColor: Colors.red,
+                              //           ),
+                              //           body: Container(
+                              //             color: Colors.white,
+                              //             child: Center(
+                              //               child: Column(
+                              //                 mainAxisAlignment:
+                              //                     MainAxisAlignment
+                              //                         .center,
+                              //                 children: [
+                              //                   Image.asset(
+                              //                       "assets/images/not_found.png",
+                              //                       width: 50,
+                              //                       height: 50),
+                              //                   SizedBox(height: 20),
+                              //                   Text('No Property Found',
+                              //                       style: TextStyle(
+                              //                           fontSize: 20,
+                              //                           fontWeight:
+                              //                               FontWeight
+                              //                                   .bold)),
+                              //                   SizedBox(height: 10),
+                              //                   Text(
+                              //                     'Please select other filters to get results.',
+                              //                     style: TextStyle(
+                              //                         fontSize: 16,
+                              //                         color:
+                              //                             Colors.black54),
+                              //                     textAlign:
+                              //                         TextAlign.center,
+                              //                   ),
+                              //                   SizedBox(height: 30),
+                              //                   ElevatedButton(
+                              //                     style: ElevatedButton
+                              //                         .styleFrom(
+                              //                             backgroundColor:
+                              //                                 Colors.red),
+                              //                     onPressed: () {
+                              //                       Navigator.pop(
+                              //                           context);
+                              //                     },
+                              //                     child: Text(
+                              //                         'Back to Filters',
+                              //                         style: TextStyle(
+                              //                             fontSize: 14,
+                              //                             color: Colors
+                              //                                 .white)),
+                              //                   ),
+                              //                 ],
+                              //               ),
+                              //             ),
+                              //           ),
+                              //         ),
+                              //       ),
+                              //     );
+                              //   },
+                              // );
                             }
                           },
                         ),
@@ -1047,8 +1032,7 @@ class _FilterDemoState extends State<FilterDemo> {
                       padding: const EdgeInsets.only(top: 5),
                       child: Text(
                         "to",
-                        style: TextStyle(
-                            color: Colors.black, fontSize: 15.0),
+                        style: TextStyle(color: Colors.black, fontSize: 15.0),
                         textAlign: TextAlign.left,
                       ),
                     ),
@@ -1057,8 +1041,7 @@ class _FilterDemoState extends State<FilterDemo> {
                       height: 40,
                       padding: const EdgeInsets.only(top: 8, left: 8),
                       decoration: BoxDecoration(
-                        borderRadius:
-                        BorderRadiusDirectional.circular(6.0),
+                        borderRadius: BorderRadiusDirectional.circular(6.0),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.grey,
@@ -1082,11 +1065,11 @@ class _FilterDemoState extends State<FilterDemo> {
                         child: TextFormField(
                           controller: filterProvider.maxPriceController,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                              border: InputBorder.none),
+                          decoration:
+                              const InputDecoration(border: InputBorder.none),
                           onTap: () => filterProvider.isMaxTyping = true,
                           onEditingComplete: () =>
-                          filterProvider.isMaxTyping = false,
+                              filterProvider.isMaxTyping = false,
                           onChanged: (val) async {
                             final end = double.tryParse(val) ?? 0;
                             if (end >= filterProvider.values.start) {
@@ -1096,92 +1079,92 @@ class _FilterDemoState extends State<FilterDemo> {
                                 filterProvider.max_price =
                                     end.toStringAsFixed(0);
                               });
-                              await filterProvider.showResult(
-                                context,
-                                autoUpdate: true,
-                                onFilterResultNotZero: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      settings: const RouteSettings(
-                                          name: 'FliterList'),
-                                      builder: (context) => FliterList(
-                                        // filterModel:
-                                        //     filterProvider.filterModel,
-                                        // // forceRefresh: true,
-                                        // // 👇 send the exact UI selections forward
-                                        // selectedPurpose: filterProvider
-                                        //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
-                                        // selectedPropertyType: filterProvider
-                                        //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
-                                      ),
-                                    ),
-                                  );
-                                },
-                                onFilterResultZero: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Scaffold(
-                                        appBar: AppBar(
-                                          title: Text('Results'),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                        body: Container(
-                                          color: Colors.white,
-                                          child: Center(
-                                            child: Column(
-                                              mainAxisAlignment:
-                                              MainAxisAlignment
-                                                  .center,
-                                              children: [
-                                                Image.asset(
-                                                    "assets/images/not_found.png",
-                                                    width: 50,
-                                                    height: 50),
-                                                SizedBox(height: 20),
-                                                Text('No Property Found',
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                        FontWeight
-                                                            .bold)),
-                                                SizedBox(height: 10),
-                                                Text(
-                                                  'Please select other filters to get results.',
-                                                  style: TextStyle(
-                                                      fontSize: 16,
-                                                      color:
-                                                      Colors.black54),
-                                                  textAlign:
-                                                  TextAlign.center,
-                                                ),
-                                                SizedBox(height: 30),
-                                                ElevatedButton(
-                                                  style: ElevatedButton
-                                                      .styleFrom(
-                                                      backgroundColor:
-                                                      Colors.red),
-                                                  onPressed: () {
-                                                    Navigator.pop(
-                                                        context);
-                                                  },
-                                                  child: Text(
-                                                      'Back to Filters',
-                                                      style: TextStyle(
-                                                          fontSize: 14,
-                                                          color: Colors
-                                                              .white)),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
+                              // await filterProvider.showResult(
+                              //   context,
+                              //   autoUpdate: true,
+                              //   onFilterResultNotZero: () {
+                              //     Navigator.push(
+                              //       context,
+                              //       MaterialPageRoute(
+                              //         settings: const RouteSettings(
+                              //             name: 'FliterList'),
+                              //         builder: (context) => FliterList(
+                              //             // filterModel:
+                              //             //     filterProvider.filterModel,
+                              //             // // forceRefresh: true,
+                              //             // // 👇 send the exact UI selections forward
+                              //             // selectedPurpose: filterProvider
+                              //             //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
+                              //             // selectedPropertyType: filterProvider
+                              //             //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
+                              //             ),
+                              //       ),
+                              //     );
+                              //   },
+                              //   onFilterResultZero: () {
+                              //     Navigator.push(
+                              //       context,
+                              //       MaterialPageRoute(
+                              //         builder: (context) => Scaffold(
+                              //           appBar: AppBar(
+                              //             title: Text('Results'),
+                              //             backgroundColor: Colors.red,
+                              //           ),
+                              //           body: Container(
+                              //             color: Colors.white,
+                              //             child: Center(
+                              //               child: Column(
+                              //                 mainAxisAlignment:
+                              //                     MainAxisAlignment
+                              //                         .center,
+                              //                 children: [
+                              //                   Image.asset(
+                              //                       "assets/images/not_found.png",
+                              //                       width: 50,
+                              //                       height: 50),
+                              //                   SizedBox(height: 20),
+                              //                   Text('No Property Found',
+                              //                       style: TextStyle(
+                              //                           fontSize: 20,
+                              //                           fontWeight:
+                              //                               FontWeight
+                              //                                   .bold)),
+                              //                   SizedBox(height: 10),
+                              //                   Text(
+                              //                     'Please select other filters to get results.',
+                              //                     style: TextStyle(
+                              //                         fontSize: 16,
+                              //                         color:
+                              //                             Colors.black54),
+                              //                     textAlign:
+                              //                         TextAlign.center,
+                              //                   ),
+                              //                   SizedBox(height: 30),
+                              //                   ElevatedButton(
+                              //                     style: ElevatedButton
+                              //                         .styleFrom(
+                              //                             backgroundColor:
+                              //                                 Colors.red),
+                              //                     onPressed: () {
+                              //                       Navigator.pop(
+                              //                           context);
+                              //                     },
+                              //                     child: Text(
+                              //                         'Back to Filters',
+                              //                         style: TextStyle(
+                              //                             fontSize: 14,
+                              //                             color: Colors
+                              //                                 .white)),
+                              //                   ),
+                              //                 ],
+                              //               ),
+                              //             ),
+                              //           ),
+                              //         ),
+                              //       ),
+                              //     );
+                              //   },
+                              // );
                             }
                           },
                         ),
@@ -1198,8 +1181,7 @@ class _FilterDemoState extends State<FilterDemo> {
                     tooltipBackgroundColor: Colors.black,
                     activeDividerStrokeWidth: 1,
                     activeDividerRadius: 2,
-                    thumbStrokeWidth:
-                    0.5, // Change tooltip background color
+                    thumbStrokeWidth: 0.5, // Change tooltip background color
                     tooltipTextStyle: TextStyle(
                       color: Colors.white, // Change tooltip text color
                       fontWeight: FontWeight.bold,
@@ -1217,15 +1199,14 @@ class _FilterDemoState extends State<FilterDemo> {
                     controller: filterProvider.priceRangeController,
 
                     tooltipTextFormatterCallback: (actualValue, _) =>
-                    'AED ${actualValue.toInt()}',
+                        'AED ${actualValue.toInt()}',
                     onChanged: (SfRangeValues value) async {
                       setState(() {
                         filterProvider.values =
                             SfRangeValues(value.start, value.end);
                         filterProvider.min_price =
                             value.start.toStringAsFixed(0);
-                        filterProvider.max_price =
-                            value.end.toStringAsFixed(0);
+                        filterProvider.max_price = value.end.toStringAsFixed(0);
 
                         // ✅ Force update min only if not currently editing, or if value actually changed
                         if (!filterProvider.isMinTyping ||
@@ -1243,83 +1224,83 @@ class _FilterDemoState extends State<FilterDemo> {
                         }
                       });
 
-                      await filterProvider.showResult(
-                        context,
-                        autoUpdate: true,
-                        onFilterResultNotZero: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              settings:
-                              const RouteSettings(name: 'FliterList'),
-                              builder: (context) => FliterList(
-                                // filterModel: filterProvider.filterModel,
-                                // // forceRefresh: true,
-                                // // 👇 send the exact UI selections forward
-                                // selectedPurpose: filterProvider
-                                //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
-                                // selectedPropertyType: filterProvider
-                                //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
-                              ),
-                            ),
-                          );
-                        },
-                        onFilterResultZero: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Scaffold(
-                                appBar: AppBar(
-                                  title: Text('Results'),
-                                  backgroundColor: Colors.red,
-                                ),
-                                body: Container(
-                                  color: Colors.white,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.center,
-                                      children: [
-                                        Image.asset(
-                                            "assets/images/not_found.png",
-                                            width: 50,
-                                            height: 50),
-                                        SizedBox(height: 20),
-                                        Text('No Property Found',
-                                            style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight:
-                                                FontWeight.bold)),
-                                        SizedBox(height: 10),
-                                        Text(
-                                          'Please select other filters to get results.',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.black54),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        SizedBox(height: 30),
-                                        ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                              Colors.red),
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text('Back to Filters',
-                                              style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.white)),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
+                      // await filterProvider.showResult(
+                      //   context,
+                      //   autoUpdate: true,
+                      //   onFilterResultNotZero: () {
+                      //     Navigator.push(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //         settings:
+                      //             const RouteSettings(name: 'FliterList'),
+                      //         builder: (context) => FliterList(
+                      //             // filterModel: filterProvider.filterModel,
+                      //             // // forceRefresh: true,
+                      //             // // 👇 send the exact UI selections forward
+                      //             // selectedPurpose: filterProvider
+                      //             //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
+                      //             // selectedPropertyType: filterProvider
+                      //             //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
+                      //             ),
+                      //       ),
+                      //     );
+                      //   },
+                      //   onFilterResultZero: () {
+                      //     Navigator.push(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //         builder: (context) => Scaffold(
+                      //           appBar: AppBar(
+                      //             title: Text('Results'),
+                      //             backgroundColor: Colors.red,
+                      //           ),
+                      //           body: Container(
+                      //             color: Colors.white,
+                      //             child: Center(
+                      //               child: Column(
+                      //                 mainAxisAlignment:
+                      //                     MainAxisAlignment.center,
+                      //                 children: [
+                      //                   Image.asset(
+                      //                       "assets/images/not_found.png",
+                      //                       width: 50,
+                      //                       height: 50),
+                      //                   SizedBox(height: 20),
+                      //                   Text('No Property Found',
+                      //                       style: TextStyle(
+                      //                           fontSize: 20,
+                      //                           fontWeight:
+                      //                               FontWeight.bold)),
+                      //                   SizedBox(height: 10),
+                      //                   Text(
+                      //                     'Please select other filters to get results.',
+                      //                     style: TextStyle(
+                      //                         fontSize: 16,
+                      //                         color: Colors.black54),
+                      //                     textAlign: TextAlign.center,
+                      //                   ),
+                      //                   SizedBox(height: 30),
+                      //                   ElevatedButton(
+                      //                     style: ElevatedButton.styleFrom(
+                      //                         backgroundColor:
+                      //                             Colors.red),
+                      //                     onPressed: () {
+                      //                       Navigator.pop(context);
+                      //                     },
+                      //                     child: Text('Back to Filters',
+                      //                         style: TextStyle(
+                      //                             fontSize: 14,
+                      //                             color: Colors.white)),
+                      //                   ),
+                      //                 ],
+                      //               ),
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     );
+                      //   },
+                      // );
                     },
 
                     child: SizedBox(
@@ -1349,15 +1330,12 @@ class _FilterDemoState extends State<FilterDemo> {
                               selectedOpacity: 0.0,
                               unselectedColor: Colors.transparent,
                               selectionController:
-                              filterProvider.rangeController,
+                                  filterProvider.priceRangeController,
                             ),
-                            xValueMapper: (Data sales, int index) =>
-                            sales.x,
-                            yValueMapper: (Data sales, int index) =>
-                            sales.y,
+                            xValueMapper: (Data sales, int index) => sales.x,
+                            yValueMapper: (Data sales, int index) => sales.y,
                             pointColorMapper: (Data sales, int index) {
-                              return const Color.fromARGB(
-                                  255, 37, 117, 212);
+                              return const Color.fromARGB(255, 37, 117, 212);
                             },
                             // color: const Color.fromRGBO(255, 255, 255, 0),
                             dashArray: const <double>[5, 3],
@@ -1413,14 +1391,13 @@ class _FilterDemoState extends State<FilterDemo> {
 
                       return GestureDetector(
                         onTap: () async {
-                          await filterProvider
-                              .setSelectedBedrooms(context, index: index);
+                          await filterProvider.setSelectedBedrooms(context,
+                              index: index);
                         },
                         child: Container(
                           margin: const EdgeInsets.symmetric(
                               horizontal: 5, vertical: 5),
-                          padding:
-                          const EdgeInsets.symmetric(horizontal: 15),
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             border: Border.all(
@@ -1511,16 +1488,14 @@ class _FilterDemoState extends State<FilterDemo> {
 
                       return GestureDetector(
                         onTap: () async {
-                          await filterProvider.setSelectedBathrooms(
-                              context,
+                          await filterProvider.setSelectedBathrooms(context,
                               index: index);
                         },
                         child: Container(
                           alignment: Alignment.center,
                           margin: const EdgeInsets.symmetric(
                               horizontal: 5, vertical: 5),
-                          padding:
-                          const EdgeInsets.symmetric(horizontal: 15),
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             border: Border.all(
@@ -1608,30 +1583,25 @@ class _FilterDemoState extends State<FilterDemo> {
                             padding: const EdgeInsets.only(left: 8),
                             decoration: _inputBoxDecoration(),
                             child: TextFormField(
-                              controller:
-                              filterProvider.minAreaController,
+                              controller: filterProvider.minAreaController,
                               keyboardType: TextInputType.number,
                               decoration: const InputDecoration(
                                   border: InputBorder.none),
                               onTap: () =>
-                              filterProvider.isMinAreaTyping = true,
+                                  filterProvider.isMinAreaTyping = true,
                               onEditingComplete: () =>
-                              filterProvider.isMinAreaTyping = false,
+                                  filterProvider.isMinAreaTyping = false,
                               onChanged: (val) {
                                 final start = double.tryParse(val) ?? 0;
-                                if (start <=
-                                    filterProvider.valuesArea.end) {
+                                if (start <= filterProvider.valuesArea.end) {
                                   setState(() {
-                                    filterProvider.valuesArea =
-                                        SfRangeValues(
-                                            start,
-                                            filterProvider
-                                                .valuesArea.end);
+                                    filterProvider.valuesArea = SfRangeValues(
+                                        start, filterProvider.valuesArea.end);
                                     filterProvider.min_sqrfeet =
                                         start.toStringAsFixed(0);
                                   });
-                                  filterProvider
-                                      .updateFilterCount(context);
+                                  // filterProvider
+                                  //     .updateFilterCount(context);
                                 }
                               },
                             ),
@@ -1639,8 +1609,7 @@ class _FilterDemoState extends State<FilterDemo> {
                         ),
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 10),
-                          child:
-                          Text("to", style: TextStyle(fontSize: 15)),
+                          child: Text("to", style: TextStyle(fontSize: 15)),
                         ),
                         // Maximum area input
                         Expanded(
@@ -1649,30 +1618,25 @@ class _FilterDemoState extends State<FilterDemo> {
                             padding: const EdgeInsets.only(left: 8),
                             decoration: _inputBoxDecoration(),
                             child: TextFormField(
-                              controller:
-                              filterProvider.maxAreaController,
+                              controller: filterProvider.maxAreaController,
                               keyboardType: TextInputType.number,
                               decoration: const InputDecoration(
                                   border: InputBorder.none),
                               onTap: () =>
-                              filterProvider.isMaxAreaTyping = true,
+                                  filterProvider.isMaxAreaTyping = true,
                               onEditingComplete: () =>
-                              filterProvider.isMaxAreaTyping = false,
+                                  filterProvider.isMaxAreaTyping = false,
                               onChanged: (val) {
                                 final end = double.tryParse(val) ?? 0;
-                                if (end >=
-                                    filterProvider.valuesArea.start) {
+                                if (end >= filterProvider.valuesArea.start) {
                                   setState(() {
-                                    filterProvider.valuesArea =
-                                        SfRangeValues(
-                                            filterProvider
-                                                .valuesArea.start,
-                                            end);
+                                    filterProvider.valuesArea = SfRangeValues(
+                                        filterProvider.valuesArea.start, end);
                                     filterProvider.max_sqrfeet =
                                         end.toStringAsFixed(0);
                                   });
-                                  filterProvider
-                                      .updateFilterCount(context);
+                                  // filterProvider
+                                  //     .updateFilterCount(context);
                                 }
                               },
                             ),
@@ -1690,8 +1654,7 @@ class _FilterDemoState extends State<FilterDemo> {
                       data: SfRangeSelectorThemeData(
                         tooltipBackgroundColor: Colors.black,
                         tooltipTextStyle: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       child: SfRangeSelector(
                         min: 0,
@@ -1703,8 +1666,7 @@ class _FilterDemoState extends State<FilterDemo> {
                         inactiveColor: const Color(0x80F1EEEE),
                         controller: filterProvider.areaRangeController,
                         onChanged: (value) async {
-                          await filterProvider.setSelectedAreaRange(
-                              context,
+                          await filterProvider.setSelectedAreaRange(context,
                               value: value);
                         },
                         child: SizedBox(
@@ -1714,9 +1676,7 @@ class _FilterDemoState extends State<FilterDemo> {
                             plotAreaBorderColor: Colors.transparent,
                             margin: const EdgeInsets.all(0),
                             primaryXAxis: NumericAxis(
-                                minimum: 0,
-                                maximum: 10000,
-                                isVisible: false),
+                                minimum: 0, maximum: 10000, isVisible: false),
                             primaryYAxis: NumericAxis(isVisible: false),
                             plotAreaBorderWidth: 0,
                             plotAreaBackgroundColor: Colors.transparent,
@@ -1728,18 +1688,14 @@ class _FilterDemoState extends State<FilterDemo> {
                                   selectedOpacity: 0,
                                   unselectedColor: Colors.transparent,
                                   selectionController:
-                                  filterProvider.rangeControllerarea,
+                                      filterProvider.areaRangeController,
                                 ),
-                                xValueMapper:
-                                    (Dataarea sales, int index) =>
-                                sales.x,
-                                yValueMapper:
-                                    (Dataarea sales, int index) =>
-                                sales.y,
-                                pointColorMapper:
-                                    (Dataarea sales, int index) =>
-                                const Color.fromARGB(
-                                    255, 37, 117, 212),
+                                xValueMapper: (Dataarea sales, int index) =>
+                                    sales.x,
+                                yValueMapper: (Dataarea sales, int index) =>
+                                    sales.y,
+                                pointColorMapper: (Dataarea sales, int index) =>
+                                    const Color.fromARGB(255, 37, 117, 212),
                                 dashArray: const <double>[5, 3],
                                 animationDuration: 0,
                                 borderWidth: 0,
@@ -1787,8 +1743,7 @@ class _FilterDemoState extends State<FilterDemo> {
                     physics: const ScrollPhysics(),
                     itemCount: filterProvider.ftypeList.length,
                     itemBuilder: (context, index) {
-                      final isSelected =
-                          filterProvider.selectedIndex == index;
+                      final isSelected = filterProvider.selectedIndex == index;
                       return GestureDetector(
                         onTap: () async {
                           await filterProvider.setSelectedFurnishedType(
@@ -1799,8 +1754,7 @@ class _FilterDemoState extends State<FilterDemo> {
                         child: Container(
                           margin: const EdgeInsets.symmetric(
                               horizontal: 5, vertical: 5),
-                          padding:
-                          const EdgeInsets.symmetric(horizontal: 15),
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             border: Border.all(
@@ -1886,79 +1840,76 @@ class _FilterDemoState extends State<FilterDemo> {
                             scrollDirection: Axis.horizontal,
                             child: Row(
                               children: List.generate(
-                                  filterProvider.handoverOptions.length,
-                                      (i) {
-                                    final bool isSelected =
-                                        filterProvider.selectedHandover == i;
+                                  filterProvider.handoverOptions.length, (i) {
+                                final bool isSelected =
+                                    filterProvider.selectedHandover == i;
 
-                                    return Container(
-                                      width: chipWidth,
-                                      margin: EdgeInsets.only(
-                                          right: i ==
+                                return Container(
+                                  width: chipWidth,
+                                  margin: EdgeInsets.only(
+                                      right: i ==
                                               filterProvider
-                                                  .handoverOptions
-                                                  .length -
+                                                      .handoverOptions.length -
                                                   1
-                                              ? 0
-                                              : spacing),
-                                      child: GestureDetector(
-                                        onTap: () async {
-                                          await filterProvider
-                                              .setSelectedHandOverBy(
-                                            context,
-                                            index: i,
-                                          );
-                                        },
-                                        child: Container(
-                                          constraints: const BoxConstraints(
-                                              minHeight: 34),
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 8),
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                            color: isSelected
-                                                ? const Color(0xFFF5F4F9)
-                                                : Colors.white,
-                                            border: Border.all(
-                                              color: isSelected
-                                                  ? Colors.black
-                                                  : const Color(0xFFE6E4EE),
-                                              width: 1,
-                                            ),
-                                            borderRadius:
-                                            BorderRadius.circular(12),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.15),
-                                                offset: const Offset(0, 2),
-                                                blurRadius: 4,
-                                                spreadRadius: 0,
-                                              ),
-                                              BoxShadow(
-                                                color: Colors.white
-                                                    .withOpacity(0.9),
-                                                offset: const Offset(-2, -2),
-                                                blurRadius: 6,
-                                                spreadRadius: 2,
-                                              ),
-                                            ],
-                                          ),
-                                          child: Text(
-                                            filterProvider.handoverOptions[i],
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                              fontSize: 13,
-                                              letterSpacing: 0.2,
-                                              color: Colors.black,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                          ),
+                                          ? 0
+                                          : spacing),
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      await filterProvider
+                                          .setSelectedHandOverBy(
+                                        context,
+                                        index: i,
+                                      );
+                                    },
+                                    child: Container(
+                                      constraints:
+                                          const BoxConstraints(minHeight: 34),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? const Color(0xFFF5F4F9)
+                                            : Colors.white,
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? Colors.black
+                                              : const Color(0xFFE6E4EE),
+                                          width: 1,
                                         ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.grey.withOpacity(0.15),
+                                            offset: const Offset(0, 2),
+                                            blurRadius: 4,
+                                            spreadRadius: 0,
+                                          ),
+                                          BoxShadow(
+                                            color:
+                                                Colors.white.withOpacity(0.9),
+                                            offset: const Offset(-2, -2),
+                                            blurRadius: 6,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
                                       ),
-                                    );
-                                  }),
+                                      child: Text(
+                                        filterProvider.handoverOptions[i],
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          letterSpacing: 0.2,
+                                          color: Colors.black,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }),
                             ),
                           );
                         },
@@ -1996,20 +1947,20 @@ class _FilterDemoState extends State<FilterDemo> {
                             scrollDirection: Axis.horizontal,
                             child: Row(
                               children: List.generate(
-                                  filterProvider.percentCompletionOptions
-                                      .length, (i) {
-                                final bool isSelected = filterProvider
-                                    .selectedPercentCompletion ==
-                                    i;
+                                  filterProvider
+                                      .percentCompletionOptions.length, (i) {
+                                final bool isSelected =
+                                    filterProvider.selectedPercentCompletion ==
+                                        i;
 
                                 return Container(
                                   width: chipWidth,
                                   margin: EdgeInsets.only(
                                     right: i ==
-                                        filterProvider
-                                            .percentCompletionOptions
-                                            .length -
-                                            1
+                                            filterProvider
+                                                    .percentCompletionOptions
+                                                    .length -
+                                                1
                                         ? 0
                                         : spacing,
                                   ),
@@ -2022,8 +1973,8 @@ class _FilterDemoState extends State<FilterDemo> {
                                       );
                                     },
                                     child: Container(
-                                      constraints: const BoxConstraints(
-                                          minHeight: 34),
+                                      constraints:
+                                          const BoxConstraints(minHeight: 34),
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 12, vertical: 8),
                                       alignment: Alignment.center,
@@ -2037,19 +1988,18 @@ class _FilterDemoState extends State<FilterDemo> {
                                               : const Color(0xFFE6E4EE),
                                           width: 1,
                                         ),
-                                        borderRadius:
-                                        BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.grey
-                                                .withOpacity(0.15),
+                                            color:
+                                                Colors.grey.withOpacity(0.15),
                                             offset: const Offset(0, 2),
                                             blurRadius: 4,
                                             spreadRadius: 0,
                                           ),
                                           BoxShadow(
-                                            color: Colors.white
-                                                .withOpacity(0.9),
+                                            color:
+                                                Colors.white.withOpacity(0.9),
                                             offset: const Offset(-2, -2),
                                             blurRadius: 6,
                                             spreadRadius: 2,
@@ -2118,23 +2068,21 @@ class _FilterDemoState extends State<FilterDemo> {
                         height: 48,
                         width: double.infinity,
                         child: TextFormField(
-                          controller:
-                          filterProvider.agentOrAgencyController,
-                          onChanged: (value) {
-                            EasyDebounce.debounce(
-                              'agentFilter',
-                              Duration(milliseconds: 400),
-                                  () async {
-                                await filterProvider
-                                    .updateFilterCount(context);
-                              },
-                            );
-                          },
+                          controller: filterProvider.agentOrAgencyController,
+                          // onChanged: (value) {
+                          //   EasyDebounce.debounce(
+                          //     'agentFilter',
+                          //     Duration(milliseconds: 400),
+                          //     () async {
+                          //       // await filterProvider
+                          //       //     .updateFilterCount(context);
+                          //     },
+                          //   );
+                          // },
                           style: const TextStyle(
                               color: Colors.black, fontSize: 16),
                           decoration: InputDecoration(
-                            labelStyle:
-                            const TextStyle(color: Colors.black),
+                            labelStyle: const TextStyle(color: Colors.black),
                             filled: true,
                             fillColor: Colors.white, // Background red
                             contentPadding: const EdgeInsets.symmetric(
@@ -2151,8 +2099,8 @@ class _FilterDemoState extends State<FilterDemo> {
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                  color: Colors.red, width: 1),
+                              borderSide:
+                                  const BorderSide(color: Colors.red, width: 1),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -2204,13 +2152,12 @@ class _FilterDemoState extends State<FilterDemo> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: GridView.builder(
-                  itemCount: filterProvider.showAllAmenities
-                      ? filterProvider.amenities.length
-                      : 5,
+                  itemCount: filterProvider.amenities.length > 5
+                      ? 5
+                      : filterProvider.amenities.length,
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
-                  gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     childAspectRatio: 4,
                     crossAxisSpacing: 12,
@@ -2245,32 +2192,27 @@ class _FilterDemoState extends State<FilterDemo> {
                             ),
                           ],
                         ),
-                        padding:
-                        const EdgeInsets.symmetric(horizontal: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Row(
                           children: [
                             CachedNetworkImage(
                               imageUrl:
-                              filterProvider.amenities[index].icon ??
-                                  '',
+                                  filterProvider.amenities[index].icon ?? '',
                               width: 18,
                               height: 18,
-                              placeholder: (context, url) =>
-                              const SizedBox(
+                              placeholder: (context, url) => const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               ),
                               errorWidget: (context, url, error) =>
-                              const Icon(Icons.broken_image,
-                                  size: 18),
+                                  const Icon(Icons.broken_image, size: 18),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                filterProvider.amenities[index].title ??
-                                    '',
+                                filterProvider.amenities[index].title ?? '',
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -2295,8 +2237,7 @@ class _FilterDemoState extends State<FilterDemo> {
                           final url = a.icon;
                           if (url != null && url.isNotEmpty) {
                             try {
-                              final provider =
-                              CachedNetworkImageProvider(url);
+                              final provider = CachedNetworkImageProvider(url);
                               await precacheImage(provider, context);
                             } catch (_) {}
                           }
@@ -2309,21 +2250,19 @@ class _FilterDemoState extends State<FilterDemo> {
                           builder: (context) => FullAmenitiesScreen(
                             allAmenities: filterProvider.amenities,
                             selectedAmenitiesId:
-                            filterProvider.selectedAmenitiesId,
+                                filterProvider.selectedAmenitiesId,
                             onDone: (selected) async {
                               setState(() => filterProvider
                                   .selectedAmenitiesId = selected);
-                              await filterProvider
-                                  .updateFilterCount(context);
+                              // await filterProvider
+                              //     .updateFilterCount(context);
                             },
                           ),
                         ),
                       );
                     },
                     child: Text(
-                      filterProvider.showAllAmenities
-                          ? "Show less amenities"
-                          : "Show more amenities",
+                      "Show more amenities",
                       style: const TextStyle(
                         color: Colors.blueAccent,
                         fontWeight: FontWeight.bold,
@@ -2367,8 +2306,7 @@ class _FilterDemoState extends State<FilterDemo> {
                       physics: const ScrollPhysics(),
                       itemCount: filterProvider.rentList.length,
                       itemBuilder: (context, index) {
-                        final isSelected =
-                            filterProvider.selectedrent == index;
+                        final isSelected = filterProvider.selectedrent == index;
                         return GestureDetector(
                           onTap: () async {
                             await filterProvider.setSelectedRentType(
@@ -2378,8 +2316,7 @@ class _FilterDemoState extends State<FilterDemo> {
                           },
                           child: Container(
                             margin: const EdgeInsets.all(5),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 15),
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               border: Border.all(
@@ -2451,17 +2388,16 @@ class _FilterDemoState extends State<FilterDemo> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          settings:
-                          const RouteSettings(name: 'FliterList'),
+                          settings: const RouteSettings(name: 'FliterList'),
                           builder: (context) => FliterList(
-                            // filterModel: filterProvider.filterModel,
-                            // // forceRefresh: true,
-                            // // 👇 send the exact UI selections forward
-                            // selectedPurpose: filterProvider
-                            //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
-                            // selectedPropertyType: filterProvider
-                            //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
-                          ),
+                              // filterModel: filterProvider.filterModel,
+                              // // forceRefresh: true,
+                              // // 👇 send the exact UI selections forward
+                              // selectedPurpose: filterProvider
+                              //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
+                              // selectedPropertyType: filterProvider
+                              //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
+                              ),
                         ),
                       );
                     },
@@ -2478,13 +2414,10 @@ class _FilterDemoState extends State<FilterDemo> {
                               color: Colors.white,
                               child: Center(
                                 child: Column(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Image.asset(
-                                        "assets/images/not_found.png",
-                                        width: 50,
-                                        height: 50),
+                                    Image.asset("assets/images/not_found.png",
+                                        width: 50, height: 50),
                                     SizedBox(height: 20),
                                     Text('No Property Found',
                                         style: TextStyle(
@@ -2494,8 +2427,7 @@ class _FilterDemoState extends State<FilterDemo> {
                                     Text(
                                       'Please select other filters to get results.',
                                       style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.black54),
+                                          fontSize: 16, color: Colors.black54),
                                       textAlign: TextAlign.center,
                                     ),
                                     SizedBox(height: 30),
@@ -2544,7 +2476,8 @@ class _FilterDemoState extends State<FilterDemo> {
                     ),
                     child: Center(
                       child: Text(
-                        "Showing ${filterProvider.displayedFilterResultCount} Results",
+                        // ${filterProvider.displayedFilterResultCount}
+                        "Showing Results",
                         style: const TextStyle(
                           color: Colors.white,
                           letterSpacing: 0.5,

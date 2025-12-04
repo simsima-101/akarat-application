@@ -5,7 +5,8 @@ class PropertyTypeModel {
   List<String>? availability;
   int? totalFeaturedProperties;
 
-  PropertyTypeModel({this.success, this.message, this.data , this.totalFeaturedProperties});
+  PropertyTypeModel(
+      {this.success, this.message, this.data, this.totalFeaturedProperties});
 
   PropertyTypeModel.fromJson(Map<String, dynamic> json) {
     success = json['success'];
@@ -16,8 +17,13 @@ class PropertyTypeModel {
         data!.add(Data.fromJson(v));
       });
     }
-    availability = json['availability'].cast<String>();
-    totalFeaturedProperties = json['total_featured_properties'];
+    if (json['availability'] != null) {
+      availability = json['availability'].cast<String>();
+    }
+
+    if (json['total_featured_properties'] != null) {
+      totalFeaturedProperties = json['total_featured_properties'];
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -43,11 +49,11 @@ class Data {
 
   Data(
       {this.id,
-        this.name,
-        this.icon,
-        this.purpose,
-        this.createdAt,
-        this.updatedAt});
+      this.name,
+      this.icon,
+      this.purpose,
+      this.createdAt,
+      this.updatedAt});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
