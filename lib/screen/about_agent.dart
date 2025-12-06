@@ -111,6 +111,65 @@ class _AboutAgentState extends State<AboutAgent> {
     });
   }
 
+  // ──────────────────────────────────────────────────────────────
+  //  ADD THESE TWO FUNCTIONS HERE (before _showEmailAgentDialog)
+  // ──────────────────────────────────────────────────────────────
+
+  /// Same beautiful chip style as the Agency screen
+  Widget _buildInfoChip(String iconPath, String? value) {
+    if (value == null || value.trim().isEmpty || value.trim() == "0" || value.trim() == "null") {
+      return const SizedBox.shrink();
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Image.asset(iconPath, width: 18, height: 18),
+        const SizedBox(width: 6),
+        Text(
+          value.trim(),
+          style: const TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w500),
+        ),
+      ],
+    );
+  }
+
+  /// Works perfectly with your real model → uses 'Data' class (not Property)
+
+
+  /// CORRECTED & WORKING: propertySizeSqft has HIGHEST priority
+  String? getDisplaySize(Data property) {
+    String? rawSize;
+
+    // STEP 1: First priority — propertySizeSqft (even if it's String, int, or null)
+    if (property.propertySizeSqft != null) {
+      final value = property.propertySizeSqft.toString().trim();
+      if (value.isNotEmpty && value != "0" && value != "null") {
+        rawSize = value;
+        // We found a valid value → STOP HERE, don't check square_feet
+      }
+    }
+
+    // STEP 2: Only if propertySizeSqft is missing or invalid → check square_feet
+    if (rawSize == null && property.squareFeet != null) {
+      final value = property.squareFeet!.trim();
+      if (value.isNotEmpty && value != "0" && value != "null") {
+        rawSize = value;
+      }
+    }
+
+    // STEP 3: Both are null/0 → hide the field completely
+    if (rawSize == null) return null;
+
+    final double? size = double.tryParse(rawSize);
+    if (size == null || size <= 0) return null;
+
+    final formatted = size.toInt().toString().replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (match) => '${match[1]},',
+    );
+
+    return "$formatted sqft";
+  }
 
   // FIXED EMAIL DIALOG FOR AGENT SCREEN
   Future<void> _showEmailAgentDialog() async {
@@ -1637,25 +1696,16 @@ class _AboutAgentState extends State<AboutAgent> {
                                                   ],
                                                 ),
                                                 const SizedBox(height: 8),
+                                                // ─────── NEW: Beds • Baths • Size (same as Agency screen) ───────
                                                 Padding(
-                                                  padding: const EdgeInsets.symmetric(
-                                                      horizontal: 8.0),
-                                                  child: Row(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                  child: Wrap(
+                                                    spacing: 16,
+                                                    runSpacing: 8,
                                                     children: [
-                                                      Image.asset("assets/images/bed.png",
-                                                          height: 13),
-                                                      const SizedBox(width: 5),
-                                                      Text(property.bedrooms.toString()),
-                                                      const SizedBox(width: 10),
-                                                      Image.asset("assets/images/bath.png",
-                                                          height: 13),
-                                                      const SizedBox(width: 5),
-                                                      Text(property.bathrooms.toString()),
-                                                      const SizedBox(width: 10),
-                                                      Image.asset("assets/images/messure.png",
-                                                          height: 13),
-                                                      const SizedBox(width: 5),
-                                                      Text(property.squareFeet ?? '-'),
+                                                      _buildInfoChip("assets/images/bed.png", property.bedrooms?.toString()),
+                                                      _buildInfoChip("assets/images/bath.png", property.bathrooms?.toString()),
+                                                      _buildInfoChip("assets/images/messure.png", getDisplaySize(property)),
                                                     ],
                                                   ),
                                                 ),

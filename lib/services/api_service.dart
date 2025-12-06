@@ -241,19 +241,54 @@ class ApiService {
   static Future<({String first, String last, String name, String email})?>
   tryFetchMe(String token) async {
     try {
-      final resp = await _getAuth('/me', token);
-      if (!_looksJson(resp)) return null;
-      final data = _decodeMap(resp.body);
-      final id = extractIdentityFromAny(data);
-      // If everything is empty, treat as failure.
-      if (id.first.isEmpty && id.last.isEmpty && id.name.isEmpty && id.email.isEmpty) {
-        return null;
+      // Try multiple possible endpoints (in order)
+      final endpoints = ['/me', '/user', '/profile', '/account'];
+
+      for (final endpoint in endpoints) {
+        try {
+          final resp = await _getAuth(endpoint, token);
+          if (resp.statusCode != 200) continue;
+
+          if (!_looksJson(resp)) continue;
+
+          final data = _decodeMap(resp.body);
+
+          // Debug: Print raw response so you can see what's returned
+          if (kDebugMode) {
+            print('[/api$endpoint] RESPONSE: ${resp.body}');
+          }
+
+          final id = extractIdentityFromAny(data);
+
+          // If we got valid first + last name → use it
+          if (id.first.isNotEmpty || id.last.isNotEmpty) {
+            final fullName = '${id.first} ${id.last}'.trim();
+            return (
+            first: id.first,
+            last: id.last,
+            name: fullName.isNotEmpty ? fullName : id.name,
+            email: id.email
+            );
+          }
+
+          // Fallback: if only 'name' exists and it's not empty
+          if (id.name.isNotEmpty) {
+            return id;
+          }
+        } catch (e) {
+          if (kDebugMode) print('Failed on $endpoint: $e');
+          continue;
+        }
       }
-      return id;
-    } catch (_) {
+
+      return null;
+    } catch (e) {
+      if (kDebugMode) print('tryFetchMe all failed: $e');
       return null;
     }
   }
+
+
 
   /// Convenience: perform `/login`, return token + best-available identity.
   /// UI can use this to avoid guessing name from email on re-login.

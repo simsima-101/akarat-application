@@ -55,114 +55,112 @@ class AgentProperties {
   }
 }
 
-class Data {
-  int? id;
-  String? title;
-  String? price;
-  String? paymentPeriod;
-  String? address;
-  String? location;
-  String? phoneNumber;
-  String? whatsapp;
-  List<Media>? media;
-  String? agentName;
-  String? agentImage;
-  String? agencyLogo;
-  String? postedOn;
-  String? image;
+  class Data {
+    int? id;
+    String? title;
+    String? price;
+    String? paymentPeriod;
+    String? address;
+    String? location;
+    String? phoneNumber;
+    String? whatsapp;
+    List<Media>? media;
+    String? agentName;
+    String? agentImage;
+    String? agencyLogo;
+    String? postedOn;
+    String? image;
+    bool? saved;
 
-  bool? saved;
+    int? bedrooms;
+    int? bathrooms;
 
-  int? bedrooms;
-  int? bathrooms;
-  String? squareFeet;
+    // ADD THESE TWO LINES - NEW FIELDS
+    dynamic propertySizeSqft;   // Can be String, int, or null from API
+    String? squareFeet;
 
-  Data(
-      {this.id,
-        this.title,
-        this.price,
-        this.paymentPeriod,
-        this.address,
-        this.location,
-        this.phoneNumber,
-        this.whatsapp,
-        this.media,
-        this.agentName,
-        this.agentImage,
-        this.agencyLogo,
-        this.postedOn,
-        this.image,
-        this.saved,
+    Data({
+      this.id,
+      this.title,
+      this.price,
+      this.paymentPeriod,
+      this.address,
+      this.location,
+      this.phoneNumber,
+      this.whatsapp,
+      this.media,
+      this.agentName,
+      this.agentImage,
+      this.agencyLogo,
+      this.postedOn,
+      this.image,
+      this.saved,
+      this.bedrooms,
+      this.bathrooms,
+      this.propertySizeSqft,    // NEW
+      this.squareFeet,
+    });
 
+    Data.fromJson(Map<String, dynamic> json) {
+      id = json['id'];
+      title = json['title']?.toString();
+      price = json['price']?.toString();
+      paymentPeriod = json['payment_period']?.toString();
+      address = json['address']?.toString();
+      location = json['location']?.toString();
+      phoneNumber = json['phone_number']?.toString();
+      whatsapp = json['whatsapp']?.toString();
+      agentName = json['agent']?.toString();
+      agentImage = json['agent_image']?.toString();
+      agencyLogo = json['agency_logo']?.toString();
+      postedOn = json['posted_on']?.toString();
+      saved = json['saved'];
 
-        this.bedrooms,   // ✅
-        this.bathrooms,  // ✅
-        this.squareFeet,
-      });
+      // Parse bedrooms & bathrooms as int
+      bedrooms = int.tryParse(json['bedrooms']?.toString() ?? '');
+      bathrooms = int.tryParse(json['bathrooms']?.toString() ?? '');
 
+      // NEW: Support both propertySizeSqft and square_feet
+      propertySizeSqft = json['propertySizeSqft'];  // Can be String, int, or null
+      squareFeet = json['square_feet']?.toString();
 
+      // Media
+      if (json['media'] != null) {
+        media = <Media>[];
+        json['media'].forEach((v) {
+          media!.add(Media.fromJson(v));
+        });
+      }
+    }
 
-  Data.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    title = json['title']?.toString();
-    price = json['price']?.toString();
-    paymentPeriod = json['payment_period']?.toString();
-    address = json['address']?.toString();
-    location = json['location']?.toString();
-    phoneNumber = json['phone_number']?.toString();
-    whatsapp = json['whatsapp']?.toString();
-    agentName = json['agent']?.toString();
-    agentImage = json['agent_image']?.toString();
-    agencyLogo = json['agency_logo']?.toString();
-    postedOn = json['posted_on']?.toString();
+    Map<String, dynamic> toJson() {
+      final Map<String, dynamic> data = <String, dynamic>{};
+      data['id'] = id;
+      data['title'] = title;
+      data['price'] = price;
+      data['payment_period'] = paymentPeriod;
+      data['address'] = address;
+      data['location'] = location;
+      data['phone_number'] = phoneNumber;
+      data['whatsapp'] = whatsapp;
+      data['agent'] = agentName;
+      data['agent_image'] = agentImage;
+      data['agency_logo'] = agencyLogo;
+      data['posted_on'] = postedOn;
+      data['saved'] = saved;
+      data['bedrooms'] = bedrooms;
+      data['bathrooms'] = bathrooms;
 
+      // NEW: Include both fields
+      data['propertySizeSqft'] = propertySizeSqft;
+      data['square_feet'] = squareFeet;
 
-
-
-    saved = json['saved'];
-
-    bedrooms = int.tryParse(json['bedrooms']?.toString() ?? '');
-    bathrooms = int.tryParse(json['bathrooms']?.toString() ?? '');
-
-    squareFeet = json['square_feet']?.toString();
-
-
-    if (json['media'] != null) {
-      media = <Media>[];
-      json['media'].forEach((v) {
-        media!.add(Media.fromJson(v));
-      });
+      if (media != null) {
+        data['media'] = media!.map((v) => v.toJson()).toList();
+      }
+      return data;
     }
   }
-
-
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['title'] = title;
-    data['price'] = price;
-    data['payment_period'] = paymentPeriod;
-    data['address'] = address;
-    data['location'] = location;
-    data['phone_number'] = phoneNumber;
-    data['whatsapp'] = whatsapp;
-    data['agent'] = agentName;
-    data['agent_image'] = agentImage;
-    data['agency_logo'] = agencyLogo;
-    data['posted_on'] = postedOn;
-    data['saved'] = saved;
-    data['bedrooms'] = bedrooms;
-    data['bathrooms'] = bathrooms;
-    data['square_feet'] = squareFeet;
-
-
-    if (media != null) {
-      data['media'] = media!.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
-}
 
 class Media {
   String? originalUrl;

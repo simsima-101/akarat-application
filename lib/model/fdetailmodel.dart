@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:get/get.dart';
+
 class Featured_DetailModel {
   bool? success;
   String? message;
@@ -79,6 +81,7 @@ class Property {
   int? bedrooms;
   int? bathrooms;
   String? squareFeet;
+  String? propertySizeSqft;     // ← ADD THIS LINE (this was missing!)
   String? purpose;
   String? propertyType;
   String? agent;
@@ -158,6 +161,7 @@ class Property {
     this.expectedCompletionDate,
     this.salesStartDate,
     this.governmentFee,
+    this.propertySizeSqft,
   });
 
   // helper to read multiple possible keys
@@ -213,7 +217,40 @@ class Property {
 
     bedrooms = json['bedrooms'];
     bathrooms = json['bathrooms'];
-    squareFeet = json['square_feet']?.toString();
+
+    // Add this line — it reads the new field from API
+    propertySizeSqft = json['propertySizeSqft']?.toString();
+    // ============ SMART SIZE PARSING (DLD FIRST) ============
+    String? dldSize;
+
+// Try to get size from DLD permit_response (most accurate)
+    final permitResponse = json['regulatory_info']?['permit_response'];
+    if (permitResponse != null) {
+      try {
+        final decoded = permitResponse is String ? jsonDecode(permitResponse) : permitResponse;
+        final result = decoded['result'];
+        if (result is List && result.isNotEmpty) {
+          final prop = result.first['property'];
+          if (prop is Map) {
+            dldSize = [
+              prop['propertySizeSqft'],
+              prop['propertySize'],
+              prop['size'],
+              prop['area'],
+            ].firstWhereOrNull((e) => e != null && e.toString().trim().isNotEmpty && e.toString() != 'null');
+          }
+        }
+      } catch (_) {}
+    }
+
+// New flat field from API
+    final newSize = json['propertySizeSqft']?.toString();
+
+// Final priority: DLD → new field → old square_feet
+    final bestSize = dldSize ?? newSize ?? json['square_feet']?.toString();
+
+    propertySizeSqft = dldSize ?? newSize;  // Keep the best source
+    squareFeet = bestSize;                  // Keep old field working
     purpose = json['purpose'];
     propertyType = json['property_type'];
     agent = json['agent'];
@@ -389,6 +426,7 @@ class Property {
     data['bedrooms'] = bedrooms;
     data['bathrooms'] = bathrooms;
     data['square_feet'] = squareFeet;
+    data['propertySizeSqft'] = propertySizeSqft;  // ← ADD THIS
     data['purpose'] = purpose;
     data['property_type'] = propertyType;
     data['agent'] = agent;
@@ -636,6 +674,7 @@ class Recommended {
   int? bedrooms;
   int? bathrooms;
   String? squareFeet;
+  String? propertySizeSqft;
   List<Media>? media;
 
   RegulatoryInfo? regulatoryInfo;
@@ -652,6 +691,7 @@ class Recommended {
     this.bedrooms,
     this.bathrooms,
     this.squareFeet,
+    this.propertySizeSqft,
     this.media,
     this.regulatoryInfo,
   });
@@ -667,7 +707,38 @@ class Recommended {
     paymentPeriod = json['payment_period']?.toString();
     bedrooms = json['bedrooms'];
     bathrooms = json['bathrooms'];
-    squareFeet = json['square_feet']?.toString();
+    // ============ SMART SIZE PARSING (DLD FIRST) ============
+    String? dldSize;
+
+// Try to get size from DLD permit_response (most accurate)
+    final permitResponse = json['regulatory_info']?['permit_response'];
+    if (permitResponse != null) {
+      try {
+        final decoded = permitResponse is String ? jsonDecode(permitResponse) : permitResponse;
+        final result = decoded['result'];
+        if (result is List && result.isNotEmpty) {
+          final prop = result.first['property'];
+          if (prop is Map) {
+            dldSize = [
+              prop['propertySizeSqft'],
+              prop['propertySize'],
+              prop['size'],
+              prop['area'],
+            ].firstWhereOrNull((e) => e != null && e.toString().trim().isNotEmpty && e.toString() != 'null');
+          }
+        }
+      } catch (_) {}
+    }
+
+// New flat field from API
+    final newSize = json['propertySizeSqft']?.toString();
+
+// Final priority: DLD → new field → old square_feet
+    final bestSize = dldSize ?? newSize ?? json['square_feet']?.toString();
+
+    propertySizeSqft = dldSize ?? newSize;  // Keep the best source
+    squareFeet = bestSize;                  // Keep old field working
+    propertySizeSqft = json['propertySizeSqft']?.toString();
 
     // ✅ FIXED: this was using ":" instead of assignment before
     regulatoryInfo = json['regulatory_info'] != null
@@ -695,6 +766,7 @@ class Recommended {
     data['bedrooms'] = bedrooms;
     data['bathrooms'] = bathrooms;
     data['square_feet'] = squareFeet;
+    data['propertySizeSqft'] = squareFeet;
     if (media != null) {
       data['media'] = media!.map((v) => v.toJson()).toList();
     }

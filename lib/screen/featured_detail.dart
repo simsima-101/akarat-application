@@ -149,25 +149,30 @@ class _Featured_DetailState extends State<Featured_Detail> {
   }
 
 
-  // ==================== SIZE (DLD FIRST → api/properties) ====================
   String? get displaySizeSqft {
-    // 1) DLD first (checks DLD property node + root)
-    final dldSize = _readFromDld([
-      'propertySize',     // ✅ DLD official key
-      'property_size',
-      'square_feet',
-      'sqft',
-      'area',
-      'size',
-    ]);
-    if (dldSize != null) return dldSize;
+    final property = featuredDetailModel?.data?.property;
+    if (property == null) return null;
 
-    // 2) fallback to api/properties
-    return _cleanStr(featuredDetailModel?.data?.property?.squareFeet);
+    // PRIORITY 1: DLD verified size (most accurate)
+    String? raw = property.propertySizeSqft;
+
+    // PRIORITY 2: Fallback to old squareFeet
+    if (raw == null || raw.trim().isEmpty || raw == 'null' || raw == '0') {
+      raw = property.squareFeet;
+    }
+
+    if (raw == null || raw.trim().isEmpty || raw == '0') return null;
+
+    final clean = raw.replaceAll(RegExp(r'[^0-9.]'), '');
+    final size = num.tryParse(clean);
+    if (size == null || size <= 0) return null;
+
+    final formatted = size
+        .toStringAsFixed(0)
+        .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+
+    return '$formatted sqft';
   }
-
-
-
 
 
   String? _dldStr(dynamic permitResponse, List<String> keys) {
@@ -536,7 +541,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
 
 
-  /// Parse regulatory_info.permit_response (map or string)
   void _parsePermitResponse() {
     try {
       final reg = featuredDetailModel?.data?.property?.regulatoryInfo;
@@ -562,20 +566,15 @@ class _Featured_DetailState extends State<Featured_Detail> {
       if (result is List && result.isNotEmpty) {
         final first = result.first;
         if (first is Map<String, dynamic>) {
-          _permitResult = first;
-          final prop = first['property'];
+          _permitResult = first;           // Root level
+          final prop = first['property'];  // THIS IS CRUCIAL
           if (prop is Map<String, dynamic>) {
-            _permitProperty = prop;
+            _permitProperty = prop;        // ← This holds brokerNameEn!
           }
         }
       }
     } catch (e) {
-      debugPrint('⚠️ permit_response parse error: $e');
-
-      debugPrint("🟦 DLD permit first keys: ${_permitFirst?.keys}");
-      debugPrint("🟨 project_information: $_projectInfoMap");
-      debugPrint("🟩 resolvedPaymentPlan: $resolvedPaymentPlan");
-
+      debugPrint('permit_response parse error: $e');
     }
   }
 
@@ -750,32 +749,32 @@ class _Featured_DetailState extends State<Featured_Detail> {
   }
 
 
-
-
-  /// ✅ Registered Agency (DLD first, fallback direct property.agencyName / agency_name map)
   String? get dldAgencyName {
     final p = featuredDetailModel?.data?.property;
 
-    // 1) DLD: broker/office/agency keys
-    final dldAgency = _cleanStr(
-      _permitFirst?['brokerNameEn'] ??
-          _permitFirst?['brokerNameAr'] ??
-          _permitFirst?['officeNameEn'] ??
-          _permitFirst?['officeNameAr'] ??
-          _permitFirst?['agencyNameEn'] ??
-          _permitFirst?['agencyNameAr'],
-    );
-    if (dldAgency != null) return dldAgency;
+    // 1. No DLD permit at all → use user agency
+    if (_permitFirst == null) {
+      final user = p?.agencyName?.trim();
+      debugPrint("No DLD permit → Using user agency: $user");
+      return user;
+    }
 
-    // 2) API/user agency_name
-    final userAgency = _cleanStr(p?.agencyName);
-    if (userAgency != null) return userAgency;
+    // 2. ALWAYS take authorityNameEn – even if it's "Test companies"
+    // We use raw access + manual trim to avoid any cleaning that removes it
+    final rawAuthority = _permitFirst?['authorityNameEn'];
+    if (rawAuthority != null && rawAuthority is String) {
+      final authorityEn = rawAuthority.toString().trim();
 
-    // 3) LAST resort (rare)
-    return _cleanStr(
-      _permitFirst?['authorityNameEn'] ??
-          _permitFirst?['authorityNameAr'],
-    );
+      if (authorityEn.isNotEmpty) {
+        debugPrint("Registered Agency → From DLD authorityNameEn: '$authorityEn'");
+        return authorityEn; // This will now correctly show "Test companies"
+      }
+    }
+
+    // 3. Only if authorityNameEn is truly missing/null → fallback
+    final userAgency = p?.agencyName?.trim();
+    debugPrint("DLD has permit but authorityNameEn missing → Fallback to user: $userAgency");
+    return userAgency;
   }
 
 
@@ -919,7 +918,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
     final address = resolvedAddress;
 
     final period = property.paymentPeriod;
-    final size = propertyFromPermit?['propertySize']?.toString() ?? property.squareFeet;
+    final size = displaySizeSqft;
     final propertyType = property.propertyType;
     final postedOn = property.postedOn;
     final reference = property.reference ?? property.id.toString();
@@ -934,7 +933,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
     addRow('Property ID', reference);
     addRow('Property Type', propertyType);
 
-    addRow('Size', size != null ? '$size SqFt' : null);
+    addRow('Size', size != null ? '$size' : null);
     addRow('Listed On', postedOn);
     addRow('Category', getCategory());
     addRow(
@@ -1485,29 +1484,25 @@ class _Featured_DetailState extends State<Featured_Detail> {
         child: Column(
           children: <Widget>[
             // ==== IMAGES ====
+            // ==== IMAGES ====
             Container(
               height: screenSize.height * 0.55,
-              margin: EdgeInsets.zero,
               child: ListView.builder(
                 padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(), // ✅ FIX: let outer scroll handle
                 itemCount: property.media?.length ?? 0,
                 itemBuilder: (BuildContext context, int index) {
                   final imageUrl = property.media![index].originalUrl.toString();
 
-
-
                   return GestureDetector(
                     onTap: () {
+                      // Image preview logic remains the same
                       showGeneralDialog(
                         context: context,
                         barrierDismissible: true,
                         barrierLabel: "ImagePreview",
                         transitionDuration: const Duration(milliseconds: 300),
                         pageBuilder: (context, animation, secondaryAnimation) {
-                          PageController controller =
-                          PageController(initialPage: index);
+                          PageController controller = PageController(initialPage: index);
                           return Scaffold(
                             backgroundColor: Colors.black,
                             body: SafeArea(
@@ -1517,9 +1512,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                     controller: controller,
                                     itemCount: property.media?.length ?? 0,
                                     itemBuilder: (context, pageIndex) {
-                                      final previewUrl = property
-                                          .media![pageIndex].originalUrl
-                                          .toString();
+                                      final previewUrl = property.media![pageIndex].originalUrl.toString();
                                       return InteractiveViewer(
                                         child: CachedNetworkImage(
                                           imageUrl: previewUrl,
@@ -1532,8 +1525,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                     top: 20,
                                     right: 20,
                                     child: IconButton(
-                                      icon: const Icon(Icons.close,
-                                          color: Colors.white, size: 30),
+                                      icon: const Icon(Icons.close, color: Colors.white, size: 30),
                                       onPressed: () => Navigator.of(context).pop(),
                                     ),
                                   ),
@@ -1544,11 +1536,17 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         },
                       );
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5),
-                      child: CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        fit: BoxFit.cover,
+                    child: Container(
+                      height: 200, // Fixed height for each image
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                        ),
                       ),
                     ),
                   );
@@ -1614,42 +1612,52 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
             const SizedBox(height: 5),
 
-            // ==== BEDS / BATHS / AREA ====
+            // ==== BEDS / BATHS / AREA (Smart Conditional Rendering) ====
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 15),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Image.asset("assets/images/bed.png", height: 20),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 3.0),
-                    child: Text(
-                      '${property.bedrooms ?? 0} beds',
-                      style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                  // Beds – only show if > 0
+                  if ((property.bedrooms ?? 0) > 0) ...[
+                    Image.asset("assets/images/bed.png", height: 20),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 3.0),
+                      child: Text(
+                        '${property.bedrooms} beds',
+                        style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 15.0),
-                    child: Image.asset("assets/images/bath.png", height: 20),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 3.0),
-                    child: Text(
-                      '${property.bathrooms ?? 0} baths',
-                      style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 15.0),
-                    child: Image.asset("assets/images/messure.png", height: 20),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 3.0),
-                    child: Text(
-                      resolvedSqft.isNotEmpty ? '$resolvedSqft SqFt' : '0 SqFt',
-                      style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
-                    ),
+                  ],
 
-                  ),
+                  // Baths – only show if > 0
+                  if ((property.bathrooms ?? 0) > 0) ...[
+                    // Add left padding only if beds were shown OR this is first visible item
+                    if ((property.bedrooms ?? 0) > 0) const SizedBox(width: 15),
+                    Image.asset("assets/images/bath.png", height: 20),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 3.0),
+                      child: Text(
+                        '${property.bathrooms} baths',
+                        style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                      ),
+                    ),
+                  ],
+
+                  // SqFt – only show if resolvedSqft is not null, not empty, and not "0"
+                  if (resolvedSqft.isNotEmpty && resolvedSqft != '0') ...[
+                    // Add spacing only if previous item exists
+                    if ((property.bedrooms ?? 0) > 0 || (property.bathrooms ?? 0) > 0)
+                      const SizedBox(width: 15),
+                    Image.asset("assets/images/messure.png", height: 20),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 3.0),
+                      child: Text(
+                        '$resolvedSqft',
+                        style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -2182,7 +2190,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         MaterialPageRoute(
                           builder: (context) => AboutAgent(
                             data: agentId,
-                            initialTabIndex: 1, // 🔥 Open "Properties" tab
+                            initialTabIndex: 0, // 🔥 Open "Properties" tab
                           ),
                         ),
                       );
@@ -2439,8 +2447,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
                                   final resolvedSqft =
                                       _recDldStr(permitResponse, [
-                                        'propertySize',
-                                        'property_size',
+                                        'propertySizeSqft',
+
                                         'square_feet',
                                         'sqft',
                                         'area',
@@ -2474,7 +2482,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                           const SizedBox(width: 6),
                                           const Icon(Icons.square_foot, size: 16, color: Colors.red),
                                           const SizedBox(width: 4),
-                                          Text("$resolvedSqft SqFt"),
+                                          Text("$resolvedSqft"),
                                         ],
                                       ),
                                       const SizedBox(height: 4),
