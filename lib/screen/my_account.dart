@@ -1,8 +1,5 @@
 // lib/screen/my_account.dart
 import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 
 // Screens
 import 'package:Akarat/screen/about_us.dart';
@@ -14,18 +11,20 @@ import 'package:Akarat/screen/saved_alert_screen.dart';
 import 'package:Akarat/screen/support.dart';
 import 'package:Akarat/screen/terms_condition.dart';
 import 'package:Akarat/utils/fav_logout.dart';
-
-import '../secure_storage.dart';
-import '../services/favorite_service.dart';
-import '../services/session.dart';
-import 'ContactFormScreen.dart';
-import 'login.dart';
-import 'personal_information.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 // Providers / Services
 import '../providers/profile_image_provider.dart';
+import '../secure_storage.dart';
 import '../services/api_service.dart';
+import '../services/favorite_service.dart';
+import '../services/session.dart';
 import '../widgets/custom_alert_box.dart';
+import 'ContactFormScreen.dart';
+import 'login.dart';
+import 'personal_information.dart';
 
 class My_Account extends StatefulWidget {
   const My_Account({super.key});
@@ -71,7 +70,10 @@ class _My_AccountState extends State<My_Account> {
   }
 
   /// Check if user is truly logged in (uses Session)
-  bool get _isLoggedIn => Session().isAuthenticated && userName != 'User' && userName?.isNotEmpty == true;
+  bool get _isLoggedIn =>
+      Session().isAuthenticated &&
+      userName != 'User' &&
+      userName?.isNotEmpty == true;
 
   // ===================== LOGOUT =====================
   Future<void> _logout() async {
@@ -91,7 +93,7 @@ class _My_AccountState extends State<My_Account> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const LoginDemo()),
-            (route) => false,
+        (route) => false,
       );
     }
   }
@@ -108,7 +110,8 @@ class _My_AccountState extends State<My_Account> {
       }
 
       final uri = Uri.parse('${ApiService.baseUrl}/delete');
-      var resp = await http.delete(uri, headers: {'Authorization': 'Bearer $token'});
+      var resp =
+          await http.delete(uri, headers: {'Authorization': 'Bearer $token'});
 
       if (resp.statusCode == 405 || resp.statusCode == 404) {
         resp = await http.post(
@@ -132,7 +135,7 @@ class _My_AccountState extends State<My_Account> {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LoginDemo()),
-              (route) => false,
+          (route) => false,
         );
       } else {
         throw Exception('Failed: ${resp.statusCode}');
@@ -155,145 +158,162 @@ class _My_AccountState extends State<My_Account> {
         child: _isLoggedIn == false && userName == null
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('My Account', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('My Account',
+                        style: TextStyle(
+                            fontSize: 22, fontWeight: FontWeight.bold)),
 
-              // Profile Card
-              Padding(
-                padding: const EdgeInsets.only(top: 30, bottom: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
-                  ),
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () async {
-                          if (!_isLoggedIn) {
-                            _showLoginDialog(context);
-                            return;
-                          }
+                    // Profile Card
+                    Padding(
+                      padding: const EdgeInsets.only(top: 30, bottom: 16),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black12, blurRadius: 6)
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () async {
+                                if (!_isLoggedIn) {
+                                  _showLoginDialog(
+                                      "Please login to edit your profile.");
+                                  return;
+                                }
 
-                          final changed = await Navigator.push<bool>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PersonalInformationScreen(
-                                name: userName ?? '',
-                                email: userEmail ?? '',
-                                onDeleteAccount: deleteAccount,
+                                final changed = await Navigator.push<bool>(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => PersonalInformationScreen(
+                                      name: userName ?? '',
+                                      email: userEmail ?? '',
+                                      onDeleteAccount: deleteAccount,
+                                    ),
+                                  ),
+                                );
+
+                                if (changed == true && mounted) {
+                                  await _loadUserData();
+                                }
+                              },
+                              child: CircleAvatar(
+                                radius: 30,
+                                backgroundColor: Colors.transparent,
+                                child: ClipOval(
+                                  child: Consumer<ProfileImageProvider>(
+                                    builder: (context, provider, child) {
+                                      if (provider.remoteImageUrl != null) {
+                                        return Image.network(
+                                          provider.remoteImageUrl!,
+                                          width: 60,
+                                          height: 60,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              Image.asset(
+                                            'assets/images/avatar.png',
+                                            width: 60,
+                                            height: 60,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        );
+                                      }
+                                      return Image.asset(
+                                        'assets/images/avatar.png',
+                                        width: 60,
+                                        height: 60,
+                                        fit: BoxFit.cover,
+                                      );
+                                    },
+                                  ),
+                                ),
                               ),
                             ),
-                          );
-
-                          if (changed == true && mounted) {
-                            await _loadUserData();
-                          }
-                        },
-                        child: CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Colors.transparent,
-                          child: ClipOval(
-                            child: Consumer<ProfileImageProvider>(
-                              builder: (context, provider, child) {
-                                if (provider.remoteImageUrl != null) {
-                                  return Image.network(
-                                    provider.remoteImageUrl!,
-                                    width: 60,
-                                    height: 60,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Image.asset(
-                                      'assets/images/avatar.png',
-                                      width: 60,
-                                      height: 60,
-                                      fit: BoxFit.cover,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _isLoggedIn
+                                  ? Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _displayName,
+                                          style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          userEmail ?? '',
+                                          style: const TextStyle(
+                                              fontSize: 13, color: Colors.grey),
+                                        ),
+                                      ],
+                                    )
+                                  : GestureDetector(
+                                      onTap: () async {
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const LoginDemo()),
+                                        );
+                                        if (mounted) await _loadUserData();
+                                      },
+                                      child: const Text(
+                                        "Welcome! Login / Sign up",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.red,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
                                     ),
-                                  );
-                                }
-                                return Image.asset(
-                                  'assets/images/avatar.png',
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _isLoggedIn
-                            ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _displayName,
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              userEmail ?? '',
-                              style: const TextStyle(fontSize: 13, color: Colors.grey),
                             ),
                           ],
-                        )
-                            : GestureDetector(
-                          onTap: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const LoginDemo()),
-                            );
-                            if (mounted) await _loadUserData();
-                          },
-                          child: const Text(
-                            "Welcome! Login / Sign up",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+
+                    const SizedBox(height: 10),
+                    _buildSettings(_isLoggedIn),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 10),
-              _buildSettings(_isLoggedIn),
-            ],
-          ),
-        ),
       ),
     );
   }
 
-  void _showLoginDialog(BuildContext context) {
+  void _showLoginDialog(String description) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: Colors.red,
-        title: const Text("Login Required", style: TextStyle(color: Colors.white)),
-        content: const Text("Please login to edit your profile.", style: TextStyle(color: Colors.white)),
+        title:
+            const Text("Login Required", style: TextStyle(color: Colors.white)),
+        content: Text(description, style: TextStyle(color: Colors.white)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
             child: const Text("Cancel", style: TextStyle(color: Colors.white)),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
+              Navigator.of(context, rootNavigator: true).pop();
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const LoginDemo()));
             },
-            child: const Text("Login", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text("Login",
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -305,83 +325,78 @@ class _My_AccountState extends State<My_Account> {
       children: [
         _settingsContainer([
           if (!isLoggedIn)
-            _settingsTile("My Account", "assets/images/my-account-profile.png", () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
+            _settingsTile("My Account", "assets/images/my-account-profile.png",
+                () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const RegisterScreen()));
             }),
           _settingsTile("Find My Agent", "assets/images/find-my-agent.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const FindAgentDemo()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const FindAgentDemo()));
           }),
           _settingsTile("Favorites", "assets/images/favourites.png", () {
             if (!isLoggedIn) {
-              _showLoginRequiredForFavorites();
+              _showLoginDialog("Please login to access favorites");
             } else {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => Fav_Logout()));
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (_) => Fav_Logout()));
             }
           }),
           _settingsTile("Saved Alerts", "assets/images/favourites.png", () {
             if (!isLoggedIn) {
-              _showLoginDialog(context);
+              _showLoginDialog("Please login to access saved alerts.");
             } else {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedAlertsScreen()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const SavedAlertsScreen()));
             }
           }),
           _settingsTile("About Us", "assets/images/about.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => About_Us()));
+            Navigator.push(
+                context, MaterialPageRoute(builder: (_) => About_Us()));
           }),
           _settingsTile("Support", "assets/images/support.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const Support()));
+            Navigator.push(
+                context, MaterialPageRoute(builder: (_) => const Support()));
           }),
-          _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const Privacy()));
+          _settingsTile("Privacy Policy", "assets/images/privacy-policy.png",
+              () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (_) => const Privacy()));
           }),
-          _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsCondition()));
+          _settingsTile(
+              "Terms And Conditions", "assets/images/terms-and-conditions.png",
+              () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const TermsCondition()));
           }),
         ]),
         _settingsContainer(
           isLoggedIn
               ? [
-            _settingsTile("Logout", "", () async {
-              customAlertBox(
-                context: context,
-                title: 'Are you sure you want to logout?',
-                onPress: () async {
-                  Navigator.of(context, rootNavigator: true).pop();
-                  await _logout();
-                },
-                icons: 'assets/images/alert_box_logout_icon.png',
-              );
-            }),
-          ]
+                  _settingsTile("Logout", "", () async {
+                    customAlertBox(
+                      context: context,
+                      title: 'Are you sure you want to logout?',
+                      onPress: () async {
+                        Navigator.of(context, rootNavigator: true).pop();
+                        await _logout();
+                      },
+                      icons: 'assets/images/alert_box_logout_icon.png',
+                    );
+                  }),
+                ]
               : [
-            _settingsTile("Login", "", () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo())).then((_) {
-                if (mounted) _loadUserData();
-              });
-            }),
-          ],
+                  _settingsTile("Login", "", () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const LoginDemo())).then((_) {
+                      if (mounted) _loadUserData();
+                    });
+                  }),
+                ],
         ),
       ],
-    );
-  }
-
-  void _showLoginRequiredForFavorites() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Login Required"),
-        content: const Text("Please login to access favorites."),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
-            },
-            child: const Text("Login", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
     );
   }
 
@@ -414,7 +429,8 @@ class _My_AccountState extends State<My_Account> {
       height: 50,
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20), topRight: Radius.circular(20)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -423,11 +439,12 @@ class _My_AccountState extends State<My_Account> {
             onTap: () => Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (_) => const Home()),
-                  (route) => false,
+              (route) => false,
             ),
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Image(image: AssetImage("assets/images/home.png"), height: 25),
+              child: Image(
+                  image: AssetImage("assets/images/home.png"), height: 25),
             ),
           ),
           IconButton(
@@ -440,8 +457,10 @@ class _My_AccountState extends State<My_Account> {
                   context: context,
                   builder: (context) => AlertDialog(
                     backgroundColor: Colors.white, // white container
-                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    title: const Text("Login Required",
+                        style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.",
+                        style: TextStyle(color: Colors.black)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
@@ -455,7 +474,8 @@ class _My_AccountState extends State<My_Account> {
                           Navigator.pop(context);
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                            MaterialPageRoute(
+                                builder: (_) => const LoginDemo()),
                           );
                         },
                         child: const Text(
@@ -466,25 +486,25 @@ class _My_AccountState extends State<My_Account> {
                     ],
                   ),
                 );
-              }
-              else {
+              } else {
                 // ✅ Logged in – go to favorites
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const Fav_Logout()),
                 ).then((_) async {
                   // 🔁 Re-sync when coming back
-                  final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
+                  final updatedFavorites =
+                      await FavoriteService.fetchApiFavorites(token);
                   setState(() {
                     FavoriteService.loggedInFavorites = updatedFavorites;
                   });
                 });
-
               }
             },
             icon: pageIndex == 2
                 ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+                : const Icon(Icons.favorite_border_outlined,
+                    color: Colors.red, size: 30),
           ),
           IconButton(
             icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),

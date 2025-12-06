@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:Akarat/model/propertymodel.dart';
+import 'package:Akarat/providers/filter_provider.dart';
 import 'package:Akarat/secure_storage.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -473,44 +474,66 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                     ),
                                   ),
                                   const SizedBox(height: 24),
-                                  SizedBox(
-                                    width: 220,
-                                    child: ElevatedButton.icon(
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => FliterList(
-                                                // selectedPurpose: 'All',          // 👈 default purpose
-                                                // selectedPropertyType: 'All',     // 👈 default property type
-                                                ),
-                                          ),
-                                        );
-                                      },
-                                      icon: const Icon(
-                                        Icons.favorite_border,
-                                        color: Colors.white,
-                                      ),
-                                      label: const Text(
-                                        "Add to Favorites",
-                                        style: TextStyle(
+                                  Consumer<FilterProvider>(
+                                      builder: (context, filterListState, _) {
+                                    return SizedBox(
+                                      width: 220,
+                                      child: ElevatedButton.icon(
+                                        onPressed: () async {
+                                          filterListState
+                                            ..setInitialHomeCategory(0)
+                                            ..resetAll(
+                                              context,
+                                              isUpdate: false,
+                                            );
+
+                                          await filterListState
+                                              .setSelectedProductType(
+                                            context,
+                                            1,
+                                          );
+
+                                          filterListState
+                                              .captureInitialSnapshot();
+
+                                          filterListState
+                                              .updateFilterCount(context);
+
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => FliterList(
+                                                  // selectedPurpose: 'All',          // 👈 default purpose
+                                                  // selectedPropertyType: 'All',     // 👈 default property type
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                        icon: const Icon(
+                                          Icons.favorite_border,
                                           color: Colors.white,
-                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        label: const Text(
+                                          "Add to Favorites",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 12,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
                                         ),
                                       ),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.red,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                          vertical: 12,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                    );
+                                  }),
                                 ],
                               ),
                             ),
