@@ -513,6 +513,72 @@ class _About_AgencyState extends State<About_Agency> {
         favoriteProperties.map((id) => id.toString()).toList());
   }
 
+
+  // ──────────────────────────────────────────────────────────────
+  //  ADD THESE 3 FUNCTIONS HERE (inside _About_AgencyState class)
+  // ──────────────────────────────────────────────────────────────
+
+  // ────────────────────── FINAL VERSION – WORKS WITH YOUR MODEL ──────────────────────
+
+  // ────────────────────── NEW CHIP STYLE – SAME AS YOUR OTHER SCREENS ──────────────────────
+  Widget _buildInfoChip(String iconPath, String? value) {
+    // Hide completely if null, empty, "0", or "null"
+    if (value == null || value.trim().isEmpty || value.trim() == "0" || value.trim() == "null") {
+      return const SizedBox.shrink();
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Image.asset(iconPath, width: 18, height: 18),
+        const SizedBox(width: 6),
+        Text(
+          value.trim(),
+          style: const TextStyle(
+            fontSize: 13,
+            color: Colors.black87,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String? getDisplaySize(propertyModel.Property property) {
+    String? rawSize;
+
+    // Priority 1: propertySizeSqft (first priority)
+    if (property.propertySizeSqft != null) {
+      final value = property.propertySizeSqft.toString().trim();
+      if (value.isNotEmpty && value != "0" && value != "null") {
+        rawSize = value;
+      }
+    }
+
+    // Priority 2: fallback to square_feet only if first one is missing or invalid
+    if (rawSize == null && property.squareFeet != null) {
+      final value = property.squareFeet.toString().trim();
+      if (value.isNotEmpty && value != "0" && value != "null") {
+        rawSize = value;
+      }
+    }
+
+    // If both are null, empty, or zero → hide the size completely
+    if (rawSize == null) return null;
+
+    final double? size = double.tryParse(rawSize);
+    if (size == null || size <= 0) return null;
+
+    // Format number with commas: 11000 → 11,000
+    final formattedSize = size.toInt().toString().replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (match) => '${match[1]},',
+    );
+
+    return "$formattedSize sqft";
+  }
+
+
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
@@ -1362,53 +1428,45 @@ class _About_AgencyState extends State<About_Agency> {
                                                 ),
                                               ),
                                             ),
-                                            Row(
-                                              crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                              mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                  const EdgeInsets
-                                                      .only(
-                                                    left: 15,
-                                                    right:
-                                                    5,
-                                                    top: 0,
-                                                    bottom:
-                                                    10,
+                                            // LOCATION + SPECS ROW (clean & no overflow)
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  // Location
+                                                  Row(
+                                                    children: [
+                                                      Image.asset("assets/images/map.png", height: 14),
+                                                      const SizedBox(width: 8),
+                                                      Expanded(
+                                                        child: Text(
+                                                          property.location ?? '',
+                                                          style: const TextStyle(fontSize: 13),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                  child: Image
-                                                      .asset(
-                                                    "assets/images/map.png",
-                                                    height:
-                                                    14,
+                                                  const SizedBox(height: 10),
+
+                                                  // Beds • Baths • Size (same style as your other screens)
+                                                  Row(
+                                                    children: [
+                                                      _buildInfoChip("assets/images/bed.png", property.bedrooms),
+                                                      if (property.bedrooms != null && property.bedrooms != "0") const SizedBox(width: 15),
+                                                      _buildInfoChip("assets/images/bath.png", property.bathrooms),
+                                                      if (property.bathrooms != null && property.bathrooms != "0") const SizedBox(width: 15),
+                                                      _buildInfoChip("assets/images/messure.png", getDisplaySize(property)),
+                                                    ]
+                                                        .where((widget) => widget is! SizedBox || (widget as SizedBox).width != null)
+                                                        .toList(),
                                                   ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                  const EdgeInsets
-                                                      .only(
-                                                    left: 0,
-                                                    right:
-                                                    0,
-                                                    top: 0,
-                                                  ),
-                                                  child: Text(
-                                                    property.location.toString(),
-                                                    style:
-                                                    const TextStyle(
-                                                      fontSize: 13,
-                                                      height: 1.4,
-                                                      overflow: TextOverflow.visible,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
-                                            const SizedBox(
-                                                height: 10),
+
+                                            const SizedBox(height: 12),
                                           ],
                                         ),
                                       ),
@@ -1540,16 +1598,13 @@ class _About_AgencyState extends State<About_Agency> {
                                               const SizedBox(
                                                   height: 4),
                                               Text(
-                                                "${agent.propertiesCount ?? 0} Properties",
-                                                style:
-                                                const TextStyle(
+                                                "${(agent.sale ?? 0) + (agent.rent ?? 0)} Properties",
+                                                style: const TextStyle(
                                                   fontSize: 12,
-                                                  color: Color(
-                                                      0xFF3A7CED),
+                                                  color: Color(0xFF3A7CED),
                                                 ),
                                                 maxLines: 1,
-                                                overflow:
-                                                TextOverflow.ellipsis,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                               const SizedBox(
                                                   height: 4),
@@ -1726,121 +1781,121 @@ class _About_AgencyState extends State<About_Agency> {
     );
   }
 
-    Widget _tabItem(String label) {
-      return Container(
-        margin: const EdgeInsets.only(left: 5),
-        width: 80,
-        height: 40,
-        padding: const EdgeInsets.only(top: 9),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              offset: const Offset(4, 4),
-              blurRadius: 8,
-              spreadRadius: 2,
-            ),
-            BoxShadow(
-              color: Colors.white.withOpacity(0.8),
-              offset: const Offset(-4, -4),
-              blurRadius: 8,
-              spreadRadius: 2,
-            ),
-          ],
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-        ),
-      );
-    }
-
-
-
-
-
-  }
-
-  // Small label used in the Agents cards
-  Widget _pill(String text) => Container(
-    width: 55,
-    height: 20,
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(6),
-      border: Border.all(color: Colors.white),
-      boxShadow: const [
-        BoxShadow(
-          color: Color(0x40000000),
-          blurRadius: 2,
-          offset: Offset(0, 0),
-        ),
-      ],
-    ),
-    child: Center(
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w500,
-          color: Color(0xFF3A7CED),
-        ),
+  Widget _tabItem(String label) {
+    return Container(
+      margin: const EdgeInsets.only(left: 5),
+      width: 80,
+      height: 40,
+      padding: const EdgeInsets.only(top: 9),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            offset: const Offset(4, 4),
+            blurRadius: 8,
+            spreadRadius: 2,
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.8),
+            offset: const Offset(-4, -4),
+            blurRadius: 8,
+            spreadRadius: 2,
+          ),
+        ],
+        borderRadius: BorderRadius.circular(10),
       ),
-    ),
-  );
-
-  Widget _buildTagContainer(
-      {required String text,
-        required String iconPath}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: 3.0, vertical: 8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          borderRadius:
-          BorderRadius.circular(8.0),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.red,
-              offset: Offset(0.3, 0.5),
-              blurRadius: 0.5,
-              spreadRadius: 0.8,
-            ),
-            BoxShadow(
-              color: Colors.white,
-              offset: Offset(0.5, 0.5),
-              blurRadius: 0.5,
-              spreadRadius: 0.5,
-            ),
-          ],
-          color: Colors.white,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              text,
-              style: const TextStyle(
-                letterSpacing: 0.5,
-                color: Colors.black,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(width: 5),
-            Image.asset(
-              iconPath,
-              width: 15,
-              height: 15,
-              fit: BoxFit.contain,
-            ),
-          ],
-        ),
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
       ),
     );
   }
+
+
+
+
+
+}
+
+// Small label used in the Agents cards
+Widget _pill(String text) => Container(
+  width: 55,
+  height: 20,
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(6),
+    border: Border.all(color: Colors.white),
+    boxShadow: const [
+      BoxShadow(
+        color: Color(0x40000000),
+        blurRadius: 2,
+        offset: Offset(0, 0),
+      ),
+    ],
+  ),
+  child: Center(
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFF3A7CED),
+      ),
+    ),
+  ),
+);
+
+Widget _buildTagContainer(
+    {required String text,
+      required String iconPath}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(
+        horizontal: 3.0, vertical: 8),
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+          horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius:
+        BorderRadius.circular(8.0),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.red,
+            offset: Offset(0.3, 0.5),
+            blurRadius: 0.5,
+            spreadRadius: 0.8,
+          ),
+          BoxShadow(
+            color: Colors.white,
+            offset: Offset(0.5, 0.5),
+            blurRadius: 0.5,
+            spreadRadius: 0.5,
+          ),
+        ],
+        color: Colors.white,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            text,
+            style: const TextStyle(
+              letterSpacing: 0.5,
+              color: Colors.black,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Image.asset(
+            iconPath,
+            width: 15,
+            height: 15,
+            fit: BoxFit.contain,
+          ),
+        ],
+      ),
+    ),
+  );
+}
 

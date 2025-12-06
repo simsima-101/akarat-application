@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+
 import 'projectmodel.dart' as projectDetail;
 import 'productmodel.dart' as productModel;
 import 'searchmodel.dart' as search;
@@ -24,6 +27,53 @@ String sanitizeImageUrl(String? url) {
   return url;
 }
 
+// ================================================
+// DLD Permit Info Class (for parsing permit_response)
+// ================================================
+class DldPermitInfo {
+  final String? propertySize;
+  final String? plotSize;
+  final String? permitNumber;
+
+  DldPermitInfo({
+    this.propertySize,
+    this.plotSize,
+    this.permitNumber,
+  });
+
+  factory DldPermitInfo.fromJson(Map<String, dynamic> json) {
+    return DldPermitInfo(
+      propertySize: json['property_size']?.toString(),
+      plotSize: json['plot_size']?.toString(),
+      permitNumber: json['permit_number']?.toString(),
+    );
+  }
+
+  /// Parse DLD data from the raw permit_response string (used in list/favorites API)
+  factory DldPermitInfo.fromPermitResponse(String response) {
+    try {
+      final decoded = jsonDecode(response);
+      final result = decoded['result'] as List?;
+      if (result != null && result.isNotEmpty) {
+        final propertyNode = result[0]['property'] as Map<String, dynamic>?;
+        if (propertyNode != null) {
+          return DldPermitInfo(
+            propertySize: propertyNode['propertySize']?.toString(),
+            plotSize: propertyNode['plotSize']?.toString(),
+            permitNumber: result[0]['permitNumber']?.toString(),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("DLD parse error: $e");
+    }
+    return DldPermitInfo();
+  }
+}
+
+// ================================================
+// Main Property Model
+// ================================================
 class Property {
   final String id;
   final String title;
@@ -42,6 +92,10 @@ class Property {
   final String? agencyLogo;
   final String? postedOn;
 
+  // DLD Fields
+  final DldPermitInfo? dldPermitInfo;
+  final String? permitResponse;
+
   bool saved;
 
   Property({
@@ -51,18 +105,70 @@ class Property {
     required this.image,
     required this.price,
     required this.location,
-    required this.media,
+    this.media,
     required this.bedrooms,
     required this.bathrooms,
     required this.squareFeet,
-    required this.phoneNumber,
-    required this.whatsapp,
+    this.phoneNumber,
+    this.whatsapp,
     this.agent,
     this.agentImage,
     this.agencyLogo,
     this.postedOn,
+    this.dldPermitInfo,
+    this.permitResponse,
     this.saved = false,
   });
+
+  // Smart size: DLD → Plot → squareFeet
+  String get displaySize {
+    // Priority 1: Real DLD propertySize
+    if (dldPermitInfo?.propertySize != null) {
+      final raw = dldPermitInfo!.propertySize!.trim();
+      if (raw.isNotEmpty && raw != 'null' && raw != '0') {
+        final clean = raw.replaceAll(RegExp(r'[^0-9.]'), '');
+        final size = num.tryParse(clean);
+        if (size != null && size > 0) {
+          final formatted = size.toStringAsFixed(0).replaceAllMapped(
+            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                (m) => '${m[1]},',
+          );
+          return '$formatted sqft';
+        }
+      }
+    }
+
+    // Priority 2: Plot size
+    if (dldPermitInfo?.plotSize != null) {
+      final raw = dldPermitInfo!.plotSize!.trim();
+      if (raw.isNotEmpty && raw != 'null' && raw != '0') {
+        final clean = raw.replaceAll(RegExp(r'[^0-9.]'), '');
+        final size = num.tryParse(clean);
+        if (size != null && size > 0) {
+          final formatted = size.toStringAsFixed(0).replaceAllMapped(
+            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                (m) => '${m[1]},',
+          );
+          return '$formatted sqft (Plot)';
+        }
+      }
+    }
+
+    // Priority 3: Fallback to squareFeet
+    if (squareFeet.isNotEmpty && squareFeet != "0") {
+      final clean = squareFeet.replaceAll(RegExp(r'[^0-9.]'), '');
+      final size = num.tryParse(clean);
+      if (size != null && size > 0) {
+        final formatted = size.toStringAsFixed(0).replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+              (m) => '${m[1]},',
+        );
+        return '$formatted sqft';
+      }
+    }
+
+    return '';
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -83,10 +189,11 @@ class Property {
       'agency_logo': agencyLogo,
       'posted_on': postedOn,
       'saved': saved,
+      'permit_response': permitResponse,
     };
   }
 
-  // 🔧 1️⃣ For project detail data
+  // From project detail
   factory Property.fromProjectDetail(projectDetail.Data data) {
     return Property(
       id: data.id?.toString() ?? '',
@@ -109,7 +216,7 @@ class Property {
     );
   }
 
-  // 🔧 2️⃣ For product detail data
+  // From product model
   factory Property.fromProductModel(productModel.Data data) {
     return Property(
       id: data.id?.toString() ?? '',
@@ -128,11 +235,10 @@ class Property {
       squareFeet: data.squareFeet ?? '',
       phoneNumber: data.phoneNumber ?? '',
       whatsapp: data.whatsapp ?? '',
-      // if product model has `saved`, you can map it here too
     );
   }
 
-  // 🔧 3️⃣ For search model data
+  // From search model
   factory Property.fromSearchModel(search.Data data) {
     return Property(
       id: data.id?.toString() ?? '',
@@ -147,10 +253,10 @@ class Property {
       squareFeet: data.squareFeet ?? '',
       phoneNumber: data.phone ?? '',
       whatsapp: data.whatsapp ?? '',
-      // search results usually don't carry `saved`
     );
   }
 
+  // Main fromJson — supports permit_response from list/favorites API
   factory Property.fromJson(Map<String, dynamic> json) {
     String? rawImage;
     final mediaField = json['media'];
@@ -158,11 +264,11 @@ class Property {
     if (mediaField is List && mediaField.isNotEmpty) {
       final orig = mediaField[0]['original_url']?.toString();
       if (orig != null && orig.isNotEmpty) {
-        rawImage = orig; // ✅ Prefer original
+        rawImage = orig;
       }
     }
 
-    rawImage ??= json['image']?.toString(); // fallback if media is not available
+    rawImage ??= json['image']?.toString();
     final fullImageUrl = getFullImageUrl(rawImage);
 
     int parseInt(dynamic val) {
@@ -176,6 +282,13 @@ class Property {
       if (v is num) return v != 0;
       final s = v.toString().trim();
       return s == '1' || s.toLowerCase() == 'true';
+    }
+
+    // Parse DLD from permit_response string
+    DldPermitInfo? dldInfo;
+    final rawPermit = json['permit_response'];
+    if (rawPermit is String && rawPermit.trim().isNotEmpty && rawPermit != 'null') {
+      dldInfo = DldPermitInfo.fromPermitResponse(rawPermit);
     }
 
     return Property(
@@ -198,10 +311,32 @@ class Property {
       agencyLogo: json['agency_logo']?.toString(),
       postedOn: json['posted_on']?.toString(),
       saved: parseSaved(json['saved']),
+      dldPermitInfo: dldInfo,
+      permitResponse: rawPermit is String ? rawPermit : null,
     );
   }
 }
 
+// ================================================
+// Media Class
+// ================================================
+class Media {
+  String? originalUrl;
+
+  Media({this.originalUrl});
+
+  Media.fromJson(Map<String, dynamic> json) {
+    originalUrl = json['original_url']?.toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'original_url': originalUrl};
+  }
+}
+
+// ================================================
+// Project Detail Model (unchanged)
+// ================================================
 class ProjectDetailModel {
   Data? data;
 
@@ -235,13 +370,11 @@ class Data {
   int? agentId;
   String? agentImage;
   String? deliveryDate;
-
   int? paymentPlan;
   String? governmentFee;
   String? downPayment;
   String? duringConstruction;
   String? onHandover;
-
   String? projectAnnouncement;
   String? constructionStarted;
   String? expectedCompletion;
@@ -249,8 +382,6 @@ class Data {
   String? location;
   String? squareFeet;
   bool? saved;
-
-  /// ✅ Akarat listing reference (P20251113-LUVH)
   String? reference;
 
   Data({
@@ -299,37 +430,28 @@ class Data {
     agentImage = json['agent_image'];
     deliveryDate = json['delivery_date'];
 
-    // payment_plan sometimes might be string/int
     final pp = json['payment_plan'];
-    if (pp is int) {
-      paymentPlan = pp;
-    } else if (pp != null) {
-      paymentPlan = int.tryParse(pp.toString());
-    }
+    paymentPlan = pp is int ? pp : (pp != null ? int.tryParse(pp.toString()) : null);
 
     governmentFee = json['government_fee']?.toString();
     downPayment = json['down_payment']?.toString();
     duringConstruction = json['during_construction']?.toString();
     onHandover = json['on_handover']?.toString();
-
     projectAnnouncement = json['project_announcement'];
     constructionStarted = json['construction_started'];
     expectedCompletion = json['expected_completion'];
     location = json['location'];
     squareFeet = json['square_feet'];
     saved = json['saved'];
-
-    /// ✅ Correct assignment
     reference = json['reference'];
 
     if (json['media'] != null && json['media'] is List) {
-      media =
-          (json['media'] as List).map((v) => Media.fromJson(v)).toList();
+      media = (json['media'] as List).map((v) => Media.fromJson(v)).toList();
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['id'] = id;
     data['title'] = title;
     data['price'] = price;
@@ -360,22 +482,6 @@ class Data {
     if (media != null) {
       data['media'] = media!.map((v) => v.toJson()).toList();
     }
-    return data;
-  }
-}
-
-class Media {
-  String? originalUrl;
-
-  Media({this.originalUrl});
-
-  Media.fromJson(Map<String, dynamic> json) {
-    originalUrl = json['original_url']?.toString();
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-    data['original_url'] = originalUrl;
     return data;
   }
 }

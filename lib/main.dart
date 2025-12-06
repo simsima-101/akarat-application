@@ -55,6 +55,7 @@ void main() async {
 
     // 3. Restore session
     await Session().restore();
+    await Session().refreshProfileFromServer();
 
     // 4. Initialize profile provider
     final profileProvider = ProfileImageProvider();

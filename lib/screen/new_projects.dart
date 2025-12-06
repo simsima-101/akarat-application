@@ -225,7 +225,16 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
     }
   }
 
-
+  Widget _buildInfoChip(String iconPath, String? value) {
+    if (value == null || value.isEmpty || value == '0') return const SizedBox.shrink();
+    return Row(
+      children: [
+        Image.asset(iconPath, height: 13),
+        const SizedBox(width: 5),
+        Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+      ],
+    );
+  }
 
   Future<void> getFilesApi({bool loadMore = false}) async {
     if (isLoading || (!hasMore && loadMore)) return;
@@ -797,18 +806,12 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                   SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      Image.asset("assets/images/bed.png", height: 13),
-                                      SizedBox(width: 5),
-                                      Text(item.bedrooms.toString()),
-                                      SizedBox(width: 10),
-                                      Image.asset("assets/images/bath.png", height: 13),
-                                      SizedBox(width: 5),
-                                      Text(item.bathrooms.toString()),
-                                      SizedBox(width: 10),
-                                      Image.asset("assets/images/messure.png", height: 13),
-                                      SizedBox(width: 5),
-                                      Text(item.squareFeet.toString()),
-                                    ],
+                                      _buildInfoChip("assets/images/bed.png", item.bedrooms?.toString()),
+                                      if (item.bedrooms != null && item.bedrooms! > 0) const SizedBox(width: 15),
+                                      _buildInfoChip("assets/images/bath.png", item.bathrooms?.toString()),
+                                      if (item.bathrooms != null && item.bathrooms! > 0) const SizedBox(width: 15),
+                                      _buildInfoChip("assets/images/messure.png", item.displaySize),
+                                    ].where((widget) => widget is! SizedBox || widget.width != null).toList(),
                                   ),
                                   SizedBox(height: 15),
 

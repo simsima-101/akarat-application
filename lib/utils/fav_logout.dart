@@ -34,6 +34,13 @@ class _Fav_LogoutState extends State<Fav_Logout> {
 
   final Map<int, int> _carouselPageIndex = {};
 
+  int? toInt(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is String) return int.tryParse(v);
+    return null;
+  }
+
   String getFullImageUrl(String? url) {
     if (url == null || url.isEmpty) {
       return 'https://via.placeholder.com/400x300.png?text=No+Image';
@@ -129,32 +136,26 @@ class _Fav_LogoutState extends State<Fav_Logout> {
   void initState() {
     super.initState();
 
-    // First load when screen is created
+    // Load the saved properties when the screen is first created
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      // 1. Load full property details from server (images, price, etc.)
+      // Fetch the complete list of saved properties from the server
+      // This will populate the savedProperties list with all currently favorited properties
       _fetchSavedProperties();
-
-      // 2. Also do a fast sync of favorite IDs from provider (in case user added from another screen)
-      context.read<FavoriteProvider>().syncFromServer(merge: true);
     });
   }
+
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // This runs EVERY TIME the screen becomes visible again (perfect!)
-    // → User came back from detail screen, home, or another tab
-
-    // Fast: Update favorite IDs immediately (so new items appear instantly)
-    context.read<FavoriteProvider>().syncFromServer(merge: true);
-
-    // Then: Refresh full property data (safe, non-blocking)
-    Future.microtask(() {
+    // Ensure that every time the favorites screen is shown, we have the latest data
+    Future.microtask(() async {
       if (mounted) {
-        _fetchSavedProperties();
+        // Refresh the complete list of saved properties every time the screen becomes active
+        await _fetchSavedProperties();
       }
     });
   }
@@ -185,34 +186,46 @@ class _Fav_LogoutState extends State<Fav_Logout> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
         final List<Property> props = (data['data']['data'] as List).map((e) {
           final p = Property.fromJson(e);
           p.saved = true;
           return p;
         }).toList();
 
-        int? toInt(dynamic v) {
-          if (v == null) return null;
-          if (v is int) return v;
-          if (v is String) return int.tryParse(v);
-          return null;
-        }
-
         final ids = (data['data']['data'] as List)
             .map((e) => toInt(e['id']) ?? toInt(e['property_id']))
             .whereType<int>();
 
-        // ✅ Merge (not replace) to avoid wiping optimistic items
         await context.read<FavoriteProvider>().mergeFavoritesFromIds(ids);
 
         if (!mounted) return;
         setState(() => savedProperties = props);
+      } else if (response.statusCode == 401) {
+        // Handle unauthorized explicitly
+        debugPrint('❌ Token is invalid or expired');
+        await SecureStorage.deleteToken(); // Clear invalid token
+
+        if (!mounted) return;
+
+        // Show login prompt or redirect to login
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Session expired. Please login again.")),
+          );
+        }
       } else {
-        debugPrint('❌ Failed to fetch saved properties: ${response.statusCode}');
+        debugPrint('❌ Failed to fetch saved properties: ${response.statusCode} - ${response.body}');
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load favorites: ${response.statusCode}')),
+        );
       }
     } catch (e) {
-      debugPrint('❌ Error: $e');
+      debugPrint('❌ Error fetching saved properties: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error loading favorites. Please try again.')),
+      );
     }
 
     if (!mounted) return;
@@ -409,18 +422,11 @@ class _Fav_LogoutState extends State<Fav_Logout> {
           ? _loginPrompt(context)
           : Consumer<FavoriteProvider>(
         builder: (context, favoriteProvider, child) {
-          // Get current favorite IDs from provider (real-time)
-          final Set<int> currentFavoriteIds = favoriteProvider.ids;
+          // Since we ensure savedProperties is refreshed every time the screen becomes visible,
+          // we can directly use savedProperties as it should contain all currently favorited properties
+          final List<Property> displayedProperties = savedProperties;
 
-          // Filter savedProperties to only show items that are actually favorited
-          final List<Property> displayedProperties = savedProperties
-              .where((property) {
-            final id = int.tryParse(property.id ?? '') ?? 0;
-            return currentFavoriteIds.contains(id);
-          })
-              .toList();
-
-          // Show empty state if nothing is favorited
+          // Check if there are no favorited properties to display
           if (displayedProperties.isEmpty) {
             return RefreshIndicator(
               onRefresh: _fetchSavedProperties,
@@ -940,26 +946,49 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                       ),
                                       const SizedBox(height: 8),
                                       Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
                                         children: [
-                                          Image.asset(
-                                              "assets/images/bed.png",
-                                              height: 13),
-                                          const SizedBox(width: 5),
-                                          Text(item.bedrooms
-                                              .toString()),
-                                          const SizedBox(width: 10),
-                                          Image.asset(
-                                              "assets/images/bath.png",
-                                              height: 13),
-                                          const SizedBox(width: 5),
-                                          Text(item.bathrooms
-                                              .toString()),
-                                          const SizedBox(width: 10),
-                                          Image.asset(
-                                              "assets/images/messure.png",
-                                              height: 13),
-                                          const SizedBox(width: 5),
-                                          Text(item.squareFeet),
+                                          // === BEDS: Show only if bedrooms > 0 ===
+                                          if (item.bedrooms != null && item.bedrooms! > 0) ...[
+                                            Image.asset("assets/images/bed.png", height: 14),
+                                            const SizedBox(width: 5),
+                                            Text("${item.bedrooms}", style: const TextStyle(fontSize: 13)),
+                                          ],
+
+                                          // === BATHS: Show only if bathrooms > 0 ===
+                                          if (item.bathrooms != null && item.bathrooms! > 0) ...[
+                                            if (item.bedrooms != null && item.bedrooms! > 0) const SizedBox(width: 12),
+                                            Image.asset("assets/images/bath.png", height: 14),
+                                            const SizedBox(width: 5),
+                                            Text("${item.bathrooms}", style: const TextStyle(fontSize: 13)),
+                                          ],
+
+                                          // === SIZE: Show only if displaySize is not empty (fallback to squareFeet) ===
+                                          if (item.displaySize?.isNotEmpty == true || item.squareFeet?.isNotEmpty == true) ...[
+                                            if ((item.bedrooms != null && item.bedrooms! > 0) ||
+                                                (item.bathrooms != null && item.bathrooms! > 0))
+                                              const SizedBox(width: 12),
+                                            Image.asset("assets/images/messure.png", height: 14),
+                                            const SizedBox(width: 5),
+                                            Text(
+                                              item.displaySize?.isNotEmpty == true ? item.displaySize! : item.squareFeet!,
+                                              style: const TextStyle(fontSize: 13),
+                                            ),
+
+                                            // DLD Badge
+                                            if (item.dldPermitInfo?.propertySize != null &&
+                                                num.tryParse(item.dldPermitInfo!.propertySize!.replaceAll(RegExp(r'[^0-9.]'), '')) != null &&
+                                                num.tryParse(item.dldPermitInfo!.propertySize!.replaceAll(RegExp(r'[^0-9.]'), ''))! > 0)
+                                              const Padding(
+                                                padding: EdgeInsets.only(left: 6),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.verified, color: Colors.blue, size: 14),
+                                                    Text(" DLD", style: TextStyle(fontSize: 10, color: Colors.blue, fontWeight: FontWeight.bold)),
+                                                  ],
+                                                ),
+                                              ),
+                                          ],
                                         ],
                                       ),
                                       const SizedBox(height: 5),

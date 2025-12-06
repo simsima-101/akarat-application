@@ -12,6 +12,9 @@ import 'package:Akarat/screen/home.dart';             // Home screen
 import 'package:url_launcher/url_launcher.dart';      // for mailto
 import 'package:Akarat/services/favorite_service.dart';
 
+import 'filter_list.dart';
+
+
 // spacing
 const double _headerLeftPad    = 0;   // pull header to the very left
 const double _afterCheckboxGap = 8;   // gap after the header checkbox
@@ -714,111 +717,119 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
 
                             LayoutBuilder(
                               builder: (context, cs) {
-                                final narrow = cs.maxWidth < 420;
-                                final double txt = narrow ? 12 : 14;
+            final bool narrow = cs.maxWidth < 420;
+            final double txt = narrow ? 12 : 14;
 
-                                return Padding(
-                                  // 👇 add space under the whole row (Select all / Delete / Pager)
-                                  padding: const EdgeInsets.only(bottom: 5),
-                                  child: Row(
-                                    children: [
-                                      // LEFT controls
-                                      Expanded(
-                                        child: Wrap(
-                                          alignment: WrapAlignment.start,
-                                          crossAxisAlignment: WrapCrossAlignment.center,
-                                          spacing: 8,
-                                          runSpacing: 6,
-                                          children: [
-                                            Wrap(
-                                              spacing: 6,
-                                              crossAxisAlignment: WrapCrossAlignment.center,
-                                              children: [
-                                                Checkbox(
-                                                  visualDensity: VisualDensity.compact,
-                                                  value: _pageItems.isNotEmpty &&
-                                                      _pageItems.every((a) => _selected.contains(a.id)),
-                                                  onChanged: (v) => _toggleSelectAllOnPage(v ?? false),
-                                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                ),
-                                                Text(
-                                                  narrow ? 'Select all' : 'Select all on this page',
-                                                  style: TextStyle(fontSize: txt),
-                                                  softWrap: true,
-                                                ),
-                                              ],
-                                            ),
-                                            TextButton.icon(
-                                              onPressed: _selected.isEmpty ? null : _deleteSelected,
-                                              icon: Icon(Icons.delete_outline, size: narrow ? 16 : 20),
-                                              label: Text('Delete selected', style: TextStyle(fontSize: txt)),
-                                              style: TextButton.styleFrom(
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal: narrow ? 8 : 12,
-                                                  vertical: narrow ? 6 : 8,
-                                                ),
-                                                minimumSize: Size.zero,
-                                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                visualDensity: VisualDensity.compact,
-                                              ),
-                                            ),
-                                            TextButton.icon(
-                                              onPressed: (_all.isEmpty || _deletingAll) ? null : _deleteAllAlerts,
-                                              icon: Icon(Icons.delete_forever_outlined, size: narrow ? 16 : 20),
-                                              label: Text(
-                                                _deletingAll ? 'Deleting…' : 'Delete all alerts',
-                                                style: TextStyle(fontSize: txt),
-                                              ),
-                                              style: ButtonStyle(
-                                                padding: WidgetStatePropertyAll(
-                                                  EdgeInsets.symmetric(
-                                                    horizontal: narrow ? 8 : 12,
-                                                    vertical: narrow ? 6 : 8,
-                                                  ),
-                                                ),
-                                                minimumSize: const WidgetStatePropertyAll(Size.zero),
-                                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                visualDensity: VisualDensity.compact,
-                                                foregroundColor: WidgetStateProperty.resolveWith<Color?>(
-                                                      (states) => states.contains(WidgetState.disabled)
-                                                      ? Colors.red.withOpacity(0.38)
-                                                      : Colors.red,
-                                                ),
-                                                backgroundColor:
-                                                const WidgetStatePropertyAll(Colors.transparent),
-                                                overlayColor:
-                                                WidgetStatePropertyAll(Colors.red.withOpacity(0.08)),
-                                                side: const WidgetStatePropertyAll(BorderSide.none),
-                                                shape: const WidgetStatePropertyAll(StadiumBorder()),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+            final bool noAlerts = _all.isEmpty;
 
-                                      // RIGHT pager
-                                      Expanded(
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(right: 12),
-                                          child: Align(
-                                            alignment: Alignment.centerRight,
-                                            child: SingleChildScrollView(
-                                              scrollDirection: Axis.horizontal,
-                                              child: SizedBox(
-                                                height: 34,
-                                                child: FittedBox(child: _pager()),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            )
+            return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: noAlerts
+            ? // ─── EMPTY STATE: Compact & Perfect "Create Alert" button ───
+            Center(
+            child: SizedBox(
+            // This is the magic: limit the max width of the button
+            width: 180, // ← Adjust this value to make it wider or narrower
+            child: _CreateAlertButton(
+            onTap: () {
+            Navigator.of(context).push(
+            MaterialPageRoute(
+            builder: (_) => const FliterList(
+            selectedPurpose: 'All',
+            selectedPropertyType: 'All',
+            ),
+            ),
+            );
+            },
+            ),
+            ),
+            )
+                : // ─── NORMAL STATE: Full toolbar (unchanged) ───
+            Row(
+            children: [
+            // LEFT: Controls
+            Expanded(
+            child: Wrap(
+            alignment: WrapAlignment.start,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+            // Select all on page
+            Wrap(
+            spacing: 6,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+            Checkbox(
+            visualDensity: VisualDensity.compact,
+            value: _pageItems.isNotEmpty &&
+            _pageItems.every((a) => _selected.contains(a.id)),
+            onChanged: (v) => _toggleSelectAllOnPage(v ?? false),
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            Text(
+            narrow ? 'Select all' : 'Select all on this page',
+            style: TextStyle(fontSize: txt),
+            ),
+            ],
+            ),
 
-                          ],
+            // Delete selected
+            TextButton.icon(
+            onPressed: _selected.isEmpty ? null : _deleteSelected,
+            icon: Icon(Icons.delete_outline, size: narrow ? 16 : 20),
+            label: Text('Delete selected', style: TextStyle(fontSize: txt)),
+            style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(horizontal: narrow ? 8 : 12, vertical: 6),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+            ),
+            ),
+
+            // Delete all
+            TextButton.icon(
+            onPressed: (_all.isEmpty || _deletingAll) ? null : _deleteAllAlerts,
+            icon: Icon(Icons.delete_forever_outlined, size: narrow ? 16 : 20),
+            label: Text(_deletingAll ? 'Deleting…' : 'Delete all alerts',
+            style: TextStyle(fontSize: txt)),
+            style: ButtonStyle(
+            padding: WidgetStatePropertyAll(EdgeInsets.symmetric(
+            horizontal: narrow ? 8 : 12,
+            vertical: 6,
+            )),
+            foregroundColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.disabled)
+            ? Colors.red.withOpacity(0.38)
+                : Colors.red),
+            overlayColor: WidgetStatePropertyAll(Colors.red.withOpacity(0.08)),
+            ),
+            ),
+            ],
+            ),
+            ),
+
+            // RIGHT: Pager
+            Expanded(
+            child: Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Align(
+            alignment: Alignment.centerRight,
+            child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+            height: 34,
+            child: FittedBox(child: _pager()),
+            ),
+            ),
+            ),
+            ),
+            ),
+            ],
+            ),
+            );
+
+            },)  ],
                         ),
                       ),
                     ),
@@ -1030,6 +1041,87 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
         const SizedBox(width: 8),
         navButton(Icons.chevron_right, canNext, _nextPage),
       ],
+    );
+  }
+}
+
+// ──────────────────────────────
+// Your main screen class ends here
+// ──────────────────────────────
+
+// Put this AFTER your SavedAlertsScreen class (same file)
+class _CreateAlertButton extends StatelessWidget {
+  final VoidCallback onTap;
+  final bool disabled;
+
+  const _CreateAlertButton({
+    required this.onTap,
+    this.disabled = false,
+  });
+
+  static const gradient = LinearGradient(
+    begin: Alignment.centerRight,
+    end: Alignment.centerLeft,
+    colors: [Color(0xFFFFA3A3), Color(0xFFFFFFFF)],
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return AbsorbPointer(
+      absorbing: disabled,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(28),
+          onTap: disabled ? null : onTap,
+          splashColor: disabled ? Colors.transparent : null,
+          highlightColor: disabled ? Colors.transparent : null,
+          child: Container(
+            height: 44,
+            // This is the key: control width with padding
+            padding: const EdgeInsets.symmetric(horizontal: 18), // ← Adjust this!
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: Colors.red, width: 1),
+              gradient: gradient,
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min, // Ensures it only takes needed width
+              children: [
+                Image.asset(
+                  'assets/images/bell-red.png',
+                  height: 18,
+                  width: 18,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.notifications_none,
+                    size: 18,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Create Alert',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

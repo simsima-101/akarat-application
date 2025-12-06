@@ -1,5 +1,6 @@
 // lib/screen/my_account.dart
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -34,21 +35,69 @@ class My_Account extends StatefulWidget {
   State<My_Account> createState() => _My_AccountState();
 }
 
-class _My_AccountState extends State<My_Account> {
-  // These will be filled from Session().restore()
+class _My_AccountState extends State<My_Account>
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
+
+  @override
+  bool get wantKeepAlive => true;
+
   String? userName;
   String? userEmail;
   int pageIndex = 0;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData(); // Now fully async + restores real name
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshProfileFromServer();
+    });
   }
 
-  /// Load real user data from Session (which restores from SecureStorage)
-  Future<void> _loadUserData() async {
-    await Session().restore(); // This is the magic fix
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // Called when app comes back from background
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      if (kDebugMode) print('App resumed → refreshing profile from server');
+      _refreshProfileFromServer();
+    }
+  }
+
+  // Called every time the tab becomes visible
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _refreshProfileFromServer();
+  }
+
+  // MAIN METHOD: Always fetch latest profile from server
+  Future<void> _refreshProfileFromServer() async {
+    if (!mounted) return;
+    if (!Session().isAuthenticated) {
+      setState(() {
+        userName = 'User';
+        userEmail = '';
+      });
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await Session().refreshProfileFromServer();
+      if (kDebugMode) {
+        print('Profile refreshed: ${Session().userName} (${Session().userEmail})');
+      }
+    } catch (e) {
+      if (kDebugMode) print('Refresh profile failed: $e');
+    }
 
     if (!mounted) return;
 
@@ -59,10 +108,23 @@ class _My_AccountState extends State<My_Account> {
       userEmail = Session().userEmail?.trim().isNotEmpty == true
           ? Session().userEmail!.trim()
           : '';
+      _isLoading = false;
     });
   }
 
-  /// Smart display name — never shows "User" unless truly not logged in
+  // Local update (after editing profile in-app)
+  void _updateLocalProfile() {
+    if (!mounted) return;
+    setState(() {
+      userName = Session().userName?.trim().isNotEmpty == true
+          ? Session().userName!.trim()
+          : 'User';
+      userEmail = Session().userEmail?.trim().isNotEmpty == true
+          ? Session().userEmail!.trim()
+          : '';
+    });
+  }
+
   String get _displayName {
     if (userName == null || userName == 'User' || userName!.trim().isEmpty) {
       return 'Welcome! Login / Sign up';
@@ -70,8 +132,8 @@ class _My_AccountState extends State<My_Account> {
     return userName!;
   }
 
-  /// Check if user is truly logged in (uses Session)
-  bool get _isLoggedIn => Session().isAuthenticated && userName != 'User' && userName?.isNotEmpty == true;
+  bool get _isLoggedIn =>
+      Session().isAuthenticated && userName != 'User' && userName?.isNotEmpty == true;
 
   // ===================== LOGOUT =====================
   Future<void> _logout() async {
@@ -83,11 +145,9 @@ class _My_AccountState extends State<My_Account> {
         } catch (_) {}
       }
     } finally {
-      await Session().signOut(); // Full clear
+      await Session().signOut();
       if (mounted) context.read<ProfileImageProvider>().clear();
-
       if (!mounted) return;
-
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const LoginDemo()),
@@ -148,134 +208,147 @@ class _My_AccountState extends State<My_Account> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+
     return Scaffold(
       bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: _isLoggedIn == false && userName == null
+        child: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('My Account', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            : RefreshIndicator(
+          onRefresh: _refreshProfileFromServer,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('My Account',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
 
-              // Profile Card
-              Padding(
-                padding: const EdgeInsets.only(top: 30, bottom: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
-                  ),
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () async {
-                          if (!_isLoggedIn) {
-                            _showLoginDialog(context);
-                            return;
-                          }
+                // Profile Card
+                Padding(
+                  padding: const EdgeInsets.only(top: 30, bottom: 16),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black12, blurRadius: 6)
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () async {
+                            if (!_isLoggedIn) {
+                              _showLoginDialog(context);
+                              return;
+                            }
 
-                          final changed = await Navigator.push<bool>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PersonalInformationScreen(
-                                name: userName ?? '',
-                                email: userEmail ?? '',
-                                onDeleteAccount: deleteAccount,
+                            final changed = await Navigator.push<bool>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => PersonalInformationScreen(
+                                  name: userName ?? '',
+                                  email: userEmail ?? '',
+                                  onDeleteAccount: deleteAccount,
+                                ),
                               ),
-                            ),
-                          );
+                            );
 
-                          if (changed == true && mounted) {
-                            await _loadUserData();
-                          }
-                        },
-                        child: CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Colors.transparent,
-                          child: ClipOval(
-                            child: Consumer<ProfileImageProvider>(
-                              builder: (context, provider, child) {
-                                if (provider.remoteImageUrl != null) {
-                                  return Image.network(
-                                    provider.remoteImageUrl!,
-                                    width: 60,
-                                    height: 60,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Image.asset(
-                                      'assets/images/avatar.png',
+                            if (changed == true && mounted) {
+                              await Session().refreshProfileFromServer();
+                              _updateLocalProfile();
+                            }
+                          },
+                          child: CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Colors.transparent,
+                            child: ClipOval(
+                              child: Consumer<ProfileImageProvider>(
+                                builder: (context, provider, child) {
+                                  if (provider.remoteImageUrl != null) {
+                                    return Image.network(
+                                      provider.remoteImageUrl!,
                                       width: 60,
                                       height: 60,
                                       fit: BoxFit.cover,
-                                    ),
+                                      errorBuilder: (_, __, ___) => Image.asset(
+                                        'assets/images/avatar.png',
+                                        width: 60,
+                                        height: 60,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    );
+                                  }
+                                  return Image.asset(
+                                    'assets/images/avatar.png',
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
                                   );
-                                }
-                                return Image.asset(
-                                  'assets/images/avatar.png',
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                );
-                              },
+                                },
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _isLoggedIn
-                            ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _displayName,
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              userEmail ?? '',
-                              style: const TextStyle(fontSize: 13, color: Colors.grey),
-                            ),
-                          ],
-                        )
-                            : GestureDetector(
-                          onTap: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const LoginDemo()),
-                            );
-                            if (mounted) await _loadUserData();
-                          },
-                          child: const Text(
-                            "Welcome! Login / Sign up",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red,
-                              decoration: TextDecoration.underline,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _isLoggedIn
+                              ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _displayName,
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                userEmail ?? '',
+                                style: const TextStyle(
+                                    fontSize: 13, color: Colors.grey),
+                              ),
+                            ],
+                          )
+                              : GestureDetector(
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const LoginDemo()),
+                              );
+                              if (mounted) _refreshProfileFromServer();
+                            },
+                            child: const Text(
+                              "Welcome! Login / Sign up",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 10),
-              _buildSettings(_isLoggedIn),
-            ],
+                const SizedBox(height: 10),
+                _buildSettings(_isLoggedIn),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
+  // ===================== ALL OTHER METHODS (UNCHANGED) =====================
   void _showLoginDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -284,10 +357,7 @@ class _My_AccountState extends State<My_Account> {
         title: const Text("Login Required", style: TextStyle(color: Colors.white)),
         content: const Text("Please login to edit your profile.", style: TextStyle(color: Colors.white)),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.white)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel", style: TextStyle(color: Colors.white))),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
@@ -356,7 +426,7 @@ class _My_AccountState extends State<My_Account> {
               : [
             _settingsTile("Login", "", () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo())).then((_) {
-                if (mounted) _loadUserData();
+                if (mounted) _refreshProfileFromServer();
               });
             }),
           ],
@@ -434,52 +504,35 @@ class _My_AccountState extends State<My_Account> {
             enableFeedback: false,
             onPressed: () async {
               final token = await SecureStorage.getToken();
-
               if (token == null || token.isEmpty) {
                 showDialog(
                   context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white, // white container
+                  builder: (_) => AlertDialog(
+                    backgroundColor: Colors.white,
                     title: const Text("Login Required", style: TextStyle(color: Colors.black)),
                     content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
                     actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          "Cancel",
-                          style: TextStyle(color: Colors.red), // red text
-                        ),
-                      ),
+                      TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel", style: TextStyle(color: Colors.red))),
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const LoginDemo()),
-                          );
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
                         },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(color: Colors.red), // red text
-                        ),
+                        child: const Text("Login", style: TextStyle(color: Colors.red)),
                       ),
                     ],
                   ),
                 );
-              }
-              else {
-                // ✅ Logged in – go to favorites
+              } else {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const Fav_Logout()),
                 ).then((_) async {
-                  // 🔁 Re-sync when coming back
                   final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
                   setState(() {
                     FavoriteService.loggedInFavorites = updatedFavorites;
                   });
                 });
-
               }
             },
             icon: pageIndex == 2

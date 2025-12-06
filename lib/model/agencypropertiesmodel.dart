@@ -59,6 +59,7 @@ class Property {
   String? bedrooms;
   String? bathrooms;
   String? squareFeet;
+  String? propertySizeSqft;
   List<Media>? media;
 
   Property({
@@ -78,6 +79,7 @@ class Property {
     this.bathrooms,
     this.bedrooms,
     this.squareFeet,
+    this.propertySizeSqft,
   });
 
   Property.fromJson(Map<String, dynamic> json) {
@@ -96,6 +98,7 @@ class Property {
     bathrooms = json['bathrooms']?.toString();
     bedrooms = json['bedrooms']?.toString();
     squareFeet = json['square_feet']?.toString(); // 🔧 was wrong key before!
+    propertySizeSqft = json['propertySizeSqft']?.toString();
 
     if (json['media'] != null) {
       media = <Media>[];
@@ -119,7 +122,8 @@ class Property {
     'agency_logo': agencyLogo,
     'bedrooms': bedrooms,
     'bathrooms': bathrooms,
-    '': squareFeet,
+    'square_feet': squareFeet,        // ← FIXED: proper key
+    'propertySizeSqft': propertySizeSqft,
 
     'media': media?.map((v) => v.toJson()).toList(),
   };

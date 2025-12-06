@@ -76,7 +76,7 @@ class HomeDemo extends StatefulWidget {
   State<HomeDemo> createState() => _MyHomePageState();
 }
 
-String selectedSort = "Featured";
+String selectedSort = "Newest";
 
 class _MyHomePageState extends State<HomeDemo> {
   final ScrollController _scrollController = ScrollController();
@@ -95,7 +95,7 @@ class _MyHomePageState extends State<HomeDemo> {
 
   // Persist the selected API sort across requests/pages
   String _currentSortKey =
-      'featured'; // 'featured' | 'newest' | 'price_asc' | 'price_desc'
+      'newest'; // 'featured' | 'newest' | 'price_asc' | 'price_desc'
 
   List<featured.Data> _mergeDedupFeatured(
       List<featured.Data> a,
@@ -176,6 +176,10 @@ class _MyHomePageState extends State<HomeDemo> {
     if (input.length == 9) return '971$input';
     return input; // fallback
   }
+
+
+
+
 
   Future<void> fetchLocationSuggestions(String query) async {
     String url = query.isEmpty
@@ -329,6 +333,9 @@ class _MyHomePageState extends State<HomeDemo> {
         _fetchSavedProperties();
       }
     });
+
+    selectedSort = "Newest";
+    _currentSortKey = "newest";
 
     // Initial data load
     getFeaturedProperties(forceRefresh: true);
@@ -851,23 +858,42 @@ class _MyHomePageState extends State<HomeDemo> {
                   child: ListView.builder(
                     itemCount: searchResults.length,
                     itemBuilder: (_, i) {
-                      final propertyModel.Property p =
-                      searchResults[i] as propertyModel.Property;
+                      final propertyModel.Property p = searchResults[i] as propertyModel.Property;
 
                       return ListTile(
                         leading: (p.media?.isNotEmpty ?? false)
-                            ? Image.network(p.media!.first.originalUrl ?? '',
-                            width: 50)
-                            : null,
-                        title: Text(p.title ?? 'No Title'),
+                            ? Image.network(
+                          p.media!.first.originalUrl ?? '',
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        )
+                            : const SizedBox(width: 50), // keeps layout stable when no image
+
+                        // FULL TITLE – no truncation
+                        title: Text(
+                          p.title ?? 'No Title',
+                          maxLines: 3,                    // allow up to 3 lines (or any number you want)
+                          overflow: TextOverflow.visible, // important: removes the "…" dots
+                          softWrap: true,                 // wraps naturally
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+
                         subtitle: Text(
-                            '${p.price ?? ''} AED • ${p.location ?? 'Unknown'}'),
+                          '${p.price ?? ''} AED • ${p.location ?? 'Unknown'}',
+                          style: const TextStyle(fontSize: 13),
+                        ),
+
+                        isThreeLine: true, // tells Flutter the tile can have 3+ lines
+
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  Featured_Detail(data: p.id.toString()),
+                              builder: (_) => Featured_Detail(data: p.id.toString()),
                             ),
                           );
                         },
@@ -2114,12 +2140,14 @@ class _MyHomePageState extends State<HomeDemo> {
                                               ),
                                               Text(
                                                 item.title.toString(),
-                                                style: TextStyle(
-                                                    fontSize: 16,
-                                                    height: 1.4),
-                                                overflow:
-                                                TextOverflow.ellipsis,
-                                                maxLines: 1,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  height: 1.4,
+
+                                                ),
+                                                maxLines: 3,                    // Allow up to 3 lines
+                                                overflow: TextOverflow.ellipsis, // Only show "..." if more than 3 lines
+                                                softWrap: true,                 // Important: wrap text naturally
                                               ),
                                               SizedBox(height: 5),
                                               Text(
@@ -2127,7 +2155,7 @@ class _MyHomePageState extends State<HomeDemo> {
                                                 style: TextStyle(
                                                   fontWeight:
                                                   FontWeight.bold,
-                                                  fontSize: 22,
+                                                  fontSize: 18,
                                                   height: 1.4,
                                                 ),
                                               ),
@@ -2153,27 +2181,67 @@ class _MyHomePageState extends State<HomeDemo> {
                                               ),
                                               SizedBox(height: 8),
                                               Row(
+                                                mainAxisAlignment: MainAxisAlignment.start,
                                                 children: [
-                                                  Image.asset(
-                                                      "assets/images/bed.png",
-                                                      height: 14),
-                                                  SizedBox(width: 5),
-                                                  Text(item.bedrooms
-                                                      .toString()),
-                                                  SizedBox(width: 10),
-                                                  Image.asset(
-                                                      "assets/images/bath.png",
-                                                      height: 14),
-                                                  SizedBox(width: 5),
-                                                  Text(item.bathrooms
-                                                      .toString()),
-                                                  SizedBox(width: 10),
-                                                  Image.asset(
-                                                      "assets/images/messure.png",
-                                                      height: 14),
-                                                  SizedBox(width: 5),
-                                                  Text(item.squareFeet
-                                                      .toString()),
+                                                  // === BEDS: Show only if bedrooms > 0 ===
+                                                  if (item.bedrooms != null && item.bedrooms! > 0) ...[
+                                                    Image.asset("assets/images/bed.png", height: 14),
+                                                    const SizedBox(width: 5),
+                                                    Text(
+                                                      "${item.bedrooms}",
+                                                      style: const TextStyle(fontSize: 13),
+                                                    ),
+                                                  ],
+
+                                                  // === BATHS: Show only if bathrooms > 0 and add spacing only if beds were shown ===
+                                                  if (item.bathrooms != null && item.bathrooms! > 0) ...[
+                                                    if (item.bedrooms != null && item.bedrooms! > 0) const SizedBox(width: 12),
+                                                    Image.asset("assets/images/bath.png", height: 14),
+                                                    const SizedBox(width: 5),
+                                                    Text(
+                                                      "${item.bathrooms}",
+                                                      style: const TextStyle(fontSize: 13),
+                                                    ),
+                                                  ],
+
+                                                  // === SIZE: Show only if displaySize is not empty ===
+                                                  if (item.displaySize.isNotEmpty) ...[
+                                                    // Add spacing only if at least one of beds/baths was shown
+                                                    if ((item.bedrooms != null && item.bedrooms! > 0) ||
+                                                        (item.bathrooms != null && item.bathrooms! > 0))
+                                                      const SizedBox(width: 12),
+                                                    Image.asset("assets/images/messure.png", height: 14),
+                                                    const SizedBox(width: 5),
+                                                    Text(
+                                                      item.displaySize,
+                                                      style: const TextStyle(fontSize: 13),
+                                                    ),
+
+                                                    // DLD Badge — only when actual DLD size is used
+                                                    if (item.dldPermitInfo?.propertySize != null &&
+                                                        num.tryParse(item.dldPermitInfo!.propertySize!
+                                                            .replaceAll(RegExp(r'[^0-9.]'), '')) !=
+                                                            null &&
+                                                        num.tryParse(item.dldPermitInfo!.propertySize!
+                                                            .replaceAll(RegExp(r'[^0-9.]'), ''))! >
+                                                            0)
+                                                      const Padding(
+                                                        padding: EdgeInsets.only(left: 6),
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(Icons.verified, color: Colors.blue, size: 14),
+                                                            Text(
+                                                              " DLD",
+                                                              style: TextStyle(
+                                                                fontSize: 10,
+                                                                color: Colors.blue,
+                                                                fontWeight: FontWeight.bold,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                  ],
                                                 ],
                                               ),
                                               /* SizedBox(height: 15),
@@ -2453,17 +2521,8 @@ class _MyHomePageState extends State<HomeDemo> {
           // ),
 
           IconButton(
-            tooltip: "Email",
             icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
-            onPressed: () {
-              showEmailAgentDialog(
-                context,
-                subtitle:
-                'Low Floor | Ready to Move-in | Available October 2025',
-                initialMessage:
-                'Hi, I found your property with ref: P20250910-RPQY on Akarat. Please contact me. Thank you.',
-              );
-            },
+            onPressed: () => showHomeContactDialog(context),
           ),
 
           Padding(

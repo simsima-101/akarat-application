@@ -1,7 +1,7 @@
 name: Akarat
 description: "A new Flutter project."
 publish_to: 'none'
-version: 1.0.13+2
+version: 1.0.13+3
 
 environment:
   sdk: ^3.6.1
@@ -108,3 +108,4 @@ flutter:
     - assets/images/alert_box_delete_icon.png
     - assets/images/ae.png
     - assets/images/google.png
+    - assets/images/about_main.png
