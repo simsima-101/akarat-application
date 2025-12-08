@@ -29,27 +29,6 @@ import '../services/favorite_service.dart';
 import 'ContactFormScreen.dart';
 import 'location_picker_screen.dart';
 
-// // Save full project for guest (fav_logout)
-// Future<void> _saveProjectFavoriteLocally(Map<String, dynamic> project) async {
-//   final prefs = await SharedPreferences.getInstance();
-//   final favList = prefs.getStringList('favorite_projects') ?? [];
-//   // Prevent duplicates
-//   if (!favList.any((item) => jsonDecode(item)['id'] == project['id'])) {
-//     favList.add(jsonEncode(project));
-//     await prefs.setStringList('favorite_projects', favList);
-//   }
-// }
-//
-// // Remove project from guest favorites
-// Future<void> _removeProjectFavoriteLocally(int projectId) async {
-//   final prefs = await SharedPreferences.getInstance();
-//   final favList = prefs.getStringList('favorite_projects') ?? [];
-//   favList.removeWhere((item) => jsonDecode(item)['id'] == projectId);
-//   await prefs.setStringList('favorite_projects', favList);
-// }
-
-// For logged-in users, call your API as you already do
-
 void main() {
   runApp(const Home());
 }
@@ -101,22 +80,7 @@ class _MyHomePageState extends State<HomeDemo> {
     if (_currentSortKey == 'newest') {
       int idOf(featured.Data d) => int.tryParse(d.id?.toString() ?? '') ?? 0;
       list.sort((a, b) => idOf(b).compareTo(idOf(a))); // newest first (id DESC)
-
-      // If you have a createdAt field, prefer it:
-      // int ts(featured.Data d) =>
-      //   DateTime.tryParse(d.createdAt ?? '')?.millisecondsSinceEpoch
-      //     ?? int.tryParse(d.id?.toString() ?? '') ?? 0;
-      // list.sort((a, b) => ts(b).compareTo(ts(a)));
     }
-
-    // Optional guard for price sorting if backend slips:
-    // if (_currentSortKey == 'price_asc' || _currentSortKey == 'price_desc') {
-    //   num priceOf(featured.Data d) =>
-    //       num.tryParse('${d.price}'.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
-    //   list.sort((a, b) => _currentSortKey == 'price_asc'
-    //       ? priceOf(a).compareTo(priceOf(b))
-    //       : priceOf(b).compareTo(priceOf(a)));
-    // }
   }
 
   final Map<String, String> sortMap = {
@@ -163,20 +127,6 @@ class _MyHomePageState extends State<HomeDemo> {
     }
     if (input.length == 9) return '971$input';
     return input; // fallback
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Refresh favorites when coming back from Fav_Logout
-    _refreshFavoritesIfNeeded();
-  }
-
-  void _refreshFavoritesIfNeeded() async {
-    final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
-    setState(() {
-      FavoriteService.loggedInFavorites = updatedFavorites;
-    });
   }
 
   bool loadingSavedProperties = true;
@@ -276,27 +226,37 @@ class _MyHomePageState extends State<HomeDemo> {
   void initState() {
     super.initState();
 
-    // Load token once, then fetch saved properties if logged in
-    _loadToken().then((_) {
-      if (_token.isNotEmpty) {
-        _fetchSavedProperties();
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        // Load token once, then fetch saved properties if logged in
+        _loadToken().then((_) {
+          if (_token.isNotEmpty) {
+            _fetchSavedProperties();
+          }
+        });
 
-    // Initial data load
-    getFeaturedProperties(forceRefresh: true);
+        // Initial data load
+        getFeaturedProperties(forceRefresh: true);
 
-    // Infinite scroll listener
-    _scrollController.addListener(() {
-      const threshold = 200.0;
-      final position = _scrollController.position;
-      if (position.pixels >= position.maxScrollExtent - threshold) {
-        if (!isLoading && nextPageUrl != null && nextPageUrl!.isNotEmpty) {
-          debugPrint("🟢 Triggering loadMore: $nextPageUrl");
-          getFeaturedProperties(loadMore: true);
-        }
-      }
-    });
+        // 1. Load full property details from server (images, price, etc.)
+        context.read<FavoriteProvider>().fetchSavedProperties();
+
+        // 2. Also do a fast sync of favorite IDs from provider (in case user added from another screen)
+        context.read<FavoriteProvider>().syncFromServer(merge: false);
+
+        // Infinite scroll listener
+        _scrollController.addListener(() {
+          const threshold = 200.0;
+          final position = _scrollController.position;
+          if (position.pixels >= position.maxScrollExtent - threshold) {
+            if (!isLoading && nextPageUrl != null && nextPageUrl!.isNotEmpty) {
+              debugPrint("🟢 Triggering loadMore: $nextPageUrl");
+              getFeaturedProperties(loadMore: true);
+            }
+          }
+        });
+      },
+    );
   }
 
   /// Loads the token from SecureStorage and updates state.
@@ -1529,6 +1489,8 @@ class _MyHomePageState extends State<HomeDemo> {
                                                                     favProvider
                                                                         .isFavorite(
                                                                             item.id!); // ✅ Only true for logged-in users
+
+                                                                // debugPrint("fav length :${favProvider.fav}");
 
                                                                 return IconButton(
                                                                   icon: Icon(

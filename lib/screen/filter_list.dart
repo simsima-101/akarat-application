@@ -232,12 +232,18 @@ class _FliterListState extends State<FliterList> {
           (index) => Data(
               500 + index * 100.0, yValues[index % yValues.length].toDouble()),
         );
-        // final filterProvider = context.read<FilterProvider>();
+        final filterProvider = context.read<FilterProvider>();
 
         _scrollController.addListener(() {
-          if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent - 300) {
-            // _fetchMore();
+          const threshold = 200.0;
+          final position = _scrollController.position;
+          if (position.pixels >= position.maxScrollExtent - threshold) {
+            if (!filterProvider.isFilterListFilterModelLoading &&
+                filterProvider.nextPageUrl != null &&
+                filterProvider.nextPageUrl!.isNotEmpty) {
+              debugPrint("🟢 Triggering loadMore: $filterProvider.nextPageUrl");
+              filterProvider.updateFilterCount(context, loadMore: true);
+            }
           }
         });
 
@@ -250,6 +256,12 @@ class _FliterListState extends State<FliterList> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _loadFavorites(); // ✅ Re-load favorites to keep UI in sync
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadLoginToken() async {
@@ -428,6 +440,7 @@ class _FliterListState extends State<FliterList> {
                                                     isUpdate: true);
                                                 resetState
                                                     .captureInitialSnapshot(); // NEW SNAPSHOT
+                                                _scrollController.jumpTo(0);
                                               }
                                         : null,
                                     child: resetState.isResetLoading
@@ -452,62 +465,6 @@ class _FliterListState extends State<FliterList> {
                   ),
                 ],
               ),
-
-              //Searchbar
-              // Responsive universal search bar
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              //   child: Container(
-              //     width: double.infinity,
-              //     height: 55,
-              //     decoration: BoxDecoration(
-              //       color: Colors.white,
-              //       borderRadius: BorderRadius.circular(30),
-              //       boxShadow: [
-              //         BoxShadow(
-              //           color: Colors.grey.withOpacity(0.2),
-              //           blurRadius: 6,
-              //           offset: Offset(0, 3),
-              //         ),
-              //       ],
-              //     ),
-              //     child: Row(
-              //       children: [
-              //         Expanded(
-              //           child: Container(
-              //             margin: const EdgeInsets.symmetric(horizontal: 8),
-              //             decoration: BoxDecoration(
-              //               border: Border.all(color: Colors.red.shade200),
-              //               borderRadius: BorderRadius.circular(30),
-              //             ),
-              //             padding: const EdgeInsets.symmetric(horizontal: 12),
-              //             height: 45,
-              //             child: Row(
-              //               children: [
-              //                 Icon(Icons.search, color: Colors.red),
-              //                 const SizedBox(width: 10),
-              //                 Expanded(
-              //                   child: TextField(
-              //                     controller: _searchController,
-              //                     decoration: InputDecoration(
-              //                       hintText: "Search for a locality, area or city",
-              //                       hintStyle: TextStyle(
-              //                         color: Colors.grey,
-              //                         fontSize: 14,
-              //                       ),
-              //                       border: InputBorder.none,
-              //                     ),
-              //                   ),
-              //                 ),
-              //
-              //               ],
-              //             ),
-              //           ),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
 
               //filter
               Padding(
@@ -811,6 +768,8 @@ class _FliterListState extends State<FliterList> {
 
                                             purposeState
                                                 .updateFilterCount(context);
+
+                                            _scrollController.jumpTo(0);
 
                                             Navigator.pop(context);
                                           },
@@ -1222,6 +1181,9 @@ class _FliterListState extends State<FliterList> {
                                             }
                                             propertyTypeState
                                                 .updateFilterCount(context);
+
+                                            _scrollController.jumpTo(0);
+
                                             // await _resetPagingAndFetch();
                                             Navigator.pop(context);
                                           },
@@ -1521,6 +1483,8 @@ class _FliterListState extends State<FliterList> {
                                             await filterProvider
                                                 .updateFilterCount(context);
 
+                                            _scrollController.jumpTo(0);
+
                                             Navigator.pop(
                                                 context); // Close the bottom sheet after showing result
                                           },
@@ -1813,6 +1777,8 @@ class _FliterListState extends State<FliterList> {
                                             await filterProvider
                                                 .updateFilterCount(context);
 
+                                            _scrollController.jumpTo(0);
+
                                             Navigator.pop(
                                                 context); // Close the bottom sheet after showing result
                                           },
@@ -2007,6 +1973,9 @@ class _FliterListState extends State<FliterList> {
 
                                           await filterProvider
                                               .updateFilterCount(context);
+
+                                          _scrollController.jumpTo(0);
+
                                           // await _resetPagingAndFetch();
 
                                           Navigator.pop(
@@ -2248,6 +2217,8 @@ class _FliterListState extends State<FliterList> {
                                             await filterProvider
                                                 .updateFilterCount(context);
 
+                                            _scrollController.jumpTo(0);
+
                                             // await _resetPagingAndFetch();
 
                                             Navigator.pop(
@@ -2423,6 +2394,8 @@ class _FliterListState extends State<FliterList> {
                                       );
                                       await filterProvider
                                           .updateFilterCount(context);
+
+                                      _scrollController.jumpTo(0);
                                     },
                                     child: Column(
                                       children: [
@@ -2558,7 +2531,8 @@ class _FliterListState extends State<FliterList> {
               //       ),
               //     )),
 
-              filterProvider.isFilterListFilterModelLoading
+              filterProvider.isFilterListFilterModelLoading &&
+                      filterProvider.filterModel == null
                   ? Expanded(
                       child: ListView.builder(
                         padding: const EdgeInsets.symmetric(
@@ -2588,33 +2562,38 @@ class _FliterListState extends State<FliterList> {
                         )
                       : Expanded(
                           child: ListView.builder(
+                            controller: _scrollController,
                             padding: const EdgeInsets.only(top: 0),
                             scrollDirection: Axis.vertical,
                             // physics: const NeverScrollableScrollPhysics(),
                             shrinkWrap: true,
                             // 👇 add one extra "row" for the loading spinner when fetching more
-                            itemCount:
-                                (filterProvider.filterModel?.data?.length ??
-                                        0) +
-                                    0,
-                            // (_isFetchingMore ? 1 : 0),
+                            itemCount: (filterProvider
+                                        .filterModel?.data?.length ??
+                                    0) +
+                                (filterProvider.nextPageUrl != null ? 1 : 0),
+
                             itemBuilder: (context, index) {
                               final items =
                                   filterProvider.filterModel?.data ?? [];
 
-                              // 👇 if we're fetching more and this is the extra last row, show a spinner
-                              // if (index == items.length) {
-                              //   return const Padding(
-                              //     padding: EdgeInsets.symmetric(vertical: 16),
-                              //     child: Center(
-                              //         child: CircularProgressIndicator()),
-                              //   );
-                              // }
+                              // 🔄 Show loader at end if next page exists
+                              if (index == items.length &&
+                                  filterProvider.nextPageUrl != null) {
+                                return Center(
+                                    child: const CircularProgressIndicator());
+                              } else if (index == items.length &&
+                                  filterProvider.nextPageUrl == null) {
+                                return const SizedBox
+                                    .shrink(); // Nothing more to show
+                              }
+
+                              // 🔐 Safety check (extra)
+                              if (index >= items.length)
+                                return const SizedBox.shrink();
 
                               final property = items[index];
 
-                              final bool isFavorited =
-                                  favoriteProperties.contains(property.id);
                               return Padding(
                                 padding: const EdgeInsets.only(
                                   left: 5,

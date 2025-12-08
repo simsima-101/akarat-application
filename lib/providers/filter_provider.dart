@@ -10,7 +10,7 @@ import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 import '../model/amenities.dart';
 import '../model/filtermodel.dart';
-import '../model/propertytypemodel.dart';
+import '../model/propertytypemodel.dart' hide Data;
 import '../services/api_service.dart';
 import '../utils/shared_preference_manager.dart';
 import 'location_picker_provider.dart';
@@ -152,7 +152,7 @@ class FilterProvider extends ChangeNotifier {
   final List<int> yValues = [5000, 3000, 9000, 7000, 10000, 1500, 4000];
 
 // Chart data
-  late List<Data>? chartData;
+  late List<Datas>? chartData;
 
   final List<Dataarea> chartDataarea = <Dataarea>[
     Dataarea(x: 500, y: 5000),
@@ -310,6 +310,7 @@ class FilterProvider extends ChangeNotifier {
   }
 
   Uri buildFilterUri({
+    String? page,
     List<String?>? search,
     String? propertyType,
     String? furnishedStatus,
@@ -335,6 +336,8 @@ class FilterProvider extends ChangeNotifier {
 
     final is7PlusBedroomSelected = bedrooms?.contains('7+') ?? false;
     final is7PlusBathroomSelected = bathrooms?.contains('7+') ?? false;
+
+    if (page != null && page.isNotEmpty) queryParams['page'] = page;
 
     if (completions_min != null && completions_min.isNotEmpty)
       queryParams['completion_min'] = completions_min;
@@ -394,8 +397,19 @@ class FilterProvider extends ChangeNotifier {
     );
   }
 
-  Future<void> updateFilterCount(BuildContext context) async {
+  String? nextPageUrl;
+
+  Future<void> updateFilterCount(
+    BuildContext context, {
+    bool loadMore = false,
+  }) async {
+    if (isFilterListFilterModelLoading) return;
     try {
+      // Stop if no more pages on loadMore
+      if (loadMore && (nextPageUrl == null || nextPageUrl!.isEmpty)) {
+        debugPrint("🔴 No more pages to load.");
+        return;
+      }
       isFilterListFilterModelLoading = true;
       notifyListeners();
       final amenitiesList = selectedAmenitiesId;
@@ -413,7 +427,29 @@ class FilterProvider extends ChangeNotifier {
 
       debugPrint(locationNames.join(','));
 
+      String currentPage;
+      // Build URL to ALWAYS include sort_by
+      if (loadMore) {
+        // Derive next page from meta; don't trust links.next because it may drop sort
+        final meta = filterModel?.meta;
+        final current = meta?.currentPage ?? 1;
+        final last = meta?.lastPage ?? 1;
+
+        if (current >= last) {
+          isLoading = false;
+          notifyListeners();
+          debugPrint("🔴 Already at last page.");
+          return;
+        }
+
+        final nextPage = current + 1;
+        currentPage = nextPage.toString();
+      } else {
+        currentPage = "1";
+      }
+
       final uri = buildFilterUri(
+        page: currentPage,
         agencyName: agentOrAgencyController.text.trim().toLowerCase(),
         agentName: agentOrAgencyController.text.trim().toLowerCase(),
         search: locationNames,
@@ -444,12 +480,42 @@ class FilterProvider extends ChangeNotifier {
         final data = jsonDecode(response.body);
         final feature = FilterResponseModel.fromJson(data);
 
-        filterModel = feature.data!;
+        final List<Data> incoming = feature.data?.data ?? <Data>[];
+        final List<Data> currentList =
+            loadMore ? (filterModel?.data ?? <Data>[]) : <Data>[];
+
+        // Merge + de-dupe by id
+        final merged = mergeDedupData(currentList, incoming);
+
+        filterModel = FilterModel(
+          data: merged,
+          links: feature.data?.links,
+          meta: feature.data?.meta,
+        );
+
+        // filterModel = feature.data!;
         debugPrint('✅ filter modell count: ${filterModel?.data?.length}');
 
-        filterResultCount = feature.data?.meta?.total ?? 0;
+        filterResultCount = filterModel?.meta?.total ?? 0;
         displayedFilterResultCount = filterResultCount;
         debugPrint('✅ Updated filter count: $filterResultCount');
+
+        // Compute a safe nextPageUrl that preserves sort_by
+        final m = feature.data?.meta;
+        if (m != null) {
+          final cur = m.currentPage ?? 1;
+          final last = m.lastPage ?? 1;
+          nextPageUrl = (cur < last)
+              ? ApiService.buildUri(
+                  'properties',
+                  query: {
+                    'page': '${cur + 1}',
+                  },
+                ).toString()
+              : null;
+        } else {
+          nextPageUrl = null;
+        }
       } else {
         debugPrint("❌ API Error: ${response.statusCode}");
       }
@@ -458,6 +524,19 @@ class FilterProvider extends ChangeNotifier {
     }
     isFilterListFilterModelLoading = false;
     notifyListeners();
+  }
+
+  List<Data> mergeDedupData(List<Data> a, List<Data> b) {
+    final map = <int, Data>{};
+
+    for (Data item in [...a, ...b]) {
+      final id = item.id ?? -1;
+      if (id != -1) {
+        map[id] = item; // later item replaces old one
+      }
+    }
+
+    return map.values.toList();
   }
 
   Future<void> propertyApi(String purpose) async {
@@ -809,8 +888,8 @@ class FilterProvider extends ChangeNotifier {
     // Build chart data
     chartData = List.generate(
       96,
-      (index) =>
-          Data(500 + index * 100.0, yValues[index % yValues.length].toDouble()),
+      (index) => Datas(
+          500 + index * 100.0, yValues[index % yValues.length].toDouble()),
     );
 
     // Now load initial data (property types + amenities)
@@ -1343,9 +1422,9 @@ class Dataarea {
   final double y;
 }
 
-class Data {
+class Datas {
   final double x, y;
-  Data(this.x, this.y);
+  Datas(this.x, this.y);
 }
 
 class FilterSnapshot {
