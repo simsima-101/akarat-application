@@ -205,19 +205,6 @@ class _MyHomePageState extends State<HomeDemo> {
     }
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Refresh favorites when coming back from Fav_Logout
-    _refreshFavoritesIfNeeded();
-  }
-
-  void _refreshFavoritesIfNeeded() async {
-    final updatedFavorites = await FavoriteService.fetchApiFavorites(token);
-    setState(() {
-      FavoriteService.loggedInFavorites = updatedFavorites;
-    });
-  }
 
   bool loadingSavedProperties = true;
   List<Property> savedProperties = [];
@@ -339,6 +326,13 @@ class _MyHomePageState extends State<HomeDemo> {
 
     // Initial data load
     getFeaturedProperties(forceRefresh: true);
+
+
+    // 1. Load full property details from server (images, price, etc.)
+    context.read<FavoriteProvider>().fetchSavedProperties();
+
+// 2. Also do a fast sync of favorite IDs from provider (in case user added from another screen)
+    context.read<FavoriteProvider>().syncFromServer(merge: false);
 
     // Infinite scroll listener
     _scrollController.addListener(() {
@@ -1819,12 +1813,13 @@ class _MyHomePageState extends State<HomeDemo> {
 
                                                       // ❤️ Favorite Icon
                                                       // ❤️ Favorite Icon
+
+                                                      // ❤️ Favorite Icon
                                                       Positioned(
                                                         top: 10,
                                                         right: 10,
                                                         child: Material(
-                                                          color:
-                                                          Colors.white,
+                                                          color: Colors.white,
                                                           shape:
                                                           const CircleBorder(),
                                                           elevation: 4,
@@ -1836,10 +1831,12 @@ class _MyHomePageState extends State<HomeDemo> {
                                                               final isLoggedIn =
                                                                   token
                                                                       .isNotEmpty;
-                                                              final isFav =
-                                                                  isLoggedIn &&
-                                                                      favProvider
-                                                                          .isFavorite(item.id!); // ✅ Only true for logged-in users
+                                                              final isFav = isLoggedIn &&
+                                                                  favProvider
+                                                                      .isFavorite(
+                                                                      item.id!); // ✅ Only true for logged-in users
+
+                                                              // debugPrint("fav length :${favProvider.fav}");
 
                                                               return IconButton(
                                                                 icon: Icon(
@@ -1862,7 +1859,8 @@ class _MyHomePageState extends State<HomeDemo> {
                                                                     showDialog(
                                                                       context:
                                                                       context,
-                                                                      builder: (ctx) =>
+                                                                      builder:
+                                                                          (ctx) =>
                                                                           Dialog(
                                                                             backgroundColor:
                                                                             Colors.transparent,
@@ -1870,13 +1868,19 @@ class _MyHomePageState extends State<HomeDemo> {
                                                                             EdgeInsets.zero,
                                                                             child:
                                                                             Container(
-                                                                              height: 70,
-                                                                              margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
-                                                                              decoration: BoxDecoration(
+                                                                              height:
+                                                                              70,
+                                                                              margin: const EdgeInsets.only(
+                                                                                  bottom: 80,
+                                                                                  left: 20,
+                                                                                  right: 20),
+                                                                              decoration:
+                                                                              BoxDecoration(
                                                                                 color: Colors.red,
                                                                                 borderRadius: BorderRadius.circular(10),
                                                                               ),
-                                                                              child: Stack(
+                                                                              child:
+                                                                              Stack(
                                                                                 clipBehavior: Clip.none,
                                                                                 children: [
                                                                                   Positioned(
@@ -1939,10 +1943,12 @@ class _MyHomePageState extends State<HomeDemo> {
                                                                       context);
 
                                                                   if (!success) {
-                                                                    ScaffoldMessenger.of(context)
+                                                                    ScaffoldMessenger.of(
+                                                                        context)
                                                                         .showSnackBar(
                                                                       const SnackBar(
-                                                                          content: Text("Failed to update favorite.")),
+                                                                          content:
+                                                                          Text("Failed to update favorite.")),
                                                                     );
                                                                   }
                                                                 },
