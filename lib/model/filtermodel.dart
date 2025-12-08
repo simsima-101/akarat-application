@@ -69,33 +69,33 @@ class Data {
   String? agencyLogo;
   List<Media>? media;
   bool? saved;
-
   String? agentName;
   String? agentImage;
 
+  // NEW: Accurate size from backend
+  double? propertySizeSqft;
 
-  Data(
-      {this.id,
-        this.title,
-        this.price,
-        this.address,
-        this.location,
-        this.phoneNumber,
-        this.whatsapp,
-        this.email,
-        this.paymentPeriod,
-        this.bedrooms,
-        this.bathrooms,
-        this.squareFeet,
-        this.media,
-        this.saved,
-        this.agentName,
-        this.agentImage,
-        this.postedOn,
-        this.agencyLogo,
-
-
-      });
+  Data({
+    this.id,
+    this.title,
+    this.price,
+    this.address,
+    this.location,
+    this.phoneNumber,
+    this.whatsapp,
+    this.email,
+    this.paymentPeriod,
+    this.bedrooms,
+    this.bathrooms,
+    this.squareFeet,
+    this.media,
+    this.saved,
+    this.agentName,
+    this.agentImage,
+    this.postedOn,
+    this.agencyLogo,
+    this.propertySizeSqft, // ← NEW FIELD
+  });
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -110,13 +110,23 @@ class Data {
     bathrooms = json['bathrooms'];
     squareFeet = json['square_feet'];
     saved = json['saved'];
-    agentName = json['agent'];       // ✅ map from JSON
+    agentName = json['agent'];
     agentImage = json['agent_image'];
     postedOn = json['posted_on'];
     agencyLogo = json['agency_logo'];
     media = json['media'] != null
         ? List<Media>.from(json['media'].map((v) => Media.fromJson(v)))
         : [];
+
+    // PARSE propertySizeSqft safely
+    final sizeVal = json['propertySizeSqft'];
+    if (sizeVal != null) {
+      if (sizeVal is num) {
+        propertySizeSqft = sizeVal.toDouble();
+      } else if (sizeVal is String) {
+        propertySizeSqft = double.tryParse(sizeVal.trim());
+      }
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -132,14 +142,45 @@ class Data {
     data['bedrooms'] = bedrooms;
     data['bathrooms'] = bathrooms;
     data['square_feet'] = squareFeet;
-    data['agent'] = agentName;         // ✅ include in JSON
+    data['agent'] = agentName;
     data['agent_image'] = agentImage;
     data['posted_on'] = postedOn;
     data['agency_logo'] = agencyLogo;
+    data['propertySizeSqft'] = propertySizeSqft; // ← include in JSON
     if (media != null) {
       data['media'] = media!.map((v) => v.toJson()).toList();
     }
     return data;
+  }
+
+  // SMART SIZE GETTER - NO DECIMAL POINTS EVER
+  String get displaySize {
+    // 1. Priority: propertySizeSqft (accurate double) → always round to whole number
+    if (propertySizeSqft != null && propertySizeSqft! > 0) {
+      final size = propertySizeSqft!.round(); // ← Rounds to nearest integer
+      final formatted = size.toString().replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+            (m) => '${m[1]},',
+      );
+      return '$formatted sqft';
+    }
+
+    // 2. Fallback: old squareFeet string → clean and round
+    if (squareFeet?.isNotEmpty == true && squareFeet != '0' && squareFeet != 'null') {
+      final clean = squareFeet!.replaceAll(RegExp(r'[^0-9.]'), '');
+      final size = num.tryParse(clean);
+      if (size != null && size > 0) {
+        final rounded = size.round();
+        final formatted = rounded.toString().replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+              (m) => '${m[1]},',
+        );
+        return '$formatted sqft';
+      }
+    }
+
+    // Hide if no valid size
+    return '';
   }
 }
 
@@ -194,15 +235,16 @@ class Meta {
   int? to;
   int? total;
 
-  Meta(
-      {this.currentPage,
-        this.from,
-        this.lastPage,
-        this.links,
-        this.path,
-        this.perPage,
-        this.to,
-        this.total});
+  Meta({
+    this.currentPage,
+    this.from,
+    this.lastPage,
+    this.links,
+    this.path,
+    this.perPage,
+    this.to,
+    this.total,
+  });
 
   Meta.fromJson(Map<String, dynamic> json) {
     currentPage = json['current_page'];
@@ -253,8 +295,6 @@ class MetaLinks {
     data['active'] = active;
     return data;
   }
-
-
 }
 
 class FilterParams {
@@ -291,7 +331,3 @@ class FilterParams {
     };
   }
 }
-
-
-
-

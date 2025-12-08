@@ -129,7 +129,7 @@ class _Fav_LoginState extends State<Fav_Login> {
     // Fetch from API
     try {
       final response = await http.get(
-        ApiService.buildUri('saved-property-list'),
+        ApiService.buildUri('saved-properties'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json; charset=UTF-8',

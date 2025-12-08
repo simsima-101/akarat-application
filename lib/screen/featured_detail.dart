@@ -2517,7 +2517,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
   Widget _planBox(String value, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+      height: 120, // Fixed height → all boxes same size
+      padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F7F7),
         borderRadius: BorderRadius.circular(14),
@@ -2529,20 +2530,24 @@ class _Featured_DetailState extends State<Featured_Detail> {
           Text(
             value,
             style: const TextStyle(
-              fontSize: 22,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
-              letterSpacing: 0.2,
+              letterSpacing: 0.3,
             ),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             label,
             textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 12.8,
               fontWeight: FontWeight.w600,
               color: Colors.grey[700],
+              height: 1.3,
             ),
           ),
         ],

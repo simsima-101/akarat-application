@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
-import '../model/agencypropertiesmodel.dart'; // for Property
+import '../model/propertymodel.dart';
 
 class ApiService {
   // =========================================================
@@ -776,17 +776,34 @@ class ApiService {
   // =========================================================
   // Properties & other existing calls
   // =========================================================
+  /// Fetch authenticated user's saved/favorite properties from the correct endpoint.
+  /// Returns a list of [Property] objects with `saved = true` already set.
+  /// Uses the correct endpoint: `/saved-properties` (Laravel API resource route)
+  ///
+  /// ← FIXED: Previously used deprecated/broken `/saved-properties` → 500 error
+  /// → Now uses current backend route → 200 OK + proper pagination structure
   static Future<List<Property>> getSavedProperties(String token) async {
-    final resp = await _getAuth('/saved-property-list', token);
+    final resp = await _getAuth('/saved-properties', token);
+
     if (resp.statusCode == 200 && _looksJson(resp)) {
-      final decoded = _decodeMap(resp.body);
-      final list = (decoded['data'] != null && decoded['data']['data'] != null)
-          ? (decoded['data']['data'] as List<dynamic>)
+      final Map<String, dynamic> decoded = _decodeMap(resp.body);
+
+      // Backend structure: { data: { data: [...] } } due to pagination
+      final List<dynamic> list = decoded['data']?['data'] is List
+          ? decoded['data']['data']
           : <dynamic>[];
-      return list.map((e) => Property.fromJson(e)).toList();
+
+      return list.map((e) {
+        final p = Property.fromJson(e as Map<String, dynamic>);
+        p.saved = true;  // Mark as saved locally
+        return p;
+      }).toList();
     }
+
+    // Better error message for debugging
     throw Exception(
-      'Failed to get saved properties: ${resp.statusCode} ${resp.body}',
+      'Failed to load saved properties: ${resp.statusCode}\n'
+          'Response: ${resp.body.substring(0, resp.body.length.clamp(0, 200))}...',
     );
   }
 

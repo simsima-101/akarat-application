@@ -2888,30 +2888,31 @@ class _FliterListState extends State<FliterList> {
                                           ),
                                           SizedBox(height: 8),
                                           Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8.0),
+                                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                             child: Row(
                                               children: [
-                                                Image.asset(
-                                                    "assets/images/bed.png",
-                                                    height: 13),
-                                                SizedBox(width: 5),
-                                                Text(property.bedrooms
-                                                    .toString()),
-                                                SizedBox(width: 10),
-                                                Image.asset(
-                                                    "assets/images/bath.png",
-                                                    height: 13),
-                                                SizedBox(width: 5),
-                                                Text(property.bathrooms
-                                                    .toString()),
-                                                SizedBox(width: 10),
-                                                Image.asset(
-                                                    "assets/images/messure.png",
-                                                    height: 13),
-                                                SizedBox(width: 5),
-                                                Text(property.squareFeet
-                                                    .toString()),
+                                                Image.asset("assets/images/bed.png", height: 13),
+                                                const SizedBox(width: 5),
+                                                Text(property.bedrooms.toString()),
+                                                const SizedBox(width: 10),
+
+                                                Image.asset("assets/images/bath.png", height: 13),
+                                                const SizedBox(width: 5),
+                                                Text(property.bathrooms.toString()),
+                                                const SizedBox(width: 10),
+
+                                                // SMART SIZE: Uses displaySize getter from Data class
+                                                if (property.displaySize.isNotEmpty) ...[
+                                                  Image.asset("assets/images/messure.png", height: 13),
+                                                  const SizedBox(width: 5),
+                                                  Text(
+                                                    property.displaySize,
+                                                    style: const TextStyle(
+
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+                                                ],
                                               ],
                                             ),
                                           ),
