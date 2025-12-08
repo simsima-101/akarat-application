@@ -1,8 +1,7 @@
 // lib/providers/favorite_provider.dart
 import 'dart:convert';
-import 'dart:io' show Platform;
 
-import 'package:flutter/foundation.dart';
+import 'package:Akarat/model/propertymodel.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,6 +20,67 @@ class FavoriteProvider with ChangeNotifier {
   Set<int> get allFavorites => _favoriteIds;
   int get favoriteCount => _favoriteIds.length;
   bool isFavorite(int id) => _favoriteIds.contains(id);
+
+  bool isLoading = false;
+
+  List<Property> savedProperties = [];
+
+  // ✅ Fetch server list → **merge** provider → update UI list
+  Future<void> fetchSavedProperties() async {
+    isLoading = true;
+    notifyListeners();
+    final token = await SecureStorage.getToken();
+
+    if (token == null || token!.isEmpty) {
+      return;
+    }
+
+    final base = FavoriteProvider.apiBase;
+    try {
+      final response = await http.get(
+        Uri.parse('$base/saved-property-list'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        final List<Property> props = (data['data']['data'] as List).map((e) {
+          final p = Property.fromJson(e);
+          p.saved = true;
+          return p;
+        }).toList();
+
+        int? toInt(dynamic v) {
+          if (v == null) return null;
+          if (v is int) return v;
+          if (v is String) return int.tryParse(v);
+          return null;
+        }
+
+        final ids = (data['data']['data'] as List)
+            .map((e) => toInt(e['id']) ?? toInt(e['property_id']))
+            .whereType<int>();
+
+        // ✅ Merge (not replace) to avoid wiping optimistic items
+        await mergeFavoritesFromIds(ids);
+
+        savedProperties = props;
+      } else {
+        debugPrint(
+            '❌ Failed to fetch saved properties: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('❌ Error: $e');
+    }
+
+    isLoading = false;
+    notifyListeners();
+  }
 
   // ---------------- Local cache (guest mode support) ----------------
   Future<void> loadFavorites() async {
@@ -99,7 +159,8 @@ class FavoriteProvider with ChangeNotifier {
   void addFavorite(int id, BuildContext context, {bool showSnackBar = true}) {
     if (_favoriteIds.add(id)) {
       _saveToPrefs();
-      if (showSnackBar) _showSnackBar(context, "Added to favorites", Colors.green);
+      if (showSnackBar)
+        _showSnackBar(context, "Added to favorites", Colors.green);
       notifyListeners();
     }
   }
@@ -113,20 +174,20 @@ class FavoriteProvider with ChangeNotifier {
 
   /// Back-compat shim (delegates to unified method).
   Future<bool> toggleFavoriteWithApi(
-      int id,
-      String _unusedToken,
-      BuildContext context, {
-        bool showSnackBar = true,
-      }) {
+    int id,
+    String _unusedToken,
+    BuildContext context, {
+    bool showSnackBar = true,
+  }) {
     return toggleFavoriteUnified(id, context, showSnackBar: showSnackBar);
   }
 
   /// Pure-local toggle (guest flows)
   Future<void> toggleFavorite(
-      int id,
-      BuildContext context, {
-        bool showSnackBar = true,
-      }) async {
+    int id,
+    BuildContext context, {
+    bool showSnackBar = true,
+  }) async {
     await _applyLocalToggle(id);
     if (showSnackBar) {
       final added = _favoriteIds.contains(id);
@@ -154,10 +215,10 @@ class FavoriteProvider with ChangeNotifier {
 
   // ---------------- The ONE method your UI should call ----------------
   Future<bool> toggleFavoriteUnified(
-      int id,
-      BuildContext context, {
-        bool showSnackBar = true,
-      }) async {
+    int id,
+    BuildContext context, {
+    bool showSnackBar = true,
+  }) async {
     final token = await _loadToken();
 
     // Guest → local only (instant flip)
@@ -167,7 +228,9 @@ class FavoriteProvider with ChangeNotifier {
       if (showSnackBar) {
         _showSnackBar(
           context,
-          willBeSaved ? "Added to favorites (local)" : "Removed from favorites (local)",
+          willBeSaved
+              ? "Added to favorites (local)"
+              : "Removed from favorites (local)",
           willBeSaved ? Colors.green : Colors.red,
         );
       }
@@ -199,7 +262,8 @@ class FavoriteProvider with ChangeNotifier {
     } catch (e) {
       // Rollback on network error
       await _applyLocalSet(id, !optimisticWillBeSaved);
-      if (showSnackBar) _showSnackBar(context, "Network error updating favorites", Colors.red);
+      if (showSnackBar)
+        _showSnackBar(context, "Network error updating favorites", Colors.red);
       return false;
     }
 
@@ -235,7 +299,9 @@ class FavoriteProvider with ChangeNotifier {
       // Rollback on auth error
       await _applyLocalSet(id, !optimisticWillBeSaved);
       await SecureStorage.deleteToken(); // invalidate bad token
-      if (showSnackBar) _showSnackBar(context, "Session expired. Please log in again.", Colors.red);
+      if (showSnackBar)
+        _showSnackBar(
+            context, "Session expired. Please log in again.", Colors.red);
       return false;
     }
 

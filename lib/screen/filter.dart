@@ -1318,8 +1318,8 @@ class _FilterDemoState extends State<FilterDemo> {
                         primaryYAxis: NumericAxis(isVisible: false),
                         plotAreaBorderWidth: 0,
                         plotAreaBackgroundColor: Colors.transparent,
-                        series: <ColumnSeries<Data, double>>[
-                          ColumnSeries<Data, double>(
+                        series: <ColumnSeries<Datas, double>>[
+                          ColumnSeries<Datas, double>(
                             trackColor: Colors.transparent,
                             //color: Color.fromARGB(255, 126, 184, 253),
                             //opacity: 0.5,
@@ -1332,9 +1332,9 @@ class _FilterDemoState extends State<FilterDemo> {
                               selectionController:
                                   filterProvider.priceRangeController,
                             ),
-                            xValueMapper: (Data sales, int index) => sales.x,
-                            yValueMapper: (Data sales, int index) => sales.y,
-                            pointColorMapper: (Data sales, int index) {
+                            xValueMapper: (Datas sales, int index) => sales.x,
+                            yValueMapper: (Datas sales, int index) => sales.y,
+                            pointColorMapper: (Datas sales, int index) {
                               return const Color.fromARGB(255, 37, 117, 212);
                             },
                             // color: const Color.fromRGBO(255, 255, 255, 0),
