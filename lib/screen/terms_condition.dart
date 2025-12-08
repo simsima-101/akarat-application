@@ -509,6 +509,7 @@ class _TermsConditionState extends State<TermsCondition> {
                         onPressed: () => Navigator.pop(context),
                         child: const Text(
                           "Cancel",
+
                           style: TextStyle(color: Colors.red), // red text
                         ),
                       ),
