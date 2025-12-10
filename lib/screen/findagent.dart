@@ -17,6 +17,8 @@ import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'login.dart';
 
+import '../screen/ContactFormScreen.dart';
+
 
 const String kApiBase = 'akarat.com';
 
@@ -217,7 +219,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   // ADD THIS METHOD – fixes the "List<dynamic> is not a subtype of String?" crash
   Future<AgentsModel?> fetchAgentDetails(int agentId) async {
     try {
-      final uri = Uri.https('qa.akarat.com', '/api/agents/$agentId');
+      final uri = Uri.https('akarat.com', '/api/agents/$agentId');
       debugPrint('Fetching agent details: $uri');
 
       final response = await http.get(uri);
@@ -268,7 +270,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     };
 
 
-    final uri = Uri.https('qa.akarat.com', '/api/agents', qp);
+    final uri = Uri.https('akarat.com', '/api/agents', qp);
     debugPrint('🌐 [Agents] GET $uri (loadMore=$loadMore, requestedPage=$requestedPage)');
 
     try {
@@ -388,7 +390,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     };
 
 
-    final uri = Uri.https('qa.akarat.com', '/api/companies', qp);
+    final uri = Uri.https('akarat.com', '/api/companies', qp);
 
     debugPrint('🌐 [Companies] GET $uri (loadMore=$loadMore, requestedPage=$requestedPage)');
 
@@ -1190,41 +1192,8 @@ Container buildMyNavBar(BuildContext context) {
         ),
 
         IconButton(
-          tooltip: "Email",
           icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
-          onPressed: () async {
-            final Uri emailUri = Uri.parse(
-              'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
-            );
-
-            if (await canLaunchUrl(emailUri)) {
-              await launchUrl(emailUri);
-            } else {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  backgroundColor: Colors.white, // White dialog container
-                  title: const Text(
-                    'Email not available',
-                    style: TextStyle(color: Colors.black), // Title in black
-                  ),
-                  content: const Text(
-                    'No email app is configured on this device. Please add a mail account first.',
-                    style: TextStyle(color: Colors.black), // Content in black
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text(
-                        'OK',
-                        style: TextStyle(color: Colors.red), // Red "OK" text
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-          },
+          onPressed: () => showHomeContactDialog(context),
         ),
 
         Padding(

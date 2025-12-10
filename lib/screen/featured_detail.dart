@@ -980,7 +980,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
     if (ded.isEmpty) return null;
 
     final url =
-        "https://qa.akarat.com/api/validate-listing/$ded/567315?isGenerateQrCode=true";
+        "https://akarat.com/api/validate-listing/$ded/567315?isGenerateQrCode=true";
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -1052,7 +1052,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
     }
 
     final url =
-        'https://qa.akarat.com/api/validate-listing/$permitNumber/$ded?isGenerateQrCode=true';
+        'https://akarat.com/api/validate-listing/$permitNumber/$ded?isGenerateQrCode=true';
 
     try {
       final response =
@@ -1382,7 +1382,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
               // EMAIL
               Expanded(
                 child: GestureDetector(
-                  onTap: _showEmailAgentDialog,
+          onTap: () => showHomeContactDialog(context),
                   child: Container(
                     height: 46,
                     decoration: BoxDecoration(

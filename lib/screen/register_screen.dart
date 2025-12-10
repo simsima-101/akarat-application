@@ -13,7 +13,7 @@ import '../services/profile_cache.dart';
 import '../services/session.dart';
 import 'home.dart';
 import 'login.dart';
-
+import 'terms_condition.dart';
 const String _IOS_CLIENT_ID =
     '370139668712-ema9n0o9vhq25nbqu771v5c71ehivolf.apps.googleusercontent.com';
 
@@ -565,6 +565,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         const SizedBox(height: 16),
 
         // ✅ Checkbox + text in same row, nicely aligned
+        // Inside _buildScreenContent → replace the whole Row with Checkbox + RichText
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -588,7 +589,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 text: TextSpan(
                   style: const TextStyle(
                     color: Colors.black,
-                    fontSize: 14, // a bit smaller for better fit
+                    fontSize: 14,
                   ),
                   children: [
                     const TextSpan(text: 'I agree '),
@@ -600,7 +601,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          // Open T&C
+                          // Navigate to Terms & Conditions screen
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const TermsCondition(),
+                            ),
+                          );
                         },
                     ),
                   ],

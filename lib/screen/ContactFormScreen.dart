@@ -51,7 +51,7 @@ Future<void> showHomeContactDialog(BuildContext context) async {
       }) async {
         try {
           final response = await http.post(
-            Uri.parse("https://qa.akarat.com/api/contact-akarat"),
+            Uri.parse("https://akarat.com/api/contact-akarat"),
             headers: {
               "Accept": "application/json",
               "X-Device-ID": "8B368203-14FE-47F6-98C8-9933CB0AE73D",

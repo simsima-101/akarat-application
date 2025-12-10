@@ -650,7 +650,7 @@ class _About_AgencyState extends State<About_Agency> {
               // EMAIL - Fixed: uses correct method
               Expanded(
                 child: GestureDetector(
-                  onTap: _sendCompanyEmailInquiry,
+                  onTap: () => showHomeContactDialog(context),
                   child: Container(
                     height: 46,
                     decoration: BoxDecoration(
@@ -1185,42 +1185,42 @@ class _About_AgencyState extends State<About_Agency> {
 
                           const SizedBox(height: 12),
                           // RERA
-                          Padding(
-                            padding:
-                            const EdgeInsets.symmetric(
-                                horizontal: 10.0),
-                            child: Row(
-                              children: const [
-                                Text(
-                                  "RERA",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          Padding(
-                            padding:
-                            const EdgeInsets.symmetric(
-                                horizontal: 10.0),
-                            child: Row(
-                              children: [
-                                Text(
-                                  agencyDetailmodel!.rera
-                                      .toString(),
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.black,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          // Padding(
+                          //   padding:
+                          //   const EdgeInsets.symmetric(
+                          //       horizontal: 10.0),
+                          //   child: Row(
+                          //     children: const [
+                          //       Text(
+                          //         "RERA",
+                          //         style: TextStyle(
+                          //           fontSize: 16,
+                          //           color: Colors.grey,
+                          //           letterSpacing: 0.5,
+                          //         ),
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
+                          // const SizedBox(height: 5),
+                          // Padding(
+                          //   padding:
+                          //   const EdgeInsets.symmetric(
+                          //       horizontal: 10.0),
+                          //   child: Row(
+                          //     children: [
+                          //       Text(
+                          //         agencyDetailmodel!.rera
+                          //             .toString(),
+                          //         style: const TextStyle(
+                          //           fontSize: 15,
+                          //           color: Colors.black,
+                          //           letterSpacing: 0.5,
+                          //         ),
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
                           const SizedBox(height: 20),
                         ],
                       ),

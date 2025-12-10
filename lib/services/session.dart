@@ -157,23 +157,36 @@ class Session {
     }
   }
 
-  /// Update profile locally (after editing in app)
+
+  /// Update profile (e.g. after editing name/email)
   Future<void> updateProfile({
     String? userName,
     String? userEmail,
     String? firstName,
     String? lastName,
   }) async {
-    if (userName?.trim().isNotEmpty == true) _userName = userName!.trim();
-    if (userEmail?.trim().isNotEmpty == true) _userEmail = userEmail!.trim();
-    if (firstName?.trim().isNotEmpty == true) _firstName = firstName!.trim();
-    if (lastName?.trim().isNotEmpty == true) _lastName = lastName!.trim();
+    if (userName?.trim().isNotEmpty == true) {
+      _userName = userName!.trim();
+    }
+    if (userEmail?.trim().isNotEmpty == true) {
+      _userEmail = userEmail!.trim();
+    }
+    if (firstName?.trim().isNotEmpty == true) {
+      _firstName = firstName!.trim();
+    }
+    // if (lastName?.trim().isNotEmpty == true) {
+    _lastName = lastName!.trim();
+    // }
 
+    // Rebuild full name if needed
     if (_userName == null || _userName!.isEmpty || _userName == 'User') {
-      _userName = [_firstName ?? '', _lastName ?? ''].where((s) => s.isNotEmpty).join(' ');
+      _userName = [_firstName ?? '', _lastName ?? '']
+          .where((s) => s.isNotEmpty)
+          .join(' ');
       if (_userName!.isEmpty) _userName = 'User';
     }
 
+    // Save updated data
     await Future.wait([
       SecureStorage.saveUserName(_userName!),
       if (_userEmail != null) SecureStorage.saveUserEmail(_userEmail!),
@@ -181,11 +194,7 @@ class Session {
       if (_lastName != null) SecureStorage.saveLastName(_lastName!),
     ]);
 
-    if (kDebugMode) {
-      debugPrint('PROFILE UPDATED LOCALLY');
-      debugPrint('   → New Name:  $_userName');
-      debugPrint('   → New Email: $_userEmail');
-    }
+    if (kDebugMode) debugPrint('Profile updated: $_userName');
   }
 
   /// Full logout

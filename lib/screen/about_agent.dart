@@ -605,7 +605,7 @@ class _AboutAgentState extends State<AboutAgent> {
     // 👉 This check must be OUTSIDE the "if (agentDetail == null)"
     String imageUrl = agentDetail?.image?.toString().trim() ?? '';
     if (imageUrl.isNotEmpty && !imageUrl.startsWith('http')) {
-      imageUrl = 'https://qa.akarat.com$imageUrl';
+      imageUrl = 'https://akarat.com$imageUrl';
     }
 
     bool isValidImage = imageUrl.isNotEmpty &&
@@ -661,11 +661,11 @@ class _AboutAgentState extends State<AboutAgent> {
               // EMAIL
               Expanded(
                 child: GestureDetector(
-                  onTap: _showEmailAgentDialog,
+                  onTap: () => showHomeContactDialog(context),
                   child: Container(
                     height: 46,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE3F2FD), // light blue
+                      color: const Color(0xFFE3F2FD),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Row(
@@ -675,10 +675,7 @@ class _AboutAgentState extends State<AboutAgent> {
                         SizedBox(width: 6),
                         Text(
                           'Email',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -687,29 +684,22 @@ class _AboutAgentState extends State<AboutAgent> {
               ),
               const SizedBox(width: 10),
 
-              // CALL - Fixed: now uses agentDetail instead of undefined 'property'
+              // CALL
               Expanded(
                 child: GestureDetector(
                   onTap: () async {
-                    final phoneRaw = agentDetail?.phone ?? '';
-                    final phone = phoneCallNumber(phoneRaw);
-
-                    if (phone.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Phone number not available")),
-                      );
-                      return;
-                    }
-
-                    final telUrl = 'tel:$phone';
-                    if (await canLaunchUrlString(telUrl)) {
-                      await launchUrlString(telUrl, mode: LaunchMode.externalApplication);
+                    final phone = phoneCallNumber(agentDetail?.phone ?? '');
+                    if (phone.isNotEmpty) {
+                      final telUrl = 'tel:$phone';
+                      if (await canLaunchUrlString(telUrl)) {
+                        await launchUrlString(telUrl, mode: LaunchMode.externalApplication);
+                      }
                     }
                   },
                   child: Container(
                     height: 46,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFEBEE), // light red
+                      color: const Color(0xFFFFEBEE),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Row(
@@ -728,61 +718,31 @@ class _AboutAgentState extends State<AboutAgent> {
               ),
               const SizedBox(width: 10),
 
-// WHATSAPP - Fixed: uses agentDetail, fallback to phone, better error handling
+              // WHATSAPP
               Expanded(
                 child: GestureDetector(
                   onTap: () async {
-                    // Prefer WhatsApp number, fallback to regular phone
-                    final phoneRaw = agentDetail?.whatsapp?.isNotEmpty == true
-                        ? agentDetail!.whatsapp!
-                        : agentDetail?.phone ?? '';
-
-                    if (phoneRaw.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("WhatsApp number not available")),
-                      );
-                      return;
-                    }
-
+                    final phoneRaw = agentDetail?.whatsapp ?? agentDetail?.phone ?? '';
                     final phone = whatsAppNumber(phoneRaw);
-                    if (phone.isEmpty || phone.length < 9) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Invalid WhatsApp number")),
-                      );
-                      return;
-                    }
+                    if (phone.isEmpty) return;
 
-                    final message = Uri.encodeComponent("Hello, I found you on Akarat and would like to connect.");
+                    final message = Uri.encodeComponent("Hello");
                     final waUrl = Uri.parse("https://wa.me/$phone?text=$message");
 
                     if (await canLaunchUrl(waUrl)) {
-                      final success = await launchUrl(
-                        waUrl,
-                        mode: LaunchMode.externalApplication,
-                      );
-                      if (!success) {
-                        debugPrint("Could not launch WhatsApp");
-                      }
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("WhatsApp is not installed")),
-                      );
+                      await launchUrl(waUrl, mode: LaunchMode.externalApplication);
                     }
                   },
                   child: Container(
                     height: 46,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE8F5E9), // light green
+                      color: const Color(0xFFE8F5E9),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset(
-                          "assets/images/whats.png",
-                          height: 20,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.message, size: 20, color: Colors.green),
-                        ),
+                        Image.asset("assets/images/whats.png", height: 20),
                         const SizedBox(width: 6),
                         const Text(
                           'WhatsApp',

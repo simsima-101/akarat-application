@@ -342,7 +342,7 @@ class _My_AccountState extends State<My_Account> {
                   context, MaterialPageRoute(builder: (_) => Fav_Logout()));
             }
           }),
-          _settingsTile("Saved Alerts", "assets/images/favourites.png", () {
+          _settingsTile("Saved Alerts", "assets/images/savealert.png", () {
             if (!isLoggedIn) {
               _showLoginDialog("Please login to access saved alerts.");
             } else {

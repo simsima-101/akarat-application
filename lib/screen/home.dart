@@ -32,30 +32,11 @@ import '../services/favorite_service.dart';
 import 'ContactFormScreen.dart';
 import 'filter_list.dart';
 
-// Save full project for guest (fav_logout)
-Future<void> _saveProjectFavoriteLocally(Map<String, dynamic> project) async {
-  final prefs = await SharedPreferences.getInstance();
-  final favList = prefs.getStringList('favorite_projects') ?? [];
-  // Prevent duplicates
-  if (!favList.any((item) => jsonDecode(item)['id'] == project['id'])) {
-    favList.add(jsonEncode(project));
-    await prefs.setStringList('favorite_projects', favList);
-  }
-}
+import 'location_picker_screen.dart'; // ←←← THIS LINE WAS MISSING!
 
-// Remove project from guest favorites
-Future<void> _removeProjectFavoriteLocally(int projectId) async {
-  final prefs = await SharedPreferences.getInstance();
-  final favList = prefs.getStringList('favorite_projects') ?? [];
-  favList.removeWhere((item) => jsonDecode(item)['id'] == projectId);
-  await prefs.setStringList('favorite_projects', favList);
-}
 
-// For logged-in users, call your API as you already do
 
-void main() {
-  runApp(const Home());
-}
+
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -623,34 +604,11 @@ class _MyHomePageState extends State<HomeDemo> {
                               // ← replace your plain Icon with this:
                               IconButton(
                                 icon: Icon(Icons.search, color: Colors.red),
-                                onPressed: () async {
-                                  final loc = _searchController.text.trim();
-                                  if (loc.isNotEmpty) {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => FliterList(
-                                          // location: loc,
-                                          // filterModel: filterModelData,
-                                          // selectedPurpose: (purpose.isNotEmpty
-                                          //     ? purpose
-                                          //     : 'Rent'),
-                                          // selectedPropertyType:
-                                          //     (propertyType.isNotEmpty
-                                          //         ? propertyType
-                                          //         : ''),
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                },
+                                onPressed: null,
                               ),
-
-                              // const SizedBox(width: 5),
 
                               Expanded(
                                 child: TextField(
-                                  controller: _searchController,
                                   focusNode: _focusNode,
                                   decoration: InputDecoration(
                                     hintText:
@@ -659,87 +617,34 @@ class _MyHomePageState extends State<HomeDemo> {
                                         color: Colors.grey, fontSize: 14),
                                     border: InputBorder.none,
                                   ),
+                                  readOnly: true,
                                   onTap: () async {
-                                    if (locationSuggestions.isEmpty) {
-                                      await fetchLocationSuggestions('');
-                                    } else if (locationSuggestions.isNotEmpty) {
-                                      setState(() {
-                                        locationSuggestions = [];
-                                      });
-                                      _focusNode.unfocus();
-                                    }
-                                  },
-                                  onChanged: (value) =>
-                                      fetchLocationSuggestions(value),
-                                  onSubmitted: (value) async {
-                                    if (value.isNotEmpty) {
-                                      final cleanedValue =
-                                      value.trim().toLowerCase();
-
-                                      final locModel =
-                                      locationSuggestions.firstWhere(
-                                            (e) =>
-                                        e.location!.trim().toLowerCase() ==
-                                            cleanedValue,
-                                        // orElse: () => ,
+                                    context.read<FilterProvider>()
+                                      ..setInitialHomeCategory(1)
+                                      ..resetAll(
+                                        context,
+                                        isUpdate: false,
                                       );
+                                    purpose = "Rent";
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => filter.Filter(
+                                              data: purpose,
+                                            )));
 
-                                      await context
-                                          .read<LocationPickerProvider>()
-                                          .addSelectedLocation(
-                                        locationModel: locModel,
-                                      );
-
-                                      await context
-                                          .read<FilterProvider>()
-                                          .updateFilterCount(context)
-                                          .then(
-                                            (value) {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => FliterList(
-                                                // location: value,
-                                                // filterModel: filterModelData,
-                                                // selectedPurpose: (purpose.isNotEmpty
-                                                //     ? purpose
-                                                //     : 'Rent'),
-                                                // selectedPropertyType:
-                                                //     (propertyType.isNotEmpty
-                                                //         ? propertyType
-                                                //         : ''),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    }
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      builder: (_) =>
+                                      const FractionallySizedBox(
+                                        heightFactor: 0.95,
+                                        child: LocationPickerScreen(),
+                                      ),
+                                    );
                                   },
                                 ),
-                              ),
-
-                              IconButton(
-                                icon: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.grey
-                                        .shade300, // light background circle
-                                  ),
-                                  padding: EdgeInsets.all(
-                                      4), // control size of the circle
-                                  child: Icon(
-                                    Icons.close,
-                                    size: 16, // smaller icon size
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  setState(() {
-                                    locationSuggestions = [];
-                                  });
-                                  _focusNode.unfocus();
-                                },
                               ),
                             ],
                           ),

@@ -34,7 +34,7 @@ class ApiService {
     if (fromEnv.isNotEmpty) {
       return fromEnv.replaceFirst(RegExp(r'/+$'), '');
     }
-    return 'https://qa.akarat.com/api';
+    return 'https://akarat.com/api';
   }
 
   static String get _effectiveBaseUrl {

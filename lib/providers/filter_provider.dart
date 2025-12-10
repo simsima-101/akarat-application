@@ -391,7 +391,7 @@ class FilterProvider extends ChangeNotifier {
     }
 
     return Uri.https(
-      'qa.akarat.com',
+      'akarat.com',
       '/api/filters',
       queryParams,
     );

@@ -8,6 +8,7 @@ import 'ContactFormScreen.dart';
 import 'home.dart';
 import 'login.dart';
 import 'my_account.dart';
+import 'register_screen.dart';
 
 class TermsCondition extends StatefulWidget {
   const TermsCondition({super.key});

@@ -26,7 +26,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
 // Your QA API
-String get apiBaseUrl => dotenv.env['API_BASE_URL'] ?? 'https://qa.akarat.com/api';
+String get apiBaseUrl => dotenv.env['API_BASE_URL'] ?? 'https://akarat.com/api';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =

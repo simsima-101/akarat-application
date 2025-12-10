@@ -1,17 +1,16 @@
-// lib/screen/personal_information.dart
+
+import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../secure_storage.dart';
 import '../services/api_service.dart';
-import '../services/session.dart';
-import '../services/profile_cache.dart';
 import '../services/auth_prefs.dart';
+import '../services/profile_cache.dart';
+import '../services/session.dart';
 import 'login.dart';
-
-// Add this import if not already there
-import '../widgets/custom_alert_box.dart'; // Make sure this file exists
 
 class PersonalInformationScreen extends StatefulWidget {
   final String? name;
@@ -28,7 +27,8 @@ class PersonalInformationScreen extends StatefulWidget {
   });
 
   @override
-  State<PersonalInformationScreen> createState() => _PersonalInformationScreenState();
+  State<PersonalInformationScreen> createState() =>
+      _PersonalInformationScreenState();
 }
 
 class AlwaysDisabledFocusNode extends FocusNode {
@@ -71,7 +71,8 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: const Color(0xFF2C2C2C), // dark like your app
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Text(
             'Delete Account?',
             style: TextStyle(
@@ -97,7 +98,10 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
               onPressed: () => Navigator.pop(context, true),
               child: const Text(
                 'Delete',
-                style: TextStyle(color: Colors.red, fontSize: 17, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -129,7 +133,8 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     if (email.isNotEmpty) {
       final override = await ProfileCache.load(email);
       if (override != null) {
-        first = override.first.trim().isNotEmpty ? override.first.trim() : first;
+        first =
+        override.first.trim().isNotEmpty ? override.first.trim() : first;
         last = override.last.trim().isNotEmpty ? override.last.trim() : last;
       }
     }
@@ -205,7 +210,10 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         final email = _emailCtrl.text.trim();
 
         await SecureStorage.setUserProfile(name: newName, email: email);
-        await ProfileCache.save(email: email, firstName: _firstNameCtrl.text.trim(), lastName: _lastNameCtrl.text.trim());
+        await ProfileCache.save(
+            email: email,
+            firstName: _firstNameCtrl.text.trim(),
+            lastName: _lastNameCtrl.text.trim());
 
         Session().updateProfile(
           userName: newName,
@@ -252,13 +260,18 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   String _parseError(http.Response resp) {
     try {
       final json = jsonDecode(resp.body);
-      return json['message'] ?? (json['errors'] is Map ? (json['errors'] as Map).values.first[0] : 'Update failed');
+      return json['message'] ??
+          (json['errors'] is Map
+              ? (json['errors'] as Map).values.first[0]
+              : 'Update failed');
     } catch (_) {}
     return 'Update failed (${resp.statusCode})';
   }
 
-  void _showError(String msg) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
-  void _showSuccess(String msg) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.green));
+  void _showError(String msg) => ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
+  void _showSuccess(String msg) => ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: Colors.green));
   void _clearPasswordFields() {
     _currentPwdCtrl.clear();
     _newPwdCtrl.clear();
@@ -281,7 +294,10 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))],
+          boxShadow: const [
+            BoxShadow(
+                color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))
+          ],
         ),
         child: Column(children: children),
       ),
@@ -309,7 +325,9 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       filled: true,
       fillColor: Colors.white,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE7E7E7))),
+      enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE7E7E7))),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
       suffixIcon: suffix,
     );
@@ -319,148 +337,182 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Personal Information', style: TextStyle(fontWeight: FontWeight.w600)),
+        title: const Text('Personal Information',
+            style: TextStyle(fontWeight: FontWeight.w600)),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0.5,
-        actions: [
-          if (!_editMode)
-            TextButton(
-              onPressed: _loading ? null : () => setState(() => _editMode = true),
-              child: const Text('Edit', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-            ),
-          if (_editMode) ...[
-            TextButton(onPressed: _loading ? null : _saveProfile, child: const Text('Save', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
-            TextButton(
-              onPressed: _loading ? null : () {
-                setState(() => _editMode = false);
-                _clearPasswordFields();
-                _loadUserData();
-              },
-              child: const Text('Cancel'),
-            ),
-          ],
-        ],
       ),
       backgroundColor: const Color(0xFFF7F7F7),
       body: AbsorbPointer(
         absorbing: _loading,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Form(
             key: _formKey,
             child: Column(
               children: [
-                // Name Fields
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: TextFormField(
                         controller: _firstNameCtrl,
-                        readOnly: !_editMode,
-                        decoration: _inputDecoration('First Name'),
-                        validator: (v) => v?.trim().isEmpty == true ? 'Required' : null,
+                        decoration: _inputDecoration('First name'),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'First name is required'
+                            : null,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Expanded(child: TextFormField(controller: _lastNameCtrl, readOnly: !_editMode, decoration: _inputDecoration('Last Name'))),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _lastNameCtrl,
+                        decoration: _inputDecoration('Last name'),
+                        validator: (v) => null, // optional
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 16),
-
-                // Email — Fully disabled
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _emailCtrl,
-                  readOnly: true,
-                  enabled: false,
-                  decoration: _inputDecoration('Email').copyWith(
-                    helperText: 'Email cannot be changed',
-                    filled: true,
-                    fillColor: Colors.grey.shade50,
-                  ),
-                  style: const TextStyle(color: Colors.grey),
+                  readOnly: true, // email is static
                   enableInteractiveSelection: false,
-                  showCursor: false,
-                  focusNode: AlwaysDisabledFocusNode(),
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: _inputDecoration('Email')
+                      .copyWith(helperText: 'Email cannot be changed'),
+                  validator: (v) {
+                    final value = v?.trim() ?? '';
+                    if (value.isEmpty) return 'Email is required';
+                    final emailOk =
+                    RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
+                    return emailOk ? null : 'Enter a valid email';
+                  },
+                ),
+                const SizedBox(height: 12),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Change password (optional)',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w600)),
+                ),
+                const SizedBox(height: 8),
+
+                // New Password
+                TextFormField(
+                  controller: _newPwdCtrl,
+                  obscureText: _obscureNew,
+                  decoration: _inputDecoration('New password').copyWith(
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscureNew
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () =>
+                          setState(() => _obscureNew = !_obscureNew),
+                    ),
+                    helperText: 'Leave blank to keep your current password',
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Confirm New Password
+                TextFormField(
+                  controller: _confirmPwdCtrl,
+                  obscureText: _obscureConfirm,
+                  decoration: _inputDecoration('Confirm new password').copyWith(
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscureConfirm
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () =>
+                          setState(() => _obscureConfirm = !_obscureConfirm),
+                    ),
+                  ),
+                  validator: (v) {
+                    if (_newPwdCtrl.text.trim().isNotEmpty) {
+                      if ((v ?? '').trim().isEmpty)
+                        return 'Please confirm the new password';
+                      if (v!.trim() != _newPwdCtrl.text.trim())
+                        return 'Passwords do not match';
+                    }
+                    return null;
+                  },
                 ),
 
-                // Password Fields
-                if (_editMode && _isPasswordAuth) ...[
-                  const SizedBox(height: 24),
-                  const Align(alignment: Alignment.centerLeft, child: Text('Change Password (Optional)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
+                if (_newPwdCtrl.text.trim().isNotEmpty) ...[
                   const SizedBox(height: 12),
                   TextFormField(
-                    controller: _newPwdCtrl,
-                    obscureText: _obscureNew,
-                    decoration: _inputDecoration('New Password').copyWith(
-                      suffixIcon: IconButton(icon: Icon(_obscureNew ? Icons.visibility_off : Icons.visibility), onPressed: () => setState(() => _obscureNew = !_obscureNew)),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _confirmPwdCtrl,
-                    obscureText: _obscureConfirm,
-                    decoration: _inputDecoration('Confirm New Password').copyWith(
-                      suffixIcon: IconButton(icon: Icon(_obscureConfirm ? Icons.visibility_off : Icons.visibility), onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm)),
-                    ),
-                  ),
-                  if (_newPwdCtrl.text.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _currentPwdCtrl,
-                      obscureText: _obscureCurrent,
-                      decoration: _inputDecoration('Current Password (Required)').copyWith(
-                        suffixIcon: IconButton(icon: Icon(_obscureCurrent ? Icons.visibility_off : Icons.visibility), onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent)),
+                    controller: _currentPwdCtrl,
+                    obscureText: _obscureCurrent,
+                    decoration: _inputDecoration(
+                        'Current password (required to change)')
+                        .copyWith(
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscureCurrent
+                            ? Icons.visibility_off
+                            : Icons.visibility),
+                        onPressed: () =>
+                            setState(() => _obscureCurrent = !_obscureCurrent),
                       ),
                     ),
-                  ],
+                    validator: (v) {
+                      if (_newPwdCtrl.text.trim().isNotEmpty &&
+                          (v ?? '').trim().isEmpty) {
+                        return 'Enter your current password';
+                      }
+                      return null;
+                    },
+                  ),
                 ],
 
-                const SizedBox(height: 32),
-
-                // DELETE ACCOUNT — NOW 100% MATCHES LOGOUT/LOGIN STYLE
-                // DELETE ACCOUNT — 100% consistent with Logout/Login style
-                // DELETE ACCOUNT — Centered & Compact (Beautiful!)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20), // exact match from your screenshot
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: () => _confirmAndDelete(), // ← now uses clean native AlertDialog
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          child: Center(
-                            child: Text(
-                              'Delete Account',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 17,
-
-                              ),
-                            ),
-                          ),
-                        ),
+                    onPressed: _loading ? null : _saveProfile,
+                    child: const Text(
+                      'Update',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ),
-
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: _confirmAndDelete,
+                    child: const Text(
+                      'Delete your account',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
                 if (_loading) ...[
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                   const LinearProgressIndicator(),
                 ],
               ],

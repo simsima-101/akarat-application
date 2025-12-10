@@ -649,7 +649,7 @@ class Amenities {
     }
 
     // Otherwise treat it as a relative path
-    return 'https://qa.akarat.com/$value';
+    return 'https://akarat.com/$value';
     // or use https://akarat.com/ if you’re on prod:
     // return 'https://akarat.com/$value';
   }
