@@ -8,12 +8,10 @@ import 'package:Akarat/screen/full_map_screen.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -59,12 +57,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
         governmentFee != null ||
         paymentPeriod != null ||
         resolvedPaymentPlan != null ||
-        officialProjectName != null ||   // ✅ only DLD
+        officialProjectName != null || // ✅ only DLD
         officialDeveloperName != null || // ✅ only DLD
         dldAgencyName != null;
   }
-
-
 
   String _formatDate(String date) {
     try {
@@ -148,7 +144,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
     return s;
   }
 
-
   String? get displaySizeSqft {
     final property = featuredDetailModel?.data?.property;
     if (property == null) return null;
@@ -167,13 +162,11 @@ class _Featured_DetailState extends State<Featured_Detail> {
     final size = num.tryParse(clean);
     if (size == null || size <= 0) return null;
 
-    final formatted = size
-        .toStringAsFixed(0)
-        .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+    final formatted = size.toStringAsFixed(0).replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
 
     return '$formatted sqft';
   }
-
 
   String? _dldStr(dynamic permitResponse, List<String> keys) {
     if (permitResponse == null) return null;
@@ -203,7 +196,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
     }
     return null;
   }
-
 
   // ==================== RECOMMENDED CARD: DLD FIRST → recProperty FIELDS ====================
 
@@ -249,8 +241,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
     return num.tryParse(str.replaceAll(',', '').trim());
   }
 
-
-
 // ================= PAYMENT PLAN HELPERS (ROBUST) =================
 
   Map<String, int>? _readPaymentPlanFromMap(Map? mapAny) {
@@ -283,9 +273,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
       return null;
     }
 
-    const downKeys = ['down_payment','downPayment','dp'];
-    const duringKeys = ['during_construction','duringConstruction','dc'];
-    const handoverKeys = ['on_handover','onHandover','handover','oh'];
+    const downKeys = ['down_payment', 'downPayment', 'dp'];
+    const duringKeys = ['during_construction', 'duringConstruction', 'dc'];
+    const handoverKeys = ['on_handover', 'onHandover', 'handover', 'oh'];
 
     // ✅ 1) DIRECT KEYS FIRST (your case)
     final dpDirect = readAny(downKeys, map);
@@ -301,10 +291,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
     }
 
     // ✅ 2) Then try nested / formatted payment_plan
-    final rawPlan =
-        map['payment_plan_details'] ??
-            map['paymentPlanDetails'] ??
-            map['payment_plan'];
+    final rawPlan = map['payment_plan_details'] ??
+        map['paymentPlanDetails'] ??
+        map['payment_plan'];
 
     if (rawPlan is Map) {
       final m = Map<String, dynamic>.from(rawPlan);
@@ -325,12 +314,14 @@ class _Featured_DetailState extends State<Featured_Detail> {
       for (final item in rawPlan) {
         if (item is Map) {
           final m = Map<String, dynamic>.from(item);
-          final title = (m['title'] ?? m['name'] ?? '').toString().toLowerCase();
+          final title =
+              (m['title'] ?? m['name'] ?? '').toString().toLowerCase();
           final percent = toInt(m['percentage'] ?? m['percent'] ?? m['value']);
           if (percent == null) continue;
 
           if (title.contains('down')) dp = percent;
-          if (title.contains('during') || title.contains('construction')) dc = percent;
+          if (title.contains('during') || title.contains('construction'))
+            dc = percent;
           if (title.contains('handover')) oh = percent;
         }
       }
@@ -362,7 +353,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
     return null;
   }
 
-
 // ✅ FINAL resolver: DLD first → project_information second
   Map<String, int>? get resolvedPaymentPlan {
     // 1) DLD permit_response first
@@ -379,13 +369,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
     return null;
   }
-
-
-
-
-
-
-
 
   /// ✅ First DLD record (already parsed into _permitResult)
   Map<String, dynamic>? get _permitFirst => _permitResult;
@@ -412,12 +395,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
     return null;
   }
 
-
-
-
-
-
-
   /// ✅ If DLD missing -> fallback to project_information key
   String? _dldThenProjectInfo({
     required dynamic dldValue,
@@ -435,7 +412,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
     final info = _projectInfoMap;
     return _cleanStr(info?[projectInfoKey]);
   }
-
 
   /// ✅ If DLD missing -> fallback to normal property key
   String? _dldThenProperty({
@@ -480,44 +456,44 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
 // ✅ individual building fields
   String? get buildingName => _dldThenProjectInfoByKeys(
-    dldKeys: ['building_name', 'buildingName', 'building'],
-    projectInfoKey: 'building_name',
-  );
+        dldKeys: ['building_name', 'buildingName', 'building'],
+        projectInfoKey: 'building_name',
+      );
 
   String? get totalParking => _dldThenProjectInfoByKeys(
-    dldKeys: ['total_parking', 'totalParking', 'parking_spaces'],
-    projectInfoKey: 'total_parking',
-  );
+        dldKeys: ['total_parking', 'totalParking', 'parking_spaces'],
+        projectInfoKey: 'total_parking',
+      );
 
   String? get buildingArea => _dldThenProjectInfoByKeys(
-    dldKeys: ['building_area', 'buildingArea', 'area'],
-    projectInfoKey: 'building_area',
-  );
+        dldKeys: ['building_area', 'buildingArea', 'area'],
+        projectInfoKey: 'building_area',
+      );
 
   String? get yearOfCompletion => _dldThenProjectInfoByKeys(
-    dldKeys: ['year_of_completion', 'yearOfCompletion', 'completion_year'],
-    projectInfoKey: 'year_of_completion',
-  );
+        dldKeys: ['year_of_completion', 'yearOfCompletion', 'completion_year'],
+        projectInfoKey: 'year_of_completion',
+      );
 
   String? get elevators => _dldThenProjectInfoByKeys(
-    dldKeys: ['elevators', 'lift_count', 'lifts'],
-    projectInfoKey: 'elevators',
-  );
+        dldKeys: ['elevators', 'lift_count', 'lifts'],
+        projectInfoKey: 'elevators',
+      );
 
   String? get totalFloors => _dldThenProjectInfoByKeys(
-    dldKeys: ['total_floors', 'totalFloors', 'floors'],
-    projectInfoKey: 'total_floors',
-  );
+        dldKeys: ['total_floors', 'totalFloors', 'floors'],
+        projectInfoKey: 'total_floors',
+      );
 
   String? get swimmingPools => _dldThenProjectInfoByKeys(
-    dldKeys: ['swimming_pools', 'swimmingPools', 'pools'],
-    projectInfoKey: 'swimming_pools',
-  );
+        dldKeys: ['swimming_pools', 'swimmingPools', 'pools'],
+        projectInfoKey: 'swimming_pools',
+      );
 
   String? get retailCenters => _dldThenProjectInfoByKeys(
-    dldKeys: ['retail_centers', 'retailCenters', 'retail'],
-    projectInfoKey: 'retail_centers',
-  );
+        dldKeys: ['retail_centers', 'retailCenters', 'retail'],
+        projectInfoKey: 'retail_centers',
+      );
 
 // show section only if any value exists
   bool _hasBuildingInfo() {
@@ -531,15 +507,12 @@ class _Featured_DetailState extends State<Featured_Detail> {
         retailCenters != null;
   }
 
-
   String? _safeNullable(dynamic v) {
     if (v == null) return null;
     final s = v.toString().trim();
     if (s.isEmpty || s.toLowerCase() == 'null') return null;
     return s;
   }
-
-
 
   void _parsePermitResponse() {
     try {
@@ -566,10 +539,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
       if (result is List && result.isNotEmpty) {
         final first = result.first;
         if (first is Map<String, dynamic>) {
-          _permitResult = first;           // Root level
-          final prop = first['property'];  // THIS IS CRUCIAL
+          _permitResult = first; // Root level
+          final prop = first['property']; // THIS IS CRUCIAL
           if (prop is Map<String, dynamic>) {
-            _permitProperty = prop;        // ← This holds brokerNameEn!
+            _permitProperty = prop; // ← This holds brokerNameEn!
           }
         }
       }
@@ -609,8 +582,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
     return _cleanStr(featuredDetailModel?.data?.property?.zoneName);
   }
 
-
-
   String? get displayReference {
     final fromPermit = _cleanStr(_permitResult?['listingNumber']);
     if (fromPermit != null) return fromPermit;
@@ -632,12 +603,11 @@ class _Featured_DetailState extends State<Featured_Detail> {
     final p = featuredDetailModel?.data?.property;
     final info = _projectInfoMap;
 
-    return _cleanStr(
-        _permitFirst?['completion'] ??
+    return _cleanStr(_permitFirst?['completion'] ??
             p?.completionPercentage ??
             info?['completion'] ??
-            info?['completion_percentage']  // ✅ add this
-    );
+            info?['completion_percentage'] // ✅ add this
+        );
   }
 
   String? get deliveryYear {
@@ -648,7 +618,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
       directPropertyValue: p?.deliveryYear,
     );
   }
-
 
   String? get projectAnnouncementDate {
     final p = featuredDetailModel?.data?.property;
@@ -683,8 +652,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
   String? get salesStartDate {
     final p = featuredDetailModel?.data?.property;
     return _dldThenProjectInfo(
-      dldValue: _permitFirst?['salesStarted'] ??
-          _permitFirst?['sales_started'],
+      dldValue: _permitFirst?['salesStarted'] ?? _permitFirst?['sales_started'],
       projectInfoKey: 'sales_started',
       directPropertyValue: p?.salesStartDate, // ✅ fallback
     );
@@ -693,7 +661,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
   String? get governmentFee {
     final p = featuredDetailModel?.data?.property;
     return _dldThenProjectInfo(
-      dldValue: _permitFirst?['governmentFee'] ?? _permitFirst?['government_fee'],
+      dldValue:
+          _permitFirst?['governmentFee'] ?? _permitFirst?['government_fee'],
       projectInfoKey: 'government_fee',
       directPropertyValue: p?.governmentFee, // ✅ fallback
     );
@@ -748,7 +717,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
     return _cleanStr(featuredDetailModel?.data?.property?.developer);
   }
 
-
   String? get dldAgencyName {
     final p = featuredDetailModel?.data?.property;
 
@@ -766,17 +734,18 @@ class _Featured_DetailState extends State<Featured_Detail> {
       final authorityEn = rawAuthority.toString().trim();
 
       if (authorityEn.isNotEmpty) {
-        debugPrint("Registered Agency → From DLD authorityNameEn: '$authorityEn'");
+        debugPrint(
+            "Registered Agency → From DLD authorityNameEn: '$authorityEn'");
         return authorityEn; // This will now correctly show "Test companies"
       }
     }
 
     // 3. Only if authorityNameEn is truly missing/null → fallback
     final userAgency = p?.agencyName?.trim();
-    debugPrint("DLD has permit but authorityNameEn missing → Fallback to user: $userAgency");
+    debugPrint(
+        "DLD has permit but authorityNameEn missing → Fallback to user: $userAgency");
     return userAgency;
   }
-
 
   // ==================== ADDRESS (DLD → data.property → data root) ====================
   String? get resolvedAddress {
@@ -803,13 +772,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
     // 4) last fallback
     return null;
   }
-
-
-
-
-
-
-
 
   String getCategory() {
     final property = featuredDetailModel?.data?.property;
@@ -1015,10 +977,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.manual,
-      overlays: [SystemUiOverlay.bottom],
-    );
+    // SystemChrome.setEnabledSystemUIMode(
+    //   SystemUiMode.manual,
+    //   overlays: [SystemUiOverlay.bottom],
+    // );
     readData();
     fetchProducts(widget.data);
   }
@@ -1056,7 +1018,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
     try {
       final response =
-      await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
+          await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
@@ -1099,9 +1061,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
         final jsonData = jsonDecode(response.body);
 
         // ✅ extract project_information from raw API only
-        _projectInfoRaw =
-            jsonData['data']?['project_information'] ??
-                jsonData['data']?['property']?['project_information'];
+        _projectInfoRaw = jsonData['data']?['project_information'] ??
+            jsonData['data']?['property']?['project_information'];
 
         debugPrint("🟨 RAW project_information: $_projectInfoRaw");
         debugPrint("🟨 RAW project_information keys: ${_projectInfoRaw?.keys}");
@@ -1120,7 +1081,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
     }
   }
 
-
   // ========= OPEN CONTACT FORM DIALOG =========
   Future<void> _showEmailAgentDialog() async {
     final property = featuredDetailModel?.data?.property;
@@ -1131,10 +1091,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
     final String subtitle = property.title ?? '';
 
-    final String ref = (property.reference != null &&
-        property.reference!.trim().isNotEmpty)
-        ? property.reference!.trim()
-        : propId.toString();
+    final String ref =
+        (property.reference != null && property.reference!.trim().isNotEmpty)
+            ? property.reference!.trim()
+            : propId.toString();
 
     final String initialMessage =
         'Hi, I found your property with ref: $ref on Akarat. '
@@ -1172,7 +1132,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
         final deviceId = await getDeviceId();
         final emailProvider =
-        Provider.of<EmailEnquiryProvider>(context, listen: false);
+            Provider.of<EmailEnquiryProvider>(context, listen: false);
 
         final ok = await emailProvider.submitEmailEnquiry(
           propertyId: propId,
@@ -1204,7 +1164,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
     );
   }
 
-  Widget _buildProjectInfoRow(String label, String value, {bool isBold = false}) {
+  Widget _buildProjectInfoRow(String label, String value,
+      {bool isBold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
@@ -1261,8 +1222,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
     );
   }
 
-
-
   // ========= UI =========
   @override
   Widget build(BuildContext context) {
@@ -1279,8 +1238,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
     final property = featuredDetailModel!.data!.property!;
 
-
-
     final addressText = resolvedAddress;
 
     final latStr = property.latitude;
@@ -1293,7 +1250,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
     // ✅ 2) resolvedSqft defined HERE (same scope as UI)
     final resolvedSqft = displaySizeSqft ?? '';
 
-
     final projectInfoRows = _buildProjectInfoRows();
 
     // ===== build QR widget from base64 (permit_info.qr) =====
@@ -1305,7 +1261,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
       if (qrStr != null && qrStr.trim().isNotEmpty) {
         final String base64Part =
-        qrStr.contains(',') ? qrStr.split(',').last.trim() : qrStr.trim();
+            qrStr.contains(',') ? qrStr.split(',').last.trim() : qrStr.trim();
 
         final bytes = base64Decode(base64Part);
 
@@ -1329,7 +1285,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                 } else {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Could not launch the QR link')),
+                    const SnackBar(
+                        content: Text('Could not launch the QR link')),
                   );
                 }
               },
@@ -1344,7 +1301,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
     }
 
     final periodText = (property.paymentPeriod != null &&
-        property.paymentPeriod.toString().trim().isNotEmpty)
+            property.paymentPeriod.toString().trim().isNotEmpty)
         ? "/${property.paymentPeriod}"
         : "";
 
@@ -1382,7 +1339,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
               // EMAIL
               Expanded(
                 child: GestureDetector(
-          onTap: () => showHomeContactDialog(context),
+                  onTap: () => showHomeContactDialog(context),
                   child: Container(
                     height: 46,
                     decoration: BoxDecoration(
@@ -1392,11 +1349,13 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.email_outlined, size: 20, color: Colors.blue),
+                        Icon(Icons.email_outlined,
+                            size: 20, color: Colors.blue),
                         SizedBox(width: 6),
                         Text(
                           'Email',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -1413,7 +1372,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     if (phone.isNotEmpty) {
                       final telUrl = 'tel:$phone';
                       if (await canLaunchUrlString(telUrl)) {
-                        await launchUrlString(telUrl, mode: LaunchMode.externalApplication);
+                        await launchUrlString(telUrl,
+                            mode: LaunchMode.externalApplication);
                       }
                     }
                   },
@@ -1430,7 +1390,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         SizedBox(width: 6),
                         Text(
                           'Call',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -1448,10 +1409,12 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     if (phone.isEmpty) return;
 
                     final message = Uri.encodeComponent("Hello");
-                    final waUrl = Uri.parse("https://wa.me/$phone?text=$message");
+                    final waUrl =
+                        Uri.parse("https://wa.me/$phone?text=$message");
 
                     if (await canLaunchUrl(waUrl)) {
-                      await launchUrl(waUrl, mode: LaunchMode.externalApplication);
+                      await launchUrl(waUrl,
+                          mode: LaunchMode.externalApplication);
                     }
                   },
                   child: Container(
@@ -1467,7 +1430,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         const SizedBox(width: 6),
                         const Text(
                           'WhatsApp',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -1491,7 +1455,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                 padding: EdgeInsets.zero,
                 itemCount: property.media?.length ?? 0,
                 itemBuilder: (BuildContext context, int index) {
-                  final imageUrl = property.media![index].originalUrl.toString();
+                  final imageUrl =
+                      property.media![index].originalUrl.toString();
 
                   return GestureDetector(
                     onTap: () {
@@ -1502,7 +1467,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         barrierLabel: "ImagePreview",
                         transitionDuration: const Duration(milliseconds: 300),
                         pageBuilder: (context, animation, secondaryAnimation) {
-                          PageController controller = PageController(initialPage: index);
+                          PageController controller =
+                              PageController(initialPage: index);
                           return Scaffold(
                             backgroundColor: Colors.black,
                             body: SafeArea(
@@ -1512,7 +1478,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                     controller: controller,
                                     itemCount: property.media?.length ?? 0,
                                     itemBuilder: (context, pageIndex) {
-                                      final previewUrl = property.media![pageIndex].originalUrl.toString();
+                                      final previewUrl = property
+                                          .media![pageIndex].originalUrl
+                                          .toString();
                                       return InteractiveViewer(
                                         child: CachedNetworkImage(
                                           imageUrl: previewUrl,
@@ -1525,8 +1493,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                     top: 20,
                                     right: 20,
                                     child: IconButton(
-                                      icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                                      onPressed: () => Navigator.of(context).pop(),
+                                      icon: const Icon(Icons.close,
+                                          color: Colors.white, size: 30),
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
                                     ),
                                   ),
                                 ],
@@ -1556,11 +1526,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
             const SizedBox(height: 25),
 
-
-
             if (addressText != null) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1583,9 +1552,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
                 ),
               ),
             ],
-
-
-
 
             // ==== PRICE ====
             Padding(
@@ -1625,7 +1591,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       padding: const EdgeInsets.only(left: 3.0),
                       child: Text(
                         '${property.bedrooms} beds',
-                        style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                        style:
+                            const TextStyle(fontSize: 14, letterSpacing: 0.5),
                       ),
                     ),
                   ],
@@ -1639,7 +1606,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       padding: const EdgeInsets.only(left: 3.0),
                       child: Text(
                         '${property.bathrooms} baths',
-                        style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                        style:
+                            const TextStyle(fontSize: 14, letterSpacing: 0.5),
                       ),
                     ),
                   ],
@@ -1647,21 +1615,22 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   // SqFt – only show if resolvedSqft is not null, not empty, and not "0"
                   if (resolvedSqft.isNotEmpty && resolvedSqft != '0') ...[
                     // Add spacing only if previous item exists
-                    if ((property.bedrooms ?? 0) > 0 || (property.bathrooms ?? 0) > 0)
+                    if ((property.bedrooms ?? 0) > 0 ||
+                        (property.bathrooms ?? 0) > 0)
                       const SizedBox(width: 15),
                     Image.asset("assets/images/messure.png", height: 20),
                     Padding(
                       padding: const EdgeInsets.only(left: 3.0),
                       child: Text(
                         '$resolvedSqft',
-                        style: const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                        style:
+                            const TextStyle(fontSize: 14, letterSpacing: 0.5),
                       ),
                     ),
                   ],
                 ],
               ),
             ),
-
 
             const SizedBox(height: 20),
 
@@ -1735,27 +1704,27 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       ),
                       child: _isLoadingFullDescription
                           ? const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                          SizedBox(width: 10),
-                          Text("Loading full description..."),
-                        ],
-                      )
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                                SizedBox(width: 10),
+                                Text("Loading full description..."),
+                              ],
+                            )
                           : HtmlExpandableText(
-                        htmlContent: _hasExpandedDescription
-                            ? _fullDescription.replaceAll('\r\n', '<br>')
-                            : (property.description ?? '')
-                            .replaceAll('\r\n', '<br>')
-                            .replaceAll('\n', '<br>'),
-                      ),
+                              htmlContent: _hasExpandedDescription
+                                  ? _fullDescription.replaceAll('\r\n', '<br>')
+                                  : (property.description ?? '')
+                                      .replaceAll('\r\n', '<br>')
+                                      .replaceAll('\n', '<br>'),
+                            ),
                     ),
                   ),
-
                   if (_hasExpandedDescription)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
@@ -1798,15 +1767,13 @@ class _Featured_DetailState extends State<Featured_Detail> {
             //   ],
             // ),
 
-
-
-
             const SizedBox(height: 5),
 
             // ==== PROPERTY DETAILS ====
             if (projectInfoRows.isNotEmpty) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1839,26 +1806,25 @@ class _Featured_DetailState extends State<Featured_Detail> {
               ),
             ],
 
-
             // ✅ BUILDING INFORMATION (after Property Details)
             _buildBuildingInformationSection(),
-
 
             const SizedBox(height: 5),
 
             // ==== PROJECT INFORMATION ====
             if (_hasProjectInfo()) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       "Project Information",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
-
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
@@ -1917,8 +1883,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               _formatDate(salesStartDate!),
                             ),
 
-
-
                           // ==== PAYMENT PLAN (DLD → project_information → property json) ====
                           Builder(
                             builder: (_) {
@@ -1932,7 +1896,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Divider(height: 28, thickness: 1),
-
                                   Align(
                                     alignment: Alignment.centerLeft,
                                     child: Text(
@@ -1946,7 +1909,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                     ),
                                   ),
                                   const SizedBox(height: 10),
-
                                   Row(
                                     children: [
                                       Expanded(
@@ -1975,7 +1937,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
                               );
                             },
                           ),
-
 
                           // ==== DLD VERIFIED BLOCK (OFFICIAL ONLY) ====
                           if (officialProjectName != null ||
@@ -2009,7 +1970,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
                 ),
               ),
             ],
-
 
             const SizedBox(height: 15),
 
@@ -2088,7 +2048,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-
                                 const SizedBox(height: 4),
                                 SizedBox(
                                   height: 28,
@@ -2102,7 +2061,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => MyGoogleMapWidget(
+                                          builder: (context) =>
+                                              MyGoogleMapWidget(
                                             latitude: latitude,
                                             longitude: longitude,
                                           ),
@@ -2166,9 +2126,11 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           : 'https://via.placeholder.com/100',
                       fit: BoxFit.cover,
                       placeholder: (context, url) =>
-                      const CircularProgressIndicator(),
-                      errorWidget: (context, url, error) =>
-                      const Icon(Icons.person, size: 60, color: Colors.grey),
+                          const CircularProgressIndicator(),
+                      errorWidget: (context, url, error) => const Icon(
+                          Icons.person,
+                          size: 60,
+                          color: Colors.grey),
                     ),
                   ),
                   Padding(
@@ -2198,7 +2160,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     child: Container(
                       height: 35,
                       width: screenSize.width * 0.5,
-                      margin: const EdgeInsets.only(left: 15, right: 10, top: 15),
+                      margin:
+                          const EdgeInsets.only(left: 15, right: 10, top: 15),
                       padding: const EdgeInsets.only(top: 8),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(8.0),
@@ -2218,7 +2181,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       ),
                     ),
                   ),
-
                 ],
               ),
             ),
@@ -2228,13 +2190,18 @@ class _Featured_DetailState extends State<Featured_Detail> {
             // ===== Regulatory Information + QR =====
             Container(
               width: double.infinity,
-              margin: const EdgeInsets.only(left: 18, right: 14, top: 20, bottom: 20),
+              margin: const EdgeInsets.only(
+                  left: 18, right: 14, top: 20, bottom: 20),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: const [
-                  BoxShadow(color: Colors.grey, offset: Offset(0.5, 0.5), blurRadius: 1, spreadRadius: 0.3),
+                  BoxShadow(
+                      color: Colors.grey,
+                      offset: Offset(0.5, 0.5),
+                      blurRadius: 1,
+                      spreadRadius: 0.3),
                 ],
               ),
               child: Builder(
@@ -2245,14 +2212,20 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   if (raw != null) {
                     dynamic parsed;
                     if (raw is String && raw.trim().isNotEmpty) {
-                      try { parsed = jsonDecode(raw); } catch (_) { parsed = null; }
+                      try {
+                        parsed = jsonDecode(raw);
+                      } catch (_) {
+                        parsed = null;
+                      }
                     } else if (raw is Map<String, dynamic>) {
                       parsed = raw;
                     }
 
                     if (parsed is Map<String, dynamic>) {
                       final list = parsed['result'] as List<dynamic>?;
-                      if (list != null && list.isNotEmpty && list.first is Map<String, dynamic>) {
+                      if (list != null &&
+                          list.isNotEmpty &&
+                          list.first is Map<String, dynamic>) {
                         dld = list.first as Map<String, dynamic>;
                       }
                     }
@@ -2268,69 +2241,91 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     return null;
                   }
 
-
                   Widget row(String label, String? value) {
-                    if (value == null || value.isEmpty) return const SizedBox.shrink();
+                    if (value == null || value.isEmpty)
+                      return const SizedBox.shrink();
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8.0),
                       child: _buildInfoRow(label, value),
                     );
                   }
 
-                  final hasQr = property.permitInfo?.qr?.trim().isNotEmpty == true ||
-                      property.permitInfo?.url?.trim().isNotEmpty == true;
+                  final hasQr =
+                      property.permitInfo?.qr?.trim().isNotEmpty == true ||
+                          property.permitInfo?.url?.trim().isNotEmpty == true;
 
                   return Column(
-                    crossAxisAlignment: hasQr ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+                    crossAxisAlignment: hasQr
+                        ? CrossAxisAlignment.center
+                        : CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
                           const Text(
                             "Regulatory Information",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(width: 8),
                           if (dld != null)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: Colors.green,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Text(
                                 "DLD Verified",
-                                style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
                         ],
                       ),
                       const SizedBox(height: 12),
-
-                      row("DLD Permit Number",
-                          get(dld?['listingNumber'], property.regulatoryInfo?.dldPermitNumber?.toString())),
-                      row("Zone",
-                          get(dld?['property']?['zoneNameEn'] ?? dld?['property']?['zoneNameAr'], property.zoneName)),
-
-
-                      row("DED", get(dld?['licenseNumber'], property.regulatoryInfo?.ded?.toString())),
-                      row("RERA", get(null, property.regulatoryInfo?.rera?.toString())),
-                      row("BRN", get(null, property.regulatoryInfo?.brn?.toString())),
+                      row(
+                          "DLD Permit Number",
+                          get(
+                              dld?['listingNumber'],
+                              property.regulatoryInfo?.dldPermitNumber
+                                  ?.toString())),
+                      row(
+                          "Zone",
+                          get(
+                              dld?['property']?['zoneNameEn'] ??
+                                  dld?['property']?['zoneNameAr'],
+                              property.zoneName)),
+                      row(
+                          "DED",
+                          get(dld?['licenseNumber'],
+                              property.regulatoryInfo?.ded?.toString())),
+                      row("RERA",
+                          get(null, property.regulatoryInfo?.rera?.toString())),
+                      row("BRN",
+                          get(null, property.regulatoryInfo?.brn?.toString())),
                       row("Registered Agency", dldAgencyName),
-
                       const SizedBox(height: 16),
-
-                      if (property.permitInfo?.qr?.trim().isNotEmpty == true) ...[
-                        const Text("RERA QR Code", style: TextStyle(fontWeight: FontWeight.bold)),
+                      if (property.permitInfo?.qr?.trim().isNotEmpty ==
+                          true) ...[
+                        const Text("RERA QR Code",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         Center(
                           child: GestureDetector(
                             onTap: property.permitInfo?.url?.isNotEmpty == true
-                                ? () => launchUrl(Uri.parse(property.permitInfo!.url!))
+                                ? () => launchUrl(
+                                    Uri.parse(property.permitInfo!.url!))
                                 : null,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
                               child: Image.memory(
-                                base64Decode(property.permitInfo!.qr!.split(',').last.trim()),
+                                base64Decode(property.permitInfo!.qr!
+                                    .split(',')
+                                    .last
+                                    .trim()),
                                 width: 200,
                                 height: 200,
                                 fit: BoxFit.cover,
@@ -2344,10 +2339,12 @@ class _Featured_DetailState extends State<Featured_Detail> {
                             ),
                           ),
                         ),
-                      ] else if (property.permitInfo?.url?.isNotEmpty == true) ...[
+                      ] else if (property.permitInfo?.url?.isNotEmpty ==
+                          true) ...[
                         Center(
                           child: GestureDetector(
-                            onTap: () => launchUrl(Uri.parse(property.permitInfo!.url!)),
+                            onTap: () =>
+                                launchUrl(Uri.parse(property.permitInfo!.url!)),
                             child: Container(
                               width: 200,
                               height: 200,
@@ -2355,7 +2352,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                 color: Colors.grey[200],
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(Icons.qr_code_scanner, size: 80, color: Colors.grey),
+                              child: const Icon(Icons.qr_code_scanner,
+                                  size: 80, color: Colors.grey),
                             ),
                           ),
                         ),
@@ -2375,10 +2373,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
                 scrollDirection: Axis.horizontal,
                 itemCount: featuredDetailModel?.data?.recommended?.length ?? 0,
                 itemBuilder: (context, index) {
-                  final recProperty = featuredDetailModel!.data!.recommended![index];
+                  final recProperty =
+                      featuredDetailModel!.data!.recommended![index];
 
-                  final imageUrl =
-                  (recProperty.media?.isNotEmpty ?? false)
+                  final imageUrl = (recProperty.media?.isNotEmpty ?? false)
                       ? recProperty.media!.first.originalUrl.toString()
                       : '';
 
@@ -2412,19 +2410,20 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                   ),
                                   child: imageUrl.isNotEmpty
                                       ? Image.network(
-                                    imageUrl,
-                                    height: 120,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  )
+                                          imageUrl,
+                                          height: 120,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        )
                                       : Container(
-                                    height: 120,
-                                    width: double.infinity,
-                                    color: Colors.grey.shade300,
-                                    child: const Center(
-                                      child: Icon(Icons.image_not_supported),
-                                    ),
-                                  ),
+                                          height: 120,
+                                          width: double.infinity,
+                                          color: Colors.grey.shade300,
+                                          child: const Center(
+                                            child:
+                                                Icon(Icons.image_not_supported),
+                                          ),
+                                        ),
                                 ),
                               ],
                             ),
@@ -2434,37 +2433,44 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                 builder: (_) {
                                   // ✅ pull DLD permit_response from recommended item (if exists)
                                   // adjust field name if your model differs
-                                  final permitResponse = recProperty.regulatoryInfo?.permitResponse;
+                                  final permitResponse = recProperty
+                                      .regulatoryInfo?.permitResponse;
 
                                   // ✅ resolve fields: DLD first → fallback to /api/properties values
-                                  final resolvedPrice =
-                                      _recDldNum(permitResponse, ['price', 'amount']) ?? recProperty.price;
+                                  final resolvedPrice = _recDldNum(
+                                          permitResponse,
+                                          ['price', 'amount']) ??
+                                      recProperty.price;
 
-                                  final resolvedBeds =
-                                      _recDldNum(permitResponse, ['bedrooms', 'beds'])?.toInt()
-                                          ?? recProperty.bedrooms
-                                          ?? 0;
+                                  final resolvedBeds = _recDldNum(
+                                          permitResponse,
+                                          ['bedrooms', 'beds'])?.toInt() ??
+                                      recProperty.bedrooms ??
+                                      0;
 
                                   final resolvedSqft =
                                       _recDldStr(permitResponse, [
-                                        'propertySizeSqft',
-
-                                        'square_feet',
-                                        'sqft',
-                                        'area',
-                                        'size',
-                                      ]) ??
+                                            'propertySizeSqft',
+                                            'square_feet',
+                                            'sqft',
+                                            'area',
+                                            'size',
+                                          ]) ??
                                           recProperty.squareFeet ??
                                           '';
 
-
-                                  final resolvedLocation =
-                                      _recDldStr(permitResponse, ['location', 'address', 'community'])
-                                          ?? recProperty.location
-                                          ?? '';
+                                  final resolvedLocation = _recDldStr(
+                                          permitResponse, [
+                                        'location',
+                                        'address',
+                                        'community'
+                                      ]) ??
+                                      recProperty.location ??
+                                      '';
 
                                   return Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         "${resolvedPrice ?? 0} AED",
@@ -2476,11 +2482,13 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                       const SizedBox(height: 4),
                                       Row(
                                         children: [
-                                          const Icon(Icons.bed, size: 16, color: Colors.red),
+                                          const Icon(Icons.bed,
+                                              size: 16, color: Colors.red),
                                           const SizedBox(width: 4),
                                           Text("$resolvedBeds beds"),
                                           const SizedBox(width: 6),
-                                          const Icon(Icons.square_foot, size: 16, color: Colors.red),
+                                          const Icon(Icons.square_foot,
+                                              size: 16, color: Colors.red),
                                           const SizedBox(width: 4),
                                           Text("$resolvedSqft"),
                                         ],
@@ -2488,7 +2496,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                       const SizedBox(height: 4),
                                       Text(
                                         resolvedLocation,
-                                        style: const TextStyle(fontSize: 12, color: Colors.black),
+                                        style: const TextStyle(
+                                            fontSize: 12, color: Colors.black),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -2497,7 +2506,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                 },
                               ),
                             ),
-
                           ],
                         ),
                       ),
@@ -2513,7 +2521,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
       ),
     );
   }
-
 
   Widget _planBox(String value, String label) {
     return Container(
@@ -2609,7 +2616,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
             ),
           ),
           const SizedBox(height: 10),
-
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(14),
@@ -2635,7 +2641,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
       ),
     );
   }
-
 
   Widget _buildAmenitiesSection(Property property) {
     final amenities = property.amenities;
@@ -2724,9 +2729,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
       ],
     );
   }
-
-
-
 
   Widget _buildInfoRow(String title, String value) {
     return Padding(
