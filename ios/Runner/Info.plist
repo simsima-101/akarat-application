@@ -54,7 +54,7 @@
         <key>NSExceptionDomains</key>
         <dict>
             <!-- Your real QA + Production domain (HTTPS) – no exception needed, but added for clarity -->
-            <key>qa.akarat.com</key>
+            <key>akarat.com</key>
             <dict>
                 <key>NSIncludesSubdomains</key>
                 <true/>

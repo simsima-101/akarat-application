@@ -132,8 +132,81 @@ class _FilterDemoState extends State<FilterDemo> {
             ),
             leading: IconButton(
               icon: const Icon(Icons.close, color: Colors.red),
-              onPressed: () {
-                Navigator.pop(context);
+              onPressed: () async {
+                if (filterProvider.isFromFilterList) {
+                  await filterProvider.showResult(
+                    context,
+                    autoUpdate: false,
+                    onFilterResultNotZero: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          settings: const RouteSettings(name: 'FliterList'),
+                          builder: (context) => FliterList(
+                              // filterModel: filterProvider.filterModel,
+                              // // forceRefresh: true,
+                              // // 👇 send the exact UI selections forward
+                              // selectedPurpose: filterProvider
+                              //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
+                              // selectedPropertyType: filterProvider
+                              //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
+                              ),
+                        ),
+                      );
+                    },
+                    onFilterResultZero: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Scaffold(
+                            appBar: AppBar(
+                              title: Text('Results'),
+                              backgroundColor: Colors.red,
+                            ),
+                            body: Container(
+                              color: Colors.white,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Image.asset("assets/images/not_found.png",
+                                        width: 50, height: 50),
+                                    SizedBox(height: 20),
+                                    Text('No Property Found',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      'Please select other filters to get results.',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.black54),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(height: 30),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text('Back to Filters',
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.white)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                } else {
+                  Navigator.pop(context);
+                }
               },
             ),
 
@@ -193,6 +266,7 @@ class _FilterDemoState extends State<FilterDemo> {
                       ],
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         // Properties
                         // ✅ UPDATED: Properties toggle
@@ -297,68 +371,71 @@ class _FilterDemoState extends State<FilterDemo> {
               const SizedBox(height: 10),
               //properties
               if (showProductPills) ...[
-                Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: SizedBox(
-                    height: 60,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: filterProvider.product.length,
-                      itemBuilder: (context, index) {
-                        final isSelected =
-                            filterProvider.selectedproduct == index;
-                        return GestureDetector(
-                          onTap: () async {
-                            await filterProvider.setSelectedProductType(
-                              context,
-                              index,
-                            );
-                          },
-                          child: Container(
-                            width: 180,
-                            height: 34,
-                            alignment: Alignment.center,
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 5),
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? const Color(0xFFF5F4F9)
-                                  : Colors.white,
-                              border: Border.all(
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: SizedBox(
+                      height: 60,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: filterProvider.product.length,
+                        itemBuilder: (context, index) {
+                          final isSelected =
+                              filterProvider.selectedproduct == index;
+                          return GestureDetector(
+                            onTap: () async {
+                              await filterProvider.setSelectedProductType(
+                                context,
+                                index,
+                              );
+                            },
+                            child: Container(
+                              width: 180,
+                              height: 34,
+                              alignment: Alignment.center,
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 5),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 14),
+                              decoration: BoxDecoration(
                                 color: isSelected
-                                    ? Colors.black
-                                    : Colors.transparent,
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: const Offset(0, 2),
-                                  blurRadius: 4,
-                                  spreadRadius: 0,
+                                    ? const Color(0xFFF5F4F9)
+                                    : Colors.white,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Colors.black
+                                      : Colors.transparent,
+                                  width: 1,
                                 ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.8),
-                                  offset: const Offset(-4, -4),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              filterProvider.product[index],
-                              style: const TextStyle(
-                                color: Colors.black,
-                                letterSpacing: 0.5,
-                                fontSize: 14,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.5),
+                                    offset: const Offset(0, 2),
+                                    blurRadius: 4,
+                                    spreadRadius: 0,
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.white.withOpacity(0.8),
+                                    offset: const Offset(-4, -4),
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
                               ),
-                              textAlign: TextAlign.center,
+                              child: Text(
+                                filterProvider.product[index],
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  letterSpacing: 0.5,
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -2381,6 +2458,7 @@ class _FilterDemoState extends State<FilterDemo> {
               ///   SHOW RESULT BUTTON
               GestureDetector(
                 onTap: () async {
+                  if (filterProvider.isLoading) return;
                   await filterProvider.showResult(
                     context,
                     autoUpdate: false,
@@ -2475,17 +2553,22 @@ class _FilterDemoState extends State<FilterDemo> {
                       ],
                     ),
                     child: Center(
-                      child: Text(
-                        // ${filterProvider.displayedFilterResultCount}
-                        "Showing Results",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                      child: filterProvider.isLoading
+                          ? CupertinoActivityIndicator(
+                              radius: 14,
+                              color: Colors.white,
+                            )
+                          : Text(
+                              // ${filterProvider.displayedFilterResultCount}
+                              "Showing Results",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                     ),
                   ),
                 ),

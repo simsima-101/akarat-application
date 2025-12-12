@@ -56,6 +56,13 @@ class FilterProvider extends ChangeNotifier {
   ];
   int selectedPercentCompletion = 0; // index
 
+  bool isFromFilterList = false;
+
+  void setFilterNavigation(bool value) {
+    isFromFilterList = value;
+    notifyListeners();
+  }
+
   SfRangeValues values =
       SfRangeValues(500.0, 300000.0); // full range internally
 

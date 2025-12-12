@@ -9,27 +9,16 @@ import 'package:Akarat/services/api_service.dart'; // central base URL
 import 'package:Akarat/services/favorite_service.dart';
 import 'package:Akarat/utils/fav_logout.dart'; // Favorites screen
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart'; // for mailto
+import 'package:url_launcher/url_launcher.dart';
 
-// spacing
-const double _headerLeftPad = 0; // pull header to the very left
-const double _afterCheckboxGap = 8; // gap after the header checkbox
-const double _headerColGap = 20; // gap between header columns
-const double _colGap = 13;
+import 'CreateAlertScreen.dart'; // for mailto
 
 // text sizes
 const double _headerFontSize = 12; // smaller header text
 const double _rowFontSize = 11; // reduced row text a bit
 const FontWeight _rowFontWeight = FontWeight.w600;
-
-const double _gapBeforePurposeHeader = 4;
-const double _gapBeforePurposeRow = 10;
-
-const double _minTableWidth = 860;
-
-// unified spacing for both header & rows
-const double _gapCheckboxToName = 8;
 
 // --- header-only gaps ---
 const double _hGapNameToTime = 10;
@@ -42,9 +31,6 @@ const double _rGapTimeToPurpose = 18;
 const double _rGapPurposeToType = 10;
 
 const double _checkColW = 42.0;
-
-const double _trashIconW = 32;
-const double _gapTypeToTrash = 5;
 
 /// Read the auth token from secure storage (using your helpers).
 Future<String?> readToken() async {
@@ -593,6 +579,113 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
     );
   }
 
+  bool _alertCreated = false;
+
+  bool get isLoggedIn => _token != null && _token!.isNotEmpty;
+
+  Future<void> _onCreateAlert() async {
+    if (!isLoggedIn) {
+      showDialog(
+        context: context,
+        builder: (ctx) => Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.zero,
+          child: Container(
+            height: 70,
+            margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  top: -14,
+                  right: -10,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: IconButton(
+                      icon: const Icon(Icons.close,
+                          color: Colors.white, size: 20),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: 12,
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Login required to create alerts.',
+                          style: TextStyle(color: Colors.white, fontSize: 13),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          Navigator.of(ctx).pushNamed('/login');
+                        },
+                        child: const Text(
+                          'Login',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                            decorationColor: Colors.white,
+                            decorationThickness: 1.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CreateAlertScreen(
+          initialPurpose: "Rent",
+          initialPropertyType: 'Any',
+          isFromSavedAlerts: true,
+        ),
+      ),
+    );
+
+    // Optionally refresh saved alerts / show toast if user saved one
+    if (saved == true) {
+      // e.g., ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Alert saved')));
+    }
+
+    if (!mounted) return;
+
+    if (saved == true) {
+      setState(() => _alertCreated = true);
+
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.hideCurrentSnackBar(); // optional
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Alert created'),
+          duration: Duration(milliseconds: 1200),
+        ),
+      );
+    }
+  }
+
   /// ------------------------------ BUILD ------------------------------
   @override
   Widget build(BuildContext context) {
@@ -719,8 +812,29 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                             const Divider(height: 1, color: Color(0xFFECECEC)),
                             Expanded(
                               child: _all.isEmpty
-                                  ? const Center(
-                                      child: Text('No saved alerts yet.'))
+                                  ? Center(
+                                      child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Text(
+                                          'No saved alerts yet.',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        Gap(20),
+                                        SizedBox(
+                                            width: 150, // <-- reduce width here
+                                            child: CreateAlertButton(
+                                              disabled:
+                                                  _alertCreated, // true after saving the alert
+                                              onTap:
+                                                  _onCreateAlert, // normal handler
+                                            )),
+                                      ],
+                                    ))
                                   : ListView.builder(
                                       physics:
                                           const AlwaysScrollableScrollPhysics(),
@@ -1227,6 +1341,85 @@ class _ErrorView extends StatelessWidget {
               label: const Text('Retry'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class CreateAlertButton extends StatelessWidget {
+  final VoidCallback? onTap;
+  final bool disabled;
+
+  const CreateAlertButton({
+    super.key,
+    this.onTap,
+    this.disabled = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // keep the same visuals always
+    const gradient = LinearGradient(
+      begin: Alignment.centerRight,
+      end: Alignment.centerLeft,
+      colors: [Color(0xFFFFA3A3), Color(0xFFFFFFFF)],
+    );
+
+    return AbsorbPointer(
+      // blocks taps but keeps semantics hit-test for parent
+      absorbing: disabled,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(28),
+          // don't trigger ripple when disabled
+          onTap: disabled ? null : onTap,
+          splashColor: disabled ? Colors.transparent : null,
+          highlightColor: disabled ? Colors.transparent : null,
+          child: Container(
+            height: 41,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: Colors.red, width: 1),
+              gradient: gradient,
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/bell-red.png',
+                  height: 18,
+                  width: 18,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.notifications_none,
+                    size: 18,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Text(
+                  'Create Alert',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

@@ -2367,153 +2367,158 @@ class _Featured_DetailState extends State<Featured_Detail> {
             const SizedBox(height: 5),
 
             // ===== Recommended Properties =====
-            SizedBox(
-              height: 240,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: featuredDetailModel?.data?.recommended?.length ?? 0,
-                itemBuilder: (context, index) {
-                  final recProperty =
-                      featuredDetailModel!.data!.recommended![index];
+            if (featuredDetailModel?.data?.recommended != null &&
+                featuredDetailModel!.data!.recommended!.isNotEmpty) ...[
+              SizedBox(
+                height: 240,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount:
+                      featuredDetailModel?.data?.recommended?.length ?? 0,
+                  itemBuilder: (context, index) {
+                    final recProperty =
+                        featuredDetailModel!.data!.recommended![index];
 
-                  final imageUrl = (recProperty.media?.isNotEmpty ?? false)
-                      ? recProperty.media!.first.originalUrl.toString()
-                      : '';
+                    final imageUrl = (recProperty.media?.isNotEmpty ?? false)
+                        ? recProperty.media!.first.originalUrl.toString()
+                        : '';
 
-                  return Container(
-                    width: 210,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Card(
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      elevation: 4,
-                      child: GestureDetector(
-                        onTap: () {
-                          final id = recProperty.id.toString();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Featured_Detail(data: id),
-                            ),
-                          );
-                        },
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(15),
+                    return Container(
+                      width: 210,
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Card(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 4,
+                        child: GestureDetector(
+                          onTap: () {
+                            final id = recProperty.id.toString();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Featured_Detail(data: id),
+                              ),
+                            );
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(15),
+                                    ),
+                                    child: imageUrl.isNotEmpty
+                                        ? Image.network(
+                                            imageUrl,
+                                            height: 120,
+                                            width: double.infinity,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Container(
+                                            height: 120,
+                                            width: double.infinity,
+                                            color: Colors.grey.shade300,
+                                            child: const Center(
+                                              child: Icon(
+                                                  Icons.image_not_supported),
+                                            ),
+                                          ),
                                   ),
-                                  child: imageUrl.isNotEmpty
-                                      ? Image.network(
-                                          imageUrl,
-                                          height: 120,
-                                          width: double.infinity,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : Container(
-                                          height: 120,
-                                          width: double.infinity,
-                                          color: Colors.grey.shade300,
-                                          child: const Center(
-                                            child:
-                                                Icon(Icons.image_not_supported),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Builder(
+                                  builder: (_) {
+                                    // ✅ pull DLD permit_response from recommended item (if exists)
+                                    // adjust field name if your model differs
+                                    final permitResponse = recProperty
+                                        .regulatoryInfo?.permitResponse;
+
+                                    // ✅ resolve fields: DLD first → fallback to /api/properties values
+                                    final resolvedPrice = _recDldNum(
+                                            permitResponse,
+                                            ['price', 'amount']) ??
+                                        recProperty.price;
+
+                                    final resolvedBeds = _recDldNum(
+                                            permitResponse,
+                                            ['bedrooms', 'beds'])?.toInt() ??
+                                        recProperty.bedrooms ??
+                                        0;
+
+                                    final resolvedSqft =
+                                        _recDldStr(permitResponse, [
+                                              'propertySizeSqft',
+                                              'square_feet',
+                                              'sqft',
+                                              'area',
+                                              'size',
+                                            ]) ??
+                                            recProperty.squareFeet ??
+                                            '';
+
+                                    final resolvedLocation = _recDldStr(
+                                            permitResponse, [
+                                          'location',
+                                          'address',
+                                          'community'
+                                        ]) ??
+                                        recProperty.location ??
+                                        '';
+
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "${resolvedPrice ?? 0} AED",
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                ),
-                              ],
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: Builder(
-                                builder: (_) {
-                                  // ✅ pull DLD permit_response from recommended item (if exists)
-                                  // adjust field name if your model differs
-                                  final permitResponse = recProperty
-                                      .regulatoryInfo?.permitResponse;
-
-                                  // ✅ resolve fields: DLD first → fallback to /api/properties values
-                                  final resolvedPrice = _recDldNum(
-                                          permitResponse,
-                                          ['price', 'amount']) ??
-                                      recProperty.price;
-
-                                  final resolvedBeds = _recDldNum(
-                                          permitResponse,
-                                          ['bedrooms', 'beds'])?.toInt() ??
-                                      recProperty.bedrooms ??
-                                      0;
-
-                                  final resolvedSqft =
-                                      _recDldStr(permitResponse, [
-                                            'propertySizeSqft',
-                                            'square_feet',
-                                            'sqft',
-                                            'area',
-                                            'size',
-                                          ]) ??
-                                          recProperty.squareFeet ??
-                                          '';
-
-                                  final resolvedLocation = _recDldStr(
-                                          permitResponse, [
-                                        'location',
-                                        'address',
-                                        'community'
-                                      ]) ??
-                                      recProperty.location ??
-                                      '';
-
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "${resolvedPrice ?? 0} AED",
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.bed,
+                                                size: 16, color: Colors.red),
+                                            const SizedBox(width: 4),
+                                            Text("$resolvedBeds beds"),
+                                            const SizedBox(width: 6),
+                                            const Icon(Icons.square_foot,
+                                                size: 16, color: Colors.red),
+                                            const SizedBox(width: 4),
+                                            Text("$resolvedSqft"),
+                                          ],
                                         ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.bed,
-                                              size: 16, color: Colors.red),
-                                          const SizedBox(width: 4),
-                                          Text("$resolvedBeds beds"),
-                                          const SizedBox(width: 6),
-                                          const Icon(Icons.square_foot,
-                                              size: 16, color: Colors.red),
-                                          const SizedBox(width: 4),
-                                          Text("$resolvedSqft"),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        resolvedLocation,
-                                        style: const TextStyle(
-                                            fontSize: 12, color: Colors.black),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  );
-                                },
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          resolvedLocation,
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.black),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
+            ],
 
             const SizedBox(height: 10),
           ],

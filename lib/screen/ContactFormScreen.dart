@@ -2,25 +2,25 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 typedef EmailAgentSubmitCallback = Future<void> Function({
-required String name,
-required String email,
-required String phone,
-required String message,
+  required String name,
+  required String email,
+  required String phone,
+  required String message,
 });
 
 /// Open from anywhere
 Future<void> showEmailAgentDialog(
-    BuildContext context, {
-      String subtitle = '',
-      String? initialMessage,
-      String? initialPhone,
-      EmailAgentSubmitCallback? onSubmit,
-      VoidCallback? onSuccess,
-    }) async {
+  BuildContext context, {
+  String subtitle = '',
+  String? initialMessage,
+  String? initialPhone,
+  EmailAgentSubmitCallback? onSubmit,
+  VoidCallback? onSuccess,
+}) async {
   await showDialog(
     context: context,
     barrierDismissible: false,
@@ -55,7 +55,8 @@ Future<void> showHomeContactDialog(BuildContext context) async {
             headers: {
               "Accept": "application/json",
               "X-Device-ID": "8B368203-14FE-47F6-98C8-9933CB0AE73D",
-              "Authorization": "Bearer 1092|fsHg2fMib653xIThnBMHMgtzl8Q7rILysRpFJbrb",
+              "Authorization":
+                  "Bearer 1092|fsHg2fMib653xIThnBMHMgtzl8Q7rILysRpFJbrb",
             },
             body: {
               "name": name.trim(),
@@ -80,11 +81,15 @@ Future<void> showHomeContactDialog(BuildContext context) async {
   // Show result AFTER dialog closes
   if (success == true) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Thank you! Your message was sent successfully!"), backgroundColor: Colors.green),
+      const SnackBar(
+          content: Text("Thank you! Your message was sent successfully!"),
+          backgroundColor: Colors.green),
     );
   } else if (success == false) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Failed to send message. Please try again."), backgroundColor: Colors.red),
+      const SnackBar(
+          content: Text("Failed to send message. Please try again."),
+          backgroundColor: Colors.red),
     );
   }
 }
@@ -115,7 +120,9 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+            {};
 
     _subtitle = args['subtitle'] as String? ?? '';
     final initialMsg = args['initialMessage'] as String?;
@@ -124,7 +131,8 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
     _onSuccess = args['onSuccess'] as VoidCallback?;
 
     if (_msgCtrl.text.isEmpty && initialMsg != null) _msgCtrl.text = initialMsg;
-    if (_phoneCtrl.text.isEmpty && initialPhone != null) _phoneCtrl.text = initialPhone;
+    if (_phoneCtrl.text.isEmpty && initialPhone != null)
+      _phoneCtrl.text = initialPhone;
   }
 
   @override
@@ -136,11 +144,15 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
     super.dispose();
   }
 
-  String? _req(String? v) => (v == null || v.trim().isEmpty) ? 'Required' : null;
+  String? _req(String? v) =>
+      (v == null || v.trim().isEmpty) ? 'Required' : null;
   String? _email(String? v) {
     if (v == null || v.trim().isEmpty) return 'Required';
-    return RegExp(r'^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,}$').hasMatch(v.trim()) ? null : 'Invalid email';
+    return RegExp(r'^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,}$').hasMatch(v.trim())
+        ? null
+        : 'Invalid email';
   }
+
   String? _phone(String? v) {
     if (v == null || v.trim().isEmpty) return 'Required';
     return RegExp(r'^\d{7,15}$').hasMatch(v.trim()) ? null : '7–15 digits only';
@@ -180,20 +192,27 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
       path: 'info@akarat.com',
       queryParameters: {
         'subject': 'Inquiry from $name',
-        'body': 'Name: $name\nEmail: $email\nPhone: $fullPhone\n\nMessage:\n$msg',
+        'body':
+            'Name: $name\nEmail: $email\nPhone: $fullPhone\n\nMessage:\n$msg',
       },
     );
 
     try {
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched =
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!launched) {
         if (!mounted) return;
         await showDialog(
           context: context,
           builder: (_) => AlertDialog(
             title: const Text("No Email App"),
-            content: const Text("Please install Gmail or Outlook to send emails."),
-            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
+            content:
+                const Text("Please install Gmail or Outlook to send emails."),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("OK"))
+            ],
           ),
         );
         return;
@@ -205,96 +224,100 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Could not open email app"), backgroundColor: Colors.red),
+          const SnackBar(
+              content: Text("Could not open email app"),
+              backgroundColor: Colors.red),
         );
       }
     }
   }
 
   InputDecoration _input(String hint) => InputDecoration(
-    hintText: hint,
-    filled: true,
-    fillColor: Colors.white,
-    //  vertical: 18 → 10 (shorter fields)
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14), // 18 → 14
-      borderSide: const BorderSide(color: Color(0xFFE6E6E6)),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: Color(0xFFE6E6E6)),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: Color(0xFFDDDDDD), width: 1.5),
-    ),
-    errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: Colors.red),
-    ),
-  );
-
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.white,
+        //  vertical: 18 → 10 (shorter fields)
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14), // 18 → 14
+          borderSide: const BorderSide(color: Color(0xFFE6E6E6)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFE6E6E6)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFDDDDDD), width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+      );
 
   Widget _uaePrefixChip() => Container(
-    height: 48, // 56 → 48
-    decoration: BoxDecoration(
-      color: Colors.white,
-      border: Border.all(color: const Color(0xFFE6E6E6)),
-      borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
-    ),
-    padding: const EdgeInsets.symmetric(horizontal: 10),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Image.asset(
-          'assets/images/ae.png',
-          width: 20,
-          height: 14,
-          fit: BoxFit.cover,
+        height: 48, // 56 → 48
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: const Color(0xFFE6E6E6)),
+          borderRadius:
+              const BorderRadius.horizontal(left: Radius.circular(14)),
         ),
-        const SizedBox(width: 6),
-        const Text(
-          '+971',
-          style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/ae.png',
+              width: 20,
+              height: 14,
+              fit: BoxFit.cover,
+            ),
+            const SizedBox(width: 6),
+            const Text(
+              '+971',
+              style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+            ),
+          ],
         ),
-      ],
-    ),
-  );
-
+      );
 
   Widget _phoneField() => Row(
-    children: [
-      _uaePrefixChip(),
-      Expanded(
-        child: TextFormField(
-          controller: _phoneCtrl,
-          validator: _phone,
-          keyboardType: TextInputType.phone,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(15),
-          ],
-          decoration: _input('Phone').copyWith(
-
-            border: const OutlineInputBorder(
-              borderRadius: BorderRadius.horizontal(right: Radius.circular(14)),
-              borderSide: BorderSide(color: Color(0xFFE6E6E6)),
-            ),
-            enabledBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.horizontal(right: Radius.circular(14)),
-              borderSide: BorderSide(color: Color(0xFFE6E6E6)),
-            ),
-            focusedBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.horizontal(right: Radius.circular(14)),
-              borderSide: BorderSide(color: Color(0xFFDDDDDD), width: 1.5),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _uaePrefixChip(),
+          Expanded(
+            child: TextFormField(
+              controller: _phoneCtrl,
+              validator: _phone,
+              keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(15),
+              ],
+              decoration: _input('Phone').copyWith(
+                border: const OutlineInputBorder(
+                  borderRadius:
+                      BorderRadius.horizontal(right: Radius.circular(14)),
+                  borderSide: BorderSide(color: Color(0xFFE6E6E6)),
+                ),
+                enabledBorder: const OutlineInputBorder(
+                  borderRadius:
+                      BorderRadius.horizontal(right: Radius.circular(14)),
+                  borderSide: BorderSide(color: Color(0xFFE6E6E6)),
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderRadius:
+                      BorderRadius.horizontal(right: Radius.circular(14)),
+                  borderSide: BorderSide(color: Color(0xFFDDDDDD), width: 1.5),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
-    ],
-  );
-
+        ],
+      );
 
   @override
   @override
@@ -339,7 +362,8 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
                     ),
                     InkWell(
                       onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.close, color: Colors.red, size: 24),
+                      child:
+                          const Icon(Icons.close, color: Colors.red, size: 24),
                     ),
                   ],
                 ),
@@ -382,7 +406,7 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
                 TextFormField(
                   controller: _msgCtrl,
                   validator: (v) =>
-                  v?.trim().isEmpty ?? true ? 'Message is required' : null,
+                      v?.trim().isEmpty ?? true ? 'Message is required' : null,
                   minLines: 3, // 5 → 3 (shorter)
                   maxLines: 6, // 8 → 6
                   decoration: _input('Write your message here...').copyWith(
@@ -419,7 +443,6 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
                     ),
                   ),
                 ),
-
               ],
             ),
           ),
@@ -427,5 +450,4 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
       ),
     );
   }
-
 }

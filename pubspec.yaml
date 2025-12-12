@@ -1,7 +1,7 @@
 name: Akarat
 description: "A new Flutter project."
 publish_to: 'none'
-version: 1.0.13+4
+version: 1.0.8+19
 
 environment:
   sdk: ^3.6.1
@@ -10,47 +10,46 @@ dependencies:
   flutter:
     sdk: flutter
   readmore: ^3.0.0
-  carousel_slider: ^5.0.0
-  standard_searchbar: ^2.0.0
-  sliding_switch: ^1.0.0
-  syncfusion_flutter_sliders: ^30.1.38
-  syncfusion_flutter_charts: ^30.1.39
-  syncfusion_flutter_core: ^30.1.39
-  bubble_tab_indicator: ^0.1.6
+  carousel_slider: ^5.1.1
+  standard_searchbar: ^2.1.1
+  sliding_switch: ^1.1.0
+  syncfusion_flutter_sliders: ^31.2.18
+  syncfusion_flutter_charts: ^31.2.18
+  syncfusion_flutter_core: ^31.2.18
+#  bubble_tab_indicator: ^0.1.6
   tuna_flutter_range_slider: ^1.0.0
-  smooth_page_indicator: ^1.1.0
-  get: ^4.6.5
-  shared_preferences: ^2.2.2
-  flutter_map: ^8.1.1
+  smooth_page_indicator: ^2.0.1
+  get: ^4.7.3
+  shared_preferences: ^2.5.4
+  flutter_map: ^8.2.2
   provider: ^6.1.3
-  cached_network_image: ^3.2.3
-  http: ^1.4.0
+  cached_network_image: ^3.4.1
+  http: ^1.6.0
   shimmer: ^3.0.0
   html_unescape: ^2.0.0
   flutter_html: ^3.0.0
-  dropdown_button2: ^2.3.9
-  url_launcher: ^6.1.4
-  flutter_phone_direct_caller: ^2.0.1
-  dio: ^5.4.0
-  flutter_riverpod: ^2.4.0
-  crypto: ^3.0.2
-  flutter_dotenv: ^5.0.2
-  connectivity_plus: ^6.1.3
+#  dropdown_button2: ^2.3.9
+  url_launcher: ^6.3.2
+  flutter_phone_direct_caller: ^2.2.1
+  dio: ^5.9.0
+  crypto: ^3.0.7
+  flutter_dotenv: ^6.0.0
+#  connectivity_plus: ^6.1.3
   intl: ^0.20.2
-  google_maps_flutter: ^2.1.8
-  flutter_hooks: ^0.21.2
+  google_maps_flutter: ^2.14.0
+#  flutter_hooks: ^0.21.2
   cupertino_icons: ^1.0.8
-  flutter_secure_storage: ^9.2.4
-  auto_size_text: ^3.0.0
-  flutter_typeahead: ^5.2.0
-  image_picker: ^1.0.4
-  path_provider: ^2.1.2
-  firebase_core: ^4.2.0
-  firebase_auth: ^6.1.1
+  flutter_secure_storage: ^10.0.0
+#  auto_size_text: ^3.0.0
+#  flutter_typeahead: ^5.2.0
+  image_picker: ^1.2.1
+  path_provider: ^2.1.5
+  firebase_core: ^4.2.1
+  firebase_auth: ^6.1.2
   google_sign_in: ^7.2.0
   gap: ^3.0.1
   easy_debounce: ^2.0.3
-  device_info_plus: ^9.0.0
+  device_info_plus: ^12.3.0
 
 dev_dependencies:
   flutter_test:

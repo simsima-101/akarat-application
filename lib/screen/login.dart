@@ -1,20 +1,19 @@
 // lib/screen/login.dart
 import 'dart:async';
-import 'package:flutter/material.dart';
 
+import 'package:Akarat/screen/forgot_password.dart';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/register_screen.dart';
-import 'package:Akarat/screen/forgot_password.dart';
-
 import 'package:Akarat/services/api_service.dart';
-import '../secure_storage.dart';
-import '../services/profile_cache.dart';
-import '../services/session.dart';
-import '../services/auth_prefs.dart';
-
 // Firebase + Google Sign-In (v7)
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
+
+import '../secure_storage.dart';
+import '../services/auth_prefs.dart';
+import '../services/profile_cache.dart';
+import '../services/session.dart';
 
 const String _IOS_CLIENT_ID =
     '370139668712-ema9n0o9vhq25nbqu771v5c71ehivolf.apps.googleusercontent.com';
@@ -92,24 +91,26 @@ class _LoginDemoState extends State<LoginDemo> {
       final last = override.last.trim();
       if (first.isNotEmpty || last.isNotEmpty) {
         id = (
-        first: first,
-        last: last,
-        name: [first, last].where((s) => s.isNotEmpty).join(' '),
-        email: id.email,
+          first: first,
+          last: last,
+          name: [first, last].where((s) => s.isNotEmpty).join(' '),
+          email: id.email,
         );
       }
     }
 
     if (id.first.isEmpty && id.last.isEmpty) {
-      final local = (id.email.isNotEmpty ? id.email : emailController.text.trim())
-          .split('@')
-          .first;
+      final local =
+          (id.email.isNotEmpty ? id.email : emailController.text.trim())
+              .split('@')
+              .first;
       id = (first: local, last: '', name: local, email: id.email);
     }
 
     // Persist to SecureStorage + in-memory Session
     await SecureStorage.setToken(token);
-    await SecureStorage.saveUserName(id.name.isNotEmpty ? id.name : '${id.first} ${id.last}'.trim());
+    await SecureStorage.saveUserName(
+        id.name.isNotEmpty ? id.name : '${id.first} ${id.last}'.trim());
     await SecureStorage.saveUserEmail(id.email);
     await SecureStorage.saveFirstName(id.first);
     await SecureStorage.saveLastName(id.last);
@@ -153,7 +154,7 @@ class _LoginDemoState extends State<LoginDemo> {
         if (!mounted) return;
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const Home()),
-              (_) => false,
+          (_) => false,
         );
         return;
       }
@@ -163,10 +164,12 @@ class _LoginDemoState extends State<LoginDemo> {
       if (status == 401) {
         msg = resp['message']?.toString() ?? 'Invalid email or password.';
       } else if (status == 422) {
-        final body = resp['__raw'] is Map ? resp['__raw'] as Map<String, dynamic> : {};
+        final body =
+            resp['__raw'] is Map ? resp['__raw'] as Map<String, dynamic> : {};
         final errors = body['errors'] as Map?;
         if (errors != null && errors.isNotEmpty) {
-          msg = (errors.values.first is List && (errors.values.first as List).isNotEmpty)
+          msg = (errors.values.first is List &&
+                  (errors.values.first as List).isNotEmpty)
               ? (errors.values.first as List).first.toString()
               : 'Validation error.';
         } else {
@@ -196,7 +199,8 @@ class _LoginDemoState extends State<LoginDemo> {
     try {
       final completer = Completer<gsi.GoogleSignInAccount>();
       sub = _googleSignIn.authenticationEvents.listen((event) {
-        if (event is gsi.GoogleSignInAuthenticationEventSignIn && !completer.isCompleted) {
+        if (event is gsi.GoogleSignInAuthenticationEventSignIn &&
+            !completer.isCompleted) {
           completer.complete(event.user);
         }
       });
@@ -220,7 +224,8 @@ class _LoginDemoState extends State<LoginDemo> {
       if (user == null) throw Exception('Firebase sign-in failed.');
 
       final firebaseIdToken = await user.getIdToken(true);
-      if (firebaseIdToken == null) throw Exception('Failed to get Firebase token.');
+      if (firebaseIdToken == null)
+        throw Exception('Failed to get Firebase token.');
 
       final data = await ApiService.loginWithGoogleIdToken(firebaseIdToken);
       final token = ApiService.extractToken(data);
@@ -234,12 +239,12 @@ class _LoginDemoState extends State<LoginDemo> {
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const Home()),
-            (_) => false,
+        (_) => false,
       );
     } catch (e) {
       setState(() {
         errorMessage =
-        'Login failed. This account may be inactive or deleted.\nPlease try another method.';
+            'Login failed. This account may be inactive or deleted.\nPlease try another method.';
       });
     } finally {
       await sub?.cancel();
@@ -269,39 +274,48 @@ class _LoginDemoState extends State<LoginDemo> {
                         child: GestureDetector(
                           onTap: () => Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(builder: (_) => const Home()),
-                                (_) => false,
+                            (_) => false,
                           ),
-                          child: const Icon(Icons.close, size: 28, color: Colors.black),
+                          child: const Icon(Icons.close,
+                              size: 28, color: Colors.black),
                         ),
                       ),
                     ),
                     const SizedBox(height: 60),
                     Center(
-                      child: Image.asset('assets/images/app_icon.png', width: 150, height: 50),
+                      child: Image.asset('assets/images/app_icon.png',
+                          width: 150, height: 50),
                     ),
                     Center(
-                      child: Image.asset('assets/images/logo-text.png', width: 150, height: 38),
+                      child: Image.asset('assets/images/logo-text.png',
+                          width: 150, height: 38),
                     ),
                     Form(
                       key: formKey,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 30),
                         padding: const EdgeInsets.only(top: 15),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           color: const Color(0xFFF5F5F5),
                           boxShadow: [
-                            BoxShadow(color: Colors.grey.shade300, blurRadius: 2, offset: const Offset(0, 1)),
+                            BoxShadow(
+                                color: Colors.grey.shade300,
+                                blurRadius: 2,
+                                offset: const Offset(0, 1)),
                           ],
                         ),
                         child: Column(
                           children: [
-                            const Text("Welcome to Akarat!", style: TextStyle(fontSize: 20)),
+                            const Text("Welcome to Akarat!",
+                                style: TextStyle(fontSize: 20)),
                             const SizedBox(height: 15),
 
                             // Email Field
-                            _buildTextField(emailController, 'Email', TextInputType.emailAddress),
+                            _buildTextField(emailController, 'Email',
+                                TextInputType.emailAddress),
 
                             const SizedBox(height: 6),
 
@@ -314,23 +328,30 @@ class _LoginDemoState extends State<LoginDemo> {
                                   passwordController,
                                   'Password',
                                   TextInputType.visiblePassword,
-                                  obscurePassword,                                        // obscureText
-                                      (_) => _login(),                                        // onFieldSubmitted
-                                  IconButton(                                             // suffixIcon
+                                  obscurePassword, // obscureText
+                                  (_) => _login(), // onFieldSubmitted
+                                  IconButton(
+                                    // suffixIcon
                                     icon: Icon(
-                                      obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                      obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
                                     ),
-                                    onPressed: () => setState(() => obscurePassword = !obscurePassword),
+                                    onPressed: () => setState(() =>
+                                        obscurePassword = !obscurePassword),
                                   ),
                                 ),
 
                                 // Forgot password link
                                 Padding(
-                                  padding: const EdgeInsets.only(right: 10, top: 4),
+                                  padding:
+                                      const EdgeInsets.only(right: 10, top: 4),
                                   child: InkWell(
                                     onTap: () => Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              const ForgotPasswordScreen()),
                                     ),
                                     child: const Text(
                                       "Forgot password?",
@@ -350,14 +371,22 @@ class _LoginDemoState extends State<LoginDemo> {
                             isLoading
                                 ? const CircularProgressIndicator()
                                 : ElevatedButton(
-                              onPressed: _login,
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: Size(MediaQuery.of(context).size.width * 0.8, 50),
-                                backgroundColor: const Color(0xFFF1F1F1),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                              child: const Text("Login", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
-                            ),
+                                    onPressed: _login,
+                                    style: ElevatedButton.styleFrom(
+                                      minimumSize: Size(
+                                          MediaQuery.of(context).size.width *
+                                              0.8,
+                                          50),
+                                      backgroundColor: const Color(0xFFF1F1F1),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
+                                    ),
+                                    child: const Text("Login",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black)),
+                                  ),
 
                             const SizedBox(height: 14),
                             _buildDivider(),
@@ -369,11 +398,15 @@ class _LoginDemoState extends State<LoginDemo> {
                               height: 50,
                               child: OutlinedButton.icon(
                                 onPressed: _signInWithGoogle,
-                                icon: Image.asset('assets/images/google.png', width: 20, height: 20),
-                                label: const Text('Continue with Google', style: TextStyle(fontWeight: FontWeight.w600)),
+                                icon: Image.asset('assets/images/google.png',
+                                    width: 20, height: 20),
+                                label: const Text('Continue with Google',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600)),
                                 style: OutlinedButton.styleFrom(
                                   side: const BorderSide(color: Colors.black12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
                                 ),
                               ),
                             ),
@@ -384,10 +417,17 @@ class _LoginDemoState extends State<LoginDemo> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text('Not registered yet? ', style: TextStyle(color: Color(0xFF424242))),
+                                const Text('Not registered yet? ',
+                                    style: TextStyle(color: Color(0xFF424242))),
                                 InkWell(
-                                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
-                                  child: const Text('Create new account', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              const RegisterScreen())),
+                                  child: const Text('Create new account',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ),
@@ -403,8 +443,11 @@ class _LoginDemoState extends State<LoginDemo> {
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Container(
                           padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(8)),
-                          child: Text(errorMessage!, style: const TextStyle(color: Colors.white)),
+                          decoration: BoxDecoration(
+                              color: Colors.redAccent,
+                              borderRadius: BorderRadius.circular(8)),
+                          child: Text(errorMessage!,
+                              style: const TextStyle(color: Colors.white)),
                         ),
                       ),
                   ],
@@ -419,13 +462,13 @@ class _LoginDemoState extends State<LoginDemo> {
 
   // ---------- Helper Method (Correctly Defined) ----------
   Widget _buildTextField(
-      TextEditingController controller,
-      String hint, [
-        TextInputType? keyboardType,
-        bool obscureText = false,
-        void Function(String)? onFieldSubmitted,
-        Widget? suffixIcon,
-      ]) {
+    TextEditingController controller,
+    String hint, [
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    void Function(String)? onFieldSubmitted,
+    Widget? suffixIcon,
+  ]) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.8,
       height: 50,
@@ -461,9 +504,17 @@ class _LoginDemoState extends State<LoginDemo> {
   Widget _buildDivider() {
     return Row(
       children: [
-        Expanded(child: Container(margin: const EdgeInsets.symmetric(horizontal: 20), height: 1, color: Colors.black12)),
+        Expanded(
+            child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                height: 1,
+                color: Colors.black12)),
         const Text('  or  ', style: TextStyle(color: Colors.black54)),
-        Expanded(child: Container(margin: const EdgeInsets.symmetric(horizontal: 20), height: 1, color: Colors.black12)),
+        Expanded(
+            child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                height: 1,
+                color: Colors.black12)),
       ],
     );
   }
@@ -474,7 +525,11 @@ BoxDecoration _boxDecoration() {
     borderRadius: BorderRadius.circular(10),
     color: Colors.white,
     boxShadow: [
-      BoxShadow(color: Colors.grey.shade300, offset: const Offset(0.3, 0.3), blurRadius: 2, spreadRadius: 0.2),
+      BoxShadow(
+          color: Colors.grey.shade300,
+          offset: const Offset(0.3, 0.3),
+          blurRadius: 2,
+          spreadRadius: 0.2),
     ],
   );
 }

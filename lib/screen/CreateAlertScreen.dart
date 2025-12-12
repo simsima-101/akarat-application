@@ -24,12 +24,13 @@ Future<String?> readToken() async {
 class CreateAlertScreen extends StatefulWidget {
   final String
       initialPurpose; // e.g., "Rent" | "Buy" | "New Projects" | "Commercial"
-  final String initialPropertyType; // e.g., "Villa" | "Apartment" | "" (Any)
-
+  final String initialPropertyType; // e.g., "Villa" | "Apartment" | ""
+  final bool isFromSavedAlerts;
   const CreateAlertScreen({
     super.key,
     required this.initialPurpose,
     required this.initialPropertyType,
+    this.isFromSavedAlerts = false,
   });
 
   @override
@@ -208,7 +209,7 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
 
   // ---------- Save ----------
 
-  Future<void> _save() async {
+  Future<void> _save(bool isFromSavedAlerts) async {
     if (!_formKey.currentState!.validate()) return;
 
     final token = await _requireAuth();
@@ -275,11 +276,17 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
 
       if (res.statusCode >= 200 && res.statusCode < 300) {
         // ✅ On success, go to SavedAlertsScreen (as you wanted)
-        // Navigator.of(context).pushReplacement(
-        //   MaterialPageRoute(builder: (_) => SavedAlertsScreen(token: token)),
-        // );
 
-        Navigator.pop(context);
+        if (isFromSavedAlerts) {
+          Navigator.pop(context);
+
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => SavedAlertsScreen(token: token)),
+          );
+        } else {
+          Navigator.pop(context);
+        }
+
         return;
       }
 
@@ -505,7 +512,12 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
                                   child: _pillButton(
                                     label:
                                         _submitting ? 'Saving…' : 'Save Alert',
-                                    onTap: _submitting ? () {} : _save,
+                                    onTap: _submitting
+                                        ? () {}
+                                        : () async {
+                                            await _save(
+                                                widget.isFromSavedAlerts);
+                                          },
                                   ),
                                 ),
                               ],

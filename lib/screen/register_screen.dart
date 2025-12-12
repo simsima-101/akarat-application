@@ -1,12 +1,12 @@
 // lib/screen/register_screen.dart
 import 'dart:async';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart' as gsi;
 
 import 'package:Akarat/services/api_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart' as gsi;
+
 import '../secure_storage.dart';
 import '../services/auth_prefs.dart';
 import '../services/profile_cache.dart';
@@ -14,6 +14,7 @@ import '../services/session.dart';
 import 'home.dart';
 import 'login.dart';
 import 'terms_condition.dart';
+
 const String _IOS_CLIENT_ID =
     '370139668712-ema9n0o9vhq25nbqu771v5c71ehivolf.apps.googleusercontent.com';
 
@@ -47,31 +48,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool get _ruleLen => passwordController.text.trim().length >= 8;
   bool get _ruleUpper => RegExp(r'[A-Z]').hasMatch(passwordController.text);
   bool get _ruleNum => RegExp(r'\d').hasMatch(passwordController.text);
-  bool get _ruleSpecial =>
-      RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-\\/\[\]=;+`~]').hasMatch(passwordController.text);
+  bool get _ruleSpecial => RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-\\/\[\]=;+`~]')
+      .hasMatch(passwordController.text);
 
   // Styles
   OutlineInputBorder get _fieldBorder => OutlineInputBorder(
-    borderRadius: BorderRadius.circular(16),
-    borderSide: const BorderSide(color: Color(0xFFE9E9E9)),
-  );
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFFE9E9E9)),
+      );
 
-  InputDecoration _dec(String hint, {Widget? prefix, Widget? suffix}) => InputDecoration(
-    hintText: hint,
-    hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-    filled: true,
-    fillColor: Colors.white,
-    enabledBorder: _fieldBorder,
-    focusedBorder: _fieldBorder.copyWith(
-      borderSide: const BorderSide(color: Color(0xFFDADADA)),
-    ),
-    prefixIconConstraints: const BoxConstraints(minWidth: 0),
-    prefixIcon: prefix != null
-        ? Padding(padding: const EdgeInsets.only(left: 12, right: 8), child: prefix)
-        : null,
-    suffixIcon: suffix,
-  );
+  InputDecoration _dec(String hint, {Widget? prefix, Widget? suffix}) =>
+      InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        filled: true,
+        fillColor: Colors.white,
+        enabledBorder: _fieldBorder,
+        focusedBorder: _fieldBorder.copyWith(
+          borderSide: const BorderSide(color: Color(0xFFDADADA)),
+        ),
+        prefixIconConstraints: const BoxConstraints(minWidth: 0),
+        prefixIcon: prefix != null
+            ? Padding(
+                padding: const EdgeInsets.only(left: 12, right: 8),
+                child: prefix)
+            : null,
+        suffixIcon: suffix,
+      );
 
   // ---------- SUBMIT ----------
   Future<void> _submit() async {
@@ -150,21 +155,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (status == 200 || status == 201) {
         // Pull optional OTP hints / timers (with sane fallbacks)
         final devOtp = (reg['otp'] ?? reg['dev_otp'] ?? '').toString().trim();
-        final expiresIn = reg['expires_in'] is int ? reg['expires_in'] as int : 300;
-        final resendAfter = reg['resend_after'] is int ? reg['resend_after'] as int : 60;
+        final expiresIn =
+            reg['expires_in'] is int ? reg['expires_in'] as int : 300;
+        final resendAfter =
+            reg['resend_after'] is int ? reg['resend_after'] as int : 60;
 
         // Try to extract a token if your backend returned one on register
         final regToken = _extractTokenFromAny(reg) ?? '';
 
         // Prefer server-provided identity if present
         final emailFromApi = (reg['email'] ?? email).toString().trim();
-        final serverUser = ((reg['user'] ?? reg['name']) ?? '').toString().trim();
+        final serverUser =
+            ((reg['user'] ?? reg['name']) ?? '').toString().trim();
 
         final fullName = serverUser.isNotEmpty
             ? serverUser
             : (('$first $last').trim().isNotEmpty
-            ? ('$first $last').trim()
-            : emailFromApi.split('@').first);
+                ? ('$first $last').trim()
+                : emailFromApi.split('@').first);
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -203,7 +211,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           low.contains('already exists') ||
           low.contains('conflict') ||
           low.contains('422')) {
-        _showErr('This email is already registered. Please Login or use Forgot Password.');
+        _showErr(
+            'This email is already registered. Please Login or use Forgot Password.');
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
@@ -263,7 +272,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     // v7 requires clientId at initialize on iOS
     await _googleSignIn.initialize(clientId: _IOS_CLIENT_ID);
     try {
-      await _googleSignIn.attemptLightweightAuthentication(); // optional fast path
+      await _googleSignIn
+          .attemptLightweightAuthentication(); // optional fast path
     } catch (_) {}
   }
 
@@ -288,7 +298,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     // 2) If names are empty, try your canonical server profile (/me or /profile)
     if (id.first.isEmpty && id.last.isEmpty) {
-      final fetched = await ApiService.tryFetchMe(token); // -> (first,last,name,email)?
+      final fetched =
+          await ApiService.tryFetchMe(token); // -> (first,last,name,email)?
       if (fetched != null) id = fetched;
     }
 
@@ -299,19 +310,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final last = override.last.trim();
       if (first.isNotEmpty || last.isNotEmpty) {
         id = (
-        first: first,
-        last: last,
-        name: [first, last].where((s) => s.isNotEmpty).join(' '),
-        email: id.email,
+          first: first,
+          last: last,
+          name: [first, last].where((s) => s.isNotEmpty).join(' '),
+          email: id.email,
         );
       }
     }
 
     // 4) Fallback: synthesize name from email local-part
     if (id.first.isEmpty && id.last.isEmpty) {
-      final local = (id.email.isNotEmpty ? id.email : emailController.text.trim())
-          .split('@')
-          .first;
+      final local =
+          (id.email.isNotEmpty ? id.email : emailController.text.trim())
+              .split('@')
+              .first;
       id = (first: local, last: '', name: local, email: id.email);
     }
 
@@ -386,14 +398,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const Home()),
-            (_) => false,
+        (_) => false,
       );
     } catch (e) {
       await SecureStorage.signOutLocal();
       if (mounted) {
         setState(
-              () => errorMessage =
-          'This account has been deleted or is inactive.\nPlease contact support to reactivate it or use a different email',
+          () => errorMessage =
+              'This account has been deleted or is inactive.\nPlease contact support to reactivate it or use a different email',
         );
       }
     } finally {
@@ -437,32 +449,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
         const SizedBox(height: 15),
 
         // Google button
-        SizedBox(
-          width: MediaQuery.of(context).size.width * 0.8,
-          height: 50,
-          child: OutlinedButton.icon(
-            onPressed: _signInWithGoogle,
-            icon: SizedBox(
-              width: 20,
-              height: 20,
-              child: Image.asset(
-                'assets/images/google.png',
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) =>
-                const Icon(Icons.g_mobiledata_outlined, size: 20),
+        Center(
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: 50,
+            child: OutlinedButton.icon(
+              onPressed: _signInWithGoogle,
+              icon: SizedBox(
+                width: 20,
+                height: 20,
+                child: Image.asset(
+                  'assets/images/google.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.g_mobiledata_outlined, size: 20),
+                ),
               ),
-            ),
-            label: const Text(
-              'Continue with Google',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.black12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+              label: const Text(
+                'Continue with Google',
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
-              foregroundColor: Colors.black87,
-              backgroundColor: Colors.white,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.black12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                foregroundColor: Colors.black87,
+                backgroundColor: Colors.white,
+              ),
             ),
           ),
         ),
@@ -558,7 +572,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'Confirm Password',
             suffix: IconButton(
               onPressed: () => setState(() => _hideConfirm = !_hideConfirm),
-              icon: Icon(_hideConfirm ? Icons.visibility_off : Icons.visibility),
+              icon:
+                  Icon(_hideConfirm ? Icons.visibility_off : Icons.visibility),
             ),
           ),
         ),
@@ -616,14 +631,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ],
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: 22),
 
         // 🔴 Register button - centered & narrower
         Align(
           alignment: Alignment.center,
           child: SizedBox(
-            width: 260,
-            height: 54,
+            width: double.infinity,
+            height: 50,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: const Color(0xFFFF2D2D), // solid red
@@ -640,27 +655,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onPressed: _isLoading ? null : _submit,
                 child: _isLoading
                     ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
                     : const Text(
-                  'Register',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
+                        'Register',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
           ),
         ),
 
-        const SizedBox(height: 18),
+        const SizedBox(height: 20),
 
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -690,14 +705,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _ruleRow(bool ok, String text) => Row(
-    children: [
-      Icon(
-        ok ? Icons.check_circle : Icons.circle,
-        size: 14,
-        color: ok ? Colors.green : Colors.red,
-      ),
-      const SizedBox(width: 8),
-      Text(text, style: const TextStyle(fontSize: 13.5)),
-    ],
-  );
+        children: [
+          Icon(
+            ok ? Icons.check_circle : Icons.circle,
+            size: 14,
+            color: ok ? Colors.green : Colors.red,
+          ),
+          const SizedBox(width: 8),
+          Text(text, style: const TextStyle(fontSize: 13.5)),
+        ],
+      );
 }
