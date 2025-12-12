@@ -26,6 +26,8 @@ import 'ContactFormScreen.dart';
 import 'login.dart';
 import 'personal_information.dart';
 
+import 'contacted_properties.dart';  // ← your file name
+
 class My_Account extends StatefulWidget {
   const My_Account({super.key});
 
@@ -349,6 +351,19 @@ class _My_AccountState extends State<My_Account> {
               Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const SavedAlertsScreen()));
             }
+          }),
+
+          _settingsTile("Contacted Properties", "assets/images/contacted.png", () async {
+            if (!_isLoggedIn) {
+              _showLoginDialog("Please login to view contacted properties.");
+              return;
+            }
+
+            // Correct screen
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ContactedProperties()),
+            );
           }),
           _settingsTile("About Us", "assets/images/about.png", () {
             Navigator.push(

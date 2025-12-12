@@ -75,10 +75,21 @@ class ApiService {
     'X-Requested-With': 'XMLHttpRequest',
   };
 
-  static Map<String, String> _authHeaders(String token) => {
-    ..._jsonHeaders,
-    'Authorization': 'Bearer $token',
-  };
+  static Map<String, String> _authHeaders(String token) {
+    final cleanToken = token.trim();
+    debugPrint('SENDING AUTH HEADER → Bearer $cleanToken');
+
+    if (cleanToken.isEmpty) {
+      throw Exception('Empty token in _authHeaders');
+    }
+
+    return {
+      ..._jsonHeaders,
+      'Authorization': 'Bearer $cleanToken',
+      'Origin': 'https://akarat.com',  // ← Add this (helps Sanctum)
+      'Referer': 'https://akarat.com', // ← Add this (helps Sanctum)
+    };
+  }
 
   // =========================================================
   // UTILS

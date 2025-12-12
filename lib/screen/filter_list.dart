@@ -2872,26 +2872,35 @@ class _FliterListState extends State<FliterList> {
                                             padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                             child: Row(
                                               children: [
-                                                Image.asset("assets/images/bed.png", height: 13),
-                                                const SizedBox(width: 5),
-                                                Text(property.bedrooms.toString()),
-                                                const SizedBox(width: 10),
+                                                // === BEDS: Only show if > 0 ===
+                                                if ((property.bedrooms ?? 0) > 0) ...[
+                                                  Image.asset("assets/images/bed.png", height: 13),
+                                                  const SizedBox(width: 5),
+                                                  Text(
+                                                    '${property.bedrooms}',
+                                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                                  ),
+                                                  const SizedBox(width: 15), // spacing between bed & bath
+                                                ],
 
-                                                Image.asset("assets/images/bath.png", height: 13),
-                                                const SizedBox(width: 5),
-                                                Text(property.bathrooms.toString()),
-                                                const SizedBox(width: 10),
+                                                // === BATHS: Only show if > 0 ===
+                                                if ((property.bathrooms ?? 0) > 0) ...[
+                                                  Image.asset("assets/images/bath.png", height: 13),
+                                                  const SizedBox(width: 5),
+                                                  Text(
+                                                    '${property.bathrooms}',
+                                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                                  ),
+                                                  const SizedBox(width: 15),
+                                                ],
 
-                                                // SMART SIZE: Uses displaySize getter from Data class
-                                                if (property.displaySize.isNotEmpty) ...[
+                                                // === SIZE: Only show if valid (you already have this logic — keep it!)
+                                                if (property.displaySize.isNotEmpty && property.displaySize != '0 sqft') ...[
                                                   Image.asset("assets/images/messure.png", height: 13),
                                                   const SizedBox(width: 5),
                                                   Text(
                                                     property.displaySize,
-                                                    style: const TextStyle(
-
-                                                      color: Colors.black87,
-                                                    ),
+                                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                                                   ),
                                                 ],
                                               ],
