@@ -8,6 +8,7 @@ import 'package:Akarat/providers/favorite_provider.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -1188,43 +1189,6 @@ class _AboutAgentState extends State<AboutAgent> {
                                   child: Row(
                                     children: const [
                                       Text(
-                                        "BRN",
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.grey,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                      Text(""),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10.0),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        agentDetail!.brokerRegisterationNumber
-                                            .toString(),
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.black,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                      const Text(""),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10.0),
-                                  child: Row(
-                                    children: const [
-                                      Text(
                                         "Experience",
                                         style: TextStyle(
                                           fontSize: 15,
@@ -1254,15 +1218,61 @@ class _AboutAgentState extends State<AboutAgent> {
                                     ],
                                   ),
                                 ),
+                                const SizedBox(height: 12),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "BRN",
+                                        textAlign: TextAlign.start,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.grey,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Wrap(
+                                        spacing: 8,
+                                        children: [
+                                          Chip(
+                                            label: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  "${agentDetail!.brokerRegisterationNumber}",
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                                Gap(5),
+                                                const Icon(Icons.verified,
+                                                    size: 20,
+                                                    color: Colors.green),
+                                              ],
+                                            ),
+                                            backgroundColor:
+                                                Colors.grey.shade200,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
                                 const SizedBox(height: 15),
                               ],
                             ),
                           ),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 35),
-                      ),
+                      // Padding(
+                      //   padding: const EdgeInsets.only(bottom: 35),
+                      // ),
                     ],
                   ),
 

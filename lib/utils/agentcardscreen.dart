@@ -50,7 +50,7 @@ class Agentcardscreen extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => AboutAgent(
-              data: agentsModel.id.toString(),  // ← This is correct and safe now
+              data: agentsModel.id.toString(), // ← This is correct and safe now
             ),
           ),
         );
@@ -75,7 +75,8 @@ class Agentcardscreen extends StatelessWidget {
                   backgroundColor: Colors.grey.shade200,
                   backgroundImage: isValidImage
                       ? NetworkImage(imageUrl)
-                      : const AssetImage('assets/images/profile.png') as ImageProvider,
+                      : const AssetImage('assets/images/profile.png')
+                          as ImageProvider,
                 ),
                 const SizedBox(width: 12),
 
@@ -95,7 +96,6 @@ class Agentcardscreen extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-
                       Text(
                         "${agentsModel.propertiesCount} Properties",
                         style: const TextStyle(
@@ -106,77 +106,77 @@ class Agentcardscreen extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-
                       Text(
                         "Speaks: ${agentsModel.languages.isNotEmpty ? agentsModel.languages : 'N/A'}",
-                        style: const TextStyle(fontSize: 12, color: Colors.black54),
+                        style: const TextStyle(
+                            fontSize: 12, color: Colors.black54),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 8),
-
                       Row(
                         children: [
-                          Container(
-                            width: 55,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: Colors.white),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x40000000),
-                                  spreadRadius: 0,
-                                  blurRadius: 2,
-                                  offset: Offset(0, 0),
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                "${agentsModel.sale} Sale",
-                                style: const TextStyle(
-                                  fontFamily: "Radio Canada Big",
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF3A7CED),
+                          if (agentsModel.sale != 0)
+                            Container(
+                              width: 55,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: Colors.white),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x40000000),
+                                    spreadRadius: 0,
+                                    blurRadius: 2,
+                                    offset: Offset(0, 0),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "${agentsModel.sale} Sale",
+                                  style: const TextStyle(
+                                    fontFamily: "Radio Canada Big",
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF3A7CED),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
                           const SizedBox(width: 10),
-                          Container(
-                            width: 55,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: Colors.white),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x40000000),
-                                  spreadRadius: 0,
-                                  blurRadius: 2,
-                                  offset: Offset(0, 0),
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                "${agentsModel.rent} Rent",
-                                style: const TextStyle(
-                                  fontFamily: "Raleway",
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF3A7CED),
+                          if (agentsModel.rent != 0)
+                            Container(
+                              width: 55,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: Colors.white),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x40000000),
+                                    spreadRadius: 0,
+                                    blurRadius: 2,
+                                    offset: Offset(0, 0),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "${agentsModel.rent} Rent",
+                                  style: const TextStyle(
+                                    fontFamily: "Raleway",
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF3A7CED),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
                         ],
                       ),
-
                       const SizedBox(height: 6),
                       if (agentsModel.bio?.trim().isNotEmpty == true)
                         Text(

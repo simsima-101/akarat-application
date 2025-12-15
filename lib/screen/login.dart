@@ -471,7 +471,7 @@ class _LoginDemoState extends State<LoginDemo> {
   ]) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.8,
-      height: 50,
+      // height: 50,
       decoration: _boxDecoration(),
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: TextFormField(

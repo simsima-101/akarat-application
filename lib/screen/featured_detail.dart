@@ -1101,24 +1101,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
         'Hi, I found your property with ref: $ref on Akarat. '
         'Please contact me. Thank you.';
 
-    // prefill phone (local digits)
-    String initialLocalPhone = '';
-    final existingPhone = property.phoneNumber ?? '';
-    if (existingPhone.isNotEmpty) {
-      String onlyDigits = existingPhone.replaceAll(RegExp(r'\D'), '');
-      if (onlyDigits.startsWith('971')) {
-        onlyDigits = onlyDigits.substring(3);
-      } else if (onlyDigits.startsWith('0')) {
-        onlyDigits = onlyDigits.substring(1);
-      }
-      initialLocalPhone = onlyDigits;
-    }
-
     await showEmailAgentDialog(
       context,
       subtitle: subtitle,
       initialMessage: initialMessage,
-      initialPhone: initialLocalPhone,
       onSubmit: ({
         required String name,
         required String email,
@@ -1340,7 +1326,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
               // EMAIL
               Expanded(
                 child: GestureDetector(
-                  onTap: () => showHomeContactDialog(context),
+                  onTap: _showEmailAgentDialog,
                   child: Container(
                     height: 46,
                     decoration: BoxDecoration(
