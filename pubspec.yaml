@@ -1,7 +1,7 @@
 name: Akarat
 description: "A new Flutter project."
 publish_to: 'none'
-version: 1.0.8+19
+version: 1.0.8+20
 
 environment:
   sdk: ^3.6.1
@@ -10,6 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
   readmore: ^3.0.0
+  country_code_picker: ^3.4.1
+  intl_country_data: ^1.2.9  # For dynamic phone length data
   carousel_slider: ^5.1.1
   standard_searchbar: ^2.1.1
   sliding_switch: ^1.1.0

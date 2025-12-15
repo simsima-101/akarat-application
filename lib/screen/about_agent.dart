@@ -3,13 +3,13 @@ import 'dart:convert';
 
 import 'package:Akarat/model/agentdetaill.dart';
 import 'package:Akarat/model/agentpropertiesmodel.dart';
+import 'package:Akarat/providers/email_enquiry_provider.dart'; // <-- ADD THIS
 import 'package:Akarat/providers/favorite_provider.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -24,11 +24,12 @@ import '../widgets/read_more_text.dart';
 import 'ContactFormScreen.dart';
 import 'featured_detail.dart';
 
-import 'package:Akarat/providers/email_enquiry_provider.dart';   // <-- ADD THIS
-
-
 class AboutAgent extends StatefulWidget {
-  const AboutAgent({super.key, required this.data, this.initialTabIndex = 0,});
+  const AboutAgent({
+    super.key,
+    required this.data,
+    this.initialTabIndex = 0,
+  });
   final String data;
   final int initialTabIndex;
   @override
@@ -117,7 +118,10 @@ class _AboutAgentState extends State<AboutAgent> {
 
   /// Same beautiful chip style as the Agency screen
   Widget _buildInfoChip(String iconPath, String? value) {
-    if (value == null || value.trim().isEmpty || value.trim() == "0" || value.trim() == "null") {
+    if (value == null ||
+        value.trim().isEmpty ||
+        value.trim() == "0" ||
+        value.trim() == "null") {
       return const SizedBox.shrink();
     }
     return Row(
@@ -127,14 +131,14 @@ class _AboutAgentState extends State<AboutAgent> {
         const SizedBox(width: 6),
         Text(
           value.trim(),
-          style: const TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w500),
+          style: const TextStyle(
+              fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w500),
         ),
       ],
     );
   }
 
   /// Works perfectly with your real model → uses 'Data' class (not Property)
-
 
   /// CORRECTED & WORKING: propertySizeSqft has HIGHEST priority
   String? getDisplaySize(Data property) {
@@ -164,9 +168,9 @@ class _AboutAgentState extends State<AboutAgent> {
     if (size == null || size <= 0) return null;
 
     final formatted = size.toInt().toString().replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
           (match) => '${match[1]},',
-    );
+        );
 
     return "$formatted sqft";
   }
@@ -207,7 +211,8 @@ class _AboutAgentState extends State<AboutAgent> {
         }
 
         final deviceId = await getDeviceId();
-        final emailProvider = Provider.of<EmailEnquiryProvider>(context, listen: false);
+        final emailProvider =
+            Provider.of<EmailEnquiryProvider>(context, listen: false);
 
         final int agentId = int.tryParse(widget.data) ?? 0;
 
@@ -243,6 +248,7 @@ class _AboutAgentState extends State<AboutAgent> {
       },
     );
   }
+
   int currentPage = 1;
   bool isLoading = false;
   bool hasMore = true;
@@ -283,7 +289,7 @@ class _AboutAgentState extends State<AboutAgent> {
     // Infinite scroll for properties
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent &&
+              _scrollController.position.maxScrollExtent &&
           hasMore &&
           !isLoading) {
         getFilesApi(agentId, loadMore: true);
@@ -319,7 +325,8 @@ class _AboutAgentState extends State<AboutAgent> {
 
     // Check cache first
     final cachedTime = prefs.getInt(cacheTimeKey);
-    final isCacheValid = cachedTime != null && (now - cachedTime) < Duration(hours: 6).inMilliseconds;
+    final isCacheValid = cachedTime != null &&
+        (now - cachedTime) < Duration(hours: 6).inMilliseconds;
 
     if (isCacheValid) {
       final cached = prefs.getString(cacheKey);
@@ -358,7 +365,8 @@ class _AboutAgentState extends State<AboutAgent> {
         if (responseData.containsKey('data')) {
           // Paginated response structure
           final dataWrapper = responseData['data'];
-          if (dataWrapper is Map<String, dynamic> && dataWrapper.containsKey('data')) {
+          if (dataWrapper is Map<String, dynamic> &&
+              dataWrapper.containsKey('data')) {
             final agentList = dataWrapper['data'] as List?;
             if (agentList != null && agentList.isNotEmpty) {
               agentData = agentList.first as Map<String, dynamic>;
@@ -423,21 +431,18 @@ class _AboutAgentState extends State<AboutAgent> {
     }
 
     // 🔍 Fetch from API
-    final uri = ApiService.buildUri(
-        'filters?search=$query'
-            '&amenities='
-            '&property_type='
-            '&furnished_status='
-            '&bedrooms='
-            '&min_price='
-            '&max_price='
-            '&payment_period='
-            '&min_square_feet='
-            '&max_square_feet='
-            '&bathrooms='
-            '&purpose='
-    );
-
+    final uri = ApiService.buildUri('filters?search=$query'
+        '&amenities='
+        '&property_type='
+        '&furnished_status='
+        '&bedrooms='
+        '&min_price='
+        '&max_price='
+        '&payment_period='
+        '&min_square_feet='
+        '&max_square_feet='
+        '&bathrooms='
+        '&purpose=');
 
     try {
       final response = await http.get(uri);
@@ -467,14 +472,16 @@ class _AboutAgentState extends State<AboutAgent> {
     isLoading = true;
 
     try {
-      final uri = ApiService.buildUri('agent/properties/$user?page=$currentPage');
+      final uri =
+          ApiService.buildUri('agent/properties/$user?page=$currentPage');
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
 
         // Check if the response contains an error about saved properties
-        if (responseData is Map<String, dynamic> && responseData.containsKey('message')) {
+        if (responseData is Map<String, dynamic> &&
+            responseData.containsKey('message')) {
           final message = responseData['message'] as String?;
           if (message != null && message.contains('created_at')) {
             debugPrint("Server error with saved properties: $message");
@@ -509,7 +516,8 @@ class _AboutAgentState extends State<AboutAgent> {
               agentProperties = model;
             }
 
-            hasMore = (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
+            hasMore =
+                (model.meta?.currentPage ?? 1) < (model.meta?.lastPage ?? 1);
             if (hasMore) {
               currentPage = (model.meta?.currentPage ?? 1) + 1;
             }
@@ -521,7 +529,8 @@ class _AboutAgentState extends State<AboutAgent> {
             final cacheKey = 'agent_properties_$user';
             final cacheTimeKey = 'agent_properties_time_$user';
             await prefs.setString(cacheKey, jsonEncode(responseData['data']));
-            await prefs.setInt(cacheTimeKey, DateTime.now().millisecondsSinceEpoch);
+            await prefs.setInt(
+                cacheTimeKey, DateTime.now().millisecondsSinceEpoch);
           }
         }
       } else {
@@ -671,11 +680,13 @@ class _AboutAgentState extends State<AboutAgent> {
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.email_outlined, size: 20, color: Colors.blue),
+                        Icon(Icons.email_outlined,
+                            size: 20, color: Colors.blue),
                         SizedBox(width: 6),
                         Text(
                           'Email',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -692,7 +703,8 @@ class _AboutAgentState extends State<AboutAgent> {
                     if (phone.isNotEmpty) {
                       final telUrl = 'tel:$phone';
                       if (await canLaunchUrlString(telUrl)) {
-                        await launchUrlString(telUrl, mode: LaunchMode.externalApplication);
+                        await launchUrlString(telUrl,
+                            mode: LaunchMode.externalApplication);
                       }
                     }
                   },
@@ -709,7 +721,8 @@ class _AboutAgentState extends State<AboutAgent> {
                         SizedBox(width: 6),
                         Text(
                           'Call',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -722,15 +735,18 @@ class _AboutAgentState extends State<AboutAgent> {
               Expanded(
                 child: GestureDetector(
                   onTap: () async {
-                    final phoneRaw = agentDetail?.whatsapp ?? agentDetail?.phone ?? '';
+                    final phoneRaw =
+                        agentDetail?.whatsapp ?? agentDetail?.phone ?? '';
                     final phone = whatsAppNumber(phoneRaw);
                     if (phone.isEmpty) return;
 
                     final message = Uri.encodeComponent("Hello");
-                    final waUrl = Uri.parse("https://wa.me/$phone?text=$message");
+                    final waUrl =
+                        Uri.parse("https://wa.me/$phone?text=$message");
 
                     if (await canLaunchUrl(waUrl)) {
-                      await launchUrl(waUrl, mode: LaunchMode.externalApplication);
+                      await launchUrl(waUrl,
+                          mode: LaunchMode.externalApplication);
                     }
                   },
                   child: Container(
@@ -746,7 +762,8 @@ class _AboutAgentState extends State<AboutAgent> {
                         const SizedBox(width: 6),
                         const Text(
                           'WhatsApp',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -818,7 +835,7 @@ class _AboutAgentState extends State<AboutAgent> {
                       backgroundImage: isValidImage
                           ? NetworkImage(imageUrl)
                           : const AssetImage('assets/images/profile.png')
-                      as ImageProvider,
+                              as ImageProvider,
                     ),
                   ),
                 ),
@@ -972,9 +989,9 @@ class _AboutAgentState extends State<AboutAgent> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const SizedBox(height: 10),
-
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
                                   child: const Text(
                                     "About",
                                     style: TextStyle(
@@ -984,11 +1001,10 @@ class _AboutAgentState extends State<AboutAgent> {
                                     ),
                                   ),
                                 ),
-
                                 const SizedBox(height: 10),
-
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10.0),
                                   child: Row(
                                     children: const [
                                       Text(
@@ -1004,60 +1020,54 @@ class _AboutAgentState extends State<AboutAgent> {
                                   ),
                                 ),
                                 const SizedBox(height: 5),
-
-                                agentDetail!.about != null && agentDetail!.about!.trim().isNotEmpty
+                                agentDetail!.about != null &&
+                                        agentDetail!.about!.trim().isNotEmpty
                                     ? Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                                  child: ReadMoreText(
-                                    agentDetail!.about ?? '',
-                                    trimMode: TrimMode.line,
-                                    trimLines: 4,
-                                    trimCollapsedText: ' Read more',
-                                    trimExpandedText: ' Read less',
-                                    style: const TextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.5),
-                                    moreStyle: const TextStyle(fontSize: 15, color: Colors.blue, letterSpacing: 0.5, fontWeight: FontWeight.w600),
-                                    lessStyle: const TextStyle(fontSize: 15, color: Colors.blue, letterSpacing: 0.5, fontWeight: FontWeight.w600),
-                                  ),
-
-                                )
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: ReadMoreText(
+                                          agentDetail!.about ?? '',
+                                          trimMode: TrimMode.line,
+                                          trimLines: 4,
+                                          trimCollapsedText: ' Read more',
+                                          trimExpandedText: ' Read less',
+                                          style: const TextStyle(
+                                              fontSize: 15,
+                                              color: Colors.black,
+                                              letterSpacing: 0.5),
+                                          moreStyle: const TextStyle(
+                                              fontSize: 15,
+                                              color: Colors.blue,
+                                              letterSpacing: 0.5,
+                                              fontWeight: FontWeight.w600),
+                                          lessStyle: const TextStyle(
+                                              fontSize: 15,
+                                              color: Colors.blue,
+                                              letterSpacing: 0.5,
+                                              fontWeight: FontWeight.w600),
+                                        ),
+                                      )
                                     : const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 15.0),
-                                  child: Text(
-                                    "No description available",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black54,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                ),
-
-
-
-                                const SizedBox(height: 5),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        '${agentDetail!.languages}',
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.black,
-                                          letterSpacing: 0.5,
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 15.0),
+                                        child: Text(
+                                          "No description available",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black54,
+                                            fontStyle: FontStyle.italic,
+                                          ),
                                         ),
                                       ),
-                                      const Text(""),
-                                    ],
-                                  ),
-                                ),
-
                                 if (agentDetail?.expertise != null)
                                   Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const SizedBox(height: 12),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10.0),
                                         child: Row(
                                           children: const [
                                             Text(
@@ -1074,7 +1084,8 @@ class _AboutAgentState extends State<AboutAgent> {
                                       ),
                                       const SizedBox(height: 5),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10.0),
                                         child: Text(
                                           agentDetail!.expertise.toString(),
                                           style: const TextStyle(
@@ -1086,13 +1097,19 @@ class _AboutAgentState extends State<AboutAgent> {
                                       ),
                                     ],
                                   ),
-
-                                if ((agentDetail?.serviceAreas?.toString().trim().isNotEmpty ?? false))
+                                if ((agentDetail?.serviceAreas
+                                        ?.toString()
+                                        .trim()
+                                        .isNotEmpty ??
+                                    false))
                                   Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const SizedBox(height: 12),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10.0),
                                         child: Row(
                                           children: const [
                                             Text(
@@ -1109,28 +1126,41 @@ class _AboutAgentState extends State<AboutAgent> {
                                       ),
                                       const SizedBox(height: 5),
                                       Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10),
                                           child: ReadMoreText(
-                                            agentDetail!.serviceAreas?.toString() ?? '',
+                                            agentDetail!.serviceAreas
+                                                    ?.toString() ??
+                                                '',
                                             trimMode: TrimMode.line,
                                             trimLines: 4,
                                             trimCollapsedText: ' Read more',
                                             trimExpandedText: ' Read less',
-                                            style: const TextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.5),
-                                            moreStyle: const TextStyle(fontSize: 15, color: Colors.blue, letterSpacing: 0.5, fontWeight: FontWeight.w600),
-                                            lessStyle: const TextStyle(fontSize: 15, color: Colors.blue, letterSpacing: 0.5, fontWeight: FontWeight.w600),
-                                          )
-
-                                      ),
+                                            style: const TextStyle(
+                                                fontSize: 15,
+                                                color: Colors.black,
+                                                letterSpacing: 0.5),
+                                            moreStyle: const TextStyle(
+                                                fontSize: 15,
+                                                color: Colors.blue,
+                                                letterSpacing: 0.5,
+                                                fontWeight: FontWeight.w600),
+                                            lessStyle: const TextStyle(
+                                                fontSize: 15,
+                                                color: Colors.blue,
+                                                letterSpacing: 0.5,
+                                                fontWeight: FontWeight.w600),
+                                          )),
                                     ],
                                   ),
-
                                 const SizedBox(height: 12),
-
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                  child: Row(
-                                    children: const [
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
                                       Text(
                                         "Language(s)",
                                         style: TextStyle(
@@ -1139,14 +1169,22 @@ class _AboutAgentState extends State<AboutAgent> {
                                           letterSpacing: 0.5,
                                         ),
                                       ),
-                                      Text(""),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        '${agentDetail!.languages}',
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.black,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
-
                                 const SizedBox(height: 12),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10.0),
                                   child: Row(
                                     children: const [
                                       Text(
@@ -1163,11 +1201,13 @@ class _AboutAgentState extends State<AboutAgent> {
                                 ),
                                 const SizedBox(height: 5),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10.0),
                                   child: Row(
                                     children: [
                                       Text(
-                                        agentDetail!.brokerRegisterationNumber.toString(),
+                                        agentDetail!.brokerRegisterationNumber
+                                            .toString(),
                                         style: const TextStyle(
                                           fontSize: 15,
                                           color: Colors.black,
@@ -1180,7 +1220,8 @@ class _AboutAgentState extends State<AboutAgent> {
                                 ),
                                 const SizedBox(height: 12),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10.0),
                                   child: Row(
                                     children: const [
                                       Text(
@@ -1197,7 +1238,8 @@ class _AboutAgentState extends State<AboutAgent> {
                                 ),
                                 const SizedBox(height: 5),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10.0),
                                   child: Row(
                                     children: [
                                       Text(
@@ -1220,7 +1262,6 @@ class _AboutAgentState extends State<AboutAgent> {
                       ),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 35),
-
                       ),
                     ],
                   ),
@@ -1238,547 +1279,796 @@ class _AboutAgentState extends State<AboutAgent> {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 10.0),
                             child: agentProperties == null
-                                ? const Center(child: CircularProgressIndicator())
+                                ? const Center(
+                                    child: CircularProgressIndicator())
                                 : ListView.builder(
-                              padding: const EdgeInsets.all(0),
-                              controller: _scrollController,
-                              scrollDirection: Axis.vertical,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount: agentProperties!.data!.length,
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                final item = agentProperties!.data![index];
-                                final property = agentProperties!.data![index];
-                                bool isFavorited = favoriteProperties.contains(property.id);
+                                    padding: const EdgeInsets.all(0),
+                                    controller: _scrollController,
+                                    scrollDirection: Axis.vertical,
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    itemCount: agentProperties!.data!.length,
+                                    shrinkWrap: true,
+                                    itemBuilder: (context, index) {
+                                      final item =
+                                          agentProperties!.data![index];
+                                      final property =
+                                          agentProperties!.data![index];
+                                      bool isFavorited = favoriteProperties
+                                          .contains(property.id);
 
-                                return GestureDetector(
-                                  onTap: () {
-                                    String id = property.id.toString();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => Featured_Detail(data: id),
-                                      ),
-                                    );
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                    child: Card(
-                                      color: Colors.white,
-                                      shadowColor: Colors.white,
-                                      elevation: 10,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Column(
-                                              children: [
-                                                Stack(
-                                                  clipBehavior: Clip.none,
-                                                  children: [
-                                                    // 🖼️ Image Carousel
-                                                    ClipRRect(
-                                                      borderRadius: BorderRadius.circular(12),
-                                                      child: AspectRatio(
-                                                        aspectRatio: 1.5,
-                                                        child: PageView.builder(
-                                                          itemCount: property.media?.length ?? 0,
-                                                          scrollDirection: Axis.horizontal,
-                                                          controller: _pageController,
-                                                          onPageChanged: (_) {},
-                                                          itemBuilder: (context, imgIndex) {
-                                                            final imageUrl = property.media![imgIndex].originalUrl ?? '';
-                                                            return CachedNetworkImage(
-                                                              imageUrl: imageUrl,
-                                                              fit: BoxFit.cover,
-                                                              placeholder: (context, url) => const Center(
-                                                                child: CircularProgressIndicator(),
-                                                              ),
-                                                              errorWidget: (context, url, error) =>
-                                                              const Icon(Icons.error),
-                                                            );
-                                                          },
-                                                        ),
-                                                      ),
-                                                    ),
-
-                                                    // 🔘 Dot Indicator
-                                                    Positioned(
-                                                      bottom: 12,
-                                                      left: 0,
-                                                      right: 0,
-                                                      child: Row(
-                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                        children: List.generate(
-                                                          item.media?.length ?? 0,
-                                                              (index) {
-                                                            final distance =
-                                                            (index - _currentImageIndex).abs();
-                                                            double scale;
-                                                            double opacity;
-
-                                                            if (distance == 0) {
-                                                              scale = 1.2;
-                                                              opacity = 1.0;
-                                                            } else if (distance == 1) {
-                                                              scale = 1.0;
-                                                              opacity = 0.7;
-                                                            } else if (distance == 2) {
-                                                              scale = 0.8;
-                                                              opacity = 0.5;
-                                                            } else {
-                                                              scale = 0.5;
-                                                              opacity = 0.0;
-                                                            }
-
-                                                            return AnimatedOpacity(
-                                                              duration: const Duration(milliseconds: 300),
-                                                              opacity: opacity,
-                                                              child: SizedBox(
-                                                                width: 12,
-                                                                height: 12,
-                                                                child: Center(
-                                                                  child: Container(
-                                                                    width: 8 * scale,
-                                                                    height: 8 * scale,
-                                                                    decoration: const BoxDecoration(
-                                                                      color: Colors.white,
-                                                                      shape: BoxShape.circle,
+                                      return GestureDetector(
+                                        onTap: () {
+                                          String id = property.id.toString();
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  Featured_Detail(data: id),
+                                            ),
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 8),
+                                          child: Card(
+                                            color: Colors.white,
+                                            shadowColor: Colors.white,
+                                            elevation: 10,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Column(
+                                                    children: [
+                                                      Stack(
+                                                        clipBehavior: Clip.none,
+                                                        children: [
+                                                          // 🖼️ Image Carousel
+                                                          ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        12),
+                                                            child: AspectRatio(
+                                                              aspectRatio: 1.5,
+                                                              child: PageView
+                                                                  .builder(
+                                                                itemCount: property
+                                                                        .media
+                                                                        ?.length ??
+                                                                    0,
+                                                                scrollDirection:
+                                                                    Axis.horizontal,
+                                                                controller:
+                                                                    _pageController,
+                                                                onPageChanged:
+                                                                    (_) {},
+                                                                itemBuilder:
+                                                                    (context,
+                                                                        imgIndex) {
+                                                                  final imageUrl = property
+                                                                          .media![
+                                                                              imgIndex]
+                                                                          .originalUrl ??
+                                                                      '';
+                                                                  return CachedNetworkImage(
+                                                                    imageUrl:
+                                                                        imageUrl,
+                                                                    fit: BoxFit
+                                                                        .cover,
+                                                                    placeholder:
+                                                                        (context,
+                                                                                url) =>
+                                                                            const Center(
+                                                                      child:
+                                                                          CircularProgressIndicator(),
                                                                     ),
-                                                                  ),
-                                                                ),
+                                                                    errorWidget: (context,
+                                                                            url,
+                                                                            error) =>
+                                                                        const Icon(
+                                                                            Icons.error),
+                                                                  );
+                                                                },
                                                               ),
-                                                            );
-                                                          },
-                                                        ),
-                                                      ),
-                                                    ),
+                                                            ),
+                                                          ),
 
-                                                    // ❤️ Favorite Icon
-                                                    Positioned(
-                                                      top: 10,
-                                                      right: 10,
-                                                      child: Consumer<FavoriteProvider>(
-                                                        builder: (context, favProvider, _) {
-                                                          final propertyId = int.tryParse(
-                                                              property.id?.toString() ?? '') ??
-                                                              0;
+                                                          // 🔘 Dot Indicator
+                                                          Positioned(
+                                                            bottom: 12,
+                                                            left: 0,
+                                                            right: 0,
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              children:
+                                                                  List.generate(
+                                                                item.media
+                                                                        ?.length ??
+                                                                    0,
+                                                                (index) {
+                                                                  final distance =
+                                                                      (index -
+                                                                              _currentImageIndex)
+                                                                          .abs();
+                                                                  double scale;
+                                                                  double
+                                                                      opacity;
 
-                                                          final isSaved =
-                                                          favProvider.isFavorite(propertyId);
+                                                                  if (distance ==
+                                                                      0) {
+                                                                    scale = 1.2;
+                                                                    opacity =
+                                                                        1.0;
+                                                                  } else if (distance ==
+                                                                      1) {
+                                                                    scale = 1.0;
+                                                                    opacity =
+                                                                        0.7;
+                                                                  } else if (distance ==
+                                                                      2) {
+                                                                    scale = 0.8;
+                                                                    opacity =
+                                                                        0.5;
+                                                                  } else {
+                                                                    scale = 0.5;
+                                                                    opacity =
+                                                                        0.0;
+                                                                  }
 
-                                                          return Material(
-                                                            color: Colors.white,
-                                                            shape: const CircleBorder(),
-                                                            elevation: 4,
-                                                            child: IconButton(
-                                                              icon: Icon(
-                                                                isSaved
-                                                                    ? Icons.favorite
-                                                                    : Icons.favorite_border,
-                                                                color: isSaved ? Colors.red : Colors.grey,
-                                                              ),
-                                                              onPressed: () async {
-                                                                final token =
-                                                                await SecureStorage.getToken();
-
-                                                                if (token == null || token.isEmpty) {
-                                                                  // 🔒 Show login-required dialog
-                                                                  showDialog(
-                                                                    context: context,
-                                                                    builder: (ctx) => Dialog(
-                                                                      backgroundColor: Colors.transparent,
-                                                                      insetPadding: EdgeInsets.zero,
-                                                                      child: Container(
-                                                                        height: 70,
-                                                                        margin: const EdgeInsets.only(
-                                                                            bottom: 80, left: 20, right: 20),
-                                                                        decoration: BoxDecoration(
-                                                                          color: Colors.red,
-                                                                          borderRadius:
-                                                                          BorderRadius.circular(10),
+                                                                  return AnimatedOpacity(
+                                                                    duration: const Duration(
+                                                                        milliseconds:
+                                                                            300),
+                                                                    opacity:
+                                                                        opacity,
+                                                                    child:
+                                                                        SizedBox(
+                                                                      width: 12,
+                                                                      height:
+                                                                          12,
+                                                                      child:
+                                                                          Center(
+                                                                        child:
+                                                                            Container(
+                                                                          width:
+                                                                              8 * scale,
+                                                                          height:
+                                                                              8 * scale,
+                                                                          decoration:
+                                                                              const BoxDecoration(
+                                                                            color:
+                                                                                Colors.white,
+                                                                            shape:
+                                                                                BoxShape.circle,
+                                                                          ),
                                                                         ),
-                                                                        child: Stack(
-                                                                          clipBehavior: Clip.none,
-                                                                          children: [
-                                                                            Positioned(
-                                                                              top: -14,
-                                                                              right: -10,
-                                                                              child: IconButton(
-                                                                                icon: const Icon(Icons.close,
-                                                                                    color: Colors.white, size: 20),
-                                                                                onPressed: () =>
-                                                                                    Navigator.of(ctx).pop(),
-                                                                                padding: EdgeInsets.zero,
-                                                                                constraints:
-                                                                                const BoxConstraints(),
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                },
+                                                              ),
+                                                            ),
+                                                          ),
+
+                                                          // ❤️ Favorite Icon
+                                                          Positioned(
+                                                            top: 10,
+                                                            right: 10,
+                                                            child: Consumer<
+                                                                FavoriteProvider>(
+                                                              builder: (context,
+                                                                  favProvider,
+                                                                  _) {
+                                                                final propertyId =
+                                                                    int.tryParse(property.id?.toString() ??
+                                                                            '') ??
+                                                                        0;
+
+                                                                final isSaved =
+                                                                    favProvider
+                                                                        .isFavorite(
+                                                                            propertyId);
+
+                                                                return Material(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  shape:
+                                                                      const CircleBorder(),
+                                                                  elevation: 4,
+                                                                  child:
+                                                                      IconButton(
+                                                                    icon: Icon(
+                                                                      isSaved
+                                                                          ? Icons
+                                                                              .favorite
+                                                                          : Icons
+                                                                              .favorite_border,
+                                                                      color: isSaved
+                                                                          ? Colors
+                                                                              .red
+                                                                          : Colors
+                                                                              .grey,
+                                                                    ),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      final token =
+                                                                          await SecureStorage
+                                                                              .getToken();
+
+                                                                      if (token ==
+                                                                              null ||
+                                                                          token
+                                                                              .isEmpty) {
+                                                                        // 🔒 Show login-required dialog
+                                                                        showDialog(
+                                                                          context:
+                                                                              context,
+                                                                          builder: (ctx) =>
+                                                                              Dialog(
+                                                                            backgroundColor:
+                                                                                Colors.transparent,
+                                                                            insetPadding:
+                                                                                EdgeInsets.zero,
+                                                                            child:
+                                                                                Container(
+                                                                              height: 70,
+                                                                              margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
+                                                                              decoration: BoxDecoration(
+                                                                                color: Colors.red,
+                                                                                borderRadius: BorderRadius.circular(10),
                                                                               ),
-                                                                            ),
-                                                                            Positioned(
-                                                                              left: 16,
-                                                                              right: 16,
-                                                                              bottom: 12,
-                                                                              child: Row(
+                                                                              child: Stack(
+                                                                                clipBehavior: Clip.none,
                                                                                 children: [
-                                                                                  const Expanded(
-                                                                                    child: Text(
-                                                                                      'Login required to add favorites.',
-                                                                                      style: TextStyle(color: Colors.white, fontSize: 13),
+                                                                                  Positioned(
+                                                                                    top: -14,
+                                                                                    right: -10,
+                                                                                    child: IconButton(
+                                                                                      icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                                                      onPressed: () => Navigator.of(ctx).pop(),
+                                                                                      padding: EdgeInsets.zero,
+                                                                                      constraints: const BoxConstraints(),
                                                                                     ),
                                                                                   ),
-                                                                                  const SizedBox(width: 12),
-                                                                                  GestureDetector(
-                                                                                    onTap: () {
-                                                                                      Navigator.of(ctx).pop();
-                                                                                      Navigator.of(ctx).pushNamed('/login');
-                                                                                    },
-                                                                                    child: const Text(
-                                                                                      'Login',
-                                                                                      style: TextStyle(
-                                                                                        color: Colors.white,
-                                                                                        fontWeight: FontWeight.bold,
-                                                                                        decoration: TextDecoration.underline,
-                                                                                        decorationColor: Colors.white,
-                                                                                        decorationThickness: 1.5,
-                                                                                      ),
+                                                                                  Positioned(
+                                                                                    left: 16,
+                                                                                    right: 16,
+                                                                                    bottom: 12,
+                                                                                    child: Row(
+                                                                                      children: [
+                                                                                        const Expanded(
+                                                                                          child: Text(
+                                                                                            'Login required to add favorites.',
+                                                                                            style: TextStyle(color: Colors.white, fontSize: 13),
+                                                                                          ),
+                                                                                        ),
+                                                                                        const SizedBox(width: 12),
+                                                                                        GestureDetector(
+                                                                                          onTap: () {
+                                                                                            Navigator.of(ctx).pop();
+                                                                                            Navigator.of(ctx).pushNamed('/login');
+                                                                                          },
+                                                                                          child: const Text(
+                                                                                            'Login',
+                                                                                            style: TextStyle(
+                                                                                              color: Colors.white,
+                                                                                              fontWeight: FontWeight.bold,
+                                                                                              decoration: TextDecoration.underline,
+                                                                                              decorationColor: Colors.white,
+                                                                                              decorationThickness: 1.5,
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      ],
                                                                                     ),
                                                                                   ),
                                                                                 ],
                                                                               ),
                                                                             ),
-                                                                          ],
+                                                                          ),
+                                                                        );
+                                                                        return;
+                                                                      }
+
+                                                                      // ✅ Use the provider's API method
+                                                                      final pid =
+                                                                          property
+                                                                              .id;
+                                                                      if (pid ==
+                                                                          null) {
+                                                                        debugPrint(
+                                                                            '⚠️ property.id is null; cannot toggle favorite.');
+                                                                        return;
+                                                                      }
+
+                                                                      final ok = await favProvider.toggleFavoriteWithApi(
+                                                                          pid,
+                                                                          token,
+                                                                          context);
+
+                                                                      if (!ok) {
+                                                                        // ignore: use_build_context_synchronously
+                                                                        ScaffoldMessenger.of(context)
+                                                                            .showSnackBar(
+                                                                          const SnackBar(
+                                                                              content: Text("Failed to update favorite.")),
+                                                                        );
+                                                                      }
+                                                                    },
+                                                                  ),
+                                                                );
+                                                              },
+                                                            ),
+                                                          ),
+
+                                                          // 👤 Agent Badge
+                                                          Positioned(
+                                                            bottom: -30,
+                                                            left: 10,
+                                                            child:
+                                                                GestureDetector(
+                                                              onTap: () {
+                                                                String id = property
+                                                                    .id
+                                                                    .toString();
+                                                                Navigator.push(
+                                                                  context,
+                                                                  MaterialPageRoute(
+                                                                    builder: (context) =>
+                                                                        Featured_Detail(
+                                                                            data:
+                                                                                id),
+                                                                  ),
+                                                                );
+                                                              },
+                                                              child: Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .center,
+                                                                children: [
+                                                                  CircleAvatar(
+                                                                    radius: 28,
+                                                                    backgroundImage: (property.agentImage !=
+                                                                                null &&
+                                                                            property
+                                                                                .agentImage!.isNotEmpty)
+                                                                        ? CachedNetworkImageProvider(property
+                                                                            .agentImage!)
+                                                                        : const AssetImage("assets/images/dummy.jpg")
+                                                                            as ImageProvider,
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          6),
+                                                                  Transform
+                                                                      .translate(
+                                                                    offset:
+                                                                        const Offset(
+                                                                            -5,
+                                                                            0),
+                                                                    child:
+                                                                        const Text(
+                                                                      "AGENT",
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontSize:
+                                                                            12,
+                                                                        fontWeight:
+                                                                            FontWeight.w500,
+                                                                        color: Color(
+                                                                            0xFF1A73E9),
+                                                                        letterSpacing:
+                                                                            0.5,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+
+                                                      // 🔽 Spacer so that the overlapping image is not clipped
+                                                      const SizedBox(
+                                                          height: 15),
+
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                left: 0,
+                                                                right: 0,
+                                                                top: 4,
+                                                                bottom: 4),
+                                                        child: Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            // Agent Name
+                                                            Expanded(
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                        left:
+                                                                            10),
+                                                                child: Text(
+                                                                  property.agentName ??
+                                                                      'Agent',
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    fontSize:
+                                                                        15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color: Colors
+                                                                        .black,
+                                                                  ),
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                ),
+                                                              ),
+                                                            ),
+
+                                                            // Listed text + agency logo
+                                                            Row(
+                                                              children: [
+                                                                if (property.postedOn !=
+                                                                        null &&
+                                                                    property
+                                                                        .postedOn!
+                                                                        .isNotEmpty)
+                                                                  Text(
+                                                                    'Listed ${property.postedOn}',
+                                                                    style:
+                                                                        const TextStyle(
+                                                                      fontSize:
+                                                                          13,
+                                                                      color: Colors
+                                                                          .grey,
+                                                                    ),
+                                                                  ),
+                                                                const SizedBox(
+                                                                    width: 4),
+                                                                if (property.agencyLogo !=
+                                                                        null &&
+                                                                    property
+                                                                        .agencyLogo!
+                                                                        .isNotEmpty)
+                                                                  Padding(
+                                                                    padding:
+                                                                        const EdgeInsets
+                                                                            .all(
+                                                                            8.0),
+                                                                    child:
+                                                                        Container(
+                                                                      height:
+                                                                          30,
+                                                                      width: 60,
+                                                                      decoration:
+                                                                          BoxDecoration(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(4),
+                                                                        image:
+                                                                            DecorationImage(
+                                                                          image:
+                                                                              CachedNetworkImageProvider(property.agencyLogo!),
+                                                                          fit: BoxFit
+                                                                              .contain,
                                                                         ),
                                                                       ),
                                                                     ),
-                                                                  );
-                                                                  return;
-                                                                }
-
-                                                                // ✅ Use the provider's API method
-                                                                final pid = property.id;
-                                                                if (pid == null) {
-                                                                  debugPrint(
-                                                                      '⚠️ property.id is null; cannot toggle favorite.');
-                                                                  return;
-                                                                }
-
-                                                                final ok =
-                                                                await favProvider
-                                                                    .toggleFavoriteWithApi(
-                                                                    pid, token, context);
-
-                                                                if (!ok) {
-                                                                  // ignore: use_build_context_synchronously
-                                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                                    const SnackBar(
-                                                                        content: Text(
-                                                                            "Failed to update favorite.")),
-                                                                  );
-                                                                }
-                                                              },
-                                                            ),
-                                                          );
-                                                        },
-                                                      ),
-                                                    ),
-
-                                                    // 👤 Agent Badge
-                                                    Positioned(
-                                                      bottom: -30,
-                                                      left: 10,
-                                                      child: GestureDetector(
-                                                        onTap: () {
-                                                          String id = property.id.toString();
-                                                          Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                              builder: (context) =>
-                                                                  Featured_Detail(data: id),
-                                                            ),
-                                                          );
-                                                        },
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                          CrossAxisAlignment.center,
-                                                          children: [
-                                                            CircleAvatar(
-                                                              radius: 28,
-                                                              backgroundImage: (property.agentImage !=
-                                                                  null &&
-                                                                  property.agentImage!.isNotEmpty)
-                                                                  ? CachedNetworkImageProvider(
-                                                                  property.agentImage!)
-                                                                  : const AssetImage(
-                                                                  "assets/images/dummy.jpg")
-                                                              as ImageProvider,
-                                                            ),
-                                                            const SizedBox(height: 6),
-                                                            Transform.translate(
-                                                              offset: const Offset(-5, 0),
-                                                              child: const Text(
-                                                                "AGENT",
-                                                                style: TextStyle(
-                                                                  fontSize: 12,
-                                                                  fontWeight: FontWeight.w500,
-                                                                  color: Color(0xFF1A73E9),
-                                                                  letterSpacing: 0.5,
-                                                                ),
-                                                              ),
+                                                                  ),
+                                                              ],
                                                             ),
                                                           ],
                                                         ),
                                                       ),
-                                                    ),
-                                                  ],
-                                                ),
 
-                                                // 🔽 Spacer so that the overlapping image is not clipped
-                                                const SizedBox(height: 15),
+                                                      const SizedBox(height: 5),
 
-                                                Padding(
-                                                  padding: const EdgeInsets.only(
-                                                      left: 0, right: 0, top: 4, bottom: 4),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                    MainAxisAlignment.spaceBetween,
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    children: [
-                                                      // Agent Name
-                                                      Expanded(
-                                                        child: Padding(
-                                                          padding: const EdgeInsets.only(left: 10),
-                                                          child: Text(
-                                                            property.agentName ?? 'Agent',
-                                                            style: const TextStyle(
-                                                              fontSize: 15,
-                                                              fontWeight: FontWeight.w600,
-                                                              color: Colors.black,
+                                                      const Divider(
+                                                        color: Colors.grey,
+                                                        thickness: 0.3,
+                                                        height: 6,
+                                                      ),
+
+                                                      const SizedBox(height: 8),
+
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(top: 5),
+                                                        child: ListTile(
+                                                          title: Text(
+                                                            property.title
+                                                                .toString(),
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 16,
+                                                              height: 1.4,
                                                             ),
-                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                          subtitle: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    top: 8.0),
+                                                            child: Text(
+                                                              '${property.price} AED',
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 22,
+                                                                height: 1.4,
+                                                              ),
+                                                            ),
                                                           ),
                                                         ),
                                                       ),
-
-                                                      // Listed text + agency logo
                                                       Row(
                                                         children: [
-                                                          if (property.postedOn != null &&
-                                                              property.postedOn!.isNotEmpty)
-                                                            Text(
-                                                              'Listed ${property.postedOn}',
-                                                              style: const TextStyle(
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    left: 10,
+                                                                    right: 5,
+                                                                    top: 0),
+                                                            child: Image.asset(
+                                                                "assets/images/map.png",
+                                                                height: 14),
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    left: 0,
+                                                                    right: 0,
+                                                                    top: 0),
+                                                            child: Text(
+                                                              property.location
+                                                                  .toString(),
+                                                              style:
+                                                                  const TextStyle(
                                                                 fontSize: 13,
-                                                                color: Colors.grey,
+                                                                height: 1.4,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .visible,
                                                               ),
                                                             ),
-                                                          const SizedBox(width: 4),
-                                                          if (property.agencyLogo != null &&
-                                                              property.agencyLogo!.isNotEmpty)
-                                                            Padding(
-                                                              padding: const EdgeInsets.all(8.0),
-                                                              child: Container(
-                                                                height: 30,
-                                                                width: 60,
-                                                                decoration: BoxDecoration(
-                                                                  borderRadius: BorderRadius.circular(4),
-                                                                  image: DecorationImage(
-                                                                    image:
-                                                                    CachedNetworkImageProvider(
-                                                                        property.agencyLogo!),
-                                                                    fit: BoxFit.contain,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
+                                                          ),
                                                         ],
                                                       ),
+                                                      const SizedBox(height: 8),
+                                                      // ─────── NEW: Beds • Baths • Size (same as Agency screen) ───────
+                                                      Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        10,
+                                                                    vertical:
+                                                                        8),
+                                                            child: Wrap(
+                                                              spacing: 16,
+                                                              runSpacing: 8,
+                                                              children: [
+                                                                _buildInfoChip(
+                                                                    "assets/images/bed.png",
+                                                                    property
+                                                                        .bedrooms
+                                                                        ?.toString()),
+                                                                _buildInfoChip(
+                                                                    "assets/images/bath.png",
+                                                                    property
+                                                                        .bathrooms
+                                                                        ?.toString()),
+                                                                _buildInfoChip(
+                                                                    "assets/images/messure.png",
+                                                                    getDisplaySize(
+                                                                        property)),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+
+                                                      const SizedBox(
+                                                          height: 15),
+                                                      Row(
+                                                        children: [
+                                                          const SizedBox(
+                                                              width: 10),
+                                                          Expanded(
+                                                            child:
+                                                                ElevatedButton
+                                                                    .icon(
+                                                              onPressed:
+                                                                  () async {
+                                                                String phone =
+                                                                    'tel:${item.phoneNumber}';
+                                                                try {
+                                                                  final bool
+                                                                      launched =
+                                                                      await launchUrlString(
+                                                                    phone,
+                                                                    mode: LaunchMode
+                                                                        .externalApplication,
+                                                                  );
+                                                                  if (!launched) {
+                                                                    // ignore: avoid_print
+                                                                    print(
+                                                                        "❌ Could not launch dialer");
+                                                                  }
+                                                                } catch (e) {
+                                                                  // ignore: avoid_print
+                                                                  print(
+                                                                      "❌ Exception: $e");
+                                                                }
+                                                              },
+                                                              icon: const Icon(
+                                                                  Icons.call,
+                                                                  color: Colors
+                                                                      .red),
+                                                              label: const Text(
+                                                                  "Call",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .black)),
+                                                              style:
+                                                                  ElevatedButton
+                                                                      .styleFrom(
+                                                                backgroundColor:
+                                                                    Colors.grey[
+                                                                        100],
+                                                                shape:
+                                                                    RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              10),
+                                                                ),
+                                                                elevation: 2,
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                        vertical:
+                                                                            10),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          const SizedBox(
+                                                              width: 10),
+                                                          Expanded(
+                                                            child:
+                                                                ElevatedButton
+                                                                    .icon(
+                                                              onPressed:
+                                                                  () async {
+                                                                final rawNumber =
+                                                                    property.whatsapp ??
+                                                                        property
+                                                                            .phoneNumber ??
+                                                                        '';
+                                                                final phone =
+                                                                    whatsAppNumber(
+                                                                        rawNumber);
+
+                                                                if (phone
+                                                                    .isEmpty) {
+                                                                  // ignore: use_build_context_synchronously
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(
+                                                                    const SnackBar(
+                                                                        content:
+                                                                            Text("No WhatsApp number available")),
+                                                                  );
+                                                                  return;
+                                                                }
+
+                                                                final message =
+                                                                    Uri.encodeComponent(
+                                                                        "Hello");
+                                                                final url =
+                                                                    Uri.parse(
+                                                                        "https://wa.me/$phone?text=$message");
+
+                                                                if (await canLaunchUrl(
+                                                                    url)) {
+                                                                  try {
+                                                                    await launchUrl(
+                                                                        url,
+                                                                        mode: LaunchMode
+                                                                            .externalApplication);
+                                                                  } catch (e) {
+                                                                    // ignore: avoid_print
+                                                                    print(
+                                                                        "❌ Exception: $e");
+                                                                  }
+                                                                } else {
+                                                                  // ignore: use_build_context_synchronously
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(
+                                                                    const SnackBar(
+                                                                        content:
+                                                                            Text("Cannot open WhatsApp")),
+                                                                  );
+                                                                }
+                                                              },
+                                                              icon: Image.asset(
+                                                                  "assets/images/whats.png",
+                                                                  height: 20),
+                                                              label: const Text(
+                                                                  "WhatsApp",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .black)),
+                                                              style:
+                                                                  ElevatedButton
+                                                                      .styleFrom(
+                                                                backgroundColor:
+                                                                    Colors.grey[
+                                                                        100],
+                                                                shape:
+                                                                    RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              10),
+                                                                ),
+                                                                elevation: 2,
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                        vertical:
+                                                                            10),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          const SizedBox(
+                                                              width: 10),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(
+                                                          height: 10),
                                                     ],
                                                   ),
-                                                ),
-
-                                                const SizedBox(height: 5),
-
-                                                const Divider(
-                                                  color: Colors.grey,
-                                                  thickness: 0.3,
-                                                  height: 6,
-                                                ),
-
-                                                const SizedBox(height: 8),
-
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 5),
-                                                  child: ListTile(
-                                                    title: Text(
-                                                      property.title.toString(),
-                                                      style: const TextStyle(
-                                                        fontSize: 16,
-                                                        height: 1.4,
-                                                      ),
-                                                    ),
-                                                    subtitle: Padding(
-                                                      padding: const EdgeInsets.only(top: 8.0),
-                                                      child: Text(
-                                                        '${property.price} AED',
-                                                        style: const TextStyle(
-                                                          fontWeight: FontWeight.bold,
-                                                          fontSize: 22,
-                                                          height: 1.4,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(
-                                                          left: 10, right: 5, top: 0),
-                                                      child: Image.asset("assets/images/map.png",
-                                                          height: 14),
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(
-                                                          left: 0, right: 0, top: 0),
-                                                      child: Text(
-                                                        property.location.toString(),
-                                                        style: const TextStyle(
-                                                          fontSize: 13,
-                                                          height: 1.4,
-                                                          overflow: TextOverflow.visible,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 8),
-                                                // ─────── NEW: Beds • Baths • Size (same as Agency screen) ───────
-                                                Padding(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                                  child: Wrap(
-                                                    spacing: 16,
-                                                    runSpacing: 8,
-                                                    children: [
-                                                      _buildInfoChip("assets/images/bed.png", property.bedrooms?.toString()),
-                                                      _buildInfoChip("assets/images/bath.png", property.bathrooms?.toString()),
-                                                      _buildInfoChip("assets/images/messure.png", getDisplaySize(property)),
-                                                    ],
-                                                  ),
-                                                ),
-
-                                                const SizedBox(height: 15),
-                                                Row(
-                                                  children: [
-                                                    const SizedBox(width: 10),
-                                                    Expanded(
-                                                      child: ElevatedButton.icon(
-                                                        onPressed: () async {
-                                                          String phone =
-                                                              'tel:${item.phoneNumber}';
-                                                          try {
-                                                            final bool launched =
-                                                            await launchUrlString(
-                                                              phone,
-                                                              mode: LaunchMode.externalApplication,
-                                                            );
-                                                            if (!launched) {
-                                                              // ignore: avoid_print
-                                                              print("❌ Could not launch dialer");
-                                                            }
-                                                          } catch (e) {
-                                                            // ignore: avoid_print
-                                                            print("❌ Exception: $e");
-                                                          }
-                                                        },
-                                                        icon: const Icon(Icons.call,
-                                                            color: Colors.red),
-                                                        label: const Text("Call",
-                                                            style: TextStyle(color: Colors.black)),
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor: Colors.grey[100],
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(10),
-                                                          ),
-                                                          elevation: 2,
-                                                          padding: const EdgeInsets.symmetric(
-                                                              vertical: 10),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 10),
-                                                    Expanded(
-                                                      child: ElevatedButton.icon(
-                                                        onPressed: () async {
-                                                          final rawNumber = property.whatsapp ??
-                                                              property.phoneNumber ??
-                                                              '';
-                                                          final phone = whatsAppNumber(rawNumber);
-
-                                                          if (phone.isEmpty) {
-                                                            // ignore: use_build_context_synchronously
-                                                            ScaffoldMessenger.of(context).showSnackBar(
-                                                              const SnackBar(
-                                                                  content: Text(
-                                                                      "No WhatsApp number available")),
-                                                            );
-                                                            return;
-                                                          }
-
-                                                          final message =
-                                                          Uri.encodeComponent("Hello");
-                                                          final url = Uri.parse(
-                                                              "https://wa.me/$phone?text=$message");
-
-                                                          if (await canLaunchUrl(url)) {
-                                                            try {
-                                                              await launchUrl(url,
-                                                                  mode: LaunchMode.externalApplication);
-                                                            } catch (e) {
-                                                              // ignore: avoid_print
-                                                              print("❌ Exception: $e");
-                                                            }
-                                                          } else {
-                                                            // ignore: use_build_context_synchronously
-                                                            ScaffoldMessenger.of(context).showSnackBar(
-                                                              const SnackBar(
-                                                                  content:
-                                                                  Text("Cannot open WhatsApp")),
-                                                            );
-                                                          }
-                                                        },
-                                                        icon: Image.asset("assets/images/whats.png",
-                                                            height: 20),
-                                                        label: const Text("WhatsApp",
-                                                            style: TextStyle(color: Colors.black)),
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor: Colors.grey[100],
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(10),
-                                                          ),
-                                                          elevation: 2,
-                                                          padding: const EdgeInsets.symmetric(
-                                                              vertical: 10),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 10),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 10),
-                                              ],
+                                                ],
+                                              ),
                                             ),
-                                          ],
+                                          ),
                                         ),
-                                      ),
-                                    ),
+                                      );
+                                    },
                                   ),
-                                );
-                              },
-                            ),
                           ),
                         ),
                       ],
@@ -1800,7 +2090,8 @@ class _AboutAgentState extends State<AboutAgent> {
                               letterSpacing: 0.5,
                             ),
                           ),
-                          const SizedBox(height: 40), // Space before "Coming Soon"
+                          const SizedBox(
+                              height: 40), // Space before "Coming Soon"
 
                           // Centered "Coming Soon" message
                           Center(
@@ -1834,7 +2125,8 @@ class _AboutAgentState extends State<AboutAgent> {
                             ),
                           ),
 
-                          const SizedBox(height: 100), // Extra bottom space (optional)
+                          const SizedBox(
+                              height: 100), // Extra bottom space (optional)
                         ],
                       ),
                     ),
@@ -1924,6 +2216,4 @@ class _AboutAgentState extends State<AboutAgent> {
       ),
     );
   }
-
-
 }

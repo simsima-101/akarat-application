@@ -60,7 +60,7 @@ class _LoginDemoState extends State<LoginDemo> {
   Future<void> _initGoogle() async {
     try {
       await _googleSignIn.initialize(clientId: _IOS_CLIENT_ID);
-      await _googleSignIn.attemptLightweightAuthentication();
+      // await _googleSignIn.attemptLightweightAuthentication();
     } catch (_) {
       // Ignore — not critical
     }
@@ -242,10 +242,10 @@ class _LoginDemoState extends State<LoginDemo> {
         (_) => false,
       );
     } catch (e) {
-      setState(() {
-        errorMessage =
-            'Login failed. This account may be inactive or deleted.\nPlease try another method.';
-      });
+      // setState(() {
+      //   errorMessage =
+      //       'Login failed. This account may be inactive or deleted.\nPlease try another method.';
+      // });
     } finally {
       await sub?.cancel();
       if (mounted) setState(() => isLoading = false);

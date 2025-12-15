@@ -2,10 +2,13 @@
 import 'dart:async';
 
 import 'package:Akarat/services/api_service.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
+import 'package:intl_country_data/intl_country_data.dart';
 
 import '../secure_storage.dart';
 import '../services/auth_prefs.dart';
@@ -32,6 +35,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmController = TextEditingController();
+
+  String selectedCountryCode = "+971"; // default UAE
+
+  int _maxPhoneLength = 9;
 
   // Register state
   bool _isLoading = false;
@@ -85,7 +92,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final last = lastController.text.trim();
     final email = emailController.text.trim().toLowerCase();
     final phone = phoneController.text.trim();
-    const phoneCountryCode = '+971';
     final pwd = passwordController.text.trim();
     final confirm = confirmController.text.trim();
 
@@ -114,6 +120,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _showErr('Enter a valid number');
       return;
     }
+    debugPrint("phone:${phone.length}, max len :${_maxPhoneLength}");
+
+    // Check length based on selected country
+    if (phone.length != _maxPhoneLength) {
+      _showErr(
+          'Phone number must be $_maxPhoneLength digits for ${selectedCountryCode}');
+
+      return;
+    }
+
     if (pwd.isEmpty) {
       _showErr('Please enter password');
       return;
@@ -145,7 +161,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         firstName: first,
         lastName: last,
         email: email,
-        phoneCountryCode: phoneCountryCode,
+        phoneCountryCode: selectedCountryCode,
         phone: phone,
         password: pwd,
         passwordConfirmation: confirm,
@@ -190,7 +206,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'name': fullName,
             'password': pwd,
             'phone': phone,
-            'phoneCode': phoneCountryCode,
+            'phoneCode': selectedCountryCode,
             'expiresIn': expiresIn,
             'resendAfter': resendAfter,
             if (devOtp.isNotEmpty) 'devOtp': devOtp,
@@ -272,8 +288,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     // v7 requires clientId at initialize on iOS
     await _googleSignIn.initialize(clientId: _IOS_CLIENT_ID);
     try {
-      await _googleSignIn
-          .attemptLightweightAuthentication(); // optional fast path
+      // await _googleSignIn
+      //     .attemptLightweightAuthentication(); // optional fast path
     } catch (_) {}
   }
 
@@ -525,21 +541,85 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFE9E9E9)),
               ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('🇦🇪', style: TextStyle(fontSize: 16)),
-                  SizedBox(width: 8),
-                  Text('+971', style: TextStyle(fontWeight: FontWeight.w600)),
-                ],
+              child: CountryCodePicker(
+                onChanged: (code) {
+                  setState(() {
+                    selectedCountryCode = code.dialCode ?? "+971";
+                    final intlCountry = IntlCountryData.fromCountryCodeAlpha2(
+                        code.code ?? "AE");
+
+                    phoneController.clear();
+
+                    _maxPhoneLength = intlCountry.telephoneMaxLength;
+                  });
+                },
+                initialSelection: 'AE', // UAE default
+                favorite: const [],
+                showDropDownButton: false,
+                showCountryOnly: false,
+                showOnlyCountryWhenClosed: false,
+                alignLeft: false,
+                margin: EdgeInsetsGeometry.only(left: 0, right: 8),
+                padding: EdgeInsetsGeometry.all(0),
+                headerTextStyle:
+                    TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                closeIcon: Icon(
+                  Icons.close,
+                  size: 25,
+                ),
+                dialogSize: Size(double.infinity, 700),
+
+                searchDecoration: InputDecoration(
+                  hintText: 'Search country',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                dialogItemPadding:
+                    EdgeInsetsGeometry.symmetric(horizontal: 12, vertical: 13),
+                // topBarPadding: EdgeInsets.only(bottom: 20),
+                searchPadding:
+                    EdgeInsetsGeometry.only(bottom: 10, left: 10, right: 10),
               ),
+
+              // const Row(
+              //   mainAxisSize: MainAxisSize.min,
+              //   children: [
+              //     Text('🇦🇪', style: TextStyle(fontSize: 16)),
+              //     SizedBox(width: 8),
+              //     Text('+971', style: TextStyle(fontWeight: FontWeight.w600)),
+              //   ],
+              // ),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: TextField(
+              child: TextFormField(
                 controller: phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: _dec('Phone'),
+                maxLength: _maxPhoneLength ?? 9,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                // Fallback default if no country selected
+                decoration: InputDecoration(
+                  hintText: 'Phone',
+                  hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  filled: true,
+                  fillColor: Colors.white,
+                  enabledBorder: _fieldBorder,
+                  focusedBorder: _fieldBorder.copyWith(
+                    borderSide: const BorderSide(color: Color(0xFFDADADA)),
+                  ),
+                  prefixIconConstraints: const BoxConstraints(minWidth: 0),
+                  counterText: '',
+                  border: InputBorder.none,
+                  isDense: true,
+                ),
               ),
             ),
           ],

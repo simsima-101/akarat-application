@@ -1,8 +1,10 @@
 // lib/screen/ContactFormScreen.dart
 
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl_country_data/intl_country_data.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 typedef EmailAgentSubmitCallback = Future<void> Function({
@@ -113,6 +115,9 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
   final _phoneCtrl = TextEditingController();
   final _msgCtrl = TextEditingController();
 
+  String selectedCountryCode = "+971"; // default UAE
+  int _maxPhoneLength = 9;
+
   EmailAgentSubmitCallback? _externalSubmit;
   VoidCallback? _onSuccess;
   String _subtitle = '';
@@ -154,8 +159,16 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
   }
 
   String? _phone(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Required';
-    return RegExp(r'^\d{7,15}$').hasMatch(v.trim()) ? null : '7–15 digits only';
+    final input = v?.trim() ?? '';
+
+    if (v == null || input.isEmpty) return 'Required';
+
+    // Check length based on selected country
+    if (input.length != _maxPhoneLength) {
+      return 'Phone number must be $_maxPhoneLength digits for ${selectedCountryCode}';
+    }
+
+    return RegExp(r'^\d{7,15}$').hasMatch(input) ? null : '7–15 digits only';
   }
 
   /// MAIN SEND METHOD – NOW 100% WORKING
@@ -165,7 +178,7 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
     final name = _nameCtrl.text.trim();
     final email = _emailCtrl.text.trim();
     final localPhone = _phoneCtrl.text.trim();
-    final fullPhone = '+971 $localPhone';
+    final fullPhone = '$selectedCountryCode $localPhone';
     final msg = _msgCtrl.text.trim();
 
     // 1. Custom backend (Home contact form)
@@ -266,21 +279,46 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
               const BorderRadius.horizontal(left: Radius.circular(14)),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              'assets/images/ae.png',
-              width: 20,
-              height: 14,
-              fit: BoxFit.cover,
+        child: CountryCodePicker(
+          onChanged: (code) {
+            setState(() {
+              selectedCountryCode = code.dialCode ?? "+971";
+              final intlCountry =
+                  IntlCountryData.fromCountryCodeAlpha2(code.code ?? "AE");
+
+              _phoneCtrl.clear();
+
+              _maxPhoneLength = intlCountry.telephoneMaxLength;
+            });
+          },
+          initialSelection: 'AE', // UAE default
+          favorite: const [],
+          showDropDownButton: false,
+          showCountryOnly: false,
+          showOnlyCountryWhenClosed: false,
+          alignLeft: false,
+          margin: EdgeInsetsGeometry.only(left: 0, right: 8),
+          padding: EdgeInsetsGeometry.all(0),
+          headerTextStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          closeIcon: Icon(
+            Icons.close,
+            size: 25,
+          ),
+          dialogSize: Size(double.infinity, 700),
+
+          searchDecoration: InputDecoration(
+            hintText: 'Search country',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey.shade300),
             ),
-            const SizedBox(width: 6),
-            const Text(
-              '+971',
-              style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
-            ),
-          ],
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+          dialogItemPadding:
+              EdgeInsetsGeometry.symmetric(horizontal: 12, vertical: 13),
+          // topBarPadding: EdgeInsets.only(bottom: 20),
+          searchPadding:
+              EdgeInsetsGeometry.only(bottom: 10, left: 10, right: 10),
         ),
       );
 
@@ -293,11 +331,12 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
               controller: _phoneCtrl,
               validator: _phone,
               keyboardType: TextInputType.phone,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(15),
-              ],
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              maxLength: _maxPhoneLength ??
+                  9, // Fallback default if no country selected
+
               decoration: _input('Phone').copyWith(
+                counterText: '',
                 border: const OutlineInputBorder(
                   borderRadius:
                       BorderRadius.horizontal(right: Radius.circular(14)),
@@ -319,7 +358,6 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
         ],
       );
 
-  @override
   @override
   Widget build(BuildContext context) {
     return Dialog(

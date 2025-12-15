@@ -1119,8 +1119,8 @@ class _MyHomePageState extends State<Home> {
                                         MaterialPageRoute(
                                             builder: (context) => filter.Filter(
                                                   data: purpose,
-                                                  propertyCategoryType:
-                                                      'Villa Compound',
+                                                  propertyType: 0,
+                                                  propertyCategoryType: 'Villa',
                                                 )));
                                   },
                                   child: Padding(

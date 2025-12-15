@@ -14,6 +14,7 @@ import 'package:Akarat/screen/register_screen.dart';
 import 'package:Akarat/screen/reset_password.dart';
 import 'package:Akarat/screen/splash_screen.dart';
 import 'package:Akarat/services/session.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -78,6 +79,16 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       scaffoldMessengerKey: scaffoldMessengerKey,
+      // 🔥 Required for country_code_picker to show English names
+      localizationsDelegates: const [
+        CountryLocalizations.delegate, // <-- ADD THIS
+      ],
+
+      supportedLocales: const [
+        Locale('en', ''), // <-- FORCE ENGLISH
+      ],
+
+      locale: const Locale('en'), // <-- FIXES COUNTRY NAME LANGUAGE
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: const Color(0xFFE01E26),

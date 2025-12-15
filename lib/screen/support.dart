@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:Akarat/screen/home.dart';
 import 'package:Akarat/screen/my_account.dart';
 import 'package:Akarat/utils/shared_preference_manager.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl_country_data/intl_country_data.dart';
 
 import '../secure_storage.dart';
 import '../services/api_service.dart';
@@ -26,6 +29,10 @@ class _SupportState extends State<Support> {
   final phoneController = TextEditingController();
   final subjectController = TextEditingController();
   final messageController = TextEditingController();
+
+  String selectedCountryCode = "+971"; // default UAE
+
+  int _maxPhoneLength = 9;
 
   bool _isLoading = false;
 
@@ -98,7 +105,8 @@ class _SupportState extends State<Support> {
       final ok = await ApiService.submitContactForm(
         name: nameController.text,
         email: emailController.text,
-        phone: phoneController.text,
+        phone:
+            "${selectedCountryCode.replaceFirst('+', '')}${phoneController.text}",
         subject: subjectController.text,
         message: messageController.text,
       );
@@ -138,6 +146,23 @@ class _SupportState extends State<Support> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  String? _validatePhone(String? v) {
+    final input = v?.trim() ?? '';
+    if (input.isEmpty) return 'Please enter Phone Number';
+
+    // Check if all digits
+    if (!RegExp(r'^\d+$').hasMatch(input)) {
+      return 'Phone number must contain digits only';
+    }
+
+    // Check length based on selected country
+    if (input.length != _maxPhoneLength) {
+      return 'Phone number must be $_maxPhoneLength digits for ${selectedCountryCode}';
+    }
+
+    return null; // valid
   }
 
   @override
@@ -231,16 +256,81 @@ class _SupportState extends State<Support> {
                       // Phone
                       _label("Phone Number"),
                       _boxedField(
-                        child: TextFormField(
-                          controller: phoneController,
-                          keyboardType: TextInputType.phone,
-                          validator: (v) => _required(v, 'Phone Number'),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          textAlign: TextAlign.left,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Country Code Picker
+                            CountryCodePicker(
+                              onChanged: (code) {
+                                setState(() {
+                                  selectedCountryCode = code.dialCode ?? "+971";
+                                  final intlCountry =
+                                      IntlCountryData.fromCountryCodeAlpha2(
+                                          code.code ?? "AE");
+
+                                  phoneController.clear();
+
+                                  _maxPhoneLength =
+                                      intlCountry.telephoneMaxLength;
+                                });
+                              },
+                              initialSelection: 'AE', // UAE default
+                              favorite: const [],
+                              showDropDownButton: false,
+                              showCountryOnly: false,
+                              showOnlyCountryWhenClosed: false,
+                              alignLeft: false,
+                              margin:
+                                  EdgeInsetsGeometry.only(left: 0, right: 8),
+                              padding: EdgeInsetsGeometry.all(0),
+                              headerTextStyle: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w700),
+                              closeIcon: Icon(
+                                Icons.close,
+                                size: 25,
+                              ),
+                              dialogSize: Size(double.infinity, 700),
+
+                              searchDecoration: InputDecoration(
+                                hintText: 'Search country',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade300),
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                              ),
+                              dialogItemPadding: EdgeInsetsGeometry.symmetric(
+                                  horizontal: 12, vertical: 13),
+                              // topBarPadding: EdgeInsets.only(bottom: 20),
+                              searchPadding: EdgeInsetsGeometry.only(
+                                  bottom: 10, left: 10, right: 10),
+                            ),
+
+                            // Phone number Input
+                            Expanded(
+                              child: TextFormField(
+                                controller: phoneController,
+
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly
+                                ],
+                                maxLength: _maxPhoneLength ??
+                                    9, // Fallback default if no country selected
+                                keyboardType: TextInputType.phone,
+                                validator: _validatePhone,
+                                decoration: const InputDecoration(
+                                  counterText: '',
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.symmetric(
+                                      vertical: 12, horizontal: 0),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
 

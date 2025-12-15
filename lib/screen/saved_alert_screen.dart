@@ -866,157 +866,165 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                                       },
                                     ),
                             ),
-                            LayoutBuilder(
-                              builder: (context, cs) {
-                                final narrow = cs.maxWidth < 420;
-                                final double txt = narrow ? 12 : 14;
+                            if (_all.isNotEmpty)
+                              LayoutBuilder(
+                                builder: (context, cs) {
+                                  final narrow = cs.maxWidth < 420;
+                                  final double txt = narrow ? 12 : 14;
 
-                                return Padding(
-                                  // 👇 add space under the whole row (Select all / Delete / Pager)
-                                  padding: const EdgeInsets.only(bottom: 5),
-                                  child: Row(
-                                    children: [
-                                      // LEFT controls
-                                      Expanded(
-                                        child: Wrap(
-                                          alignment: WrapAlignment.start,
-                                          crossAxisAlignment:
-                                              WrapCrossAlignment.center,
-                                          spacing: 8,
-                                          runSpacing: 6,
-                                          children: [
-                                            Wrap(
-                                              spacing: 6,
-                                              crossAxisAlignment:
-                                                  WrapCrossAlignment.center,
-                                              children: [
-                                                Checkbox(
-                                                  visualDensity:
-                                                      VisualDensity.compact,
-                                                  value: _pageItems
-                                                          .isNotEmpty &&
-                                                      _pageItems.every((a) =>
-                                                          _selected
-                                                              .contains(a.id)),
-                                                  onChanged: (v) =>
-                                                      _toggleSelectAllOnPage(
-                                                          v ?? false),
-                                                  materialTapTargetSize:
-                                                      MaterialTapTargetSize
-                                                          .shrinkWrap,
-                                                ),
-                                                Text(
-                                                  narrow
-                                                      ? 'Select all'
-                                                      : 'Select all on this page',
-                                                  style:
-                                                      TextStyle(fontSize: txt),
-                                                  softWrap: true,
-                                                ),
-                                              ],
-                                            ),
-                                            TextButton.icon(
-                                              onPressed: _selected.isEmpty
-                                                  ? null
-                                                  : _deleteSelected,
-                                              icon: Icon(Icons.delete_outline,
-                                                  size: narrow ? 16 : 20),
-                                              label: Text('Delete selected',
-                                                  style:
-                                                      TextStyle(fontSize: txt)),
-                                              style: TextButton.styleFrom(
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal: narrow ? 8 : 12,
-                                                  vertical: narrow ? 6 : 8,
-                                                ),
-                                                minimumSize: Size.zero,
-                                                tapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
-                                                visualDensity:
-                                                    VisualDensity.compact,
+                                  return Padding(
+                                    // 👇 add space under the whole row (Select all / Delete / Pager)
+                                    padding: const EdgeInsets.only(bottom: 5),
+                                    child: Row(
+                                      children: [
+                                        // LEFT controls
+                                        Expanded(
+                                          child: Wrap(
+                                            alignment: WrapAlignment.start,
+                                            crossAxisAlignment:
+                                                WrapCrossAlignment.center,
+                                            spacing: 8,
+                                            runSpacing: 6,
+                                            children: [
+                                              Wrap(
+                                                spacing: 6,
+                                                crossAxisAlignment:
+                                                    WrapCrossAlignment.center,
+                                                children: [
+                                                  Checkbox(
+                                                    visualDensity:
+                                                        VisualDensity.compact,
+                                                    value: _pageItems
+                                                            .isNotEmpty &&
+                                                        _pageItems.every((a) =>
+                                                            _selected.contains(
+                                                                a.id)),
+                                                    onChanged: (v) =>
+                                                        _toggleSelectAllOnPage(
+                                                            v ?? false),
+                                                    materialTapTargetSize:
+                                                        MaterialTapTargetSize
+                                                            .shrinkWrap,
+                                                  ),
+                                                  Text(
+                                                    narrow
+                                                        ? 'Select all'
+                                                        : 'Select all on this page',
+                                                    style: TextStyle(
+                                                        fontSize: txt),
+                                                    softWrap: true,
+                                                  ),
+                                                ],
                                               ),
-                                            ),
-                                            TextButton.icon(
-                                              onPressed:
-                                                  (_all.isEmpty || _deletingAll)
-                                                      ? null
-                                                      : _deleteAllAlerts,
-                                              icon: Icon(
-                                                  Icons.delete_forever_outlined,
-                                                  size: narrow ? 16 : 20),
-                                              label: Text(
-                                                _deletingAll
-                                                    ? 'Deleting…'
-                                                    : 'Delete all alerts',
-                                                style: TextStyle(fontSize: txt),
-                                              ),
-                                              style: ButtonStyle(
-                                                padding: WidgetStatePropertyAll(
-                                                  EdgeInsets.symmetric(
+                                              TextButton.icon(
+                                                onPressed: _selected.isEmpty
+                                                    ? null
+                                                    : _deleteSelected,
+                                                icon: Icon(Icons.delete_outline,
+                                                    size: narrow ? 16 : 20),
+                                                label: Text('Delete selected',
+                                                    style: TextStyle(
+                                                        fontSize: txt)),
+                                                style: TextButton.styleFrom(
+                                                  padding: EdgeInsets.symmetric(
                                                     horizontal: narrow ? 8 : 12,
                                                     vertical: narrow ? 6 : 8,
                                                   ),
+                                                  minimumSize: Size.zero,
+                                                  tapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
+                                                  visualDensity:
+                                                      VisualDensity.compact,
                                                 ),
-                                                minimumSize:
-                                                    const WidgetStatePropertyAll(
-                                                        Size.zero),
-                                                tapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
-                                                visualDensity:
-                                                    VisualDensity.compact,
-                                                foregroundColor:
-                                                    WidgetStateProperty
-                                                        .resolveWith<Color?>(
-                                                  (states) => states.contains(
-                                                          WidgetState.disabled)
-                                                      ? Colors.red
-                                                          .withOpacity(0.38)
-                                                      : Colors.red,
-                                                ),
-                                                backgroundColor:
-                                                    const WidgetStatePropertyAll(
-                                                        Colors.transparent),
-                                                overlayColor:
-                                                    WidgetStatePropertyAll(
-                                                        Colors.red
-                                                            .withOpacity(0.08)),
-                                                side:
-                                                    const WidgetStatePropertyAll(
-                                                        BorderSide.none),
-                                                shape:
-                                                    const WidgetStatePropertyAll(
-                                                        StadiumBorder()),
                                               ),
-                                            ),
-                                          ],
+                                              TextButton.icon(
+                                                onPressed: (_all.isEmpty ||
+                                                        _deletingAll)
+                                                    ? null
+                                                    : _deleteAllAlerts,
+                                                icon: Icon(
+                                                    Icons
+                                                        .delete_forever_outlined,
+                                                    size: narrow ? 16 : 20),
+                                                label: Text(
+                                                  _deletingAll
+                                                      ? 'Deleting…'
+                                                      : 'Delete all alerts',
+                                                  style:
+                                                      TextStyle(fontSize: txt),
+                                                ),
+                                                style: ButtonStyle(
+                                                  padding:
+                                                      WidgetStatePropertyAll(
+                                                    EdgeInsets.symmetric(
+                                                      horizontal:
+                                                          narrow ? 8 : 12,
+                                                      vertical: narrow ? 6 : 8,
+                                                    ),
+                                                  ),
+                                                  minimumSize:
+                                                      const WidgetStatePropertyAll(
+                                                          Size.zero),
+                                                  tapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                  foregroundColor:
+                                                      WidgetStateProperty
+                                                          .resolveWith<Color?>(
+                                                    (states) => states.contains(
+                                                            WidgetState
+                                                                .disabled)
+                                                        ? Colors.red
+                                                            .withOpacity(0.38)
+                                                        : Colors.red,
+                                                  ),
+                                                  backgroundColor:
+                                                      const WidgetStatePropertyAll(
+                                                          Colors.transparent),
+                                                  overlayColor:
+                                                      WidgetStatePropertyAll(
+                                                          Colors.red
+                                                              .withOpacity(
+                                                                  0.08)),
+                                                  side:
+                                                      const WidgetStatePropertyAll(
+                                                          BorderSide.none),
+                                                  shape:
+                                                      const WidgetStatePropertyAll(
+                                                          StadiumBorder()),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
 
-                                      // RIGHT pager
-                                      Expanded(
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 12),
-                                          child: Align(
-                                            alignment: Alignment.centerRight,
-                                            child: SingleChildScrollView(
-                                              scrollDirection: Axis.horizontal,
-                                              child: SizedBox(
-                                                height: 34,
-                                                child:
-                                                    FittedBox(child: _pager()),
+                                        // RIGHT pager
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 12),
+                                            child: Align(
+                                              alignment: Alignment.centerRight,
+                                              child: SingleChildScrollView(
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                child: SizedBox(
+                                                  height: 34,
+                                                  child: FittedBox(
+                                                      child: _pager()),
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            )
+                                      ],
+                                    ),
+                                  );
+                                },
+                              )
                           ],
                         ),
                       ),

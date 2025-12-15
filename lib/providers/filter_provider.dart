@@ -763,7 +763,7 @@ class FilterProvider extends ChangeNotifier {
       selectedPropType = 0;
       await propertyApi('Residential');
 
-      String propertyCategoryType = "Villa Compound";
+      String propertyCategoryType = "Villa";
       final index = propertyTypeModel!.data!.indexWhere(
         (item) =>
             item.name?.trim().toLowerCase() ==
