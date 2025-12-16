@@ -8,6 +8,7 @@ import 'package:Akarat/screen/full_map_screen.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -2366,14 +2367,33 @@ class _Featured_DetailState extends State<Featured_Detail> {
             // ===== Recommended Properties =====
             if (featuredDetailModel?.data?.recommended != null &&
                 featuredDetailModel!.data!.recommended!.isNotEmpty) ...[
+              Gap(10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Recomended Properties",
+                      style: TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Gap(5),
               SizedBox(
                 height: 240,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  itemCount: featuredDetailModel?.data?.recommended?.length ?? 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  itemCount:
+                      featuredDetailModel?.data?.recommended?.length ?? 0,
                   itemBuilder: (context, index) {
-                    final recProperty = featuredDetailModel!.data!.recommended![index];
+                    final recProperty =
+                        featuredDetailModel!.data!.recommended![index];
 
                     // === Resolve values for recommended property (same logic as main property) ===
                     final int resolvedBeds = recProperty.bedrooms ?? 0;
@@ -2382,22 +2402,28 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     // Size: try propertySizeSqft → squareFeet → fallback
                     String displaySize = '';
                     String? rawSize = recProperty.propertySizeSqft;
-                    if (rawSize == null || rawSize.trim().isEmpty || rawSize == '0') {
+                    if (rawSize == null ||
+                        rawSize.trim().isEmpty ||
+                        rawSize == '0') {
                       rawSize = recProperty.squareFeet;
                     }
-                    if (rawSize != null && rawSize.trim().isNotEmpty && rawSize != '0') {
+                    if (rawSize != null &&
+                        rawSize.trim().isNotEmpty &&
+                        rawSize != '0') {
                       final clean = rawSize.replaceAll(RegExp(r'[^0-9.]'), '');
                       final sizeNum = num.tryParse(clean);
                       if (sizeNum != null && sizeNum > 0) {
                         final formatted = sizeNum
                             .toStringAsFixed(0)
-                            .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                            .replaceAllMapped(
+                                RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
                                 (m) => '${m[1]},');
                         displaySize = '$formatted sqft';
                       }
                     }
 
-                    final String resolvedPrice = _formatPrice(recProperty.price);
+                    final String resolvedPrice =
+                        _formatPrice(recProperty.price);
                     final String resolvedLocation =
                         recProperty.location?.toString() ?? 'Dubai';
 
@@ -2407,19 +2433,20 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
                     return Container(
                       width: 270,
-                      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 8),
                       child: Card(
                         color: Colors.white,
                         elevation: 5,
-                        shape:
-                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
                         child: GestureDetector(
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    Featured_Detail(data: recProperty.id.toString()),
+                                builder: (context) => Featured_Detail(
+                                    data: recProperty.id.toString()),
                               ),
                             );
                           },
@@ -2428,37 +2455,42 @@ class _Featured_DetailState extends State<Featured_Detail> {
                             children: [
                               // === IMAGE ===
                               ClipRRect(
-                                borderRadius:
-                                const BorderRadius.vertical(top: Radius.circular(15)),
+                                borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(15)),
                                 child: imageUrl.isNotEmpty
                                     ? CachedNetworkImage(
-                                  imageUrl: imageUrl,
-                                  height: 120,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(
-                                    color: Colors.grey[300],
-                                    child: const Center(
-                                        child: CircularProgressIndicator()),
-                                  ),
-                                  errorWidget: (_, __, ___) => Container(
-                                    height: 120,
-                                    color: Colors.grey[300],
-                                    child:
-                                    const Icon(Icons.image_not_supported, size: 40),
-                                  ),
-                                )
+                                        imageUrl: imageUrl,
+                                        height: 120,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) =>
+                                            Container(
+                                          color: Colors.grey[300],
+                                          child: const Center(
+                                              child:
+                                                  CircularProgressIndicator()),
+                                        ),
+                                        errorWidget: (_, __, ___) => Container(
+                                          height: 120,
+                                          color: Colors.grey[300],
+                                          child: const Icon(
+                                              Icons.image_not_supported,
+                                              size: 40),
+                                        ),
+                                      )
                                     : Container(
-                                  height: 120,
-                                  color: Colors.grey[300],
-                                  child:
-                                  const Icon(Icons.image_not_supported, size: 40),
-                                ),
+                                        height: 120,
+                                        color: Colors.grey[300],
+                                        child: const Icon(
+                                            Icons.image_not_supported,
+                                            size: 40),
+                                      ),
                               ),
 
                               // === CONTENT ===
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+                                padding:
+                                    const EdgeInsets.fromLTRB(10, 10, 10, 8),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -2478,38 +2510,42 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                       children: [
                                         if (resolvedBeds > 0) ...[
                                           const Icon(Icons.king_bed_outlined,
-                                              size: 18, color: Colors.redAccent),
+                                              size: 18,
+                                              color: Colors.redAccent),
                                           const SizedBox(width: 4),
                                           Text(
                                             '$resolvedBeds bed${resolvedBeds > 1 ? 's' : ''}',
-                                            style: const TextStyle(fontSize: 13.5),
+                                            style:
+                                                const TextStyle(fontSize: 13.5),
                                           ),
                                         ],
-
-                                        if (resolvedBeds > 0 && resolvedBaths > 0)
+                                        if (resolvedBeds > 0 &&
+                                            resolvedBaths > 0)
                                           const SizedBox(width: 14),
-
                                         if (resolvedBaths > 0) ...[
                                           const Icon(Icons.bathtub_outlined,
-                                              size: 18, color: Colors.redAccent),
+                                              size: 18,
+                                              color: Colors.redAccent),
                                           const SizedBox(width: 4),
                                           Text(
                                             '$resolvedBaths bath${resolvedBaths > 1 ? 's' : ''}',
-                                            style: const TextStyle(fontSize: 13.5),
+                                            style:
+                                                const TextStyle(fontSize: 13.5),
                                           ),
                                         ],
-
-                                        if ((resolvedBeds > 0 || resolvedBaths > 0) &&
+                                        if ((resolvedBeds > 0 ||
+                                                resolvedBaths > 0) &&
                                             displaySize.isNotEmpty)
                                           const SizedBox(width: 14),
-
                                         if (displaySize.isNotEmpty) ...[
                                           const Icon(Icons.square_foot,
-                                              size: 18, color: Colors.redAccent),
+                                              size: 18,
+                                              color: Colors.redAccent),
                                           const SizedBox(width: 4),
                                           Text(
                                             displaySize,
-                                            style: const TextStyle(fontSize: 13.5),
+                                            style:
+                                                const TextStyle(fontSize: 13.5),
                                           ),
                                         ],
                                       ],

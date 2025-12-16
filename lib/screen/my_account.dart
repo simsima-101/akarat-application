@@ -170,43 +170,43 @@ class _My_AccountState extends State<My_Account> {
                             fontSize: 22, fontWeight: FontWeight.bold)),
 
                     // Profile Card
-                    Padding(
-                      padding: const EdgeInsets.only(top: 30, bottom: 16),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black12, blurRadius: 6)
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            GestureDetector(
-                              onTap: () async {
-                                if (!_isLoggedIn) {
-                                  _showLoginDialog(
-                                      "Please login to edit your profile.");
-                                  return;
-                                }
+                    GestureDetector(
+                      onTap: () async {
+                        if (!_isLoggedIn) {
+                          _showLoginDialog(
+                              "Please login to edit your profile.");
+                          return;
+                        }
 
-                                final changed = await Navigator.push<bool>(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => PersonalInformationScreen(
-                                      name: userName ?? '',
-                                      email: userEmail ?? '',
-                                      onDeleteAccount: deleteAccount,
-                                    ),
-                                  ),
-                                );
+                        final changed = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PersonalInformationScreen(
+                              name: userName ?? '',
+                              email: userEmail ?? '',
+                              onDeleteAccount: deleteAccount,
+                            ),
+                          ),
+                        );
 
-                                if (changed == true && mounted) {
-                                  await _loadUserData();
-                                }
-                              },
-                              child: CircleAvatar(
+                        if (changed == true && mounted) {
+                          await _loadUserData();
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 30, bottom: 16),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: const [
+                              BoxShadow(color: Colors.black12, blurRadius: 6)
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
                                 radius: 30,
                                 backgroundColor: Colors.transparent,
                                 child: ClipOval(
@@ -237,50 +237,52 @@ class _My_AccountState extends State<My_Account> {
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _isLoggedIn
-                                  ? Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          _displayName,
-                                          style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          userEmail ?? '',
-                                          style: const TextStyle(
-                                              fontSize: 13, color: Colors.grey),
-                                        ),
-                                      ],
-                                    )
-                                  : GestureDetector(
-                                      onTap: () async {
-                                        await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (_) =>
-                                                  const LoginDemo()),
-                                        );
-                                        if (mounted) await _loadUserData();
-                                      },
-                                      child: const Text(
-                                        "Welcome! Login / Sign up",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red,
-                                          decoration: TextDecoration.underline,
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: _isLoggedIn
+                                    ? Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _displayName,
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            userEmail ?? '',
+                                            style: const TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.grey),
+                                          ),
+                                        ],
+                                      )
+                                    : GestureDetector(
+                                        onTap: () async {
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (_) =>
+                                                    const LoginDemo()),
+                                          );
+                                          if (mounted) await _loadUserData();
+                                        },
+                                        child: const Text(
+                                          "Welcome! Login / Sign up",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.red,
+                                            decoration:
+                                                TextDecoration.underline,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

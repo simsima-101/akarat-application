@@ -26,7 +26,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
   int pageIndex = 0; // For bottom nav icon state
   String? token;
 
-  final Map<int, int> _carouselPageIndex = {};
+  final PageController _pageController = PageController();
+  int _currentImageIndex = 0;
 
   String getFullImageUrl(String? url) {
     if (url == null || url.isEmpty) {
@@ -446,6 +447,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                                               children: [
                                                                 PageView
                                                                     .builder(
+                                                                  controller:
+                                                                      _pageController,
                                                                   itemCount: (item
                                                                               .media
                                                                               ?.isNotEmpty ??
@@ -456,15 +459,10 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                                                       : 1,
                                                                   onPageChanged:
                                                                       (idx) {
-                                                                    final pid =
-                                                                        int.tryParse(item.id ??
-                                                                                '') ??
-                                                                            idx;
                                                                     setState(
                                                                         () {
-                                                                      _carouselPageIndex[
-                                                                              pid] =
-                                                                          idx;
+                                                                      _currentImageIndex =
+                                                                          index;
                                                                     });
                                                                   },
                                                                   itemBuilder:
@@ -507,51 +505,84 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                                                     );
                                                                   },
                                                                 ),
-                                                                if (item.media !=
-                                                                        null &&
-                                                                    item.media!
-                                                                            .length >
-                                                                        1)
-                                                                  Positioned(
-                                                                    bottom: 10,
-                                                                    left: 0,
-                                                                    right: 0,
-                                                                    child: Row(
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .center,
-                                                                      children:
-                                                                          List.generate(
-                                                                        item.media!
-                                                                            .length,
-                                                                        (dotIndex) {
-                                                                          final pid =
-                                                                              int.tryParse(item.id ?? '') ?? dotIndex;
-                                                                          final currentIndex =
-                                                                              _carouselPageIndex[pid] ?? 0;
-                                                                          return Container(
-                                                                            margin:
-                                                                                const EdgeInsets.symmetric(horizontal: 3),
-                                                                            width: currentIndex == dotIndex
-                                                                                ? 10
-                                                                                : 6,
-                                                                            height: currentIndex == dotIndex
-                                                                                ? 10
-                                                                                : 6,
-                                                                            decoration:
-                                                                                BoxDecoration(
-                                                                              color: currentIndex == dotIndex ? Colors.white : Colors.white60,
-                                                                              shape: BoxShape.circle,
-                                                                            ),
-                                                                          );
-                                                                        },
-                                                                      ),
-                                                                    ),
-                                                                  ),
                                                               ],
                                                             ),
                                                           ),
                                                         ),
+
+                                                        // ⚪ Image Indicator Dots
+                                                        // Positioned(
+                                                        //   bottom: 12,
+                                                        //   left: 0,
+                                                        //   right: 0,
+                                                        //   child: Row(
+                                                        //     mainAxisAlignment:
+                                                        //         MainAxisAlignment
+                                                        //             .center,
+                                                        //     children:
+                                                        //         List.generate(
+                                                        //       item.media
+                                                        //               ?.length ??
+                                                        //           0,
+                                                        //       (index) {
+                                                        //         final distance =
+                                                        //             (index -
+                                                        //                     _currentImageIndex)
+                                                        //                 .abs();
+                                                        //         double scale;
+                                                        //         double opacity;
+                                                        //
+                                                        //         if (distance ==
+                                                        //             0) {
+                                                        //           scale = 1.2;
+                                                        //           opacity = 1.0;
+                                                        //         } else if (distance ==
+                                                        //             1) {
+                                                        //           scale = 1.0;
+                                                        //           opacity = 0.7;
+                                                        //         } else if (distance ==
+                                                        //             2) {
+                                                        //           scale = 0.8;
+                                                        //           opacity = 0.5;
+                                                        //         } else {
+                                                        //           scale = 0.5;
+                                                        //           opacity = 0.0;
+                                                        //         }
+                                                        //
+                                                        //         return AnimatedOpacity(
+                                                        //           duration: Duration(
+                                                        //               milliseconds:
+                                                        //                   300),
+                                                        //           opacity:
+                                                        //               opacity,
+                                                        //           child:
+                                                        //               SizedBox(
+                                                        //             width: 12,
+                                                        //             // fixed size for layout stability
+                                                        //             height: 12,
+                                                        //             child:
+                                                        //                 Center(
+                                                        //               child:
+                                                        //                   Container(
+                                                        //                 width: 8 *
+                                                        //                     scale,
+                                                        //                 height: 8 *
+                                                        //                     scale,
+                                                        //                 decoration:
+                                                        //                     BoxDecoration(
+                                                        //                   color:
+                                                        //                       Colors.white,
+                                                        //                   shape:
+                                                        //                       BoxShape.circle,
+                                                        //                 ),
+                                                        //               ),
+                                                        //             ),
+                                                        //           ),
+                                                        //         );
+                                                        //       },
+                                                        //     ),
+                                                        //   ),
+                                                        // ),
 
                                                         // FAVORITE HEART ICON (REAL-TIME)
                                                         Positioned(
@@ -868,8 +899,6 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                                     const SizedBox(height: 5),
                                                     Row(
                                                       children: [
-                                                        const SizedBox(
-                                                            width: 10),
                                                         Expanded(
                                                           child: ElevatedButton
                                                               .icon(
@@ -947,8 +976,6 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                                             ),
                                                           ),
                                                         ),
-                                                        const SizedBox(
-                                                            width: 10),
                                                       ],
                                                     ),
                                                     const SizedBox(height: 10),
