@@ -248,39 +248,40 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
   }
 
 
-  Future<void> markAsContacted(int propertyId) async {
-    if (propertyId <= 0) return;
+  Future<bool> markAsContacted(int propertyId, {required String contactType}) async {
+    if (propertyId <= 0) return false;
 
     await Session().restore();
     final token = Session().token ?? await SecureStorage.getToken();
-
     if (token == null || token.isEmpty) {
       debugPrint("No token – cannot mark as contacted");
-      return;
+      return false;
     }
 
     try {
-      final uri = ApiService.buildUri('contacted-properties', query: {
-        'property_id': propertyId.toString(),  // ← Query param for GET
-      });
-
-      debugPrint("Calling: $uri");
-
-      final response = await http.get(  // ← GET, not POST
-        uri,
+      final response = await http.post(
+        ApiService.buildUri('property-contact'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
+        body: jsonEncode({
+          "property_id": propertyId,
+          "contact_type": contactType, // "call" or "whatsapp"
+        }),
       );
 
-      if (response.statusCode == 200) {
-        debugPrint("Property $propertyId marked as contacted (GET success)");
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint("Successfully marked property $propertyId as contacted via $contactType");
+        return true;
       } else {
-        debugPrint("Failed: ${response.statusCode} ${response.body}");
+        debugPrint("Failed to mark contacted: ${response.statusCode} ${response.body}");
+        return false;
       }
     } catch (e) {
-      debugPrint("Exception: $e");
+      debugPrint("Exception marking contacted: $e");
+      return false;
     }
   }
 
@@ -869,18 +870,24 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                       Expanded(
                                         child: ElevatedButton.icon(
                                           onPressed: () async {
-                                            await markAsContacted(_safePropertyId(item.id)); // Clean & Safe
+                                            final propertyId = _safePropertyId(item.id);
+
+                                            final success = await markAsContacted(propertyId, contactType: "call");
+
+                                            // ADD THIS LINE BELOW
+                                            if (success) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text("Added to contacted properties"),
+                                                  backgroundColor: Colors.green,
+                                                  duration: Duration(seconds: 2),
+                                                ),
+                                              );
+                                            }
 
                                             String phone = 'tel:${phoneCallNumber(item.phoneNumber ?? '')}';
-                                            try {
-                                              final launched = await launchUrlString(phone, mode: LaunchMode.externalApplication);
-                                              if (!launched) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  const SnackBar(content: Text("Could not open dialer")),
-                                                );
-                                              }
-                                            } catch (e) {
-                                              debugPrint("Call error: $e");
+                                            if (await canLaunchUrlString(phone)) {
+                                              await launchUrlString(phone, mode: LaunchMode.externalApplication);
                                             }
                                           },
                                           icon: const Icon(Icons.call, color: Colors.red),
@@ -897,8 +904,20 @@ class _New_ProjectsDemoState extends State<New_ProjectsDemo> {
                                       Expanded(
                                         child: ElevatedButton.icon(
                                           onPressed: () async {
-                                            // Mark as contacted before opening WhatsApp
-                                            await markAsContacted(_safePropertyId(item.id));
+                                            final propertyId = _safePropertyId(item.id);
+
+                                            final success = await markAsContacted(propertyId, contactType: "whatsapp");
+
+                                            // ADD THIS SNACKBAR FEEDBACK
+                                            if (success && mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text("Added to contacted properties"),
+                                                  backgroundColor: Colors.green,
+                                                  duration: Duration(seconds: 2),
+                                                ),
+                                              );
+                                            }
 
                                             final phone = whatsAppNumber(item.whatsapp ?? '');
                                             final message = Uri.encodeComponent("Hi, I'm interested in your property: ${item.title}");

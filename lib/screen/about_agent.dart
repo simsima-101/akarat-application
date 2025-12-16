@@ -20,6 +20,7 @@ import '../model/togglemodel.dart';
 import '../secure_storage.dart';
 import '../services/api_service.dart';
 import '../services/favorite_service.dart';
+import '../services/session.dart';
 import '../utils/shared_preference_manager.dart';
 import '../widgets/read_more_text.dart';
 import 'ContactFormScreen.dart';
@@ -49,6 +50,16 @@ class _AboutAgentState extends State<AboutAgent> {
   String email = '';
   String result = '';
   bool isDataRead = false;
+
+
+  int _safePropertyId(dynamic id) {
+    if (id == null) return 0;
+    if (id is int) return id;
+    if (id is String) {
+      return int.tryParse(id) ?? 0;
+    }
+    return 0;
+  }
 
   // Create an object of SharedPreferencesManager class
   SharedPreferencesManager prefManager = SharedPreferencesManager();
@@ -95,6 +106,45 @@ class _AboutAgentState extends State<AboutAgent> {
     if (input.length == 9) return '971$input';
     return input; // fallback
   }
+
+
+  Future<bool> markAsContacted(int propertyId, {required String contactType}) async {
+    if (propertyId <= 0) return false;
+
+    await Session().restore();
+    final token = Session().token ?? await SecureStorage.getToken();
+    if (token == null || token.isEmpty) {
+      debugPrint("No token – cannot mark as contacted");
+      return false;
+    }
+
+    try {
+      final response = await http.post(
+        ApiService.buildUri('property-contact'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "property_id": propertyId,
+          "contact_type": contactType, // "call" or "whatsapp"
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint("Successfully marked property $propertyId as contacted via $contactType");
+        return true;
+      } else {
+        debugPrint("Failed to mark contacted: ${response.statusCode} ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      debugPrint("Exception marking contacted: $e");
+      return false;
+    }
+  }
+
 
   Future<void> clearAgentPropertiesCache(String user) async {
     final prefs = await SharedPreferences.getInstance();
@@ -1913,158 +1963,82 @@ class _AboutAgentState extends State<AboutAgent> {
                                                           height: 15),
                                                       Row(
                                                         children: [
-                                                          const SizedBox(
-                                                              width: 10),
+                                                          const SizedBox(width: 10),
                                                           Expanded(
-                                                            child:
-                                                                ElevatedButton
-                                                                    .icon(
-                                                              onPressed:
-                                                                  () async {
-                                                                String phone =
-                                                                    'tel:${item.phoneNumber}';
-                                                                try {
-                                                                  final bool
-                                                                      launched =
-                                                                      await launchUrlString(
-                                                                    phone,
-                                                                    mode: LaunchMode
-                                                                        .externalApplication,
+                                                            child: ElevatedButton.icon(
+                                                              onPressed: () async {
+                                                                final propertyId = _safePropertyId(item.id);
+
+                                                                // Mark as contacted (CALL)
+                                                                final success = await markAsContacted(propertyId, contactType: "call");
+
+                                                                if (success && mounted) {
+                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                    const SnackBar(
+                                                                      content: Text("Added to contacted properties"),
+                                                                      backgroundColor: Colors.green,
+                                                                      duration: Duration(seconds: 2),
+                                                                    ),
                                                                   );
-                                                                  if (!launched) {
-                                                                    // ignore: avoid_print
-                                                                    print(
-                                                                        "❌ Could not launch dialer");
-                                                                  }
-                                                                } catch (e) {
-                                                                  // ignore: avoid_print
-                                                                  print(
-                                                                      "❌ Exception: $e");
+                                                                }
+
+                                                                String phone = 'tel:${phoneCallNumber(item.phoneNumber ?? '')}';
+                                                                if (await canLaunchUrlString(phone)) {
+                                                                  await launchUrlString(phone, mode: LaunchMode.externalApplication);
                                                                 }
                                                               },
-                                                              icon: const Icon(
-                                                                  Icons.call,
-                                                                  color: Colors
-                                                                      .red),
-                                                              label: const Text(
-                                                                  "Call",
-                                                                  style: TextStyle(
-                                                                      color: Colors
-                                                                          .black)),
-                                                              style:
-                                                                  ElevatedButton
-                                                                      .styleFrom(
-                                                                backgroundColor:
-                                                                    Colors.grey[
-                                                                        100],
-                                                                shape:
-                                                                    RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              10),
-                                                                ),
+                                                              icon: const Icon(Icons.call, color: Colors.red),
+                                                              label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                                              style: ElevatedButton.styleFrom(
+                                                                backgroundColor: Colors.grey[100],
+                                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                                                 elevation: 2,
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .symmetric(
-                                                                        vertical:
-                                                                            10),
+                                                                padding: const EdgeInsets.symmetric(vertical: 12),
                                                               ),
                                                             ),
                                                           ),
-                                                          const SizedBox(
-                                                              width: 10),
+                                                          const SizedBox(width: 10),
                                                           Expanded(
-                                                            child:
-                                                                ElevatedButton
-                                                                    .icon(
-                                                              onPressed:
-                                                                  () async {
-                                                                final rawNumber =
-                                                                    property.whatsapp ??
-                                                                        property
-                                                                            .phoneNumber ??
-                                                                        '';
-                                                                final phone =
-                                                                    whatsAppNumber(
-                                                                        rawNumber);
+                                                            child: ElevatedButton.icon(
+                                                              onPressed: () async {
+                                                                final propertyId = _safePropertyId(item.id);
 
-                                                                if (phone
-                                                                    .isEmpty) {
-                                                                  // ignore: use_build_context_synchronously
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(
+                                                                // Mark as contacted (WHATSAPP)
+                                                                final success = await markAsContacted(propertyId, contactType: "whatsapp");
+
+                                                                if (success && mounted) {
+                                                                  ScaffoldMessenger.of(context).showSnackBar(
                                                                     const SnackBar(
-                                                                        content:
-                                                                            Text("No WhatsApp number available")),
+                                                                      content: Text("Added to contacted properties"),
+                                                                      backgroundColor: Colors.green,
+                                                                      duration: Duration(seconds: 2),
+                                                                    ),
                                                                   );
-                                                                  return;
                                                                 }
 
-                                                                final message =
-                                                                    Uri.encodeComponent(
-                                                                        "Hello");
-                                                                final url =
-                                                                    Uri.parse(
-                                                                        "https://wa.me/$phone?text=$message");
+                                                                final phone = whatsAppNumber(item.whatsapp ?? '');
+                                                                final message = Uri.encodeComponent("Hi, I'm interested in your property: ${item.title}");
+                                                                final url = Uri.parse("https://wa.me/$phone?text=$message");
 
-                                                                if (await canLaunchUrl(
-                                                                    url)) {
-                                                                  try {
-                                                                    await launchUrl(
-                                                                        url,
-                                                                        mode: LaunchMode
-                                                                            .externalApplication);
-                                                                  } catch (e) {
-                                                                    // ignore: avoid_print
-                                                                    print(
-                                                                        "❌ Exception: $e");
-                                                                  }
+                                                                if (await canLaunchUrl(url)) {
+                                                                  await launchUrl(url, mode: LaunchMode.externalApplication);
                                                                 } else {
-                                                                  // ignore: use_build_context_synchronously
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(
-                                                                    const SnackBar(
-                                                                        content:
-                                                                            Text("Cannot open WhatsApp")),
+                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                    const SnackBar(content: Text("WhatsApp not installed")),
                                                                   );
                                                                 }
                                                               },
-                                                              icon: Image.asset(
-                                                                  "assets/images/whats.png",
-                                                                  height: 20),
-                                                              label: const Text(
-                                                                  "WhatsApp",
-                                                                  style: TextStyle(
-                                                                      color: Colors
-                                                                          .black)),
-                                                              style:
-                                                                  ElevatedButton
-                                                                      .styleFrom(
-                                                                backgroundColor:
-                                                                    Colors.grey[
-                                                                        100],
-                                                                shape:
-                                                                    RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              10),
-                                                                ),
+                                                              icon: Image.asset("assets/images/whats.png", height: 20),
+                                                              label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                                              style: ElevatedButton.styleFrom(
+                                                                backgroundColor: Colors.grey[100],
+                                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                                                 elevation: 2,
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .symmetric(
-                                                                        vertical:
-                                                                            10),
+                                                                padding: const EdgeInsets.symmetric(vertical: 12),
                                                               ),
                                                             ),
                                                           ),
-                                                          const SizedBox(
-                                                              width: 10),
+                                                          const SizedBox(width: 10),
                                                         ],
                                                       ),
                                                       const SizedBox(

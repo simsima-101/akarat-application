@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:Akarat/providers/filter_provider.dart';
 import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -14,7 +17,9 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import '../providers/favorite_provider.dart';
 import '../secure_storage.dart';
+import '../services/api_service.dart';
 import '../services/favorite_service.dart';
+import '../services/session.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'CreateAlertScreen.dart';
@@ -58,28 +63,17 @@ class _FliterListState extends State<FliterList> {
 
   late List<Data> chartData;
 
-// WhatsApp sanitizer: always outputs 971XXXXXXXXX (no plus)
-  String whatsAppNumber(String input) {
-    // Remove all non-digit characters
-    input = input.replaceAll(RegExp(r'[^\d]'), '');
 
-    // Remove leading zeros
-    if (input.startsWith('0')) {
-      input = input.substring(1);
+
+
+
+  int _safePropertyId(dynamic id) {
+    if (id == null) return 0;
+    if (id is int) return id;
+    if (id is String) {
+      return int.tryParse(id) ?? 0;
     }
-
-    // Remove duplicated country code if already present
-    if (input.startsWith('971971')) {
-      input = input.replaceFirst('971971', '971');
-    }
-
-    // Ensure starts with UAE code
-    if (input.startsWith('971')) {
-      return input;
-    }
-
-    // Add UAE prefix if missing
-    return '971$input';
+    return 0;
   }
 
   void toggleSavedAtIndex(int index) {
@@ -100,6 +94,69 @@ class _FliterListState extends State<FliterList> {
         FavoriteService.loggedInFavorites.remove(property!.id!);
       }
     });
+  }
+
+
+  Future<bool> markAsContacted(int propertyId, {required String contactType}) async {
+    if (propertyId <= 0) return false;
+
+    await Session().restore(); // Important: restores token if needed
+    final token = Session().token ?? await SecureStorage.getToken();
+    if (token == null || token.isEmpty) {
+      debugPrint("No token – cannot mark as contacted");
+      return false;
+    }
+
+    try {
+      final response = await http.post(
+        ApiService.buildUri('property-contact'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "property_id": propertyId,
+          "contact_type": contactType, // "call" or "whatsapp"
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint("Successfully marked property $propertyId as contacted via $contactType");
+        return true;
+      } else {
+        debugPrint("Failed to mark contacted: ${response.statusCode} ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      debugPrint("Exception marking contacted: $e");
+      return false;
+    }
+  }
+
+
+  String phoneCallNumber(String input) {
+    input = input.replaceAll(RegExp(r'[^\d+]'), '');
+    if (input.startsWith('+971')) return input;
+    if (input.startsWith('00971')) return '+971${input.substring(5)}';
+    if (input.startsWith('971')) return '+971${input.substring(3)}';
+    if (input.startsWith('0') && input.length == 10) {
+      return '+971${input.substring(1)}';
+    }
+    if (input.length == 9) return '+971$input';
+    return input; // fallback
+  }
+
+  String whatsAppNumber(String input) {
+    input = input.replaceAll(RegExp(r'[^\d]'), '');
+    if (input.startsWith('971')) return input;
+    if (input.startsWith('00971')) return input.substring(2);
+    if (input.startsWith('+971')) return input.substring(1);
+    if (input.startsWith('0') && input.length == 10) {
+      return '971${input.substring(1)}';
+    }
+    if (input.length == 9) return '971$input';
+    return input; // fallback
   }
 
   Future<void> _onCreateAlert() async {
@@ -2912,41 +2969,33 @@ class _FliterListState extends State<FliterList> {
                                               Expanded(
                                                 child: ElevatedButton.icon(
                                                   onPressed: () async {
-                                                    String phone =
-                                                        'tel:${property.phoneNumber}';
-                                                    try {
-                                                      final bool launched =
-                                                          await launchUrlString(
-                                                        phone,
-                                                        mode: LaunchMode
-                                                            .externalApplication,
+                                                    final propertyId = _safePropertyId(property.id);
+
+                                                    // Mark as contacted (CALL)
+                                                    final success = await markAsContacted(propertyId, contactType: "call");
+
+                                                    if (success && mounted) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text("Added to contacted properties"),
+                                                          backgroundColor: Colors.green,
+                                                          duration: Duration(seconds: 2),
+                                                        ),
                                                       );
-                                                      if (!launched)
-                                                        print(
-                                                            "❌ Could not launch dialer");
-                                                    } catch (e) {
-                                                      print("❌ Exception: $e");
+                                                    }
+
+                                                    String phone = 'tel:${phoneCallNumber(property.phoneNumber ?? '')}';
+                                                    if (await canLaunchUrlString(phone)) {
+                                                      await launchUrlString(phone, mode: LaunchMode.externalApplication);
                                                     }
                                                   },
-                                                  icon: const Icon(Icons.call,
-                                                      color: Colors.red),
-                                                  label: const Text("Call",
-                                                      style: TextStyle(
-                                                          color: Colors.black)),
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.grey[100],
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10)),
+                                                  icon: const Icon(Icons.call, color: Colors.red),
+                                                  label: const Text("Call", style: TextStyle(color: Colors.black)),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.grey[100],
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                                     elevation: 2,
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        vertical: 10),
+                                                    padding: const EdgeInsets.symmetric(vertical: 12),
                                                   ),
                                                 ),
                                               ),
@@ -2954,71 +3003,40 @@ class _FliterListState extends State<FliterList> {
                                               Expanded(
                                                 child: ElevatedButton.icon(
                                                   onPressed: () async {
-                                                    final rawNumber = property
-                                                            .whatsapp ??
-                                                        property.phoneNumber ??
-                                                        '';
-                                                    final phone =
-                                                        whatsAppNumber(
-                                                            rawNumber);
+                                                    final propertyId = _safePropertyId(property.id);
 
-                                                    if (phone.isEmpty) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
+                                                    // Mark as contacted (WHATSAPP)
+                                                    final success = await markAsContacted(propertyId, contactType: "whatsapp");
+
+                                                    if (success && mounted) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
                                                         const SnackBar(
-                                                            content: Text(
-                                                                "No WhatsApp number available")),
+                                                          content: Text("Added to contacted properties"),
+                                                          backgroundColor: Colors.green,
+                                                          duration: Duration(seconds: 2),
+                                                        ),
                                                       );
-                                                      return;
                                                     }
 
-                                                    final message =
-                                                        Uri.encodeComponent(
-                                                            "Hello");
-                                                    final url = Uri.parse(
-                                                        "https://wa.me/$phone?text=$message");
+                                                    final phone = whatsAppNumber(property.whatsapp ?? '');
+                                                    final message = Uri.encodeComponent("Hi, I'm interested in your property: ${property.title}");
+                                                    final url = Uri.parse("https://wa.me/$phone?text=$message");
 
-                                                    if (await canLaunchUrl(
-                                                        url)) {
-                                                      try {
-                                                        await launchUrl(url,
-                                                            mode: LaunchMode
-                                                                .externalApplication);
-                                                      } catch (e) {
-                                                        print(
-                                                            "❌ Exception: $e");
-                                                      }
+                                                    if (await canLaunchUrl(url)) {
+                                                      await launchUrl(url, mode: LaunchMode.externalApplication);
                                                     } else {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                        const SnackBar(
-                                                            content: Text(
-                                                                "Cannot open WhatsApp")),
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(content: Text("WhatsApp not installed")),
                                                       );
                                                     }
                                                   },
-                                                  icon: Image.asset(
-                                                      "assets/images/whats.png",
-                                                      height: 20),
-                                                  label: const Text("WhatsApp",
-                                                      style: TextStyle(
-                                                          color: Colors.black)),
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.grey[100],
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10)),
+                                                  icon: Image.asset("assets/images/whats.png", height: 20),
+                                                  label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.grey[100],
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                                     elevation: 2,
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        vertical: 10),
+                                                    padding: const EdgeInsets.symmetric(vertical: 12),
                                                   ),
                                                 ),
                                               ),

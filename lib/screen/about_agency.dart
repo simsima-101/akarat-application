@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart'; // Not url_launcher_string
+
 import 'package:Akarat/model/agency_detailModel.dart';
 import 'package:Akarat/model/agencyagentmodel.dart';
 import 'package:Akarat/model/agencypropertiesmodel.dart' as propertyModel;
@@ -8,19 +11,25 @@ import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart'; // Not url_launcher_string
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../device_id.dart';
 import '../model/togglemodel.dart';
 import '../providers/email_enquiry_provider.dart';
+import '../secure_storage.dart';
 import '../services/api_service.dart';
+import '../services/session.dart';
+import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import '../widgets/read_more_text.dart';
 import 'ContactFormScreen.dart';
 import 'about_agent.dart';
 import 'featured_detail.dart';
+import 'home.dart';
+import 'login.dart';
+import 'my_account.dart';
 
 // Force HTTPS so iOS hardware doesn't block http:// images/redirects
 String secureUrl(String? url) {
@@ -57,14 +66,61 @@ class _About_AgencyState extends State<About_Agency> {
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
 
+
+  int _safePropertyId(dynamic id) {
+    if (id == null) return 0;
+    if (id is int) return id;
+    if (id is String) {
+      return int.tryParse(id) ?? 0;
+    }
+    return 0;
+  }
+
+
+  Future<bool> markAsContacted(int propertyId, {required String contactType}) async {
+    if (propertyId <= 0) return false;
+
+    await Session().restore(); // Important: restores token if needed
+    final token = Session().token ?? await SecureStorage.getToken();
+    if (token == null || token.isEmpty) {
+      debugPrint("No token – cannot mark as contacted");
+      return false;
+    }
+
+    try {
+      final response = await http.post(
+        ApiService.buildUri('property-contact'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "property_id": propertyId,
+          "contact_type": contactType, // "call" or "whatsapp"
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint("Successfully marked property $propertyId as contacted via $contactType");
+        return true;
+      } else {
+        debugPrint("Failed to mark contacted: ${response.statusCode} ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      debugPrint("Exception marking contacted: $e");
+      return false;
+    }
+  }
+
   // Reuse your existing phone formatting functions (add if not already present)
   String phoneCallNumber(String input) {
     input = input.replaceAll(RegExp(r'[^\d+]'), '');
     if (input.startsWith('+971')) return input;
     if (input.startsWith('00971')) return '+971${input.substring(5)}';
     if (input.startsWith('971')) return '+971${input.substring(3)}';
-    if (input.startsWith('0') && input.length == 10)
-      return '+971${input.substring(1)}';
+    if (input.startsWith('0') && input.length == 10) return '+971${input.substring(1)}';
     if (input.length == 9) return '+971$input';
     return input;
   }
@@ -74,8 +130,7 @@ class _About_AgencyState extends State<About_Agency> {
     if (input.startsWith('971')) return input;
     if (input.startsWith('00971')) return input.substring(2);
     if (input.startsWith('+971')) return input.substring(1);
-    if (input.startsWith('0') && input.length == 10)
-      return '971${input.substring(1)}';
+    if (input.startsWith('0') && input.length == 10) return '971${input.substring(1)}';
     if (input.length == 9) return '971$input';
     return input;
   }
@@ -125,8 +180,7 @@ class _About_AgencyState extends State<About_Agency> {
         }
 
         final deviceId = await getDeviceId();
-        final emailProvider =
-            Provider.of<EmailEnquiryProvider>(context, listen: false);
+        final emailProvider = Provider.of<EmailEnquiryProvider>(context, listen: false);
 
         final bool success = await emailProvider.sendCompanyEmail(
           companyId: companyId,
@@ -143,8 +197,7 @@ class _About_AgencyState extends State<About_Agency> {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                  emailProvider.lastMessage ?? "Message sent successfully!"),
+              content: Text(emailProvider.lastMessage ?? "Message sent successfully!"),
               backgroundColor: Colors.green,
             ),
           );
@@ -152,8 +205,7 @@ class _About_AgencyState extends State<About_Agency> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text(emailProvider.lastError ?? "Failed to send message"),
+              content: Text(emailProvider.lastError ?? "Failed to send message"),
               backgroundColor: Colors.red,
             ),
           );
@@ -198,11 +250,10 @@ class _About_AgencyState extends State<About_Agency> {
     _scrollController.addListener(() {
       // debug logs
       print("📍 Scroll position: ${_scrollController.position.pixels}");
-      print(
-          "📍 Max scroll extent: ${_scrollController.position.maxScrollExtent}");
+      print("📍 Max scroll extent: ${_scrollController.position.maxScrollExtent}");
 
       if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent - 200 &&
+          _scrollController.position.maxScrollExtent - 200 &&
           !isLoadingMore &&
           hasMoreData) {
         print("🚀 Triggering next page fetch");
@@ -314,7 +365,7 @@ class _About_AgencyState extends State<About_Agency> {
 
         final jsonData = jsonDecode(cachedData);
         final feature =
-            propertyModel.AgencyPropertiesResponseModel.fromJson(jsonData);
+        propertyModel.AgencyPropertiesResponseModel.fromJson(jsonData);
 
         final newProperties = feature.data?.data ?? [];
         final meta = feature.data?.meta;
@@ -351,19 +402,21 @@ class _About_AgencyState extends State<About_Agency> {
     // 🛰️ Fallback: API fetch
     setState(() => isLoadingMore = true);
     try {
-      final uri =
-          ApiService.buildUri('company/properties/$user?page=$currentPage');
+      final uri = ApiService.buildUri('company/properties/$user?page=$currentPage');
+
 
       print("🌐 Calling API: $uri");
 
-      final response = await http.get(uri).timeout(const Duration(seconds: 12));
+      final response = await http
+          .get(uri)
+          .timeout(const Duration(seconds: 12));
 
       print("📄 API Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final feature =
-            propertyModel.AgencyPropertiesResponseModel.fromJson(data);
+        propertyModel.AgencyPropertiesResponseModel.fromJson(data);
         final newProperties = feature.data?.data ?? [];
         final meta = feature.data?.meta;
 
@@ -389,8 +442,7 @@ class _About_AgencyState extends State<About_Agency> {
         });
 
         print("✅ API properties loaded & cached (page $currentPage)");
-        print(
-            "📃 Total allProperties count after API: ${allProperties.length}");
+        print("📃 Total allProperties count after API: ${allProperties.length}");
       } else {
         print("❌ Failed: status code ${response.statusCode}");
         setState(() => isLoadingMore = false);
@@ -398,7 +450,8 @@ class _About_AgencyState extends State<About_Agency> {
     } catch (e) {
       print("❌ Error fetching properties: $e");
       setState(() => isLoadingMore = false);
-    } catch (e) {
+    }
+    catch (e) {
       print("❌ Error fetching properties: $e");
       setState(() => isLoadingMore = false);
     }
@@ -427,7 +480,8 @@ class _About_AgencyState extends State<About_Agency> {
 
       final uri = ApiService.buildUri('company/agents/$user');
 
-      final response = await http.get(uri).timeout(const Duration(seconds: 12));
+      final response =
+      await http.get(uri).timeout(const Duration(seconds: 12));
       debugPrint('Agents status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
@@ -466,6 +520,7 @@ class _About_AgencyState extends State<About_Agency> {
           "property_id": propertyId,
         }),
       );
+
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
@@ -506,6 +561,7 @@ class _About_AgencyState extends State<About_Agency> {
         favoriteProperties.map((id) => id.toString()).toList());
   }
 
+
   // ──────────────────────────────────────────────────────────────
   //  ADD THESE 3 FUNCTIONS HERE (inside _About_AgencyState class)
   // ──────────────────────────────────────────────────────────────
@@ -515,10 +571,7 @@ class _About_AgencyState extends State<About_Agency> {
   // ────────────────────── NEW CHIP STYLE – SAME AS YOUR OTHER SCREENS ──────────────────────
   Widget _buildInfoChip(String iconPath, String? value) {
     // Hide completely if null, empty, "0", or "null"
-    if (value == null ||
-        value.trim().isEmpty ||
-        value.trim() == "0" ||
-        value.trim() == "null") {
+    if (value == null || value.trim().isEmpty || value.trim() == "0" || value.trim() == "null") {
       return const SizedBox.shrink();
     }
 
@@ -566,12 +619,13 @@ class _About_AgencyState extends State<About_Agency> {
 
     // Format number with commas: 11000 → 11,000
     final formattedSize = size.toInt().toString().replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
           (match) => '${match[1]},',
-        );
+    );
 
     return "$formattedSize sqft";
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -625,7 +679,6 @@ class _About_AgencyState extends State<About_Agency> {
           },
         ),
       ),
-
       /// ====== BOTTOM BAR (Email / Call / WhatsApp) ======
       bottomNavigationBar: SafeArea(
         child: Container(
@@ -655,13 +708,11 @@ class _About_AgencyState extends State<About_Agency> {
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.email_outlined,
-                            size: 20, color: Colors.blue),
+                        Icon(Icons.email_outlined, size: 20, color: Colors.blue),
                         SizedBox(width: 6),
                         Text(
                           'Email',
-                          style: TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -677,8 +728,7 @@ class _About_AgencyState extends State<About_Agency> {
                     final phoneRaw = agencyDetailmodel?.phone?.trim() ?? '';
                     if (phoneRaw.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("Phone number not available")),
+                        const SnackBar(content: Text("Phone number not available")),
                       );
                       return;
                     }
@@ -687,8 +737,7 @@ class _About_AgencyState extends State<About_Agency> {
                     final uri = Uri(scheme: 'tel', path: phone);
 
                     if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri,
-                          mode: LaunchMode.externalApplication);
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
                     }
                   },
                   child: Container(
@@ -704,8 +753,7 @@ class _About_AgencyState extends State<About_Agency> {
                         SizedBox(width: 6),
                         Text(
                           'Call',
-                          style: TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -725,8 +773,7 @@ class _About_AgencyState extends State<About_Agency> {
 
                     if (phoneRaw.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("WhatsApp number not available")),
+                        const SnackBar(content: Text("WhatsApp number not available")),
                       );
                       return;
                     }
@@ -734,8 +781,7 @@ class _About_AgencyState extends State<About_Agency> {
                     final phone = whatsAppNumber(phoneRaw);
                     if (phone.isEmpty || phone.length < 9) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("Invalid WhatsApp number")),
+                        const SnackBar(content: Text("Invalid WhatsApp number")),
                       );
                       return;
                     }
@@ -745,12 +791,10 @@ class _About_AgencyState extends State<About_Agency> {
                     final uri = Uri.parse("https://wa.me/$phone?text=$message");
 
                     if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri,
-                          mode: LaunchMode.externalApplication);
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("WhatsApp is not installed")),
+                        const SnackBar(content: Text("WhatsApp is not installed")),
                       );
                     }
                   },
@@ -766,16 +810,12 @@ class _About_AgencyState extends State<About_Agency> {
                         Image.asset(
                           "assets/images/whats.png",
                           height: 20,
-                          errorBuilder: (_, __, ___) => const Icon(
-                              Icons.message,
-                              size: 20,
-                              color: Colors.green),
+                          errorBuilder: (_, __, ___) => const Icon(Icons.message, size: 20, color: Colors.green),
                         ),
                         const SizedBox(width: 6),
                         const Text(
                           'WhatsApp',
-                          style: TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -808,10 +848,11 @@ class _About_AgencyState extends State<About_Agency> {
                     ),
                   ),
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 8),
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 30, bottom: 4),
+                      padding:
+                      const EdgeInsets.only(top: 30, bottom: 4),
                       child: Container(
                         height: screenSize.height * 0.12,
                         width: screenSize.width * 0.91,
@@ -819,13 +860,15 @@ class _About_AgencyState extends State<About_Agency> {
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
+                              color:
+                              Colors.grey.withOpacity(0.5),
                               offset: const Offset(4, 4),
                               blurRadius: 8,
                               spreadRadius: 2,
                             ),
                             BoxShadow(
-                              color: Colors.white.withOpacity(0.8),
+                              color:
+                              Colors.white.withOpacity(0.8),
                               offset: const Offset(-4, -4),
                               blurRadius: 8,
                               spreadRadius: 2,
@@ -834,7 +877,8 @@ class _About_AgencyState extends State<About_Agency> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          crossAxisAlignment:
+                          CrossAxisAlignment.center,
                           children: [
                             /// Logo
                             SizedBox(
@@ -843,8 +887,10 @@ class _About_AgencyState extends State<About_Agency> {
                               child: Align(
                                 alignment: Alignment.center,
                                 child: CachedNetworkImage(
-                                  imageUrl: secureUrl(agencyDetailmodel?.image),
-                                  height: screenSize.height * 0.08,
+                                  imageUrl: secureUrl(
+                                      agencyDetailmodel?.image),
+                                  height:
+                                  screenSize.height * 0.08,
                                   fit: BoxFit.contain,
                                 ),
                               ),
@@ -852,47 +898,61 @@ class _About_AgencyState extends State<About_Agency> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment:
+                                MainAxisAlignment.center,
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    agencyDetailmodel!.name.toString(),
+                                    agencyDetailmodel!.name
+                                        .toString(),
                                     style: const TextStyle(
                                       fontSize: 17,
                                       letterSpacing: 0.5,
                                       fontWeight: FontWeight.bold,
                                     ),
-                                    overflow: TextOverflow.ellipsis,
+                                    overflow:
+                                    TextOverflow.ellipsis,
                                     maxLines: 1,
                                   ),
                                   const SizedBox(height: 5),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 3),
+                                    padding: const EdgeInsets
+                                        .symmetric(
+                                        horizontal: 8,
+                                        vertical: 3),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.grey.withOpacity(0.5),
-                                          offset: const Offset(4, 4),
+                                          color: Colors.grey
+                                              .withOpacity(0.5),
+                                          offset:
+                                          const Offset(4, 4),
                                           blurRadius: 8,
                                           spreadRadius: 2,
                                         ),
                                         BoxShadow(
-                                          color: Colors.white.withOpacity(0.8),
-                                          offset: const Offset(-4, -4),
+                                          color: Colors.white
+                                              .withOpacity(0.8),
+                                          offset:
+                                          const Offset(-4, -4),
                                           blurRadius: 8,
                                           spreadRadius: 2,
                                         ),
                                       ],
-                                      borderRadius: BorderRadius.circular(6),
+                                      borderRadius:
+                                      BorderRadius.circular(
+                                          6),
                                     ),
                                     child: Text(
                                       "${agencyDetailmodel!.propertiesCount} Properties",
-                                      textAlign: TextAlign.center,
+                                      textAlign:
+                                      TextAlign.center,
                                       style: const TextStyle(
                                         letterSpacing: 0.5,
-                                        color: Colors.blueAccent,
+                                        color:
+                                        Colors.blueAccent,
                                       ),
                                     ),
                                   ),
@@ -908,8 +968,10 @@ class _About_AgencyState extends State<About_Agency> {
               ),
             ),
             TabBar(
-              padding: const EdgeInsets.only(top: 15, left: 0, right: 0),
-              labelPadding: const EdgeInsets.symmetric(horizontal: 0),
+              padding:
+              const EdgeInsets.only(top: 15, left: 0, right: 0),
+              labelPadding:
+              const EdgeInsets.symmetric(horizontal: 0),
               splashFactory: NoSplash.splashFactory,
               indicatorWeight: 1.0,
               labelColor: Colors.lightBlueAccent,
@@ -935,7 +997,8 @@ class _About_AgencyState extends State<About_Agency> {
                           const SizedBox(height: 10),
                           Padding(
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 10.0),
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
                             child: Row(
                               children: const [
                                 Text(
@@ -953,14 +1016,16 @@ class _About_AgencyState extends State<About_Agency> {
                           ),
 
                           // DESCRIPTION
-                          if (agencyDetailmodel?.description != null)
+                          if (agencyDetailmodel?.description !=
+                              null)
                             Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
                               children: [
                                 const SizedBox(height: 10),
                                 const Padding(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 10.0),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10.0),
                                   child: Row(
                                     children: [
                                       Text(
@@ -975,50 +1040,79 @@ class _About_AgencyState extends State<About_Agency> {
                                   ),
                                 ),
                                 const SizedBox(height: 5),
-                                (agencyDetailmodel!.description != null &&
-                                        agencyDetailmodel!.description!
-                                            .trim()
-                                            .isNotEmpty)
+                                (agencyDetailmodel!
+                                    .description !=
+                                    null &&
+                                    agencyDetailmodel!
+                                        .description!
+                                        .trim()
+                                        .isNotEmpty)
                                     ? Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 10.0),
-                                        child: ReadMoreText(
-                                          agencyDetailmodel!.description!,
-                                          trimMode: TrimMode.line,
-                                          trimLines: 4,
-                                          trimCollapsedText: ' Read more',
-                                          trimExpandedText: ' Read less',
-                                          style: const TextStyle(
-                                            fontSize: 15,
-                                            color: Colors.black,
-                                            letterSpacing: 0.5,
-                                          ),
-                                          moreStyle: const TextStyle(
-                                            fontSize: 15,
-                                            color: Colors.blue,
-                                            letterSpacing: 0.5,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          lessStyle: const TextStyle(
-                                            fontSize: 15,
-                                            color: Colors.blue,
-                                            letterSpacing: 0.5,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      )
+                                  padding:
+                                  const EdgeInsets
+                                      .symmetric(
+                                      horizontal:
+                                      10.0),
+                                  child: ReadMoreText(
+                                    agencyDetailmodel!
+                                        .description!,
+                                    trimMode:
+                                    TrimMode.line,
+                                    trimLines: 4,
+                                    trimCollapsedText:
+                                    ' Read more',
+                                    trimExpandedText:
+                                    ' Read less',
+                                    style:
+                                    const TextStyle(
+                                      fontSize: 15,
+                                      color:
+                                      Colors.black,
+                                      letterSpacing:
+                                      0.5,
+                                    ),
+                                    moreStyle:
+                                    const TextStyle(
+                                      fontSize: 15,
+                                      color:
+                                      Colors.blue,
+                                      letterSpacing:
+                                      0.5,
+                                      fontWeight:
+                                      FontWeight
+                                          .w600,
+                                    ),
+                                    lessStyle:
+                                    const TextStyle(
+                                      fontSize: 15,
+                                      color:
+                                      Colors.blue,
+                                      letterSpacing:
+                                      0.5,
+                                      fontWeight:
+                                      FontWeight
+                                          .w600,
+                                    ),
+                                  ),
+                                )
                                     : const Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 15.0),
-                                        child: Text(
-                                          "No description available",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black54,
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                        ),
-                                      ),
+                                  padding:
+                                  EdgeInsets
+                                      .symmetric(
+                                      horizontal:
+                                      15.0),
+                                  child: Text(
+                                    "No description available",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color:
+                                      Colors.black54,
+                                      fontStyle:
+                                      FontStyle
+                                          .italic,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
 
@@ -1026,7 +1120,8 @@ class _About_AgencyState extends State<About_Agency> {
                           // SERVICE AREAS
                           Padding(
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 10.0),
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
                             child: Row(
                               children: const [
                                 Text(
@@ -1043,7 +1138,8 @@ class _About_AgencyState extends State<About_Agency> {
                           const SizedBox(height: 5),
                           Padding(
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 10.0),
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
                             child: Row(
                               children: const [
                                 Text(
@@ -1062,7 +1158,8 @@ class _About_AgencyState extends State<About_Agency> {
                           // PROPERTY TYPE
                           Padding(
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 10.0),
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
                             child: Row(
                               children: const [
                                 Text(
@@ -1079,7 +1176,8 @@ class _About_AgencyState extends State<About_Agency> {
                           const SizedBox(height: 5),
                           Padding(
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 10.0),
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
                             child: Row(
                               children: const [
                                 Text(
@@ -1098,7 +1196,8 @@ class _About_AgencyState extends State<About_Agency> {
                           // DED
                           Padding(
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 10.0),
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
                             child: Row(
                               children: const [
                                 Text(
@@ -1115,11 +1214,13 @@ class _About_AgencyState extends State<About_Agency> {
                           const SizedBox(height: 5),
                           Padding(
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 10.0),
+                            const EdgeInsets.symmetric(
+                                horizontal: 10.0),
                             child: Row(
                               children: [
                                 Text(
-                                  agencyDetailmodel!.ded.toString(),
+                                  agencyDetailmodel!.ded
+                                      .toString(),
                                   style: const TextStyle(
                                     fontSize: 15,
                                     color: Colors.black,
@@ -1188,42 +1289,57 @@ class _About_AgencyState extends State<About_Agency> {
                               controller: _scrollController,
                               itemCount: allProperties.length +
                                   (isLoadingMore ? 1 : 0),
-                              physics: const AlwaysScrollableScrollPhysics(),
+                              physics:
+                              const AlwaysScrollableScrollPhysics(),
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
-                                if (index == allProperties.length) {
+                                if (index ==
+                                    allProperties.length) {
                                   return const Center(
                                     child: Padding(
-                                      padding: EdgeInsets.all(10.0),
-                                      child: CircularProgressIndicator(),
+                                      padding:
+                                      EdgeInsets.all(10.0),
+                                      child:
+                                      CircularProgressIndicator(),
                                     ),
                                   );
                                 }
 
-                                final property = allProperties[index];
+                                final property =
+                                allProperties[index];
                                 bool isFavorited =
-                                    favoriteProperties.contains(property.id);
+                                favoriteProperties
+                                    .contains(
+                                    property.id);
 
                                 return GestureDetector(
                                   onTap: () {
-                                    String id = property.id.toString();
+                                    String id = property.id
+                                        .toString();
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            Featured_Detail(data: id),
+                                            Featured_Detail(
+                                                data: id),
                                       ),
                                     );
                                   },
                                   child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 15),
+                                    padding:
+                                    const EdgeInsets.only(
+                                        bottom: 15),
                                     child: Card(
                                       color: Colors.white,
-                                      borderOnForeground: true,
-                                      shadowColor: Colors.white,
+                                      borderOnForeground:
+                                      true,
+                                      shadowColor:
+                                      Colors.white,
                                       elevation: 10,
                                       child: Padding(
-                                        padding: const EdgeInsets.only(
+                                        padding:
+                                        const EdgeInsets
+                                            .only(
                                           left: 5.0,
                                           top: 0,
                                           right: 5,
@@ -1231,66 +1347,66 @@ class _About_AgencyState extends State<About_Agency> {
                                         child: Column(
                                           children: [
                                             Padding(
-                                              padding: const EdgeInsets.only(
+                                              padding:
+                                              const EdgeInsets
+                                                  .only(
                                                 top: 0.0,
                                               ),
-                                              child: ClipRRect(
+                                              child:
+                                              ClipRRect(
                                                 borderRadius:
-                                                    BorderRadius.circular(12),
+                                                BorderRadius.circular(
+                                                    12),
                                                 child: Stack(
                                                   children: [
                                                     AspectRatio(
-                                                      aspectRatio: 1.6,
-                                                      child: ListView.builder(
+                                                      aspectRatio:
+                                                      1.6,
+                                                      child: ListView
+                                                          .builder(
                                                         scrollDirection:
-                                                            Axis.horizontal,
-                                                        itemCount: property
-                                                                .media
-                                                                ?.length ??
+                                                        Axis.horizontal,
+                                                        itemCount: property.media?.length ??
                                                             0,
-                                                        itemBuilder: (context,
+                                                        itemBuilder:
+                                                            (context,
                                                             mediaIndex) {
                                                           return CachedNetworkImage(
-                                                            imageUrl: secureUrl(
-                                                                property
-                                                                    .media![
-                                                                        mediaIndex]
-                                                                    .originalUrl),
-                                                            fit: BoxFit.fill,
+                                                            imageUrl:
+                                                            secureUrl(property.media![mediaIndex].originalUrl),
+                                                            fit:
+                                                            BoxFit.fill,
                                                           );
                                                         },
                                                       ),
                                                     ),
                                                     // indicator dots
                                                     Positioned(
-                                                      bottom: 12,
-                                                      left: 0,
-                                                      right: 0,
-                                                      child: Row(
+                                                      bottom:
+                                                      12,
+                                                      left:
+                                                      0,
+                                                      right:
+                                                      0,
+                                                      child:
+                                                      Row(
                                                         mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: List.generate(
-                                                          property.media
-                                                                  ?.length ??
-                                                              0,
-                                                          (index) {
-                                                            final distance =
-                                                                (index -
-                                                                        _currentImageIndex)
-                                                                    .abs();
+                                                        MainAxisAlignment.center,
+                                                        children:
+                                                        List.generate(
+                                                          property.media?.length ?? 0,
+                                                              (index) {
+                                                            final distance = (index - _currentImageIndex).abs();
                                                             double scale;
                                                             double opacity;
 
                                                             if (distance == 0) {
                                                               scale = 1.2;
                                                               opacity = 1.0;
-                                                            } else if (distance ==
-                                                                1) {
+                                                            } else if (distance == 1) {
                                                               scale = 1.0;
                                                               opacity = 0.7;
-                                                            } else if (distance ==
-                                                                2) {
+                                                            } else if (distance == 2) {
                                                               scale = 0.8;
                                                               opacity = 0.5;
                                                             } else {
@@ -1299,27 +1415,18 @@ class _About_AgencyState extends State<About_Agency> {
                                                             }
 
                                                             return AnimatedOpacity(
-                                                              duration:
-                                                                  const Duration(
-                                                                      milliseconds:
-                                                                          300),
+                                                              duration: const Duration(milliseconds: 300),
                                                               opacity: opacity,
                                                               child: SizedBox(
                                                                 width: 12,
                                                                 height: 12,
                                                                 child: Center(
-                                                                  child:
-                                                                      Container(
-                                                                    width: 8 *
-                                                                        scale,
-                                                                    height: 8 *
-                                                                        scale,
-                                                                    decoration:
-                                                                        const BoxDecoration(
-                                                                      color: Colors
-                                                                          .white,
-                                                                      shape: BoxShape
-                                                                          .circle,
+                                                                  child: Container(
+                                                                    width: 8 * scale,
+                                                                    height: 8 * scale,
+                                                                    decoration: const BoxDecoration(
+                                                                      color: Colors.white,
+                                                                      shape: BoxShape.circle,
                                                                     ),
                                                                   ),
                                                                 ),
@@ -1334,27 +1441,34 @@ class _About_AgencyState extends State<About_Agency> {
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.only(
+                                              padding:
+                                              const EdgeInsets.only(
                                                 top: 5,
                                               ),
                                               child: ListTile(
-                                                title: Padding(
+                                                title:
+                                                Padding(
                                                   padding:
-                                                      const EdgeInsets.only(
+                                                  const EdgeInsets.only(
                                                     top: 5.0,
-                                                    bottom: 5,
+                                                    bottom:
+                                                    5,
                                                   ),
-                                                  child: Text(
+                                                  child:
+                                                  Text(
                                                     property.title.toString(),
-                                                    style: const TextStyle(
+                                                    style:
+                                                    const TextStyle(
                                                       fontSize: 16,
                                                       height: 1.4,
                                                     ),
                                                   ),
                                                 ),
-                                                subtitle: Text(
+                                                subtitle:
+                                                Text(
                                                   '${property.price} AED',
-                                                  style: const TextStyle(
+                                                  style:
+                                                  const TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 22,
                                                     height: 1.4,
@@ -1364,30 +1478,20 @@ class _About_AgencyState extends State<About_Agency> {
                                             ),
                                             // LOCATION + SPECS ROW (clean & no overflow)
                                             Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 15,
-                                                      vertical: 8),
+                                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                                               child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   // Location
                                                   Row(
                                                     children: [
-                                                      Image.asset(
-                                                          "assets/images/map.png",
-                                                          height: 14),
+                                                      Image.asset("assets/images/map.png", height: 14),
                                                       const SizedBox(width: 8),
                                                       Expanded(
                                                         child: Text(
-                                                          property.location ??
-                                                              '',
-                                                          style:
-                                                              const TextStyle(
-                                                                  fontSize: 13),
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
+                                                          property.location ?? '',
+                                                          style: const TextStyle(fontSize: 13),
+                                                          overflow: TextOverflow.ellipsis,
                                                         ),
                                                       ),
                                                     ],
@@ -1397,35 +1501,13 @@ class _About_AgencyState extends State<About_Agency> {
                                                   // Beds • Baths • Size (same style as your other screens)
                                                   Row(
                                                     children: [
-                                                      _buildInfoChip(
-                                                          "assets/images/bed.png",
-                                                          property.bedrooms),
-                                                      if (property.bedrooms !=
-                                                              null &&
-                                                          property.bedrooms !=
-                                                              "0")
-                                                        const SizedBox(
-                                                            width: 15),
-                                                      _buildInfoChip(
-                                                          "assets/images/bath.png",
-                                                          property.bathrooms),
-                                                      if (property.bathrooms !=
-                                                              null &&
-                                                          property.bathrooms !=
-                                                              "0")
-                                                        const SizedBox(
-                                                            width: 15),
-                                                      _buildInfoChip(
-                                                          "assets/images/messure.png",
-                                                          getDisplaySize(
-                                                              property)),
+                                                      _buildInfoChip("assets/images/bed.png", property.bedrooms),
+                                                      if (property.bedrooms != null && property.bedrooms != "0") const SizedBox(width: 15),
+                                                      _buildInfoChip("assets/images/bath.png", property.bathrooms),
+                                                      if (property.bathrooms != null && property.bathrooms != "0") const SizedBox(width: 15),
+                                                      _buildInfoChip("assets/images/messure.png", getDisplaySize(property)),
                                                     ]
-                                                        .where((widget) =>
-                                                            widget
-                                                                is! SizedBox ||
-                                                            (widget as SizedBox)
-                                                                    .width !=
-                                                                null)
+                                                        .where((widget) => widget is! SizedBox || (widget as SizedBox).width != null)
                                                         .toList(),
                                                   ),
                                                 ],
@@ -1454,87 +1536,115 @@ class _About_AgencyState extends State<About_Agency> {
                       builder: (context) {
                         if (isAgentsLoading) {
                           return const Center(
-                              child: CircularProgressIndicator());
+                              child:
+                              CircularProgressIndicator());
                         }
 
-                        final agents = agencyAgentsModel?.data ?? const [];
+                        final agents =
+                            agencyAgentsModel?.data ?? const [];
 
                         if (agents.isEmpty) {
-                          return const Center(child: Text('No agents found'));
+                          return const Center(
+                              child: Text('No agents found'));
                         }
 
                         final String agencyLogo =
-                            secureUrl(agencyDetailmodel?.image);
-                        final bool isValidLogo = agencyLogo.isNotEmpty;
+                        secureUrl(agencyDetailmodel?.image);
+                        final bool isValidLogo =
+                            agencyLogo.isNotEmpty;
 
                         return ListView.separated(
-                          physics: const AlwaysScrollableScrollPhysics(),
+                          physics:
+                          const AlwaysScrollableScrollPhysics(),
                           itemCount: agents.length,
                           separatorBuilder: (_, __) =>
-                              const SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             final agent = agents[index];
 
-                            final String imageUrl = secureUrl(agent.image);
-                            final bool isValidImage = imageUrl.isNotEmpty;
+                            final String imageUrl =
+                            secureUrl(agent.image);
+                            final bool isValidImage =
+                                imageUrl.isNotEmpty;
 
                             return GestureDetector(
                               onTap: () {
-                                final id = agent.id?.toString() ?? '';
+                                final id =
+                                    agent.id?.toString() ?? '';
                                 if (id.isEmpty) return;
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => AboutAgent(
-                                      data: id,
-                                    ),
+                                    builder: (context) =>
+                                        AboutAgent(
+                                          data: id,
+                                        ),
                                   ),
                                 );
                               },
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(
+                                padding:
+                                const EdgeInsets.symmetric(
                                   horizontal: 8.0,
                                   vertical: 6.0,
                                 ),
                                 child: Card(
                                   color: Colors.white,
                                   elevation: 6,
-                                  shadowColor: Colors.grey.shade100,
+                                  shadowColor:
+                                  Colors.grey.shade100,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius:
+                                    BorderRadius.circular(
+                                        10),
                                   ),
                                   child: Padding(
-                                    padding: const EdgeInsets.all(10.0),
+                                    padding:
+                                    const EdgeInsets.all(
+                                        10.0),
                                     child: Row(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      CrossAxisAlignment
+                                          .start,
                                       children: [
                                         CircleAvatar(
                                           radius: 30,
-                                          backgroundColor: Colors.grey.shade200,
+                                          backgroundColor:
+                                          Colors.grey
+                                              .shade200,
                                           backgroundImage: isValidImage
-                                              ? NetworkImage(imageUrl)
+                                              ? NetworkImage(
+                                              imageUrl)
                                               : const AssetImage(
-                                                  'assets/images/profile.png',
-                                                ) as ImageProvider,
+                                            'assets/images/profile.png',
+                                          )
+                                          as ImageProvider,
                                         ),
-                                        const SizedBox(width: 12),
+                                        const SizedBox(
+                                            width: 12),
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            CrossAxisAlignment
+                                                .start,
                                             children: [
                                               Text(
-                                                agent.name ?? '',
-                                                style: const TextStyle(
+                                                agent.name ??
+                                                    '',
+                                                style:
+                                                const TextStyle(
                                                   fontSize: 14,
-                                                  fontWeight: FontWeight.bold,
-                                                  letterSpacing: 0.5,
+                                                  fontWeight:
+                                                  FontWeight.bold,
+                                                  letterSpacing:
+                                                  0.5,
                                                 ),
                                                 maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
+                                                overflow:
+                                                TextOverflow.ellipsis,
                                               ),
-                                              const SizedBox(height: 4),
+                                              const SizedBox(
+                                                  height: 4),
                                               Text(
                                                 "${(agent.sale ?? 0) + (agent.rent ?? 0)} Properties",
                                                 style: const TextStyle(
@@ -1544,61 +1654,77 @@ class _About_AgencyState extends State<About_Agency> {
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
-                                              const SizedBox(height: 4),
+                                              const SizedBox(
+                                                  height: 4),
                                               Text(
                                                 "Speaks: ${agent.languages?.isNotEmpty == true ? agent.languages : 'N/A'}",
-                                                style: const TextStyle(
+                                                style:
+                                                const TextStyle(
                                                   fontSize: 12,
-                                                  color: Colors.black54,
+                                                  color: Colors
+                                                      .black54,
                                                 ),
                                                 maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
+                                                overflow:
+                                                TextOverflow.ellipsis,
                                               ),
-                                              const SizedBox(height: 8),
+                                              const SizedBox(
+                                                  height: 8),
                                               Row(
                                                 children: [
-                                                  if (agent.sale != null &&
-                                                      agent.sale != 0)
-                                                    _pill(
-                                                        "${agent.sale ?? 0} Sale"),
-                                                  const SizedBox(width: 10),
-                                                  if (agent.rent != null &&
-                                                      agent.rent != 0)
-                                                    _pill(
-                                                        "${agent.rent ?? 0} Rent"),
+                                                  _pill(
+                                                      "${agent.sale ?? 0} Sale"),
+                                                  const SizedBox(
+                                                      width:
+                                                      10),
+                                                  _pill(
+                                                      "${agent.rent ?? 0} Rent"),
                                                 ],
                                               ),
-                                              const SizedBox(height: 6),
+                                              const SizedBox(
+                                                  height: 6),
                                               if (agent.bio
-                                                      ?.trim()
-                                                      .isNotEmpty ==
+                                                  ?.trim()
+                                                  .isNotEmpty ==
                                                   true)
                                                 Text(
-                                                  agent.bio!.trim(),
-                                                  style: const TextStyle(
-                                                    fontSize: 11,
-                                                    color: Colors.black45,
-                                                    fontStyle: FontStyle.italic,
+                                                  agent.bio!
+                                                      .trim(),
+                                                  style:
+                                                  const TextStyle(
+                                                    fontSize:
+                                                    11,
+                                                    color: Colors
+                                                        .black45,
+                                                    fontStyle:
+                                                    FontStyle
+                                                        .italic,
                                                   ),
                                                   maxLines: 2,
                                                   overflow:
-                                                      TextOverflow.ellipsis,
+                                                  TextOverflow.ellipsis,
                                                 ),
                                             ],
                                           ),
                                         ),
                                         if (isValidLogo)
                                           Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 6.0),
+                                            padding:
+                                            const EdgeInsets.only(
+                                                left:
+                                                6.0),
                                             child: ClipRRect(
                                               borderRadius:
-                                                  BorderRadius.circular(6),
-                                              child: Image.network(
+                                              BorderRadius
+                                                  .circular(
+                                                  6),
+                                              child:
+                                              Image.network(
                                                 agencyLogo,
                                                 width: 40,
                                                 height: 40,
-                                                fit: BoxFit.cover,
+                                                fit: BoxFit
+                                                    .cover,
                                               ),
                                             ),
                                           ),
@@ -1617,8 +1743,7 @@ class _About_AgencyState extends State<About_Agency> {
                   // REVIEWS TAB
                   SingleChildScrollView(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 20.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1662,8 +1787,7 @@ class _About_AgencyState extends State<About_Agency> {
 
                                 // Subtitle
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 40),
+                                  padding: const EdgeInsets.symmetric(horizontal: 40),
                                   child: Text(
                                     "Agent reviews and ratings will be available here soon. Stay tuned!",
                                     textAlign: TextAlign.center,
@@ -1735,43 +1859,53 @@ class _About_AgencyState extends State<About_Agency> {
       ),
     );
   }
+
+
+
+
+
 }
 
 // Small label used in the Agents cards
 Widget _pill(String text) => Container(
-      width: 55,
-      height: 20,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.white),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x40000000),
-            blurRadius: 2,
-            offset: Offset(0, 0),
-          ),
-        ],
+  width: 55,
+  height: 20,
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(6),
+    border: Border.all(color: Colors.white),
+    boxShadow: const [
+      BoxShadow(
+        color: Color(0x40000000),
+        blurRadius: 2,
+        offset: Offset(0, 0),
       ),
-      child: Center(
-        child: Text(
-          text,
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF3A7CED),
-          ),
-        ),
+    ],
+  ),
+  child: Center(
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFF3A7CED),
       ),
-    );
+    ),
+  ),
+);
 
-Widget _buildTagContainer({required String text, required String iconPath}) {
+Widget _buildTagContainer(
+    {required String text,
+      required String iconPath}) {
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 3.0, vertical: 8),
+    padding: const EdgeInsets.symmetric(
+        horizontal: 3.0, vertical: 8),
     child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+          horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.0),
+        borderRadius:
+        BorderRadius.circular(8.0),
         boxShadow: const [
           BoxShadow(
             color: Colors.red,
@@ -1812,3 +1946,4 @@ Widget _buildTagContainer({required String text, required String iconPath}) {
     ),
   );
 }
+

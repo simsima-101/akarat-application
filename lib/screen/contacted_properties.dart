@@ -1,5 +1,6 @@
 // lib/screen/contacted_properties.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -7,6 +8,7 @@ import '../model/projectmodel.dart';
 import '../services/api_service.dart';
 import '../services/session.dart';
 import '../secure_storage.dart';
+import 'featured_detail.dart';
 import 'new_project_detail.dart';
 
 class ContactedProperties extends StatefulWidget {
@@ -119,7 +121,7 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
       String? token = Session().token ?? await SecureStorage.getToken();
       if (token == null) return false;
 
-      final uri = ApiService.buildUri('contacted-properties');
+      final uri = ApiService.buildUri('contacted-properties'); // Correct for clear all
       final response = await http.delete(
         uri,
         headers: {
@@ -138,19 +140,28 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
     final property = contactedProperties[index];
     final originalList = List<Data>.from(contactedProperties);
 
+    // Optimistically remove
     setState(() {
       contactedProperties.removeAt(index);
-      isDeleting = true;
     });
+
+    // Show removing feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Removing..."),
+        duration: Duration(seconds: 4),
+      ),
+    );
 
     final success = await _deleteContactedProperty(property.id!);
 
     if (!mounted) return;
 
-    setState(() => isDeleting = false);
-
     if (!success) {
-      setState(() => contactedProperties = originalList);
+      // Revert if failed
+      setState(() {
+        contactedProperties = originalList;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Failed to remove property")),
       );
@@ -162,11 +173,14 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
   }
 
   void _clearAllProperties() async {
+
+
     if (contactedProperties.isEmpty) return;
 
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         title: const Text("Clear All Contacted Properties?"),
         content: const Text("This action cannot be undone."),
         actions: [
@@ -193,6 +207,7 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
 
     setState(() => isDeleting = false);
 
+
     if (success) {
       setState(() => contactedProperties.clear());
       ScaffoldMessenger.of(context).showSnackBar(
@@ -208,17 +223,58 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+      // ... [all your existing imports and code remain the same until AppBar]
+
       appBar: AppBar(
-        title: const Text("Contacted Properties"),
+        title: const Text("Contacted Properties", style: TextStyle(fontSize: 19),),
+
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
-        elevation: 1,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.white,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+        ),
         actions: [
+          // Refresh Icon
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: isDeleting ? null : fetchContactedProperties,
             tooltip: "Refresh",
           ),
+
+          // Eye Icon (Hint) - Always next to Refresh
+          IconButton(
+            icon: Icon(
+              Icons.remove_red_eye_outlined,
+              color: Colors.grey[600],
+            ),
+            tooltip: "How to remove properties",
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: Colors.white,
+                  title: const Text("How to Remove"),
+                  content: const Text(
+                    "Swipe left on any property to remove it from your contacted list",
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text("Got it"),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
+          // Clear All Icon - Only when there are contacted properties
           if (contactedProperties.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_sweep),
@@ -268,6 +324,7 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
           itemCount: contactedProperties.length,
           itemBuilder: (context, index) {
             final property = contactedProperties[index];
+
             return Dismissible(
               key: Key(property.id.toString()),
               direction: DismissDirection.endToStart,
@@ -275,15 +332,17 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
                 color: Colors.red,
                 alignment: Alignment.centerRight,
                 padding: const EdgeInsets.only(right: 20),
-                child: const Icon(Icons.delete, color: Colors.white),
+                child: const Icon(Icons.delete, color: Colors.white, size: 30),
               ),
               confirmDismiss: (_) async {
-                return await showDialog(
+                return await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
+                    backgroundColor: Colors.white,
                     title: const Text("Remove Property?"),
                     content: Text(
-                        "Remove \"${property.title}\" from contacted list?"),
+                      "Remove \"${property.title ?? 'this property'}\" from contacted list?",
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, false),
@@ -291,16 +350,19 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        style: TextButton.styleFrom(
-                            foregroundColor: Colors.red),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
                         child: const Text("Remove"),
                       ),
                     ],
                   ),
-                );
+                ) ?? false;
               },
-              onDismissed: (_) => _removeProperty(index),
+              onDismissed: (_) {
+                // This will trigger your existing, correct deletion logic
+                _removeProperty(index);
+              },
               child: Card(
+                color: Colors.white,
                 margin: const EdgeInsets.symmetric(vertical: 6),
                 child: ListTile(
                   leading: ClipRRect(
@@ -311,15 +373,13 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
                       width: 70,
                       height: 70,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                      const Icon(Icons.image, size: 40),
+                      errorBuilder: (_, __, ___) => const Icon(Icons.image, size: 40),
                     )
                         : const Icon(Icons.image, size: 40),
                   ),
                   title: Text(
                     property.title ?? "No Title",
-                    style:
-                    const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,13 +388,13 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
                       Text(property.location ?? ""),
                     ],
                   ),
-                  trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => NewProjectDetail(
-                            id: property.id.toString()),
+                        builder: (context) => Featured_Detail(
+                          data: property.id.toString(),
+                        ),
                       ),
                     );
                   },
