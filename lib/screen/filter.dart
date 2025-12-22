@@ -5,6 +5,7 @@ import 'package:Akarat/providers/location_picker_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
@@ -371,73 +372,77 @@ class _FilterDemoState extends State<FilterDemo> {
               const SizedBox(height: 10),
               //properties
               if (showProductPills) ...[
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: SizedBox(
-                      height: 60,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: filterProvider.product.length,
-                        itemBuilder: (context, index) {
-                          final isSelected =
-                              filterProvider.selectedproduct == index;
-                          return GestureDetector(
-                            onTap: () async {
-                              await filterProvider.setSelectedProductType(
-                                context,
-                                index,
-                              );
-                            },
-                            child: Container(
-                              width: 180,
-                              height: 34,
-                              alignment: Alignment.center,
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 5),
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 14),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? const Color(0xFFF5F4F9)
-                                    : Colors.white,
-                                border: Border.all(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: SizedBox(
+                        height: 60,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: filterProvider.product.length,
+                          itemBuilder: (context, index) {
+                            final isSelected =
+                                filterProvider.selectedproduct == index;
+                            return GestureDetector(
+                              onTap: () async {
+                                await filterProvider.setSelectedProductType(
+                                  context,
+                                  index,
+                                );
+                              },
+                              child: Container(
+                                width: 180,
+                                height: 34,
+                                alignment: Alignment.center,
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 5, vertical: 5),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 14),
+                                decoration: BoxDecoration(
                                   color: isSelected
-                                      ? Colors.black
-                                      : Colors.transparent,
-                                  width: 1,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    offset: const Offset(0, 2),
-                                    blurRadius: 4,
-                                    spreadRadius: 0,
+                                      ? const Color(0xFFF5F4F9)
+                                      : Colors.white,
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? Colors.black
+                                        : Colors.transparent,
+                                    width: 1,
                                   ),
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.8),
-                                    offset: const Offset(-4, -4),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                filterProvider.product[index],
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  letterSpacing: 0.5,
-                                  fontSize: 14,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      offset: const Offset(0, 2),
+                                      blurRadius: 4,
+                                      spreadRadius: 0,
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.8),
+                                      offset: const Offset(-4, -4),
+                                      blurRadius: 8,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
                                 ),
-                                textAlign: TextAlign.center,
+                                child: Text(
+                                  filterProvider.product[index],
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    letterSpacing: 0.5,
+                                    fontSize: 14,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ],
 
@@ -951,15 +956,20 @@ class _FilterDemoState extends State<FilterDemo> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(left: 20),
-                    child: Text(
-                      "Price range",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                      textAlign: TextAlign.left,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Price range",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -1378,6 +1388,9 @@ class _FilterDemoState extends State<FilterDemo> {
                       //     );
                       //   },
                       // );
+
+                      // Trigger light haptic feedback on slide
+                      HapticFeedback.selectionClick();
                     },
 
                     child: SizedBox(
@@ -1745,6 +1758,8 @@ class _FilterDemoState extends State<FilterDemo> {
                         onChanged: (value) async {
                           await filterProvider.setSelectedAreaRange(context,
                               value: value);
+                          // Trigger light haptic feedback on slide
+                          HapticFeedback.selectionClick();
                         },
                         child: SizedBox(
                           height: 70,
@@ -1842,17 +1857,17 @@ class _FilterDemoState extends State<FilterDemo> {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                offset: Offset(4, 4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
+                                color: Colors.grey.withOpacity(0.2),
+                                offset: Offset(0, 0),
+                                blurRadius: 1,
+                                spreadRadius: 1,
                               ),
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.8),
-                                offset: Offset(-4, -4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
+                              // BoxShadow(
+                              //   color: Colors.white.withOpacity(0.8),
+                              //   offset: Offset(-4, -4),
+                              //   blurRadius: 8,
+                              //   spreadRadius: 2,
+                              // ),
                             ],
                             borderRadius: BorderRadius.circular(8),
                           ),

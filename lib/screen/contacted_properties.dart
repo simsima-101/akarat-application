@@ -1,15 +1,15 @@
 // lib/screen/contacted_properties.dart
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../model/projectmodel.dart';
+import '../secure_storage.dart';
 import '../services/api_service.dart';
 import '../services/session.dart';
-import '../secure_storage.dart';
 import 'featured_detail.dart';
-import 'new_project_detail.dart';
 
 class ContactedProperties extends StatefulWidget {
   const ContactedProperties({super.key});
@@ -121,7 +121,8 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
       String? token = Session().token ?? await SecureStorage.getToken();
       if (token == null) return false;
 
-      final uri = ApiService.buildUri('contacted-properties'); // Correct for clear all
+      final uri =
+          ApiService.buildUri('contacted-properties'); // Correct for clear all
       final response = await http.delete(
         uri,
         headers: {
@@ -173,8 +174,6 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
   }
 
   void _clearAllProperties() async {
-
-
     if (contactedProperties.isEmpty) return;
 
     final confirm = await showDialog<bool>(
@@ -207,7 +206,6 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
 
     setState(() => isDeleting = false);
 
-
     if (success) {
       setState(() => contactedProperties.clear());
       ScaffoldMessenger.of(context).showSnackBar(
@@ -227,8 +225,10 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
       // ... [all your existing imports and code remain the same until AppBar]
 
       appBar: AppBar(
-        title: const Text("Contacted Properties", style: TextStyle(fontSize: 19),),
-
+        title: const Text(
+          "Contacted Properties",
+          style: TextStyle(fontSize: 19),
+        ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         surfaceTintColor: Colors.white,
@@ -250,7 +250,7 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
           // Eye Icon (Hint) - Always next to Refresh
           IconButton(
             icon: Icon(
-              Icons.remove_red_eye_outlined,
+              Icons.info_outline,
               color: Colors.grey[600],
             ),
             tooltip: "How to remove properties",
@@ -286,124 +286,131 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : error != null
-          ? Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                error!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: fetchContactedProperties,
-                child: const Text("Retry"),
-              ),
-            ],
-          ),
-        ),
-      )
-          : contactedProperties.isEmpty
-          ? const Center(
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Text(
-            "No properties contacted yet.\nStart contacting agents!",
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16),
-          ),
-        ),
-      )
-          : RefreshIndicator(
-        onRefresh: fetchContactedProperties,
-        child: ListView.builder(
-          padding: const EdgeInsets.all(8),
-          itemCount: contactedProperties.length,
-          itemBuilder: (context, index) {
-            final property = contactedProperties[index];
-
-            return Dismissible(
-              key: Key(property.id.toString()),
-              direction: DismissDirection.endToStart,
-              background: Container(
-                color: Colors.red,
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 20),
-                child: const Icon(Icons.delete, color: Colors.white, size: 30),
-              ),
-              confirmDismiss: (_) async {
-                return await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    backgroundColor: Colors.white,
-                    title: const Text("Remove Property?"),
-                    content: Text(
-                      "Remove \"${property.title ?? 'this property'}\" from contacted list?",
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          error!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: fetchContactedProperties,
+                          child: const Text("Retry"),
+                        ),
+                      ],
                     ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text("Cancel"),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, true),
-                        style: TextButton.styleFrom(foregroundColor: Colors.red),
-                        child: const Text("Remove"),
-                      ),
-                    ],
                   ),
-                ) ?? false;
-              },
-              onDismissed: (_) {
-                // This will trigger your existing, correct deletion logic
-                _removeProperty(index);
-              },
-              child: Card(
-                color: Colors.white,
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                child: ListTile(
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: property.media?.isNotEmpty == true
-                        ? Image.network(
-                      property.media!.first.originalUrl!,
-                      width: 70,
-                      height: 70,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.image, size: 40),
-                    )
-                        : const Icon(Icons.image, size: 40),
-                  ),
-                  title: Text(
-                    property.title ?? "No Title",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("${property.price} AED"),
-                      Text(property.location ?? ""),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Featured_Detail(
-                          data: property.id.toString(),
+                )
+              : contactedProperties.isEmpty
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Text(
+                          "No properties contacted yet.\nStart contacting agents!",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16),
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: fetchContactedProperties,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(8),
+                        itemCount: contactedProperties.length,
+                        itemBuilder: (context, index) {
+                          final property = contactedProperties[index];
+
+                          return Dismissible(
+                            key: Key(property.id.toString()),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              color: Colors.red,
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
+                              child: const Icon(Icons.delete,
+                                  color: Colors.white, size: 30),
+                            ),
+                            confirmDismiss: (_) async {
+                              return await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      backgroundColor: Colors.white,
+                                      title: const Text("Remove Property?"),
+                                      content: Text(
+                                        "Remove \"${property.title ?? 'this property'}\" from contacted list?",
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, false),
+                                          child: const Text("Cancel"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, true),
+                                          style: TextButton.styleFrom(
+                                              foregroundColor: Colors.red),
+                                          child: const Text("Remove"),
+                                        ),
+                                      ],
+                                    ),
+                                  ) ??
+                                  false;
+                            },
+                            onDismissed: (_) {
+                              // This will trigger your existing, correct deletion logic
+                              _removeProperty(index);
+                            },
+                            child: Card(
+                              color: Colors.white,
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              child: ListTile(
+                                leading: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: property.media?.isNotEmpty == true
+                                      ? Image.network(
+                                          property.media!.first.originalUrl!,
+                                          width: 70,
+                                          height: 70,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              const Icon(Icons.image, size: 40),
+                                        )
+                                      : const Icon(Icons.image, size: 40),
+                                ),
+                                title: Text(
+                                  property.title ?? "No Title",
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("${property.price} AED"),
+                                    Text(property.location ?? ""),
+                                  ],
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Featured_Detail(
+                                        data: property.id.toString(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
     );
   }
 }

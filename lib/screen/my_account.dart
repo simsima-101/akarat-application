@@ -1,5 +1,6 @@
 // lib/screen/my_account.dart
 import 'dart:convert';
+import 'dart:io';
 
 // Screens
 import 'package:Akarat/screen/about_us.dart';
@@ -14,6 +15,7 @@ import 'package:Akarat/utils/fav_logout.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Providers / Services
 import '../providers/profile_image_provider.dart';
@@ -23,10 +25,9 @@ import '../services/favorite_service.dart';
 import '../services/session.dart';
 import '../widgets/custom_alert_box.dart';
 import 'ContactFormScreen.dart';
+import 'contacted_properties.dart'; // ← your file name
 import 'login.dart';
 import 'personal_information.dart';
-
-import 'contacted_properties.dart';  // ← your file name
 
 class My_Account extends StatefulWidget {
   const My_Account({super.key});
@@ -354,8 +355,8 @@ class _My_AccountState extends State<My_Account> {
                   MaterialPageRoute(builder: (_) => const SavedAlertsScreen()));
             }
           }),
-
-          _settingsTile("Contacted Properties", "assets/images/contacted.png", () async {
+          _settingsTile("Contacted Properties", "assets/images/contacted.png",
+              () async {
             if (!_isLoggedIn) {
               _showLoginDialog("Please login to view contacted properties.");
               return;
@@ -385,6 +386,30 @@ class _My_AccountState extends State<My_Account> {
               () {
             Navigator.push(context,
                 MaterialPageRoute(builder: (_) => const TermsCondition()));
+          }),
+          _settingsTile("Rate Us", "assets/images/stars (1).png", () async {
+            const String androidPackageName = "com.akarat.drawerdemo";
+            const String iosAppId = "6745213903";
+
+            late final Uri url;
+
+            if (Platform.isAndroid) {
+              url = Uri.parse(
+                "https://play.google.com/store/apps/details?id=$androidPackageName",
+              );
+            } else if (Platform.isIOS) {
+              url = Uri.parse(
+                "itms-apps://apps.apple.com/app/id$iosAppId",
+              );
+            } else {
+              return;
+            }
+
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url, mode: LaunchMode.externalApplication);
+            } else {
+              debugPrint("❌ Could not launch store: $url");
+            }
           }),
         ]),
         _settingsContainer(

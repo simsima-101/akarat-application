@@ -10,11 +10,13 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart'; // Not url_launcher_string
 
 import '../device_id.dart';
 import '../model/togglemodel.dart';
 import '../providers/email_enquiry_provider.dart';
+import '../providers/favorite_provider.dart';
 import '../secure_storage.dart';
 import '../services/api_service.dart';
 import '../services/session.dart';
@@ -45,9 +47,7 @@ class _About_AgencyState extends State<About_Agency> {
   int pageIndex = 0;
   bool isFavorited = false;
   int? property_id;
-  String token = '';
-  String email = '';
-  String result = '';
+  String? token = '';
   bool isDataRead = false;
   bool isAgentsLoading = true;
   bool _agencyLoading = true;
@@ -186,7 +186,7 @@ class _About_AgencyState extends State<About_Agency> {
           phone: cleanPhone,
           message: message.isEmpty ? "-" : message,
           deviceId: deviceId,
-          token: token.isNotEmpty ? token : null,
+          token: token != null && token!.isNotEmpty ? token : null,
         );
 
         if (!mounted) return;
@@ -213,11 +213,28 @@ class _About_AgencyState extends State<About_Agency> {
     );
   }
 
+  // ←←← ADD THIS FUNCTION INSIDE _MyHomePageState class ←←←
+  String _formatAgentName(String? fullName) {
+    if (fullName == null || fullName.trim().isEmpty) {
+      return 'Agent';
+    }
+
+    // Split name by spaces and remove empty parts
+    List<String> parts = fullName.trim().split(RegExp(r'\s+'));
+
+    // Return only first two names
+    if (parts.length >= 2) {
+      return '${parts[0]} ${parts[1]}';
+    } else if (parts.isNotEmpty) {
+      return parts[0]; // only one name
+    } else {
+      return 'Agent';
+    }
+  }
+
   // Method to read data from shared preferences
   void readData() async {
-    token = await prefManager.readStringFromPref();
-    email = await prefManager.readStringFromPrefemail();
-    result = await prefManager.readStringFromPrefresult();
+    token = await SecureStorage.getToken();
     setState(() {
       isDataRead = true;
     });
@@ -234,6 +251,7 @@ class _About_AgencyState extends State<About_Agency> {
   ToggleModel? toggleModel;
 
   int _currentImageIndex = 0;
+  final PageController _pageController = PageController();
 
   Set<int> favoriteProperties = {}; // Stores favorite property IDs
 
@@ -1281,44 +1299,70 @@ class _About_AgencyState extends State<About_Agency> {
                                         ),
                                         child: Column(
                                           children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 0.0,
-                                              ),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                child: Stack(
+                                            Column(
+                                              children: [
+                                                Stack(
+                                                  clipBehavior: Clip.none,
+                                                  // ✅ Allows the overlap outside the Stack
                                                   children: [
-                                                    AspectRatio(
-                                                      aspectRatio: 1.6,
-                                                      child: PageView.builder(
-                                                        scrollDirection:
-                                                            Axis.horizontal,
-                                                        onPageChanged: (index) {
-                                                          setState(() {
-                                                            _currentImageIndex =
-                                                                index;
-                                                          });
-                                                        },
-                                                        itemCount: property
-                                                                .media
-                                                                ?.length ??
-                                                            0,
-                                                        itemBuilder: (context,
-                                                            mediaIndex) {
-                                                          return CachedNetworkImage(
-                                                            imageUrl: secureUrl(
-                                                                property
-                                                                    .media![
-                                                                        mediaIndex]
-                                                                    .originalUrl),
-                                                            fit: BoxFit.fill,
-                                                          );
-                                                        },
+                                                    // 🖼️ Property Image Carousel with Rounded Corners
+                                                    ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
+                                                      child: AspectRatio(
+                                                        aspectRatio: 1.4,
+                                                        child: PageView.builder(
+                                                          controller:
+                                                              _pageController,
+                                                          scrollDirection:
+                                                              Axis.horizontal,
+                                                          itemCount: property
+                                                                  .media
+                                                                  ?.length ??
+                                                              0,
+                                                          onPageChanged:
+                                                              (index) {
+                                                            setState(() {
+                                                              _currentImageIndex =
+                                                                  index;
+                                                            });
+                                                          },
+                                                          itemBuilder: (context,
+                                                              imgIndex) {
+                                                            return CachedNetworkImage(
+                                                              imageUrl: property
+                                                                  .media![
+                                                                      imgIndex]
+                                                                  .originalUrl
+                                                                  .toString(),
+                                                              fit: BoxFit.cover,
+                                                              placeholder: (context,
+                                                                      url) =>
+                                                                  Shimmer
+                                                                      .fromColors(
+                                                                baseColor: Colors
+                                                                    .grey
+                                                                    .shade300,
+                                                                highlightColor:
+                                                                    Colors.grey
+                                                                        .shade100,
+                                                                child:
+                                                                    Container(
+                                                                  width: double
+                                                                      .infinity,
+                                                                  height: 200,
+                                                                  color: Colors
+                                                                      .white,
+                                                                ),
+                                                              ),
+                                                            );
+                                                          },
+                                                        ),
                                                       ),
                                                     ),
-                                                    // indicator dots
+
+                                                    // ⚪ Image Indicator Dots
                                                     Positioned(
                                                       bottom: 12,
                                                       left: 0,
@@ -1356,13 +1400,13 @@ class _About_AgencyState extends State<About_Agency> {
                                                             }
 
                                                             return AnimatedOpacity(
-                                                              duration:
-                                                                  const Duration(
-                                                                      milliseconds:
-                                                                          300),
+                                                              duration: Duration(
+                                                                  milliseconds:
+                                                                      300),
                                                               opacity: opacity,
                                                               child: SizedBox(
                                                                 width: 12,
+                                                                // fixed size for layout stability
                                                                 height: 12,
                                                                 child: Center(
                                                                   child:
@@ -1372,7 +1416,7 @@ class _About_AgencyState extends State<About_Agency> {
                                                                     height: 8 *
                                                                         scale,
                                                                     decoration:
-                                                                        const BoxDecoration(
+                                                                        BoxDecoration(
                                                                       color: Colors
                                                                           .white,
                                                                       shape: BoxShape
@@ -1386,36 +1430,370 @@ class _About_AgencyState extends State<About_Agency> {
                                                         ),
                                                       ),
                                                     ),
+
+                                                    // ❤️ Favorite Icon
+                                                    // ❤️ Favorite Icon
+
+                                                    // ❤️ Favorite Icon
+                                                    Positioned(
+                                                      top: 10,
+                                                      right: 10,
+                                                      child: Material(
+                                                        color: Colors.white,
+                                                        shape:
+                                                            const CircleBorder(),
+                                                        elevation: 4,
+                                                        child: Consumer<
+                                                            FavoriteProvider>(
+                                                          builder: (context,
+                                                              favProvider, _) {
+                                                            final isLoggedIn =
+                                                                token?.isNotEmpty ??
+                                                                    false;
+                                                            final isFav = isLoggedIn &&
+                                                                favProvider
+                                                                    .isFavorite(
+                                                                        property
+                                                                            .id!); // ✅ Only true for logged-in users
+
+                                                            // debugPrint("fav length :${favProvider.fav}");
+
+                                                            return IconButton(
+                                                              icon: Icon(
+                                                                isFav
+                                                                    ? Icons
+                                                                        .favorite
+                                                                    : Icons
+                                                                        .favorite_border,
+                                                                color: isFav
+                                                                    ? Colors.red
+                                                                    : Colors
+                                                                        .grey, // ✅ Grey for logged-out users
+                                                                size: 20,
+                                                              ),
+                                                              onPressed:
+                                                                  () async {
+                                                                if (!isLoggedIn) {
+                                                                  // 🔒 Show login prompt
+                                                                  showDialog(
+                                                                    context:
+                                                                        context,
+                                                                    builder:
+                                                                        (ctx) =>
+                                                                            Dialog(
+                                                                      backgroundColor:
+                                                                          Colors
+                                                                              .transparent,
+                                                                      insetPadding:
+                                                                          EdgeInsets
+                                                                              .zero,
+                                                                      child:
+                                                                          Container(
+                                                                        height:
+                                                                            70,
+                                                                        margin: const EdgeInsets
+                                                                            .only(
+                                                                            bottom:
+                                                                                80,
+                                                                            left:
+                                                                                20,
+                                                                            right:
+                                                                                20),
+                                                                        decoration:
+                                                                            BoxDecoration(
+                                                                          color:
+                                                                              Colors.red,
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(10),
+                                                                        ),
+                                                                        child:
+                                                                            Stack(
+                                                                          clipBehavior:
+                                                                              Clip.none,
+                                                                          children: [
+                                                                            Positioned(
+                                                                              top: -14,
+                                                                              right: -10,
+                                                                              child: Material(
+                                                                                color: Colors.transparent,
+                                                                                child: IconButton(
+                                                                                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                                                  onPressed: () => Navigator.of(ctx).pop(),
+                                                                                  padding: EdgeInsets.zero,
+                                                                                  constraints: const BoxConstraints(),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                            Positioned(
+                                                                              left: 16,
+                                                                              right: 16,
+                                                                              bottom: 12,
+                                                                              child: Row(
+                                                                                children: [
+                                                                                  const Expanded(
+                                                                                    child: Text(
+                                                                                      'Login required to add favorites.',
+                                                                                      style: TextStyle(color: Colors.white, fontSize: 13),
+                                                                                    ),
+                                                                                  ),
+                                                                                  const SizedBox(width: 12),
+                                                                                  GestureDetector(
+                                                                                    onTap: () {
+                                                                                      Navigator.of(ctx).pop();
+                                                                                      Navigator.of(ctx).pushNamed('/login');
+                                                                                    },
+                                                                                    child: const Text(
+                                                                                      'Login',
+                                                                                      style: TextStyle(
+                                                                                        color: Colors.white,
+                                                                                        fontWeight: FontWeight.bold,
+                                                                                        decoration: TextDecoration.underline,
+                                                                                        decorationColor: Colors.white,
+                                                                                        decorationThickness: 1.5,
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                  return;
+                                                                }
+
+                                                                // ✅ Use Provider's API-integrated method
+                                                                final success =
+                                                                    await favProvider.toggleFavoriteWithApi(
+                                                                        property
+                                                                            .id!,
+                                                                        token!,
+                                                                        context);
+
+                                                                if (!success) {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(
+                                                                    const SnackBar(
+                                                                        content:
+                                                                            Text("Failed to update favorite.")),
+                                                                  );
+                                                                }
+                                                              },
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ),
+
+                                                    // 👈 returns an empty widget when not logged in
+
+                                                    // 👈 Return nothing if not logged in
+
+                                                    // 🧑‍💼 Overlapping Agent Profile Image
+                                                    // 🧑‍💼 Overlapping Agent Profile Image
+                                                    // 🧑‍💼 Agent Profile with Navigation to Featured_Detail
+                                                    // 🟢 Positioned Circle Avatar (left: 10)
+                                                    Positioned(
+                                                      bottom: -30,
+                                                      left: 10,
+                                                      child: GestureDetector(
+                                                        onTap: () {
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  Featured_Detail(
+                                                                      data: property
+                                                                          .id
+                                                                          .toString()),
+                                                            ),
+                                                          );
+                                                        },
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            CircleAvatar(
+                                                              radius: 28,
+                                                              backgroundImage: (property
+                                                                              .agentImage !=
+                                                                          null &&
+                                                                      property
+                                                                          .agentImage!
+                                                                          .isNotEmpty)
+                                                                  ? CachedNetworkImageProvider(
+                                                                      property
+                                                                          .agentImage!)
+                                                                  : const AssetImage(
+                                                                          "assets/images/dummy.jpg")
+                                                                      as ImageProvider,
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 6),
+                                                            Transform.translate(
+                                                              offset: const Offset(
+                                                                  -5,
+                                                                  0), // shift 4 pixels to the left
+                                                              child: Text(
+                                                                "AGENT",
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: 12,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  color: Color(
+                                                                      0xFF1A73E9),
+                                                                  letterSpacing:
+                                                                      0.5,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
                                                   ],
                                                 ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 5,
-                                              ),
-                                              child: ListTile(
-                                                title: Padding(
+
+                                                // 🔽 Spacer so that the overlapping image is not clipped
+                                                const SizedBox(height: 15),
+
+                                                Padding(
                                                   padding:
                                                       const EdgeInsets.only(
-                                                    top: 5.0,
-                                                    bottom: 5,
-                                                  ),
-                                                  child: Text(
-                                                    property.title.toString(),
-                                                    style: const TextStyle(
-                                                      fontSize: 16,
-                                                      height: 1.4,
-                                                    ),
+                                                          left: 0,
+                                                          right: 0,
+                                                          top: 4,
+                                                          bottom: 4),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      // Agent Name
+                                                      Expanded(
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  left: 10),
+                                                          child: Text(
+                                                            _formatAgentName(
+                                                                property
+                                                                    .agentName),
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                        ),
+                                                      ),
+
+                                                      // Listed text + agency logo
+                                                      Row(
+                                                        children: [
+                                                          if (property.postedOn !=
+                                                                  null &&
+                                                              property.postedOn!
+                                                                  .isNotEmpty)
+                                                            Text(
+                                                              'Listed ${property.postedOn}',
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontSize: 13,
+                                                                color:
+                                                                    Colors.grey,
+                                                              ),
+                                                            ),
+                                                          const SizedBox(
+                                                              width: 4),
+                                                          if (property.agencyLogo !=
+                                                                  null &&
+                                                              property
+                                                                  .agencyLogo!
+                                                                  .isNotEmpty)
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(8.0),
+                                                              child: Container(
+                                                                height: 30,
+                                                                width: 60,
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              4),
+                                                                  image:
+                                                                      DecorationImage(
+                                                                    image: CachedNetworkImageProvider(
+                                                                        property
+                                                                            .agencyLogo!),
+                                                                    fit: BoxFit
+                                                                        .contain,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                        ],
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
-                                                subtitle: Text(
-                                                  '${property.price} AED',
+
+                                                SizedBox(
+                                                  height: 5,
+                                                ),
+
+// 👇 Divider line here
+                                                const Divider(
+                                                  thickness: 0.3,
+                                                  color: Colors.grey,
+                                                  height: 6,
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(
+                                              height: 8,
+                                            ),
+
+                                            ListTile(
+                                              title: Padding(
+                                                padding: const EdgeInsets.only(
+                                                  top: 5.0,
+                                                  bottom: 5,
+                                                ),
+                                                child: Text(
+                                                  property.title.toString(),
                                                   style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 22,
+                                                    fontSize: 16,
                                                     height: 1.4,
                                                   ),
+                                                ),
+                                              ),
+                                              subtitle: Text(
+                                                '${property.price} AED',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 22,
+                                                  height: 1.4,
                                                 ),
                                               ),
                                             ),

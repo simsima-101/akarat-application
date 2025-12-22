@@ -5,6 +5,7 @@ import 'package:Akarat/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -924,8 +925,8 @@ class _FliterListState extends State<FliterList> {
                                   height: filterProvider
                                               .filterListSelectedPropType ==
                                           null
-                                      ? 220
-                                      : screenSize.height * 0.35,
+                                      ? 250
+                                      : screenSize.height * 0.38,
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 20),
                                   decoration:
@@ -1143,7 +1144,9 @@ class _FliterListState extends State<FliterList> {
                                                 },
                                                 child: Container(
                                                   margin: const EdgeInsets
-                                                      .symmetric(horizontal: 8),
+                                                      .symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 4),
                                                   padding: const EdgeInsets
                                                       .symmetric(
                                                       horizontal: 15,
@@ -1162,7 +1165,7 @@ class _FliterListState extends State<FliterList> {
                                                             .withOpacity(0.3),
                                                         blurRadius: 4,
                                                         offset:
-                                                            const Offset(0, 2),
+                                                            const Offset(0, 0),
                                                       ),
                                                     ],
                                                   ),
@@ -1353,210 +1356,235 @@ class _FliterListState extends State<FliterList> {
                                 return Container(
                                   height: screenSize.height * 0.38,
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 20),
+                                      horizontal: 0, vertical: 20),
                                   decoration:
                                       const BoxDecoration(color: Colors.white),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        "Price range",
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: const Text(
+                                          "Price range",
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
+                                        ),
                                       ),
                                       const SizedBox(height: 12),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          _rangeDisplayBox(priceRangeState
-                                              .filterListValues.start
-                                              .toStringAsFixed(0)),
-                                          const Text("to",
-                                              style: TextStyle(fontSize: 15)),
-                                          _rangeDisplayBox(priceRangeState
-                                              .filterListValues.end
-                                              .toStringAsFixed(0)),
-                                        ],
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            _rangeDisplayBox(priceRangeState
+                                                .filterListValues.start
+                                                .toStringAsFixed(0)),
+                                            const Text("to",
+                                                style: TextStyle(fontSize: 15)),
+                                            _rangeDisplayBox(priceRangeState
+                                                .filterListValues.end
+                                                .toStringAsFixed(0)),
+                                          ],
+                                        ),
                                       ),
                                       const SizedBox(height: 16),
-                                      SfRangeSelectorTheme(
-                                        data: SfRangeSelectorThemeData(
-                                          tooltipBackgroundColor: Colors.black,
-                                          tooltipTextStyle: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 5),
+                                        child: SfRangeSelectorTheme(
+                                          data: SfRangeSelectorThemeData(
+                                            tooltipBackgroundColor:
+                                                Colors.black,
+                                            tooltipTextStyle: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                        child: SfRangeSelector(
-                                          min: 500,
-                                          max: 300000,
-                                          interval: 10000,
-                                          activeColor: const Color(0xFF2575D4),
-                                          inactiveColor:
-                                              const Color(0x80F1EEEE),
-                                          enableTooltip: true,
-                                          shouldAlwaysShowTooltip: true,
-                                          initialValues:
-                                              priceRangeState.filterListValues,
-                                          tooltipTextFormatterCallback:
-                                              (actualValue, _) =>
-                                                  'AED ${actualValue.toInt()}',
-                                          onChanged: (value) {
-                                            // setModalState(() {
-                                            double roundedMin =
-                                                ((value.start / 100).round() *
-                                                        100)
-                                                    .toDouble();
-                                            double roundedMax =
-                                                ((value.end / 100).round() *
-                                                        100)
-                                                    .toDouble();
+                                          child: SfRangeSelector(
+                                            min: 500,
+                                            max: 300000,
+                                            interval: 10000,
+                                            activeColor:
+                                                const Color(0xFF2575D4),
+                                            inactiveColor:
+                                                const Color(0x80F1EEEE),
+                                            enableTooltip: true,
+                                            shouldAlwaysShowTooltip: true,
+                                            initialValues: priceRangeState
+                                                .filterListValues,
+                                            tooltipTextFormatterCallback:
+                                                (actualValue, _) =>
+                                                    'AED ${actualValue.toInt()}',
+                                            onChanged: (value) {
+                                              // setModalState(() {
+                                              double roundedMin =
+                                                  ((value.start / 100).round() *
+                                                          100)
+                                                      .toDouble();
+                                              double roundedMax =
+                                                  ((value.end / 100).round() *
+                                                          100)
+                                                      .toDouble();
 
-                                            // priceRangeState.filterListValues =
-                                            //     SfRangeValues(
-                                            //         roundedMin, roundedMax);
-                                            //
-                                            // min_price =
-                                            //     roundedMin.toStringAsFixed(0);
-                                            // max_price =
-                                            //     roundedMax.toStringAsFixed(0);
+                                              // priceRangeState.filterListValues =
+                                              //     SfRangeValues(
+                                              //         roundedMin, roundedMax);
+                                              //
+                                              // min_price =
+                                              //     roundedMin.toStringAsFixed(0);
+                                              // max_price =
+                                              //     roundedMax.toStringAsFixed(0);
 
-                                            filterProvider
-                                                .setSelectedFilterRangePriceRange(
-                                              minPrice: roundedMin,
-                                              maxPrice: roundedMax,
-                                            );
-                                            // });
-                                          },
-                                          child: SizedBox(
-                                            height: 60,
-                                            width: double.infinity,
-                                            child: SfCartesianChart(
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              plotAreaBorderColor:
-                                                  Colors.transparent,
-                                              margin: const EdgeInsets.all(0),
-                                              primaryXAxis: NumericAxis(
-                                                  minimum: 500,
-                                                  maximum: 10000,
-                                                  isVisible: false),
-                                              primaryYAxis:
-                                                  NumericAxis(isVisible: false),
-                                              plotAreaBorderWidth: 0,
-                                              plotAreaBackgroundColor:
-                                                  Colors.transparent,
-                                              series: <ColumnSeries<Data,
-                                                  double>>[
-                                                ColumnSeries<Data, double>(
-                                                  dataSource: chartData,
-                                                  xValueMapper:
-                                                      (Data sales, _) =>
-                                                          sales.x,
-                                                  yValueMapper:
-                                                      (Data sales, _) =>
-                                                          sales.y,
-                                                  pointColorMapper: (_, __) =>
-                                                      const Color.fromARGB(
-                                                          255, 37, 117, 212),
-                                                  animationDuration: 0,
-                                                  borderWidth: 0,
-                                                ),
-                                              ],
+                                              filterProvider
+                                                  .setSelectedFilterRangePriceRange(
+                                                minPrice: roundedMin,
+                                                maxPrice: roundedMax,
+                                              );
+                                              // });
+
+                                              // Trigger light haptic feedback on slide
+                                              HapticFeedback.selectionClick();
+                                            },
+                                            child: SizedBox(
+                                              height: 60,
+                                              width: double.infinity,
+                                              child: SfCartesianChart(
+                                                backgroundColor:
+                                                    Colors.transparent,
+                                                plotAreaBorderColor:
+                                                    Colors.transparent,
+                                                margin: const EdgeInsets.all(0),
+                                                primaryXAxis: NumericAxis(
+                                                    minimum: 500,
+                                                    maximum: 10000,
+                                                    isVisible: false),
+                                                primaryYAxis: NumericAxis(
+                                                    isVisible: false),
+                                                plotAreaBorderWidth: 0,
+                                                plotAreaBackgroundColor:
+                                                    Colors.transparent,
+                                                series: <ColumnSeries<Data,
+                                                    double>>[
+                                                  ColumnSeries<Data, double>(
+                                                    dataSource: chartData,
+                                                    xValueMapper:
+                                                        (Data sales, _) =>
+                                                            sales.x,
+                                                    yValueMapper:
+                                                        (Data sales, _) =>
+                                                            sales.y,
+                                                    pointColorMapper: (_, __) =>
+                                                        const Color.fromARGB(
+                                                            255, 37, 117, 212),
+                                                    animationDuration: 0,
+                                                    borderWidth: 0,
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
                                       const SizedBox(height: 20),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: 45,
-                                        child: ElevatedButton(
-                                          onPressed: () async {
-                                            // await _resetPagingAndFetch();
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          height: 45,
+                                          child: ElevatedButton(
+                                            onPressed: () async {
+                                              // await _resetPagingAndFetch();
 
-                                            double finalMinPrice = double.parse(
+                                              double finalMinPrice =
+                                                  double.parse(filterProvider
+                                                      .filterList_Min_price);
+                                              double finalMaxPrice =
+                                                  double.parse(filterProvider
+                                                      .filterList_Max_price);
+
+                                              // filterProvider
+                                              //     .setSelectedFilterRangePriceRange(
+                                              //         minPrice: finalMinPrice,
+                                              //         maxPrice: finalMaxPrice);
+
+                                              setState(() {
+                                                filterProvider.values =
+                                                    SfRangeValues(finalMinPrice,
+                                                        finalMaxPrice);
+
                                                 filterProvider
-                                                    .filterList_Min_price);
-                                            double finalMaxPrice = double.parse(
+                                                    .priceRangeController
+                                                    .start = finalMinPrice;
                                                 filterProvider
-                                                    .filterList_Max_price);
+                                                    .priceRangeController
+                                                    .end = finalMaxPrice;
 
-                                            // filterProvider
-                                            //     .setSelectedFilterRangePriceRange(
-                                            //         minPrice: finalMinPrice,
-                                            //         maxPrice: finalMaxPrice);
-
-                                            setState(() {
-                                              filterProvider.values =
-                                                  SfRangeValues(finalMinPrice,
-                                                      finalMaxPrice);
-
-                                              filterProvider
-                                                  .priceRangeController
-                                                  .start = finalMinPrice;
-                                              filterProvider
-                                                  .priceRangeController
-                                                  .end = finalMaxPrice;
-
-                                              filterProvider.min_price =
-                                                  finalMinPrice
-                                                      .toStringAsFixed(0);
-                                              filterProvider.max_price =
-                                                  finalMaxPrice
-                                                      .toStringAsFixed(0);
-
-                                              // ✅ Force update min only if not currently editing, or if value actually changed
-                                              if (!filterProvider.isMinTyping ||
-                                                  filterProvider
-                                                          .minPriceController
-                                                          .text !=
-                                                      finalMinPrice
-                                                          .toStringAsFixed(0)) {
-                                                filterProvider
-                                                        .minPriceController
-                                                        .text =
+                                                filterProvider.min_price =
                                                     finalMinPrice
                                                         .toStringAsFixed(0);
-                                              }
-
-                                              if (!filterProvider.isMaxTyping ||
-                                                  filterProvider
-                                                          .maxPriceController
-                                                          .text !=
-                                                      finalMaxPrice
-                                                          .toStringAsFixed(0)) {
-                                                filterProvider
-                                                        .maxPriceController
-                                                        .text =
+                                                filterProvider.max_price =
                                                     finalMaxPrice
                                                         .toStringAsFixed(0);
-                                              }
-                                            });
 
-                                            await filterProvider
-                                                .updateFilterCount(context);
+                                                // ✅ Force update min only if not currently editing, or if value actually changed
+                                                if (!filterProvider
+                                                        .isMinTyping ||
+                                                    filterProvider
+                                                            .minPriceController
+                                                            .text !=
+                                                        finalMinPrice
+                                                            .toStringAsFixed(
+                                                                0)) {
+                                                  filterProvider
+                                                          .minPriceController
+                                                          .text =
+                                                      finalMinPrice
+                                                          .toStringAsFixed(0);
+                                                }
 
-                                            _scrollController.jumpTo(0);
+                                                if (!filterProvider
+                                                        .isMaxTyping ||
+                                                    filterProvider
+                                                            .maxPriceController
+                                                            .text !=
+                                                        finalMaxPrice
+                                                            .toStringAsFixed(
+                                                                0)) {
+                                                  filterProvider
+                                                          .maxPriceController
+                                                          .text =
+                                                      finalMaxPrice
+                                                          .toStringAsFixed(0);
+                                                }
+                                              });
 
-                                            Navigator.pop(
-                                                context); // Close the bottom sheet after showing result
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(6)),
-                                          ),
-                                          child: const Text(
-                                            "Showing Results",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15),
+                                              await filterProvider
+                                                  .updateFilterCount(context);
+
+                                              _scrollController.jumpTo(0);
+
+                                              Navigator.pop(
+                                                  context); // Close the bottom sheet after showing result
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(6)),
+                                            ),
+                                            child: const Text(
+                                              "Showing Results",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -1641,216 +1669,243 @@ class _FliterListState extends State<FliterList> {
                                 return Container(
                                   height: screenSize.height * 0.38,
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 20),
+                                      horizontal: 0, vertical: 20),
                                   decoration:
                                       const BoxDecoration(color: Colors.white),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        "Area Range",
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          _rangeDisplayBox(areaSizeState
-                                              .filterListValuesArea.start
-                                              .toStringAsFixed(0)),
-                                          const Text("to",
-                                              style: TextStyle(fontSize: 15)),
-                                          _rangeDisplayBox(areaSizeState
-                                              .filterListValuesArea.end
-                                              .toStringAsFixed(0)),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      SfRangeSelectorTheme(
-                                        data: SfRangeSelectorThemeData(
-                                          tooltipBackgroundColor: Colors.black,
-                                          tooltipTextStyle: const TextStyle(
-                                              color: Colors.white,
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: const Text(
+                                          "Area Range",
+                                          style: TextStyle(
+                                              fontSize: 16,
                                               fontWeight: FontWeight.bold),
                                         ),
-                                        child: SfRangeSelector(
-                                          min: 0,
-                                          max: 10000,
-                                          interval: 1000,
-                                          initialValues: areaSizeState
-                                              .filterListValuesArea,
-                                          enableTooltip: true,
-                                          shouldAlwaysShowTooltip: true,
-                                          activeColor: const Color(0xFF2575D4),
-                                          inactiveColor:
-                                              const Color(0x80F1EEEE),
-                                          // controller:
-                                          //     areaSizeState.areaRangeController,
-                                          onChanged: (value) async {
-                                            // await filterProvider
-                                            //     .setSelectedAreaRange(context,
-                                            //         value: value);
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            _rangeDisplayBox(areaSizeState
+                                                .filterListValuesArea.start
+                                                .toStringAsFixed(0)),
+                                            const Text("to",
+                                                style: TextStyle(fontSize: 15)),
+                                            _rangeDisplayBox(areaSizeState
+                                                .filterListValuesArea.end
+                                                .toStringAsFixed(0)),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 5),
+                                        child: SfRangeSelectorTheme(
+                                          data: SfRangeSelectorThemeData(
+                                            tooltipBackgroundColor:
+                                                Colors.black,
+                                            tooltipTextStyle: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          child: SfRangeSelector(
+                                            min: 0,
+                                            max: 10000,
+                                            interval: 1000,
+                                            initialValues: areaSizeState
+                                                .filterListValuesArea,
+                                            enableTooltip: true,
+                                            shouldAlwaysShowTooltip: true,
+                                            activeColor:
+                                                const Color(0xFF2575D4),
+                                            inactiveColor:
+                                                const Color(0x80F1EEEE),
+                                            // controller:
+                                            //     areaSizeState.areaRangeController,
+                                            onChanged: (value) async {
+                                              // await filterProvider
+                                              //     .setSelectedAreaRange(context,
+                                              //         value: value);
 
-                                            double roundedMin =
-                                                ((value.start / 100).round() *
-                                                        100)
-                                                    .toDouble();
-                                            double roundedMax =
-                                                ((value.end / 100).round() *
-                                                        100)
-                                                    .toDouble();
+                                              double roundedMin =
+                                                  ((value.start / 100).round() *
+                                                          100)
+                                                      .toDouble();
+                                              double roundedMax =
+                                                  ((value.end / 100).round() *
+                                                          100)
+                                                      .toDouble();
 
-                                            areaSizeState
-                                                .setSelectedFilterListAreaSize(
-                                              minSqrFeet: roundedMin,
-                                              maxSqrFeet: roundedMax,
-                                            );
-                                          },
-                                          child: SizedBox(
-                                            height: 70,
-                                            width: double.infinity,
-                                            child: SfCartesianChart(
-                                              plotAreaBorderColor:
-                                                  Colors.transparent,
-                                              margin: const EdgeInsets.all(0),
-                                              primaryXAxis: NumericAxis(
-                                                  minimum: 0,
-                                                  maximum: 10000,
-                                                  isVisible: false),
-                                              primaryYAxis:
-                                                  NumericAxis(isVisible: false),
-                                              plotAreaBorderWidth: 0,
-                                              plotAreaBackgroundColor:
-                                                  Colors.transparent,
-                                              series: <ColumnSeries<Dataarea,
-                                                  double>>[
-                                                ColumnSeries<Dataarea, double>(
-                                                  dataSource: areaSizeState
-                                                      .chartDataarea,
-                                                  selectionBehavior:
-                                                      SelectionBehavior(
-                                                    unselectedOpacity: 0,
-                                                    selectedOpacity: 0,
-                                                    unselectedColor:
-                                                        Colors.transparent,
-                                                    // selectionController:
-                                                    // areaSizeState
-                                                    //     .rangeControllerarea,
+                                              areaSizeState
+                                                  .setSelectedFilterListAreaSize(
+                                                minSqrFeet: roundedMin,
+                                                maxSqrFeet: roundedMax,
+                                              );
+                                              // Trigger light haptic feedback on slide
+                                              HapticFeedback.selectionClick();
+                                            },
+                                            child: SizedBox(
+                                              height: 70,
+                                              width: double.infinity,
+                                              child: SfCartesianChart(
+                                                plotAreaBorderColor:
+                                                    Colors.transparent,
+                                                margin: const EdgeInsets.all(0),
+                                                primaryXAxis: NumericAxis(
+                                                    minimum: 0,
+                                                    maximum: 10000,
+                                                    isVisible: false),
+                                                primaryYAxis: NumericAxis(
+                                                    isVisible: false),
+                                                plotAreaBorderWidth: 0,
+                                                plotAreaBackgroundColor:
+                                                    Colors.transparent,
+                                                series: <ColumnSeries<Dataarea,
+                                                    double>>[
+                                                  ColumnSeries<Dataarea,
+                                                      double>(
+                                                    dataSource: areaSizeState
+                                                        .chartDataarea,
+                                                    selectionBehavior:
+                                                        SelectionBehavior(
+                                                      unselectedOpacity: 0,
+                                                      selectedOpacity: 0,
+                                                      unselectedColor:
+                                                          Colors.transparent,
+                                                      // selectionController:
+                                                      // areaSizeState
+                                                      //     .rangeControllerarea,
+                                                    ),
+                                                    xValueMapper:
+                                                        (Dataarea sales,
+                                                                int index) =>
+                                                            sales.x,
+                                                    yValueMapper:
+                                                        (Dataarea sales,
+                                                                int index) =>
+                                                            sales.y,
+                                                    pointColorMapper: (Dataarea
+                                                                sales,
+                                                            int index) =>
+                                                        const Color.fromARGB(
+                                                            255, 37, 117, 212),
+                                                    dashArray: const <double>[
+                                                      5,
+                                                      3
+                                                    ],
+                                                    animationDuration: 0,
+                                                    borderWidth: 0,
                                                   ),
-                                                  xValueMapper: (Dataarea sales,
-                                                          int index) =>
-                                                      sales.x,
-                                                  yValueMapper: (Dataarea sales,
-                                                          int index) =>
-                                                      sales.y,
-                                                  pointColorMapper:
-                                                      (Dataarea sales,
-                                                              int index) =>
-                                                          const Color.fromARGB(
-                                                              255,
-                                                              37,
-                                                              117,
-                                                              212),
-                                                  dashArray: const <double>[
-                                                    5,
-                                                    3
-                                                  ],
-                                                  animationDuration: 0,
-                                                  borderWidth: 0,
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
                                       const SizedBox(height: 20),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: 45,
-                                        child: ElevatedButton(
-                                          onPressed: () async {
-                                            // await _resetPagingAndFetch();
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          height: 45,
+                                          child: ElevatedButton(
+                                            onPressed: () async {
+                                              // await _resetPagingAndFetch();
 
-                                            double finalMinSqrFeet =
-                                                double.parse(filterProvider
-                                                    .filterList_Min_sqr_feet);
-                                            double finalMaxSqrFeet =
-                                                double.parse(filterProvider
-                                                    .filterList_Max_sqr_feet);
+                                              double finalMinSqrFeet =
+                                                  double.parse(filterProvider
+                                                      .filterList_Min_sqr_feet);
+                                              double finalMaxSqrFeet =
+                                                  double.parse(filterProvider
+                                                      .filterList_Max_sqr_feet);
 
-                                            // filterProvider
-                                            //     .setSelectedFilterRangePriceRange(
-                                            //         minPrice: finalMinPrice,
-                                            //         maxPrice: finalMaxPrice);
+                                              // filterProvider
+                                              //     .setSelectedFilterRangePriceRange(
+                                              //         minPrice: finalMinPrice,
+                                              //         maxPrice: finalMaxPrice);
 
-                                            setState(() {
-                                              filterProvider.areaRangeController
-                                                  .start = finalMinSqrFeet;
-                                              filterProvider.areaRangeController
-                                                  .end = finalMaxSqrFeet;
-                                              filterProvider
-                                                      .filterListValuesArea =
-                                                  SfRangeValues(finalMinSqrFeet,
-                                                      finalMaxSqrFeet);
-                                              filterProvider.min_sqrfeet =
-                                                  finalMinSqrFeet
-                                                      .toStringAsFixed(0);
-                                              filterProvider.max_sqrfeet =
-                                                  finalMaxSqrFeet
-                                                      .toStringAsFixed(0);
-
-                                              // ✅ Force update min only if not currently editing, or if value actually changed
-                                              if (!filterProvider
-                                                      .isMinAreaTyping ||
-                                                  filterProvider
-                                                          .minAreaController
-                                                          .text !=
-                                                      finalMinSqrFeet
-                                                          .toStringAsFixed(0)) {
-                                                filterProvider.minAreaController
-                                                        .text =
+                                              setState(() {
+                                                filterProvider
+                                                    .areaRangeController
+                                                    .start = finalMinSqrFeet;
+                                                filterProvider
+                                                    .areaRangeController
+                                                    .end = finalMaxSqrFeet;
+                                                filterProvider
+                                                        .filterListValuesArea =
+                                                    SfRangeValues(
+                                                        finalMinSqrFeet,
+                                                        finalMaxSqrFeet);
+                                                filterProvider.min_sqrfeet =
                                                     finalMinSqrFeet
                                                         .toStringAsFixed(0);
-                                              }
-
-                                              if (!filterProvider
-                                                      .isMaxAreaTyping ||
-                                                  filterProvider
-                                                          .maxAreaController
-                                                          .text !=
-                                                      finalMaxSqrFeet
-                                                          .toStringAsFixed(0)) {
-                                                filterProvider.maxAreaController
-                                                        .text =
+                                                filterProvider.max_sqrfeet =
                                                     finalMaxSqrFeet
                                                         .toStringAsFixed(0);
-                                              }
-                                            });
 
-                                            await filterProvider
-                                                .updateFilterCount(context);
+                                                // ✅ Force update min only if not currently editing, or if value actually changed
+                                                if (!filterProvider
+                                                        .isMinAreaTyping ||
+                                                    filterProvider
+                                                            .minAreaController
+                                                            .text !=
+                                                        finalMinSqrFeet
+                                                            .toStringAsFixed(
+                                                                0)) {
+                                                  filterProvider
+                                                          .minAreaController
+                                                          .text =
+                                                      finalMinSqrFeet
+                                                          .toStringAsFixed(0);
+                                                }
 
-                                            _scrollController.jumpTo(0);
+                                                if (!filterProvider
+                                                        .isMaxAreaTyping ||
+                                                    filterProvider
+                                                            .maxAreaController
+                                                            .text !=
+                                                        finalMaxSqrFeet
+                                                            .toStringAsFixed(
+                                                                0)) {
+                                                  filterProvider
+                                                          .maxAreaController
+                                                          .text =
+                                                      finalMaxSqrFeet
+                                                          .toStringAsFixed(0);
+                                                }
+                                              });
 
-                                            Navigator.pop(
-                                                context); // Close the bottom sheet after showing result
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(6)),
-                                          ),
-                                          child: const Text(
-                                            "Showing Results",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15),
+                                              await filterProvider
+                                                  .updateFilterCount(context);
+
+                                              _scrollController.jumpTo(0);
+
+                                              Navigator.pop(
+                                                  context); // Close the bottom sheet after showing result
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(6)),
+                                            ),
+                                            child: const Text(
+                                              "Showing Results",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15),
+                                            ),
                                           ),
                                         ),
                                       ),

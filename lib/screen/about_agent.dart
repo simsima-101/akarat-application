@@ -12,6 +12,7 @@ import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -1428,12 +1429,25 @@ class _AboutAgentState extends State<AboutAgent> {
                                                                         imageUrl,
                                                                     fit: BoxFit
                                                                         .cover,
-                                                                    placeholder:
-                                                                        (context,
-                                                                                url) =>
-                                                                            const Center(
+                                                                    placeholder: (context,
+                                                                            url) =>
+                                                                        Shimmer
+                                                                            .fromColors(
+                                                                      baseColor: Colors
+                                                                          .grey
+                                                                          .shade300,
+                                                                      highlightColor: Colors
+                                                                          .grey
+                                                                          .shade100,
                                                                       child:
-                                                                          CircularProgressIndicator(),
+                                                                          Container(
+                                                                        width: double
+                                                                            .infinity,
+                                                                        height:
+                                                                            200,
+                                                                        color: Colors
+                                                                            .white,
+                                                                      ),
                                                                     ),
                                                                     errorWidget: (context,
                                                                             url,

@@ -1031,6 +1031,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
           final officialDescription =
               first['property']?['propertyDescription']?.toString() ?? '';
 
+          debugPrint(" property description: $officialDescription");
           setState(() {
             _fullDescription = officialDescription.trim().isNotEmpty
                 ? officialDescription.trim()
@@ -1688,38 +1689,42 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   ),
                   const SizedBox(height: 8),
                   GestureDetector(
-                    onTap: _hasExpandedDescription || _isLoadingFullDescription
-                        ? null
-                        : _fetchFullVerifiedDescription,
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200),
+                    // onTap: _hasExpandedDescription || _isLoadingFullDescription
+                    //     ? null
+                    //     : _fetchFullVerifiedDescription,
+                    child: SelectionArea(
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child:
+                            // _isLoadingFullDescription
+                            //     ? const Row(
+                            //         mainAxisSize: MainAxisSize.min,
+                            //         children: [
+                            //           SizedBox(
+                            //             width: 16,
+                            //             height: 16,
+                            //             child:
+                            //                 CircularProgressIndicator(strokeWidth: 2),
+                            //           ),
+                            //           SizedBox(width: 10),
+                            //           Text("Loading full description..."),
+                            //         ],
+                            //       )
+                            //     :
+                            HtmlExpandableText(
+                          htmlContent: _hasExpandedDescription
+                              ? _fullDescription.replaceAll('\r\n', '<br>')
+                              : (property.description ?? '')
+                                  .replaceAll('\r\n', '<br>')
+                                  .replaceAll('\n', '<br>'),
+                        ),
                       ),
-                      child: _isLoadingFullDescription
-                          ? const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2),
-                                ),
-                                SizedBox(width: 10),
-                                Text("Loading full description..."),
-                              ],
-                            )
-                          : HtmlExpandableText(
-                              htmlContent: _hasExpandedDescription
-                                  ? _fullDescription.replaceAll('\r\n', '<br>')
-                                  : (property.description ?? '')
-                                      .replaceAll('\r\n', '<br>')
-                                      .replaceAll('\n', '<br>'),
-                            ),
                     ),
                   ),
                   if (_hasExpandedDescription)
@@ -1939,7 +1944,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           if (officialProjectName != null ||
                               officialDeveloperName != null ||
                               dldAgencyName != null) ...[
-                            const Divider(height: 32, thickness: 1),
+                            // const Divider(height: 32, thickness: 1),
 
                             // ✅ Project / Developer ONLY official values
                             if (officialProjectName != null)
@@ -2027,13 +2032,14 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 6),
                         child: Card(
+                          color: Colors.white,
                           elevation: 4,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 6),
+                                horizontal: 12, vertical: 6),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -2045,11 +2051,17 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 6),
                                 SizedBox(
                                   height: 28,
                                   child: ElevatedButton(
                                     style: ElevatedButton.styleFrom(
+                                      side: const BorderSide(
+                                        color: Colors.grey, // border color
+                                        width: 0.4, // border width
+                                      ),
+                                      elevation: 1,
+                                      backgroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 12),
                                       textStyle: const TextStyle(fontSize: 12),
@@ -2066,7 +2078,11 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                         ),
                                       );
                                     },
-                                    child: const Text("View on map"),
+                                    child: const Text(
+                                      "View on map",
+                                      style: TextStyle(
+                                          color: Colors.black, fontSize: 13),
+                                    ),
                                   ),
                                 ),
                               ],
