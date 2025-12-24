@@ -171,243 +171,232 @@ class _SupportState extends State<Support> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.sizeOf(context);
 
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const My_Account()),
-        );
-        return false; // prevent default pop
-      },
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 1,
-          iconTheme: const IconThemeData(color: Colors.red),
-          title: const Text(
-            "Contact Us",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-              color: Colors.black,
-            ),
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.red),
+        title: const Text(
+          "Contact Us",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: Colors.black,
           ),
-          centerTitle: true,
         ),
-        bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
+        centerTitle: true,
+      ),
+      bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
 
-        // ✅ Let content scroll naturally, no fixed heights
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Ask us anything?",
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
+      // ✅ Let content scroll naturally, no fixed heights
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Ask us anything?",
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
               ),
-              const SizedBox(height: 12),
+            ),
+            const SizedBox(height: 12),
 
-              // 🔒 Wrap all fields in a Form so validators run
-              Form(
-                key: _formKey,
-                child: Container(
-                  // ❌ NO fixed height here – this was causing overflow
-                  width: screenSize.width, // let padding manage insets
-                  margin: const EdgeInsets.only(top: 10),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Name
-                      _label("Name"),
-                      _boxedField(
-                        child: TextFormField(
-                          controller: nameController,
-                          keyboardType: TextInputType.name,
-                          validator: (v) => _required(v, 'Name'),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          textAlign: TextAlign.left,
+            // 🔒 Wrap all fields in a Form so validators run
+            Form(
+              key: _formKey,
+              child: Container(
+                // ❌ NO fixed height here – this was causing overflow
+                width: screenSize.width, // let padding manage insets
+                margin: const EdgeInsets.only(top: 10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Name
+                    _label("Name"),
+                    _boxedField(
+                      child: TextFormField(
+                        controller: nameController,
+                        keyboardType: TextInputType.name,
+                        validator: (v) => _required(v, 'Name'),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(vertical: 12),
                         ),
+                        textAlign: TextAlign.left,
                       ),
+                    ),
 
-                      // Email
-                      _label("Email Address"),
-                      _boxedField(
-                        child: TextFormField(
-                          controller: emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          validator: _validateEmail,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          textAlign: TextAlign.left,
+                    // Email
+                    _label("Email Address"),
+                    _boxedField(
+                      child: TextFormField(
+                        controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: _validateEmail,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(vertical: 12),
                         ),
+                        textAlign: TextAlign.left,
                       ),
+                    ),
 
-                      // Phone
-                      _label("Phone Number"),
-                      _boxedField(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Country Code Picker
-                            CountryCodePicker(
-                              onChanged: (code) {
-                                setState(() {
-                                  selectedCountryCode = code.dialCode ?? "+971";
-                                  final intlCountry =
-                                      IntlCountryData.fromCountryCodeAlpha2(
-                                          code.code ?? "AE");
+                    // Phone
+                    _label("Phone Number"),
+                    _boxedField(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Country Code Picker
+                          CountryCodePicker(
+                            onChanged: (code) {
+                              setState(() {
+                                selectedCountryCode = code.dialCode ?? "+971";
+                                final intlCountry =
+                                    IntlCountryData.fromCountryCodeAlpha2(
+                                        code.code ?? "AE");
 
-                                  phoneController.clear();
+                                phoneController.clear();
 
-                                  _maxPhoneLength =
-                                      intlCountry.telephoneMaxLength;
-                                });
-                              },
-                              initialSelection: 'AE', // UAE default
-                              favorite: const [],
-                              showDropDownButton: false,
-                              showCountryOnly: false,
-                              showOnlyCountryWhenClosed: false,
-                              alignLeft: false,
-                              margin:
-                                  EdgeInsetsGeometry.only(left: 0, right: 8),
-                              padding: EdgeInsetsGeometry.all(0),
-                              headerTextStyle: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w700),
-                              closeIcon: Icon(
-                                Icons.close,
-                                size: 25,
+                                _maxPhoneLength =
+                                    intlCountry.telephoneMaxLength;
+                              });
+                            },
+                            initialSelection: 'AE', // UAE default
+                            favorite: const [],
+                            showDropDownButton: false,
+                            showCountryOnly: false,
+                            showOnlyCountryWhenClosed: false,
+                            alignLeft: false,
+                            margin: EdgeInsetsGeometry.only(left: 0, right: 8),
+                            padding: EdgeInsetsGeometry.all(0),
+                            headerTextStyle: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w700),
+                            closeIcon: Icon(
+                              Icons.close,
+                              size: 25,
+                            ),
+                            dialogSize: Size(double.infinity, 700),
+
+                            searchDecoration: InputDecoration(
+                              hintText: 'Search country',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
-                              dialogSize: Size(double.infinity, 700),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                            ),
+                            dialogItemPadding: EdgeInsetsGeometry.symmetric(
+                                horizontal: 12, vertical: 13),
+                            // topBarPadding: EdgeInsets.only(bottom: 20),
+                            searchPadding: EdgeInsetsGeometry.only(
+                                bottom: 10, left: 10, right: 10),
+                          ),
 
-                              searchDecoration: InputDecoration(
-                                hintText: 'Search country',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade300),
-                                ),
+                          // Phone number Input
+                          Expanded(
+                            child: TextFormField(
+                              controller: phoneController,
+
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly
+                              ],
+                              maxLength: _maxPhoneLength ??
+                                  9, // Fallback default if no country selected
+                              keyboardType: TextInputType.phone,
+                              validator: _validatePhone,
+                              decoration: const InputDecoration(
+                                counterText: '',
+                                border: InputBorder.none,
+                                isDense: true,
                                 contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                              ),
-                              dialogItemPadding: EdgeInsetsGeometry.symmetric(
-                                  horizontal: 12, vertical: 13),
-                              // topBarPadding: EdgeInsets.only(bottom: 20),
-                              searchPadding: EdgeInsetsGeometry.only(
-                                  bottom: 10, left: 10, right: 10),
-                            ),
-
-                            // Phone number Input
-                            Expanded(
-                              child: TextFormField(
-                                controller: phoneController,
-
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly
-                                ],
-                                maxLength: _maxPhoneLength ??
-                                    9, // Fallback default if no country selected
-                                keyboardType: TextInputType.phone,
-                                validator: _validatePhone,
-                                decoration: const InputDecoration(
-                                  counterText: '',
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 0),
-                                ),
+                                    vertical: 12, horizontal: 0),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-
-                      // Subject
-                      _label("Subject"),
-                      _boxedField(
-                        child: TextFormField(
-                          controller: subjectController,
-                          keyboardType: TextInputType.text,
-                          validator: (v) => _required(v, 'Subject'),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 12),
                           ),
-                          textAlign: TextAlign.left,
-                        ),
+                        ],
                       ),
+                    ),
 
-                      // Message
-                      _label("Message"),
-                      _boxedField(
-                        child: TextFormField(
-                          controller: messageController,
-                          maxLines: 4,
-                          keyboardType: TextInputType.multiline,
-                          validator: (v) => _required(v, 'Message'),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          textAlign: TextAlign.left,
+                    // Subject
+                    _label("Subject"),
+                    _boxedField(
+                      child: TextFormField(
+                        controller: subjectController,
+                        keyboardType: TextInputType.text,
+                        validator: (v) => _required(v, 'Subject'),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(vertical: 12),
                         ),
+                        textAlign: TextAlign.left,
                       ),
+                    ),
 
-                      const SizedBox(height: 24),
+                    // Message
+                    _label("Message"),
+                    _boxedField(
+                      child: TextFormField(
+                        controller: messageController,
+                        maxLines: 4,
+                        keyboardType: TextInputType.multiline,
+                        validator: (v) => _required(v, 'Message'),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
 
-                      // Submit
-                      SizedBox(
-                        width: double.infinity,
-                        height:
-                            48, // ✅ fixed control height; no screenSize dependency
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : sendMessage,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8)),
-                            ),
+                    const SizedBox(height: 24),
+
+                    // Submit
+                    SizedBox(
+                      width: double.infinity,
+                      height:
+                          48, // ✅ fixed control height; no screenSize dependency
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : sendMessage,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
                           ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 22,
-                                  width: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Text(
-                                  "Submit",
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 15),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
                                 ),
-                        ),
+                              )
+                            : const Text(
+                                "Submit",
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 15),
+                              ),
                       ),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

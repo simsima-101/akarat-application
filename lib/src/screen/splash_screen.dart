@@ -1,8 +1,7 @@
 // lib/screen/splash_screen.dart
 import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
-
-
 
 import '../core/utils/session_manager.dart';
 import 'home.dart';
@@ -67,7 +66,8 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Precache icon and start animation
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await precacheImage(const AssetImage('assets/images/app_icon.png'), context);
+      await precacheImage(
+          const AssetImage('assets/images/app_icon.png'), context);
       if (mounted) _controller.forward();
     });
 
@@ -88,15 +88,30 @@ class _SplashScreenState extends State<SplashScreen>
       if (!mounted) return;
 
       // Always go to Home — guest or logged in
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const Home()),
-      );
+      Navigator.of(context)
+          .pushReplacement(MaterialPageRoute(builder: (_) => const Home()));
+
+      // Navigator.of(context).pushAndRemoveUntil(
+      //   MaterialPageRoute(
+      //       builder: (_) => const MainBottomNavBarScreen(
+      //             currentScreen: ScreenEnum.homeScreen,
+      //           )),
+      //   (Route<dynamic> route) => false, // remove all previous routes
+      // );
     } catch (e) {
       // Even if something fails → still go to Home
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const Home()),
         );
+
+        // Navigator.of(context).pushAndRemoveUntil(
+        //   MaterialPageRoute(
+        //       builder: (_) => const MainBottomNavBarScreen(
+        //             currentScreen: ScreenEnum.homeScreen,
+        //           )),
+        //   (Route<dynamic> route) => false, // remove all previous routes
+        // );
       }
     }
   }
@@ -111,10 +126,26 @@ class _SplashScreenState extends State<SplashScreen>
     const r = 0.2126, g = 0.7152, b = 0.0722;
     final inv = 1 - s;
     return ColorFilter.matrix(<double>[
-      r * inv + s, g * inv,     b * inv,     0, 0,
-      r * inv,     g * inv + s, b * inv,     0, 0,
-      r * inv,     g * inv,     b * inv + s, 0, 0,
-      0,           0,           0,           1, 0,
+      r * inv + s,
+      g * inv,
+      b * inv,
+      0,
+      0,
+      r * inv,
+      g * inv + s,
+      b * inv,
+      0,
+      0,
+      r * inv,
+      g * inv,
+      b * inv + s,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
     ]);
   }
 
