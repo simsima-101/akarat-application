@@ -9,6 +9,7 @@ import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -44,7 +45,7 @@ class AboutAgent extends StatefulWidget {
 class _AboutAgentState extends State<AboutAgent> {
   AgentDetail? agentDetail;
   int pageIndex = 0;
-  final int _currentImageIndex = 0;
+  int _currentImageIndex = 0;
 
   bool isFavorited = false;
   int? property_id;
@@ -53,7 +54,6 @@ class _AboutAgentState extends State<AboutAgent> {
   String email = '';
   String result = '';
   bool isDataRead = false;
-
 
   int _safePropertyId(dynamic id) {
     if (id == null) return 0;
@@ -110,8 +110,8 @@ class _AboutAgentState extends State<AboutAgent> {
     return input; // fallback
   }
 
-
-  Future<bool> markAsContacted(int propertyId, {required String contactType}) async {
+  Future<bool> markAsContacted(int propertyId,
+      {required String contactType}) async {
     if (propertyId <= 0) return false;
 
     await SessionManager().restore();
@@ -136,10 +136,12 @@ class _AboutAgentState extends State<AboutAgent> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint("Successfully marked property $propertyId as contacted via $contactType");
+        debugPrint(
+            "Successfully marked property $propertyId as contacted via $contactType");
         return true;
       } else {
-        debugPrint("Failed to mark contacted: ${response.statusCode} ${response.body}");
+        debugPrint(
+            "Failed to mark contacted: ${response.statusCode} ${response.body}");
         return false;
       }
     } catch (e) {
@@ -147,7 +149,6 @@ class _AboutAgentState extends State<AboutAgent> {
       return false;
     }
   }
-
 
   Future<void> clearAgentPropertiesCache(String user) async {
     final prefs = await SharedPreferences.getInstance();
@@ -1412,7 +1413,12 @@ class _AboutAgentState extends State<AboutAgent> {
                                                                 controller:
                                                                     _pageController,
                                                                 onPageChanged:
-                                                                    (_) {},
+                                                                    (index) {
+                                                                  setState(() {
+                                                                    _currentImageIndex =
+                                                                        index;
+                                                                  });
+                                                                },
                                                                 itemBuilder:
                                                                     (context,
                                                                         imgIndex) {
@@ -1426,12 +1432,25 @@ class _AboutAgentState extends State<AboutAgent> {
                                                                         imageUrl,
                                                                     fit: BoxFit
                                                                         .cover,
-                                                                    placeholder:
-                                                                        (context,
-                                                                                url) =>
-                                                                            const Center(
+                                                                    placeholder: (context,
+                                                                            url) =>
+                                                                        Shimmer
+                                                                            .fromColors(
+                                                                      baseColor: Colors
+                                                                          .grey
+                                                                          .shade300,
+                                                                      highlightColor: Colors
+                                                                          .grey
+                                                                          .shade100,
                                                                       child:
-                                                                          CircularProgressIndicator(),
+                                                                          Container(
+                                                                        width: double
+                                                                            .infinity,
+                                                                        height:
+                                                                            200,
+                                                                        color: Colors
+                                                                            .white,
+                                                                      ),
                                                                     ),
                                                                     errorWidget: (context,
                                                                             url,
@@ -1966,82 +1985,174 @@ class _AboutAgentState extends State<AboutAgent> {
                                                           height: 15),
                                                       Row(
                                                         children: [
-                                                          const SizedBox(width: 10),
+                                                          const SizedBox(
+                                                              width: 10),
                                                           Expanded(
-                                                            child: ElevatedButton.icon(
-                                                              onPressed: () async {
-                                                                final propertyId = _safePropertyId(item.id);
+                                                            child:
+                                                                ElevatedButton
+                                                                    .icon(
+                                                              onPressed:
+                                                                  () async {
+                                                                final propertyId =
+                                                                    _safePropertyId(
+                                                                        item.id);
 
                                                                 // Mark as contacted (CALL)
-                                                                final success = await markAsContacted(propertyId, contactType: "call");
+                                                                final success =
+                                                                    await markAsContacted(
+                                                                        propertyId,
+                                                                        contactType:
+                                                                            "call");
 
-                                                                if (success && mounted) {
-                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                if (success &&
+                                                                    mounted) {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(
                                                                     const SnackBar(
-                                                                      content: Text("Added to contacted properties"),
-                                                                      backgroundColor: Colors.green,
-                                                                      duration: Duration(seconds: 2),
+                                                                      content: Text(
+                                                                          "Added to contacted properties"),
+                                                                      backgroundColor:
+                                                                          Colors
+                                                                              .green,
+                                                                      duration: Duration(
+                                                                          seconds:
+                                                                              2),
                                                                     ),
                                                                   );
                                                                 }
 
-                                                                String phone = 'tel:${phoneCallNumber(item.phoneNumber ?? '')}';
-                                                                if (await canLaunchUrlString(phone)) {
-                                                                  await launchUrlString(phone, mode: LaunchMode.externalApplication);
+                                                                String phone =
+                                                                    'tel:${phoneCallNumber(item.phoneNumber ?? '')}';
+                                                                if (await canLaunchUrlString(
+                                                                    phone)) {
+                                                                  await launchUrlString(
+                                                                      phone,
+                                                                      mode: LaunchMode
+                                                                          .externalApplication);
                                                                 }
                                                               },
-                                                              icon: const Icon(Icons.call, color: Colors.red),
-                                                              label: const Text("Call", style: TextStyle(color: Colors.black)),
-                                                              style: ElevatedButton.styleFrom(
-                                                                backgroundColor: Colors.grey[100],
-                                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                              icon: const Icon(
+                                                                  Icons.call,
+                                                                  color: Colors
+                                                                      .red),
+                                                              label: const Text(
+                                                                  "Call",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .black)),
+                                                              style:
+                                                                  ElevatedButton
+                                                                      .styleFrom(
+                                                                backgroundColor:
+                                                                    Colors.grey[
+                                                                        100],
+                                                                shape: RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            10)),
                                                                 elevation: 2,
-                                                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                        vertical:
+                                                                            12),
                                                               ),
                                                             ),
                                                           ),
-                                                          const SizedBox(width: 10),
+                                                          const SizedBox(
+                                                              width: 10),
                                                           Expanded(
-                                                            child: ElevatedButton.icon(
-                                                              onPressed: () async {
-                                                                final propertyId = _safePropertyId(item.id);
+                                                            child:
+                                                                ElevatedButton
+                                                                    .icon(
+                                                              onPressed:
+                                                                  () async {
+                                                                final propertyId =
+                                                                    _safePropertyId(
+                                                                        item.id);
 
                                                                 // Mark as contacted (WHATSAPP)
-                                                                final success = await markAsContacted(propertyId, contactType: "whatsapp");
+                                                                final success =
+                                                                    await markAsContacted(
+                                                                        propertyId,
+                                                                        contactType:
+                                                                            "whatsapp");
 
-                                                                if (success && mounted) {
-                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                if (success &&
+                                                                    mounted) {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(
                                                                     const SnackBar(
-                                                                      content: Text("Added to contacted properties"),
-                                                                      backgroundColor: Colors.green,
-                                                                      duration: Duration(seconds: 2),
+                                                                      content: Text(
+                                                                          "Added to contacted properties"),
+                                                                      backgroundColor:
+                                                                          Colors
+                                                                              .green,
+                                                                      duration: Duration(
+                                                                          seconds:
+                                                                              2),
                                                                     ),
                                                                   );
                                                                 }
 
-                                                                final phone = whatsAppNumber(item.whatsapp ?? '');
-                                                                final message = Uri.encodeComponent("Hi, I'm interested in your property: ${item.title}");
-                                                                final url = Uri.parse("https://wa.me/$phone?text=$message");
+                                                                final phone =
+                                                                    whatsAppNumber(
+                                                                        item.whatsapp ??
+                                                                            '');
+                                                                final message =
+                                                                    Uri.encodeComponent(
+                                                                        "Hi, I'm interested in your property: ${item.title}");
+                                                                final url =
+                                                                    Uri.parse(
+                                                                        "https://wa.me/$phone?text=$message");
 
-                                                                if (await canLaunchUrl(url)) {
-                                                                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                                if (await canLaunchUrl(
+                                                                    url)) {
+                                                                  await launchUrl(
+                                                                      url,
+                                                                      mode: LaunchMode
+                                                                          .externalApplication);
                                                                 } else {
-                                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                                    const SnackBar(content: Text("WhatsApp not installed")),
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(
+                                                                    const SnackBar(
+                                                                        content:
+                                                                            Text("WhatsApp not installed")),
                                                                   );
                                                                 }
                                                               },
-                                                              icon: Image.asset("assets/images/whats.png", height: 20),
-                                                              label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                                              style: ElevatedButton.styleFrom(
-                                                                backgroundColor: Colors.grey[100],
-                                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                              icon: Image.asset(
+                                                                  "assets/images/whats.png",
+                                                                  height: 20),
+                                                              label: const Text(
+                                                                  "WhatsApp",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .black)),
+                                                              style:
+                                                                  ElevatedButton
+                                                                      .styleFrom(
+                                                                backgroundColor:
+                                                                    Colors.grey[
+                                                                        100],
+                                                                shape: RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            10)),
                                                                 elevation: 2,
-                                                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                        vertical:
+                                                                            12),
                                                               ),
                                                             ),
                                                           ),
-                                                          const SizedBox(width: 10),
+                                                          const SizedBox(
+                                                              width: 10),
                                                         ],
                                                       ),
                                                       const SizedBox(

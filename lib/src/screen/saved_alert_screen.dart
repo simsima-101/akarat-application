@@ -1,8 +1,6 @@
 import 'dart:convert';
 
 
-// Akarat imports
-import 'package:Akarat/src/core/utils/secure_storage.dart';
 
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -10,122 +8,15 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/constants/constants.dart' as ApiService;
+import '../core/utils/secure_storage.dart';
 import '../features/property/data/datasources/favorite_remote_datasource.dart';
+import '../features/property/data/models/saved_alert_model.dart';
+
 import '../utils/fav_logout.dart';
 import 'CreateAlertScreen.dart';
 import 'home.dart';
 import 'login.dart';
-import 'my_account.dart'; // for mailto
-
-// text sizes
-const double _headerFontSize = 12; // smaller header text
-const double _rowFontSize = 11; // reduced row text a bit
-const FontWeight _rowFontWeight = FontWeight.w600;
-
-// --- header-only gaps ---
-const double _hGapNameToTime = 10;
-const double _hGapTimeToPurpose = 1;
-const double _hGapPurposeToType = 8;
-
-// --- row-only gaps ---
-const double _rGapNameToTime = 18;
-const double _rGapTimeToPurpose = 18;
-const double _rGapPurposeToType = 10;
-
-const double _checkColW = 42.0;
-
-/// Read the auth token from secure storage (using your helpers).
-Future<String?> readToken() async {
-  try {
-    return await SecureStorage.getToken();
-  } catch (_) {
-    return null;
-  }
-}
-
-/// -------------------------------- MODEL --------------------------------
-
-class SavedAlert {
-  final int id;
-  final String alertName;
-  final String timePeriod;
-  final String purpose;
-  final String propertyType;
-  final DateTime createdAt;
-
-  SavedAlert({
-    required this.id,
-    required this.alertName,
-    required this.timePeriod,
-    required this.purpose,
-    required this.propertyType,
-    required this.createdAt,
-  });
-
-  factory SavedAlert.fromJson(Map<String, dynamic> j) {
-    DateTime parseDate(dynamic v) {
-      if (v == null) return DateTime.now();
-      final s = v.toString();
-      final d = DateTime.tryParse(s);
-      return d ?? DateTime.now();
-    }
-
-    int parseInt(dynamic v) {
-      if (v is int) return v;
-      return int.tryParse('${v ?? ''}') ?? 0;
-    }
-
-    String canonPurpose(String p) {
-      var s = p.trim().toLowerCase().replaceAll(RegExp(r'[_\s-]+'), ' ');
-      if (s.contains('rent')) return 'Rent';
-      if (s.contains('buy') || s.contains('sale')) return 'Buy';
-      if (s.contains('new')) return 'New Projects';
-      if (s.contains('commercial')) return 'Commercial';
-      return p.isEmpty ? '' : p[0].toUpperCase() + p.substring(1);
-    }
-
-    String tidyType(String t) {
-      final s = t.trim().toLowerCase();
-      if (s.isEmpty || s == 'any') return '';
-      if (s == 'apartments' || s == 'apartment') return 'Apartment';
-      if (s == 'villas' || s == 'villa') return 'Villa';
-      if (s == 'studios' || s == 'studio') return 'Studio';
-      if (s == 'offices' || s == 'office') return 'Office';
-      if (s == 'commercials' || s == 'commercial') return 'Commercial';
-      return s.replaceAll(' ', '_');
-    }
-
-    final name = (j['alert_name'] ?? j['name'] ?? '').toString();
-    final period = (j['time_period'] ?? j['frequency'] ?? '').toString();
-
-    String rawPurpose = (j['purpose'] ?? '').toString();
-    String typeFromPurpose = '';
-    if (rawPurpose.contains('|')) {
-      final parts = rawPurpose.split('|');
-      rawPurpose = parts.isNotEmpty ? parts.first : rawPurpose;
-      typeFromPurpose = parts.length > 1 ? parts[1] : '';
-    }
-
-    String propType =
-        (j['property_type'] ?? j['propertyType'] ?? '').toString();
-    if (propType.isEmpty && typeFromPurpose.isNotEmpty) {
-      propType = tidyType(typeFromPurpose);
-    } else {
-      propType = tidyType(propType);
-    }
-
-    return SavedAlert(
-      id: parseInt(j['id']),
-      alertName: name,
-      timePeriod: period,
-      purpose: canonPurpose(rawPurpose),
-      propertyType: propType,
-      createdAt: parseDate(j['created_at'] ?? j['createdAt']),
-    );
-  }
-}
-
-/// -------------------------------- SCREEN --------------------------------
+import 'my_account.dart';
 
 class SavedAlertsScreen extends StatefulWidget {
   final String? token;
@@ -148,7 +39,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
   int _lastCount = 0;
   bool _deletingAll = false;
 
-  // For bottom nav highlighting (2 = "favorites / alerts" tab)
   int pageIndex = 2;
 
   @override
@@ -358,27 +248,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
     }
   }
 
-  Future<void> _deleteSelected() async {
-    final ids = _selected.toList();
-    for (final id in ids) {
-      final item = _all.firstWhere(
-        (a) => a.id == id,
-        orElse: () => SavedAlert(
-          id: -1,
-          alertName: '',
-          timePeriod: '',
-          purpose: '',
-          propertyType: '',
-          createdAt: DateTime.now(),
-        ),
-      );
-      if (item.id != -1) {
-        await _deleteAlert(item);
-      }
-    }
-    setState(() => _selectAll = false);
-  }
-
   String _relativeTime(DateTime dt) {
     final now = DateTime.now();
     final diff = now.difference(dt);
@@ -411,36 +280,6 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
         _selectAll = false;
       }
     });
-  }
-
-  void _nextPage({bool resetSelection = false}) {
-    if (_page < _totalPages) {
-      _setPage(_page + 1, resetSelection: resetSelection);
-    }
-  }
-
-  void _prevPage({bool resetSelection = false}) {
-    if (_page > 1) {
-      _setPage(_page - 1, resetSelection: resetSelection);
-    }
-  }
-
-  void _toggleSelectAllOnPage(bool value) {
-    setState(() {
-      _selectAll = value;
-      final idsOnPage = _pageItems.map((e) => e.id);
-      if (value) {
-        _selected.addAll(idsOnPage);
-      } else {
-        _selected.removeWhere((id) => idsOnPage.contains(id));
-      }
-    });
-  }
-
-  void _handleBack() {
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    }
   }
 
   /// ------------------------------ NAV BAR (EXACTLY LIKE New_Projects) ------------------------------
@@ -688,15 +527,109 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
     }
   }
 
-  /// ------------------------------ BUILD ------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        top: true,
-        bottom: false, // bottom space handled by bottomNavigationBar
-        child: FutureBuilder<List<SavedAlert>>(
+      bottomNavigationBar: Container(
+        color: Colors.white,
+        child: SafeArea(
+          top: false,
+          child: buildMyNavBar(context),
+        ),
+      ),
+      appBar: AppBar(
+        actions: [
+          if (_all.isNotEmpty) ...[
+            IconButton(
+                tooltip: "How to remove saved alerts",
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      backgroundColor: Colors.white,
+                      titlePadding: EdgeInsets.only(
+                          top: 24, left: 20, right: 20, bottom: 0),
+                      contentPadding: EdgeInsets.only(
+                          top: 18, left: 20, right: 20, bottom: 0),
+                      actionsPadding: EdgeInsets.only(
+                          top: 18, left: 20, right: 30, bottom: 15),
+                      title: const Text(
+                        "How to Remove saved alerts ?",
+                        style: TextStyle(
+                            fontSize: 19, fontWeight: FontWeight.w600),
+                      ),
+                      content: const Text(
+                        "Swipe left on any alert to remove it from your saved list",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w400),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text(
+                            "Got it",
+                            style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                icon: Icon(
+                  Icons.info_outline,
+                  color: Colors.grey[600],
+                )),
+            Gap(5),
+            TextButton(
+                onPressed: () async {
+                  await showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      backgroundColor: Colors.white,
+                      title: const Text("Clear All Saved Alert?"),
+                      content:
+                          const Text("This will remove all your saved alerts."),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text("Cancel",
+                              style: TextStyle(color: Colors.red)),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            if (_all.isEmpty || _deletingAll) {
+                              Navigator.pop(ctx);
+                            } else {
+                              _deleteAllAlerts();
+                              Navigator.pop(ctx);
+                            }
+                          },
+                          child: const Text("Clear",
+                              style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: Text("Clear All",
+                    style: TextStyle(color: Colors.red, fontSize: 15))),
+            Gap(10),
+          ],
+        ],
+        surfaceTintColor: Colors.white,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: const BackButton(color: Colors.red),
+        // title: const Text(
+        //   "My Account",
+        //   style: TextStyle(color: Colors.deepPurpleAccent),
+        // ),
+      ),
+      body: FutureBuilder<List<SavedAlert>>(
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting &&
@@ -715,643 +648,241 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
 
             return Column(
               children: [
-                const SizedBox(height: 8),
-
-                // Back arrow
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    children: [
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(24),
-                          onTap: _handleBack,
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Icon(Icons.arrow_back_ios_new,
-                                size: 20, color: Colors.black87),
+                if (true) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text(
+                          'Saved Alerts',
+                          style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black,
+                              height: 1.1),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '($titleCount)',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFFF4D4D),
+                            height: 1.2,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-
-                const SizedBox(height: 6),
-
-                // Title
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Text(
-                        'Saved Alerts',
+                  const SizedBox(height: 15),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Manage your saved property alerts here',
                         style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black,
-                            height: 1.1),
+                            fontSize: 14, color: Colors.black87, height: 1.2),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '($titleCount)',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFFF4D4D),
-                          height: 1.2,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 15),
-
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Manage your saved property alerts here',
-                      style: TextStyle(
-                          fontSize: 14, color: Colors.black87, height: 1.2),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-
-                const SizedBox(height: 60),
-
-                // Table card – lifted a bit from bottom
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.62,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: const [
-                            BoxShadow(
-                                color: Color(0x14000000),
-                                blurRadius: 12,
-                                offset: Offset(0, 4)),
-                          ],
-                        ),
-                        child: Column(
+                  const SizedBox(height: 10),
+                ],
+                Expanded(
+                  child: _all.isEmpty
+                      ? Center(
+                          child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _headerRow(
-                              onSelectAll: (v) =>
-                                  _toggleSelectAllOnPage(v ?? false),
-                              value: _selectAll,
+                            const Text(
+                              'You haven’t saved any alerts yet.',
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                            const Divider(height: 1, color: Color(0xFFECECEC)),
-                            Expanded(
-                              child: _all.isEmpty
-                                  ? Center(
-                                      child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Text(
-                                          'No saved alerts yet.',
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        Gap(20),
-                                        SizedBox(
-                                            width: 150, // <-- reduce width here
-                                            child: CreateAlertButton(
-                                              disabled:
-                                                  _alertCreated, // true after saving the alert
-                                              onTap:
-                                                  _onCreateAlert, // normal handler
-                                            )),
-                                      ],
-                                    ))
-                                  : ListView.builder(
-                                      physics:
-                                          const AlwaysScrollableScrollPhysics(),
-                                      itemCount: _pageItems.length,
-                                      itemBuilder: (_, i) {
-                                        final a = _pageItems[i];
-                                        final checked =
-                                            _selected.contains(a.id);
-                                        return _dataRow(
-                                          alert: a,
-                                          checked: checked,
-                                          onCheck: (v) {
-                                            setState(() {
-                                              if (v == true) {
-                                                _selected.add(a.id);
-                                              } else {
-                                                _selected.remove(a.id);
-                                              }
-                                              final allOnPageSelected =
-                                                  _pageItems.every((x) =>
-                                                      _selected.contains(x.id));
-                                              _selectAll = allOnPageSelected;
-                                            });
-                                          },
-                                          onDelete: () => _deleteAlert(a),
-                                          createdLabel:
-                                              _relativeTime(a.createdAt),
-                                        );
-                                      },
-                                    ),
-                            ),
-                            if (_all.isNotEmpty)
-                              LayoutBuilder(
-                                builder: (context, cs) {
-                                  final narrow = cs.maxWidth < 420;
-                                  final double txt = narrow ? 12 : 14;
-
-                                  return Padding(
-                                    // 👇 add space under the whole row (Select all / Delete / Pager)
-                                    padding: const EdgeInsets.only(bottom: 5),
-                                    child: Row(
-                                      children: [
-                                        // LEFT controls
-                                        Expanded(
-                                          child: Wrap(
-                                            alignment: WrapAlignment.start,
-                                            crossAxisAlignment:
-                                                WrapCrossAlignment.center,
-                                            spacing: 8,
-                                            runSpacing: 6,
-                                            children: [
-                                              Wrap(
-                                                spacing: 6,
-                                                crossAxisAlignment:
-                                                    WrapCrossAlignment.center,
-                                                children: [
-                                                  Checkbox(
-                                                    visualDensity:
-                                                        VisualDensity.compact,
-                                                    value: _pageItems
-                                                            .isNotEmpty &&
-                                                        _pageItems.every((a) =>
-                                                            _selected.contains(
-                                                                a.id)),
-                                                    onChanged: (v) =>
-                                                        _toggleSelectAllOnPage(
-                                                            v ?? false),
-                                                    materialTapTargetSize:
-                                                        MaterialTapTargetSize
-                                                            .shrinkWrap,
-                                                  ),
-                                                  Text(
-                                                    narrow
-                                                        ? 'Select all'
-                                                        : 'Select all on this page',
-                                                    style: TextStyle(
-                                                        fontSize: txt),
-                                                    softWrap: true,
-                                                  ),
-                                                ],
-                                              ),
-                                              TextButton.icon(
-                                                onPressed: _selected.isEmpty
-                                                    ? null
-                                                    : _deleteSelected,
-                                                icon: Icon(Icons.delete_outline,
-                                                    size: narrow ? 16 : 20),
-                                                label: Text('Delete selected',
-                                                    style: TextStyle(
-                                                        fontSize: txt)),
-                                                style: TextButton.styleFrom(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: narrow ? 8 : 12,
-                                                    vertical: narrow ? 6 : 8,
-                                                  ),
-                                                  minimumSize: Size.zero,
-                                                  tapTargetSize:
-                                                      MaterialTapTargetSize
-                                                          .shrinkWrap,
-                                                  visualDensity:
-                                                      VisualDensity.compact,
-                                                ),
-                                              ),
-                                              TextButton.icon(
-                                                onPressed: (_all.isEmpty ||
-                                                        _deletingAll)
-                                                    ? null
-                                                    : _deleteAllAlerts,
-                                                icon: Icon(
-                                                    Icons
-                                                        .delete_forever_outlined,
-                                                    size: narrow ? 16 : 20),
-                                                label: Text(
-                                                  _deletingAll
-                                                      ? 'Deleting…'
-                                                      : 'Delete all alerts',
-                                                  style:
-                                                      TextStyle(fontSize: txt),
-                                                ),
-                                                style: ButtonStyle(
-                                                  padding:
-                                                      WidgetStatePropertyAll(
-                                                    EdgeInsets.symmetric(
-                                                      horizontal:
-                                                          narrow ? 8 : 12,
-                                                      vertical: narrow ? 6 : 8,
-                                                    ),
-                                                  ),
-                                                  minimumSize:
-                                                      const WidgetStatePropertyAll(
-                                                          Size.zero),
-                                                  tapTargetSize:
-                                                      MaterialTapTargetSize
-                                                          .shrinkWrap,
-                                                  visualDensity:
-                                                      VisualDensity.compact,
-                                                  foregroundColor:
-                                                      WidgetStateProperty
-                                                          .resolveWith<Color?>(
-                                                    (states) => states.contains(
-                                                            WidgetState
-                                                                .disabled)
-                                                        ? Colors.red
-                                                            .withOpacity(0.38)
-                                                        : Colors.red,
-                                                  ),
-                                                  backgroundColor:
-                                                      const WidgetStatePropertyAll(
-                                                          Colors.transparent),
-                                                  overlayColor:
-                                                      WidgetStatePropertyAll(
-                                                          Colors.red
-                                                              .withOpacity(
-                                                                  0.08)),
-                                                  side:
-                                                      const WidgetStatePropertyAll(
-                                                          BorderSide.none),
-                                                  shape:
-                                                      const WidgetStatePropertyAll(
-                                                          StadiumBorder()),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-
-                                        // RIGHT pager
-                                        Expanded(
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                right: 12),
-                                            child: Align(
-                                              alignment: Alignment.centerRight,
-                                              child: SingleChildScrollView(
-                                                scrollDirection:
-                                                    Axis.horizontal,
-                                                child: SizedBox(
-                                                  height: 34,
-                                                  child: FittedBox(
-                                                      child: _pager()),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              )
+                            Gap(24),
+                            SizedBox(
+                                width: 150, // <-- reduce width here
+                                child: CreateAlertButton(
+                                  disabled:
+                                      _alertCreated, // true after saving the alert
+                                  onTap: _onCreateAlert, // normal handler
+                                )),
                           ],
+                        ))
+                      : ListView.builder(
+                          itemCount: _pageItems.length,
+                          itemBuilder: (context, index) {
+                            final alert = _pageItems[index];
+                            return Dismissible(
+                              key: Key(alert.id.toString()),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                color: Colors.red,
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.only(right: 20),
+                                child: const Icon(Icons.delete,
+                                    color: Colors.white, size: 30),
+                              ),
+                              confirmDismiss: (_) async {
+                                return await showDialog<bool>(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    backgroundColor: Colors.white,
+                                    title: const Text("Delete Saved Alert?"),
+                                    content: const Text(
+                                        "Are you sure to delete this saved alert."),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(ctx, false),
+                                        child: const Text("Cancel",
+                                            style:
+                                                TextStyle(color: Colors.red)),
+                                      ),
+                                      TextButton(
+                                        onPressed: () async {
+                                          Navigator.pop(ctx, true);
+                                        },
+                                        child: const Text("Delete",
+                                            style:
+                                                TextStyle(color: Colors.red)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              onDismissed: (_) async {
+                                await _deleteAlert(alert);
+                              },
+                              child: SavedAlertCard(
+                                title: alert.alertName,
+                                frequency: alert.timePeriod,
+                                created: _relativeTime(alert.createdAt),
+                              ),
+                            );
+                          },
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                         ),
-                      ),
-                    ),
-                  ),
                 ),
-
-                const SizedBox(height: 10),
               ],
             );
-          },
-        ),
-      ),
-
-      // Bottom navigation bar like New_Projects, with white under the home indicator
-      bottomNavigationBar: Container(
-        color: Colors.white,
-        child: SafeArea(
-          top: false,
-          child: buildMyNavBar(context),
-        ),
-      ),
+          }),
     );
   }
+}
 
-  // -------------------------------- ROW / HEADER / PAGER --------------------------------
+class SavedAlertCard extends StatelessWidget {
+  final String title;
+  final String frequency;
+  final String created;
 
-  Widget _headerRow({
-    required bool value,
-    required ValueChanged<bool?> onSelectAll,
-  }) {
+  const SavedAlertCard({
+    super.key,
+    required this.title,
+    required this.frequency,
+    required this.created,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: const BoxDecoration(
-        color: Color(0xFFF7F4F4),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(14),
-          topRight: Radius.circular(14),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: _checkColW,
-            child: Transform.scale(
-              scale: 0.85,
-              child: Checkbox(
-                value: value,
-                onChanged: onSelectAll,
-                visualDensity:
-                    const VisualDensity(horizontal: -4, vertical: -4),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
+      margin: EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            offset: Offset(0, 0),
+            color: Colors.grey.shade300,
+            blurRadius: 3,
+            spreadRadius: 3,
           ),
-          const _HeaderCell('Alert Name', flex: 4, fontSize: _headerFontSize),
-          const SizedBox(width: _hGapNameToTime),
-          const _HeaderCell('Time', flex: 3, fontSize: _headerFontSize),
-          const SizedBox(width: _hGapTimeToPurpose),
-          const _HeaderCell('Purpose', flex: 3, fontSize: _headerFontSize),
-          const SizedBox(width: _hGapPurposeToType),
-          const _HeaderCell('Property Type',
-              flex: 4, fontSize: _headerFontSize),
+          // BoxShadow(
+          //   offset: Offset(1, 1),
+          //   color: Colors.grey.shade300,
+          //   blurRadius: 2,
+          //   spreadRadius: 2,
+          // ),
+          // BoxShadow(
+          //   offset: Offset(1, 1),
+          //   color: Colors.grey.shade300,
+          //   blurRadius: 1,
+          //   spreadRadius: 2,
+          // ),
+          // BoxShadow(
+          //   offset: Offset(1, 1),
+          //   color: Colors.grey.shade300,
+          //   blurRadius: 2,
+          //   spreadRadius: 2,
+          // )
         ],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
       ),
-    );
-  }
-
-  Widget _dataRow({
-    required SavedAlert alert,
-    required bool checked,
-    required ValueChanged<bool?> onCheck,
-    required VoidCallback onDelete,
-    required String createdLabel,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: const BoxDecoration(color: Colors.white),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                width: _checkColW,
-                child: Transform.scale(
-                  scale: 0.85,
-                  child: Checkbox(
-                    value: checked,
-                    onChanged: onCheck,
-                    visualDensity:
-                        const VisualDensity(horizontal: -4, vertical: -4),
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
                   ),
-                ),
-              ),
-              Expanded(
-                flex: 4,
-                child: _CellText(alert.alertName,
-                    fontSize: _rowFontSize, fontWeight: _rowFontWeight),
-              ),
-              const SizedBox(width: _rGapNameToTime),
-              Expanded(
-                flex: 3,
-                child: _CellText(
-                  alert.timePeriod,
-                  fontSize: _rowFontSize,
-                  fontWeight: _rowFontWeight,
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: _rGapTimeToPurpose),
-              Expanded(
-                flex: 3,
-                child: _CellText(
-                  alert.purpose,
-                  fontSize: _rowFontSize,
-                  fontWeight: _rowFontWeight,
-                  maxLines: 2,
-                  softWrap: true,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: _rGapPurposeToType),
-              Expanded(
-                flex: 4,
-                child: _CellText(
-                  alert.propertyType.isEmpty ? 'Any' : alert.propertyType,
-                  fontSize: _rowFontSize,
-                  fontWeight: _rowFontWeight,
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
+          const SizedBox(height: 14),
+          const Text(
+            "Receive updates",
+            style: TextStyle(
+              color: Colors.black87,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey, width: 0.6),
+            ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Flexible(
-                  child: Text(
-                    createdLabel,
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                        fontSize: 11.5, color: Colors.grey, height: 1.2),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    softWrap: false,
+                Text(
+                  frequency,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 16,
                   ),
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  tooltip: 'Delete',
-                  onPressed: onDelete,
-                  padding: EdgeInsets.zero,
-                  constraints:
-                      const BoxConstraints.tightFor(width: 28, height: 28),
-                  iconSize: 16,
-                  visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.delete_outline, color: Colors.black54),
-                ),
+                // const Icon(Icons.keyboard_arrow_down, color: Colors.black),
               ],
             ),
           ),
-          const Divider(height: 20, color: Color(0xFFECECEC)),
-        ],
-      ),
-    );
-  }
-
-  Widget _pager() {
-    final total = _totalPages;
-    final canPrev = _page > 1;
-    final canNext = _page < total;
-
-    Widget navButton(IconData icon, bool enabled, VoidCallback onTap) {
-      return InkWell(
-        onTap: enabled ? onTap : null,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          width: 34,
-          height: 34,
-          alignment: Alignment.center,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                  color: Color(0x14000000), blurRadius: 8, offset: Offset(0, 2))
-            ],
-          ),
-          child: Icon(icon,
-              size: 20, color: enabled ? Colors.black87 : Colors.black26),
-        ),
-      );
-    }
-
-    Widget currentPageChip() {
-      return Container(
-        width: 34,
-        height: 34,
-        alignment: Alignment.center,
-        decoration: const BoxDecoration(
-            shape: BoxShape.circle, color: Color(0xFF2D6CF6)),
-        child: Text('$_page',
+          const SizedBox(height: 10),
+          Text(
+            created,
             style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w600)),
-      );
-    }
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        navButton(Icons.chevron_left, canPrev, _prevPage),
-        const SizedBox(width: 8),
-        currentPageChip(),
-        const SizedBox(width: 8),
-        navButton(Icons.chevron_right, canNext, _nextPage),
-      ],
-    );
-  }
-}
-
-/// -------------------------------- UI bits --------------------------------
-
-class _HeaderCell extends StatelessWidget {
-  final String text;
-  final int flex;
-  final double fontSize;
-
-  const _HeaderCell(
-    this.text, {
-    super.key,
-    this.flex = 1,
-    this.fontSize = _headerFontSize,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: flex,
-      child: Text(
-        text,
-        maxLines: 1,
-        softWrap: false,
-        overflow: TextOverflow.visible,
-        textScaler: const TextScaler.linear(1),
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.w700,
-          color: Colors.black87,
-          height: 1.2,
-          letterSpacing: 0.2,
-        ),
-      ),
-    );
-  }
-}
-
-class _CellText extends StatelessWidget {
-  final String text;
-  final TextAlign textAlign;
-  final FontWeight fontWeight;
-  final double fontSize;
-  final int? maxLines;
-  final bool softWrap;
-  final TextOverflow overflow;
-
-  const _CellText(
-    this.text, {
-    super.key,
-    this.fontWeight = FontWeight.w400,
-    this.fontSize = 13,
-    this.maxLines,
-    this.softWrap = true,
-    this.overflow = TextOverflow.visible,
-    this.textAlign = TextAlign.left,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      softWrap: softWrap,
-      maxLines: maxLines,
-      overflow: overflow,
-      textAlign: textAlign,
-      style: TextStyle(
-        fontSize: fontSize,
-        fontWeight: fontWeight,
-        color: Colors.black87,
-        height: 1.25,
-      ),
-    );
-  }
-}
-
-class _ErrorView extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-  const _ErrorView({super.key, required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Error: $message', textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              color: Colors.black87,
+              fontSize: 13,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -1430,6 +961,33 @@ class CreateAlertButton extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorView extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+  const _ErrorView({super.key, required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Error: $message', textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+            ),
+          ],
         ),
       ),
     );

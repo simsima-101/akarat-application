@@ -343,8 +343,6 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
     }
   }
 
-  // ---------- UI ----------
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

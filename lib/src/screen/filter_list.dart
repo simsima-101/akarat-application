@@ -1,27 +1,30 @@
 import 'dart:convert';
 
 
+import 'package:Akarat/src/core/utils/session_manager.dart';
 import 'package:Akarat/src/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../core/services/api_service.dart';
 import '../core/utils/secure_storage.dart';
+import '../features/property/data/datasources/favorite_remote_datasource.dart';
 import '../providers/favorite_provider.dart';
 import '../providers/filter_provider.dart';
+import '../screen/ContactFormScreen.dart';
 
-import '../core/services/api_service.dart';
-import '../features/property/data/datasources/favorite_remote_datasource.dart';
-import '../core/utils/session_manager.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'CreateAlertScreen.dart';
@@ -29,8 +32,6 @@ import 'featured_detail.dart';
 import 'home.dart';
 import 'login.dart';
 import 'my_account.dart';
-
-import 'ContactFormScreen.dart';
 
 class FliterList extends StatefulWidget {
   const FliterList({
@@ -52,7 +53,8 @@ class _FliterListState extends State<FliterList> {
   bool get isLoggedIn => token.isNotEmpty;
 
   final ScrollController _scrollController = ScrollController();
-
+  final PageController _pageController = PageController();
+  int _currentImageIndex = 0;
   final List<int> yValues = [
     5000,
     3000,
@@ -64,10 +66,6 @@ class _FliterListState extends State<FliterList> {
   ];
 
   late List<Data> chartData;
-
-
-
-
 
   int _safePropertyId(dynamic id) {
     if (id == null) return 0;
@@ -98,8 +96,8 @@ class _FliterListState extends State<FliterList> {
     });
   }
 
-
-  Future<bool> markAsContacted(int propertyId, {required String contactType}) async {
+  Future<bool> markAsContacted(int propertyId,
+      {required String contactType}) async {
     if (propertyId <= 0) return false;
 
     await SessionManager().restore(); // Important: restores token if needed
@@ -124,10 +122,12 @@ class _FliterListState extends State<FliterList> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint("Successfully marked property $propertyId as contacted via $contactType");
+        debugPrint(
+            "Successfully marked property $propertyId as contacted via $contactType");
         return true;
       } else {
-        debugPrint("Failed to mark contacted: ${response.statusCode} ${response.body}");
+        debugPrint(
+            "Failed to mark contacted: ${response.statusCode} ${response.body}");
         return false;
       }
     } catch (e) {
@@ -135,7 +135,6 @@ class _FliterListState extends State<FliterList> {
       return false;
     }
   }
-
 
   String phoneCallNumber(String input) {
     input = input.replaceAll(RegExp(r'[^\d+]'), '');
@@ -928,8 +927,8 @@ class _FliterListState extends State<FliterList> {
                                   height: filterProvider
                                               .filterListSelectedPropType ==
                                           null
-                                      ? 220
-                                      : screenSize.height * 0.35,
+                                      ? 250
+                                      : screenSize.height * 0.38,
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 20),
                                   decoration:
@@ -1147,7 +1146,9 @@ class _FliterListState extends State<FliterList> {
                                                 },
                                                 child: Container(
                                                   margin: const EdgeInsets
-                                                      .symmetric(horizontal: 8),
+                                                      .symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 4),
                                                   padding: const EdgeInsets
                                                       .symmetric(
                                                       horizontal: 15,
@@ -1166,7 +1167,7 @@ class _FliterListState extends State<FliterList> {
                                                             .withOpacity(0.3),
                                                         blurRadius: 4,
                                                         offset:
-                                                            const Offset(0, 2),
+                                                            const Offset(0, 0),
                                                       ),
                                                     ],
                                                   ),
@@ -1357,210 +1358,235 @@ class _FliterListState extends State<FliterList> {
                                 return Container(
                                   height: screenSize.height * 0.38,
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 20),
+                                      horizontal: 0, vertical: 20),
                                   decoration:
                                       const BoxDecoration(color: Colors.white),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        "Price range",
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: const Text(
+                                          "Price range",
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
+                                        ),
                                       ),
                                       const SizedBox(height: 12),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          _rangeDisplayBox(priceRangeState
-                                              .filterListValues.start
-                                              .toStringAsFixed(0)),
-                                          const Text("to",
-                                              style: TextStyle(fontSize: 15)),
-                                          _rangeDisplayBox(priceRangeState
-                                              .filterListValues.end
-                                              .toStringAsFixed(0)),
-                                        ],
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            _rangeDisplayBox(priceRangeState
+                                                .filterListValues.start
+                                                .toStringAsFixed(0)),
+                                            const Text("to",
+                                                style: TextStyle(fontSize: 15)),
+                                            _rangeDisplayBox(priceRangeState
+                                                .filterListValues.end
+                                                .toStringAsFixed(0)),
+                                          ],
+                                        ),
                                       ),
                                       const SizedBox(height: 16),
-                                      SfRangeSelectorTheme(
-                                        data: SfRangeSelectorThemeData(
-                                          tooltipBackgroundColor: Colors.black,
-                                          tooltipTextStyle: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 5),
+                                        child: SfRangeSelectorTheme(
+                                          data: SfRangeSelectorThemeData(
+                                            tooltipBackgroundColor:
+                                                Colors.black,
+                                            tooltipTextStyle: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                        child: SfRangeSelector(
-                                          min: 500,
-                                          max: 300000,
-                                          interval: 10000,
-                                          activeColor: const Color(0xFF2575D4),
-                                          inactiveColor:
-                                              const Color(0x80F1EEEE),
-                                          enableTooltip: true,
-                                          shouldAlwaysShowTooltip: true,
-                                          initialValues:
-                                              priceRangeState.filterListValues,
-                                          tooltipTextFormatterCallback:
-                                              (actualValue, _) =>
-                                                  'AED ${actualValue.toInt()}',
-                                          onChanged: (value) {
-                                            // setModalState(() {
-                                            double roundedMin =
-                                                ((value.start / 100).round() *
-                                                        100)
-                                                    .toDouble();
-                                            double roundedMax =
-                                                ((value.end / 100).round() *
-                                                        100)
-                                                    .toDouble();
+                                          child: SfRangeSelector(
+                                            min: 500,
+                                            max: 300000,
+                                            interval: 10000,
+                                            activeColor:
+                                                const Color(0xFF2575D4),
+                                            inactiveColor:
+                                                const Color(0x80F1EEEE),
+                                            enableTooltip: true,
+                                            shouldAlwaysShowTooltip: true,
+                                            initialValues: priceRangeState
+                                                .filterListValues,
+                                            tooltipTextFormatterCallback:
+                                                (actualValue, _) =>
+                                                    'AED ${actualValue.toInt()}',
+                                            onChanged: (value) {
+                                              // setModalState(() {
+                                              double roundedMin =
+                                                  ((value.start / 100).round() *
+                                                          100)
+                                                      .toDouble();
+                                              double roundedMax =
+                                                  ((value.end / 100).round() *
+                                                          100)
+                                                      .toDouble();
 
-                                            // priceRangeState.filterListValues =
-                                            //     SfRangeValues(
-                                            //         roundedMin, roundedMax);
-                                            //
-                                            // min_price =
-                                            //     roundedMin.toStringAsFixed(0);
-                                            // max_price =
-                                            //     roundedMax.toStringAsFixed(0);
+                                              // priceRangeState.filterListValues =
+                                              //     SfRangeValues(
+                                              //         roundedMin, roundedMax);
+                                              //
+                                              // min_price =
+                                              //     roundedMin.toStringAsFixed(0);
+                                              // max_price =
+                                              //     roundedMax.toStringAsFixed(0);
 
-                                            filterProvider
-                                                .setSelectedFilterRangePriceRange(
-                                              minPrice: roundedMin,
-                                              maxPrice: roundedMax,
-                                            );
-                                            // });
-                                          },
-                                          child: SizedBox(
-                                            height: 60,
-                                            width: double.infinity,
-                                            child: SfCartesianChart(
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              plotAreaBorderColor:
-                                                  Colors.transparent,
-                                              margin: const EdgeInsets.all(0),
-                                              primaryXAxis: NumericAxis(
-                                                  minimum: 500,
-                                                  maximum: 10000,
-                                                  isVisible: false),
-                                              primaryYAxis:
-                                                  NumericAxis(isVisible: false),
-                                              plotAreaBorderWidth: 0,
-                                              plotAreaBackgroundColor:
-                                                  Colors.transparent,
-                                              series: <ColumnSeries<Data,
-                                                  double>>[
-                                                ColumnSeries<Data, double>(
-                                                  dataSource: chartData,
-                                                  xValueMapper:
-                                                      (Data sales, _) =>
-                                                          sales.x,
-                                                  yValueMapper:
-                                                      (Data sales, _) =>
-                                                          sales.y,
-                                                  pointColorMapper: (_, __) =>
-                                                      const Color.fromARGB(
-                                                          255, 37, 117, 212),
-                                                  animationDuration: 0,
-                                                  borderWidth: 0,
-                                                ),
-                                              ],
+                                              filterProvider
+                                                  .setSelectedFilterRangePriceRange(
+                                                minPrice: roundedMin,
+                                                maxPrice: roundedMax,
+                                              );
+                                              // });
+
+                                              // Trigger light haptic feedback on slide
+                                              HapticFeedback.selectionClick();
+                                            },
+                                            child: SizedBox(
+                                              height: 60,
+                                              width: double.infinity,
+                                              child: SfCartesianChart(
+                                                backgroundColor:
+                                                    Colors.transparent,
+                                                plotAreaBorderColor:
+                                                    Colors.transparent,
+                                                margin: const EdgeInsets.all(0),
+                                                primaryXAxis: NumericAxis(
+                                                    minimum: 500,
+                                                    maximum: 10000,
+                                                    isVisible: false),
+                                                primaryYAxis: NumericAxis(
+                                                    isVisible: false),
+                                                plotAreaBorderWidth: 0,
+                                                plotAreaBackgroundColor:
+                                                    Colors.transparent,
+                                                series: <ColumnSeries<Data,
+                                                    double>>[
+                                                  ColumnSeries<Data, double>(
+                                                    dataSource: chartData,
+                                                    xValueMapper:
+                                                        (Data sales, _) =>
+                                                            sales.x,
+                                                    yValueMapper:
+                                                        (Data sales, _) =>
+                                                            sales.y,
+                                                    pointColorMapper: (_, __) =>
+                                                        const Color.fromARGB(
+                                                            255, 37, 117, 212),
+                                                    animationDuration: 0,
+                                                    borderWidth: 0,
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
                                       const SizedBox(height: 20),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: 45,
-                                        child: ElevatedButton(
-                                          onPressed: () async {
-                                            // await _resetPagingAndFetch();
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          height: 45,
+                                          child: ElevatedButton(
+                                            onPressed: () async {
+                                              // await _resetPagingAndFetch();
 
-                                            double finalMinPrice = double.parse(
+                                              double finalMinPrice =
+                                                  double.parse(filterProvider
+                                                      .filterList_Min_price);
+                                              double finalMaxPrice =
+                                                  double.parse(filterProvider
+                                                      .filterList_Max_price);
+
+                                              // filterProvider
+                                              //     .setSelectedFilterRangePriceRange(
+                                              //         minPrice: finalMinPrice,
+                                              //         maxPrice: finalMaxPrice);
+
+                                              setState(() {
+                                                filterProvider.values =
+                                                    SfRangeValues(finalMinPrice,
+                                                        finalMaxPrice);
+
                                                 filterProvider
-                                                    .filterList_Min_price);
-                                            double finalMaxPrice = double.parse(
+                                                    .priceRangeController
+                                                    .start = finalMinPrice;
                                                 filterProvider
-                                                    .filterList_Max_price);
+                                                    .priceRangeController
+                                                    .end = finalMaxPrice;
 
-                                            // filterProvider
-                                            //     .setSelectedFilterRangePriceRange(
-                                            //         minPrice: finalMinPrice,
-                                            //         maxPrice: finalMaxPrice);
-
-                                            setState(() {
-                                              filterProvider.values =
-                                                  SfRangeValues(finalMinPrice,
-                                                      finalMaxPrice);
-
-                                              filterProvider
-                                                  .priceRangeController
-                                                  .start = finalMinPrice;
-                                              filterProvider
-                                                  .priceRangeController
-                                                  .end = finalMaxPrice;
-
-                                              filterProvider.min_price =
-                                                  finalMinPrice
-                                                      .toStringAsFixed(0);
-                                              filterProvider.max_price =
-                                                  finalMaxPrice
-                                                      .toStringAsFixed(0);
-
-                                              // ✅ Force update min only if not currently editing, or if value actually changed
-                                              if (!filterProvider.isMinTyping ||
-                                                  filterProvider
-                                                          .minPriceController
-                                                          .text !=
-                                                      finalMinPrice
-                                                          .toStringAsFixed(0)) {
-                                                filterProvider
-                                                        .minPriceController
-                                                        .text =
+                                                filterProvider.min_price =
                                                     finalMinPrice
                                                         .toStringAsFixed(0);
-                                              }
-
-                                              if (!filterProvider.isMaxTyping ||
-                                                  filterProvider
-                                                          .maxPriceController
-                                                          .text !=
-                                                      finalMaxPrice
-                                                          .toStringAsFixed(0)) {
-                                                filterProvider
-                                                        .maxPriceController
-                                                        .text =
+                                                filterProvider.max_price =
                                                     finalMaxPrice
                                                         .toStringAsFixed(0);
-                                              }
-                                            });
 
-                                            await filterProvider
-                                                .updateFilterCount(context);
+                                                // ✅ Force update min only if not currently editing, or if value actually changed
+                                                if (!filterProvider
+                                                        .isMinTyping ||
+                                                    filterProvider
+                                                            .minPriceController
+                                                            .text !=
+                                                        finalMinPrice
+                                                            .toStringAsFixed(
+                                                                0)) {
+                                                  filterProvider
+                                                          .minPriceController
+                                                          .text =
+                                                      finalMinPrice
+                                                          .toStringAsFixed(0);
+                                                }
 
-                                            _scrollController.jumpTo(0);
+                                                if (!filterProvider
+                                                        .isMaxTyping ||
+                                                    filterProvider
+                                                            .maxPriceController
+                                                            .text !=
+                                                        finalMaxPrice
+                                                            .toStringAsFixed(
+                                                                0)) {
+                                                  filterProvider
+                                                          .maxPriceController
+                                                          .text =
+                                                      finalMaxPrice
+                                                          .toStringAsFixed(0);
+                                                }
+                                              });
 
-                                            Navigator.pop(
-                                                context); // Close the bottom sheet after showing result
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(6)),
-                                          ),
-                                          child: const Text(
-                                            "Showing Results",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15),
+                                              await filterProvider
+                                                  .updateFilterCount(context);
+
+                                              _scrollController.jumpTo(0);
+
+                                              Navigator.pop(
+                                                  context); // Close the bottom sheet after showing result
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(6)),
+                                            ),
+                                            child: const Text(
+                                              "Showing Results",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -1645,216 +1671,243 @@ class _FliterListState extends State<FliterList> {
                                 return Container(
                                   height: screenSize.height * 0.38,
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 20),
+                                      horizontal: 0, vertical: 20),
                                   decoration:
                                       const BoxDecoration(color: Colors.white),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        "Area Range",
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          _rangeDisplayBox(areaSizeState
-                                              .filterListValuesArea.start
-                                              .toStringAsFixed(0)),
-                                          const Text("to",
-                                              style: TextStyle(fontSize: 15)),
-                                          _rangeDisplayBox(areaSizeState
-                                              .filterListValuesArea.end
-                                              .toStringAsFixed(0)),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      SfRangeSelectorTheme(
-                                        data: SfRangeSelectorThemeData(
-                                          tooltipBackgroundColor: Colors.black,
-                                          tooltipTextStyle: const TextStyle(
-                                              color: Colors.white,
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: const Text(
+                                          "Area Range",
+                                          style: TextStyle(
+                                              fontSize: 16,
                                               fontWeight: FontWeight.bold),
                                         ),
-                                        child: SfRangeSelector(
-                                          min: 0,
-                                          max: 10000,
-                                          interval: 1000,
-                                          initialValues: areaSizeState
-                                              .filterListValuesArea,
-                                          enableTooltip: true,
-                                          shouldAlwaysShowTooltip: true,
-                                          activeColor: const Color(0xFF2575D4),
-                                          inactiveColor:
-                                              const Color(0x80F1EEEE),
-                                          // controller:
-                                          //     areaSizeState.areaRangeController,
-                                          onChanged: (value) async {
-                                            // await filterProvider
-                                            //     .setSelectedAreaRange(context,
-                                            //         value: value);
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            _rangeDisplayBox(areaSizeState
+                                                .filterListValuesArea.start
+                                                .toStringAsFixed(0)),
+                                            const Text("to",
+                                                style: TextStyle(fontSize: 15)),
+                                            _rangeDisplayBox(areaSizeState
+                                                .filterListValuesArea.end
+                                                .toStringAsFixed(0)),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 5),
+                                        child: SfRangeSelectorTheme(
+                                          data: SfRangeSelectorThemeData(
+                                            tooltipBackgroundColor:
+                                                Colors.black,
+                                            tooltipTextStyle: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          child: SfRangeSelector(
+                                            min: 0,
+                                            max: 10000,
+                                            interval: 1000,
+                                            initialValues: areaSizeState
+                                                .filterListValuesArea,
+                                            enableTooltip: true,
+                                            shouldAlwaysShowTooltip: true,
+                                            activeColor:
+                                                const Color(0xFF2575D4),
+                                            inactiveColor:
+                                                const Color(0x80F1EEEE),
+                                            // controller:
+                                            //     areaSizeState.areaRangeController,
+                                            onChanged: (value) async {
+                                              // await filterProvider
+                                              //     .setSelectedAreaRange(context,
+                                              //         value: value);
 
-                                            double roundedMin =
-                                                ((value.start / 100).round() *
-                                                        100)
-                                                    .toDouble();
-                                            double roundedMax =
-                                                ((value.end / 100).round() *
-                                                        100)
-                                                    .toDouble();
+                                              double roundedMin =
+                                                  ((value.start / 100).round() *
+                                                          100)
+                                                      .toDouble();
+                                              double roundedMax =
+                                                  ((value.end / 100).round() *
+                                                          100)
+                                                      .toDouble();
 
-                                            areaSizeState
-                                                .setSelectedFilterListAreaSize(
-                                              minSqrFeet: roundedMin,
-                                              maxSqrFeet: roundedMax,
-                                            );
-                                          },
-                                          child: SizedBox(
-                                            height: 70,
-                                            width: double.infinity,
-                                            child: SfCartesianChart(
-                                              plotAreaBorderColor:
-                                                  Colors.transparent,
-                                              margin: const EdgeInsets.all(0),
-                                              primaryXAxis: NumericAxis(
-                                                  minimum: 0,
-                                                  maximum: 10000,
-                                                  isVisible: false),
-                                              primaryYAxis:
-                                                  NumericAxis(isVisible: false),
-                                              plotAreaBorderWidth: 0,
-                                              plotAreaBackgroundColor:
-                                                  Colors.transparent,
-                                              series: <ColumnSeries<Dataarea,
-                                                  double>>[
-                                                ColumnSeries<Dataarea, double>(
-                                                  dataSource: areaSizeState
-                                                      .chartDataarea,
-                                                  selectionBehavior:
-                                                      SelectionBehavior(
-                                                    unselectedOpacity: 0,
-                                                    selectedOpacity: 0,
-                                                    unselectedColor:
-                                                        Colors.transparent,
-                                                    // selectionController:
-                                                    // areaSizeState
-                                                    //     .rangeControllerarea,
+                                              areaSizeState
+                                                  .setSelectedFilterListAreaSize(
+                                                minSqrFeet: roundedMin,
+                                                maxSqrFeet: roundedMax,
+                                              );
+                                              // Trigger light haptic feedback on slide
+                                              HapticFeedback.selectionClick();
+                                            },
+                                            child: SizedBox(
+                                              height: 70,
+                                              width: double.infinity,
+                                              child: SfCartesianChart(
+                                                plotAreaBorderColor:
+                                                    Colors.transparent,
+                                                margin: const EdgeInsets.all(0),
+                                                primaryXAxis: NumericAxis(
+                                                    minimum: 0,
+                                                    maximum: 10000,
+                                                    isVisible: false),
+                                                primaryYAxis: NumericAxis(
+                                                    isVisible: false),
+                                                plotAreaBorderWidth: 0,
+                                                plotAreaBackgroundColor:
+                                                    Colors.transparent,
+                                                series: <ColumnSeries<Dataarea,
+                                                    double>>[
+                                                  ColumnSeries<Dataarea,
+                                                      double>(
+                                                    dataSource: areaSizeState
+                                                        .chartDataarea,
+                                                    selectionBehavior:
+                                                        SelectionBehavior(
+                                                      unselectedOpacity: 0,
+                                                      selectedOpacity: 0,
+                                                      unselectedColor:
+                                                          Colors.transparent,
+                                                      // selectionController:
+                                                      // areaSizeState
+                                                      //     .rangeControllerarea,
+                                                    ),
+                                                    xValueMapper:
+                                                        (Dataarea sales,
+                                                                int index) =>
+                                                            sales.x,
+                                                    yValueMapper:
+                                                        (Dataarea sales,
+                                                                int index) =>
+                                                            sales.y,
+                                                    pointColorMapper: (Dataarea
+                                                                sales,
+                                                            int index) =>
+                                                        const Color.fromARGB(
+                                                            255, 37, 117, 212),
+                                                    dashArray: const <double>[
+                                                      5,
+                                                      3
+                                                    ],
+                                                    animationDuration: 0,
+                                                    borderWidth: 0,
                                                   ),
-                                                  xValueMapper: (Dataarea sales,
-                                                          int index) =>
-                                                      sales.x,
-                                                  yValueMapper: (Dataarea sales,
-                                                          int index) =>
-                                                      sales.y,
-                                                  pointColorMapper:
-                                                      (Dataarea sales,
-                                                              int index) =>
-                                                          const Color.fromARGB(
-                                                              255,
-                                                              37,
-                                                              117,
-                                                              212),
-                                                  dashArray: const <double>[
-                                                    5,
-                                                    3
-                                                  ],
-                                                  animationDuration: 0,
-                                                  borderWidth: 0,
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
                                       const SizedBox(height: 20),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: 45,
-                                        child: ElevatedButton(
-                                          onPressed: () async {
-                                            // await _resetPagingAndFetch();
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          height: 45,
+                                          child: ElevatedButton(
+                                            onPressed: () async {
+                                              // await _resetPagingAndFetch();
 
-                                            double finalMinSqrFeet =
-                                                double.parse(filterProvider
-                                                    .filterList_Min_sqr_feet);
-                                            double finalMaxSqrFeet =
-                                                double.parse(filterProvider
-                                                    .filterList_Max_sqr_feet);
+                                              double finalMinSqrFeet =
+                                                  double.parse(filterProvider
+                                                      .filterList_Min_sqr_feet);
+                                              double finalMaxSqrFeet =
+                                                  double.parse(filterProvider
+                                                      .filterList_Max_sqr_feet);
 
-                                            // filterProvider
-                                            //     .setSelectedFilterRangePriceRange(
-                                            //         minPrice: finalMinPrice,
-                                            //         maxPrice: finalMaxPrice);
+                                              // filterProvider
+                                              //     .setSelectedFilterRangePriceRange(
+                                              //         minPrice: finalMinPrice,
+                                              //         maxPrice: finalMaxPrice);
 
-                                            setState(() {
-                                              filterProvider.areaRangeController
-                                                  .start = finalMinSqrFeet;
-                                              filterProvider.areaRangeController
-                                                  .end = finalMaxSqrFeet;
-                                              filterProvider
-                                                      .filterListValuesArea =
-                                                  SfRangeValues(finalMinSqrFeet,
-                                                      finalMaxSqrFeet);
-                                              filterProvider.min_sqrfeet =
-                                                  finalMinSqrFeet
-                                                      .toStringAsFixed(0);
-                                              filterProvider.max_sqrfeet =
-                                                  finalMaxSqrFeet
-                                                      .toStringAsFixed(0);
-
-                                              // ✅ Force update min only if not currently editing, or if value actually changed
-                                              if (!filterProvider
-                                                      .isMinAreaTyping ||
-                                                  filterProvider
-                                                          .minAreaController
-                                                          .text !=
-                                                      finalMinSqrFeet
-                                                          .toStringAsFixed(0)) {
-                                                filterProvider.minAreaController
-                                                        .text =
+                                              setState(() {
+                                                filterProvider
+                                                    .areaRangeController
+                                                    .start = finalMinSqrFeet;
+                                                filterProvider
+                                                    .areaRangeController
+                                                    .end = finalMaxSqrFeet;
+                                                filterProvider
+                                                        .filterListValuesArea =
+                                                    SfRangeValues(
+                                                        finalMinSqrFeet,
+                                                        finalMaxSqrFeet);
+                                                filterProvider.min_sqrfeet =
                                                     finalMinSqrFeet
                                                         .toStringAsFixed(0);
-                                              }
-
-                                              if (!filterProvider
-                                                      .isMaxAreaTyping ||
-                                                  filterProvider
-                                                          .maxAreaController
-                                                          .text !=
-                                                      finalMaxSqrFeet
-                                                          .toStringAsFixed(0)) {
-                                                filterProvider.maxAreaController
-                                                        .text =
+                                                filterProvider.max_sqrfeet =
                                                     finalMaxSqrFeet
                                                         .toStringAsFixed(0);
-                                              }
-                                            });
 
-                                            await filterProvider
-                                                .updateFilterCount(context);
+                                                // ✅ Force update min only if not currently editing, or if value actually changed
+                                                if (!filterProvider
+                                                        .isMinAreaTyping ||
+                                                    filterProvider
+                                                            .minAreaController
+                                                            .text !=
+                                                        finalMinSqrFeet
+                                                            .toStringAsFixed(
+                                                                0)) {
+                                                  filterProvider
+                                                          .minAreaController
+                                                          .text =
+                                                      finalMinSqrFeet
+                                                          .toStringAsFixed(0);
+                                                }
 
-                                            _scrollController.jumpTo(0);
+                                                if (!filterProvider
+                                                        .isMaxAreaTyping ||
+                                                    filterProvider
+                                                            .maxAreaController
+                                                            .text !=
+                                                        finalMaxSqrFeet
+                                                            .toStringAsFixed(
+                                                                0)) {
+                                                  filterProvider
+                                                          .maxAreaController
+                                                          .text =
+                                                      finalMaxSqrFeet
+                                                          .toStringAsFixed(0);
+                                                }
+                                              });
 
-                                            Navigator.pop(
-                                                context); // Close the bottom sheet after showing result
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(6)),
-                                          ),
-                                          child: const Text(
-                                            "Showing Results",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15),
+                                              await filterProvider
+                                                  .updateFilterCount(context);
+
+                                              _scrollController.jumpTo(0);
+
+                                              Navigator.pop(
+                                                  context); // Close the bottom sheet after showing result
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(6)),
+                                            ),
+                                            child: const Text(
+                                              "Showing Results",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -2681,54 +2734,162 @@ class _FliterListState extends State<FliterList> {
                                           left: 5.0, top: 1, right: 5),
                                       child: Column(
                                         children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            child: Stack(
-                                              children: [
-                                                AspectRatio(
-                                                  aspectRatio: 1.5,
-                                                  child: CachedNetworkImage(
-                                                    imageUrl: property
-                                                            .media!.isNotEmpty
-                                                        ? property.media![0]
-                                                            .originalUrl
-                                                            .toString()
-                                                        : 'https://via.placeholder.com/300x200?text=No+Image',
-                                                    fit: BoxFit.cover,
-                                                    height: 100,
-                                                    placeholder: (context,
-                                                            url) =>
-                                                        const CupertinoActivityIndicator(
-                                                      radius: 14,
+                                          Column(
+                                            children: [
+                                              Stack(
+                                                clipBehavior: Clip.none,
+                                                // ✅ Allows the overlap outside the Stack
+                                                children: [
+                                                  // 🖼️ Property Image Carousel with Rounded Corners
+                                                  ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                    child: AspectRatio(
+                                                      aspectRatio: 1.4,
+                                                      child: PageView.builder(
+                                                        controller:
+                                                            _pageController,
+                                                        scrollDirection:
+                                                            Axis.horizontal,
+                                                        itemCount: property
+                                                                .media
+                                                                ?.length ??
+                                                            0,
+                                                        onPageChanged: (index) {
+                                                          setState(() {
+                                                            _currentImageIndex =
+                                                                index;
+                                                          });
+                                                        },
+                                                        itemBuilder: (context,
+                                                            imgIndex) {
+                                                          return CachedNetworkImage(
+                                                            imageUrl: property
+                                                                .media![
+                                                                    imgIndex]
+                                                                .originalUrl
+                                                                .toString(),
+                                                            fit: BoxFit.cover,
+                                                            placeholder: (context,
+                                                                    url) =>
+                                                                Shimmer
+                                                                    .fromColors(
+                                                              baseColor: Colors
+                                                                  .grey
+                                                                  .shade300,
+                                                              highlightColor:
+                                                                  Colors.grey
+                                                                      .shade100,
+                                                              child: Container(
+                                                                width: double
+                                                                    .infinity,
+                                                                height: 200,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                      ),
                                                     ),
-                                                    errorWidget: (context, url,
-                                                            error) =>
-                                                        const Icon(Icons.error,
-                                                            size: 100),
                                                   ),
-                                                ),
 
-                                                /// ❤️ Positioned Favorite Icon
-                                                Positioned(
-                                                  top: 10,
-                                                  right: 10,
-                                                  child: Material(
-                                                    color: Colors.white,
-                                                    shape: const CircleBorder(),
-                                                    elevation: 4,
-                                                    child: Consumer<
-                                                        FavoriteProvider>(
-                                                      builder: (context,
-                                                          favProvider, _) {
-                                                        final isLoggedIn =
-                                                            token.isNotEmpty;
-                                                        final isFav = isLoggedIn &&
-                                                            favProvider.isFavorite(
-                                                                property
-                                                                    .id!); // ✅ Only true for logged-in users
+                                                  // ⚪ Image Indicator Dots
+                                                  Positioned(
+                                                    bottom: 12,
+                                                    left: 0,
+                                                    right: 0,
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: List.generate(
+                                                        property.media
+                                                                ?.length ??
+                                                            0,
+                                                        (index) {
+                                                          final distance = (index -
+                                                                  _currentImageIndex)
+                                                              .abs();
+                                                          double scale;
+                                                          double opacity;
 
-                                                        return IconButton(
+                                                          if (distance == 0) {
+                                                            scale = 1.2;
+                                                            opacity = 1.0;
+                                                          } else if (distance ==
+                                                              1) {
+                                                            scale = 1.0;
+                                                            opacity = 0.7;
+                                                          } else if (distance ==
+                                                              2) {
+                                                            scale = 0.8;
+                                                            opacity = 0.5;
+                                                          } else {
+                                                            scale = 0.5;
+                                                            opacity = 0.0;
+                                                          }
+
+                                                          return AnimatedOpacity(
+                                                            duration: Duration(
+                                                                milliseconds:
+                                                                    300),
+                                                            opacity: opacity,
+                                                            child: SizedBox(
+                                                              width: 12,
+                                                              // fixed size for layout stability
+                                                              height: 12,
+                                                              child: Center(
+                                                                child:
+                                                                    Container(
+                                                                  width:
+                                                                      8 * scale,
+                                                                  height:
+                                                                      8 * scale,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    shape: BoxShape
+                                                                        .circle,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ),
+
+                                                  // ❤️ Favorite Icon
+                                                  // ❤️ Favorite Icon
+
+                                                  // ❤️ Favorite Icon
+                                                  Positioned(
+                                                    top: 10,
+                                                    right: 10,
+                                                    child: Material(
+                                                      color: Colors.white,
+                                                      shape:
+                                                          const CircleBorder(),
+                                                      elevation: 4,
+                                                      child: Consumer<
+                                                          FavoriteProvider>(
+                                                        builder: (context,
+                                                            favProvider, _) {
+                                                          final isLoggedIn =
+                                                              token.isNotEmpty;
+                                                          final isFav = isLoggedIn &&
+                                                              favProvider
+                                                                  .isFavorite(
+                                                                      property
+                                                                          .id!); // ✅ Only true for logged-in users
+
+                                                          // debugPrint("fav length :${favProvider.fav}");
+
+                                                          return IconButton(
                                                             icon: Icon(
                                                               isFav
                                                                   ? Icons
@@ -2841,27 +3002,13 @@ class _FliterListState extends State<FliterList> {
                                                                 return;
                                                               }
 
-                                                              final propertyId =
-                                                                  property.id;
-                                                              if (propertyId ==
-                                                                  null) {
-                                                                debugPrint(
-                                                                    '⚠️ property.id is null; cannot toggle favorite.');
-                                                                return;
-                                                              }
-
-                                                              // ✅ Use Provider's API-integrated method (optimistic + revert handled inside)
-                                                              final success =
-                                                                  await favProvider
-                                                                      .toggleFavoriteWithApi(
-                                                                          propertyId,
-                                                                          token,
-                                                                          context);
-
-                                                              // OPTIONAL (usually not needed): force-refresh from server after a successful toggle
-                                                              // if (success) {
-                                                              //   await context.read<FavoriteProvider>().fetchFavoritesFromApi(token);
-                                                              // }
+                                                              // ✅ Use Provider's API-integrated method
+                                                              final success = await favProvider
+                                                                  .toggleFavoriteWithApi(
+                                                                      property
+                                                                          .id!,
+                                                                      token,
+                                                                      context);
 
                                                               if (!success) {
                                                                 ScaffoldMessenger.of(
@@ -2872,13 +3019,185 @@ class _FliterListState extends State<FliterList> {
                                                                           "Failed to update favorite.")),
                                                                 );
                                                               }
-                                                            });
-                                                      },
+                                                            },
+                                                          );
+                                                        },
+                                                      ),
                                                     ),
                                                   ),
+
+                                                  // 👈 returns an empty widget when not logged in
+
+                                                  // 👈 Return nothing if not logged in
+
+                                                  // 🧑‍💼 Overlapping Agent Profile Image
+                                                  // 🧑‍💼 Overlapping Agent Profile Image
+                                                  // 🧑‍💼 Agent Profile with Navigation to Featured_Detail
+                                                  // 🟢 Positioned Circle Avatar (left: 10)
+                                                  Positioned(
+                                                    bottom: -30,
+                                                    left: 10,
+                                                    child: GestureDetector(
+                                                      onTap: () {
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                Featured_Detail(
+                                                                    data: property
+                                                                        .id
+                                                                        .toString()),
+                                                          ),
+                                                        );
+                                                      },
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          CircleAvatar(
+                                                            radius: 28,
+                                                            backgroundImage: (property
+                                                                            .agentImage !=
+                                                                        null &&
+                                                                    property
+                                                                        .agentImage!
+                                                                        .isNotEmpty)
+                                                                ? CachedNetworkImageProvider(
+                                                                    property
+                                                                        .agentImage!)
+                                                                : const AssetImage(
+                                                                        "assets/images/dummy.jpg")
+                                                                    as ImageProvider,
+                                                          ),
+                                                          const SizedBox(
+                                                              height: 6),
+                                                          Transform.translate(
+                                                            offset: const Offset(
+                                                                -5,
+                                                                0), // shift 4 pixels to the left
+                                                            child: Text(
+                                                              "AGENT",
+                                                              style: TextStyle(
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                color: Color(
+                                                                    0xFF1A73E9),
+                                                                letterSpacing:
+                                                                    0.5,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+
+                                              // 🔽 Spacer so that the overlapping image is not clipped
+                                              const SizedBox(height: 15),
+
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 0,
+                                                    right: 0,
+                                                    top: 4,
+                                                    bottom: 4),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    // Agent Name
+                                                    Expanded(
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(left: 10),
+                                                        child: Text(
+                                                          property.agentName ??
+                                                              'Agent',
+                                                          style:
+                                                              const TextStyle(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Colors.black,
+                                                          ),
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
+                                                      ),
+                                                    ),
+
+                                                    // Listed text + agency logo
+                                                    Row(
+                                                      children: [
+                                                        if (property.postedOn !=
+                                                                null &&
+                                                            property.postedOn!
+                                                                .isNotEmpty)
+                                                          Text(
+                                                            'Listed ${property.postedOn}',
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 13,
+                                                              color:
+                                                                  Colors.grey,
+                                                            ),
+                                                          ),
+                                                        const SizedBox(
+                                                            width: 4),
+                                                        if (property.agencyLogo !=
+                                                                null &&
+                                                            property.agencyLogo!
+                                                                .isNotEmpty)
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: Container(
+                                                              height: 30,
+                                                              width: 60,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            4),
+                                                                image:
+                                                                    DecorationImage(
+                                                                  image: CachedNetworkImageProvider(
+                                                                      property
+                                                                          .agencyLogo!),
+                                                                  fit: BoxFit
+                                                                      .contain,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                      ],
+                                                    ),
+                                                  ],
                                                 ),
-                                              ],
-                                            ),
+                                              ),
+
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+
+// 👇 Divider line here
+                                              const Divider(
+                                                thickness: 0.3,
+                                                color: Colors.grey,
+                                                height: 6,
+                                              ),
+                                            ],
                                           ),
                                           Padding(
                                             padding:
@@ -2928,42 +3247,68 @@ class _FliterListState extends State<FliterList> {
                                           ),
                                           SizedBox(height: 8),
                                           Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8.0),
                                             child: Row(
                                               children: [
                                                 // === BEDS: Only show if > 0 ===
-                                                if ((property.bedrooms ?? 0) > 0) ...[
-                                                  Image.asset("assets/images/bed.png", height: 13),
+                                                if ((property.bedrooms ?? 0) >
+                                                    0) ...[
+                                                  Image.asset(
+                                                      "assets/images/bed.png",
+                                                      height: 13),
                                                   const SizedBox(width: 5),
                                                   Text(
                                                     '${property.bedrooms}',
-                                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                                    style: const TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w500),
                                                   ),
-                                                  const SizedBox(width: 15), // spacing between bed & bath
+                                                  const SizedBox(
+                                                      width:
+                                                          15), // spacing between bed & bath
                                                 ],
 
                                                 // === BATHS: Only show if > 0 ===
-                                                if ((property.bathrooms ?? 0) > 0) ...[
-                                                  Image.asset("assets/images/bath.png", height: 13),
+                                                if ((property.bathrooms ?? 0) >
+                                                    0) ...[
+                                                  Image.asset(
+                                                      "assets/images/bath.png",
+                                                      height: 13),
                                                   const SizedBox(width: 5),
                                                   Text(
                                                     '${property.bathrooms}',
-                                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                                    style: const TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w500),
                                                   ),
                                                   const SizedBox(width: 15),
                                                 ],
 
                                                 // === SIZE: Only show if valid (you already have this logic — keep it!)
-                                                if (property.displaySize.isNotEmpty && property.displaySize != '0 sqft') ...[
-                                                  Image.asset("assets/images/messure.png", height: 13),
+                                                if (property.displaySize
+                                                        .isNotEmpty &&
+                                                    property.displaySize !=
+                                                        '0 sqft') ...[
+                                                  Image.asset(
+                                                      "assets/images/messure.png",
+                                                      height: 13),
                                                   const SizedBox(width: 5),
                                                   Text(
                                                     property.displaySize,
-                                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                                    style: const TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w500),
                                                   ),
                                                 ],
                                               ],
                                             ),
+                                          ),
+                                          SizedBox(
+                                            height: 10,
                                           ),
                                           Row(
                                             children: [
@@ -2971,33 +3316,61 @@ class _FliterListState extends State<FliterList> {
                                               Expanded(
                                                 child: ElevatedButton.icon(
                                                   onPressed: () async {
-                                                    final propertyId = _safePropertyId(property.id);
+                                                    final propertyId =
+                                                        _safePropertyId(
+                                                            property.id);
 
                                                     // Mark as contacted (CALL)
-                                                    final success = await markAsContacted(propertyId, contactType: "call");
+                                                    final success =
+                                                        await markAsContacted(
+                                                            propertyId,
+                                                            contactType:
+                                                                "call");
 
                                                     if (success && mounted) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
                                                         const SnackBar(
-                                                          content: Text("Added to contacted properties"),
-                                                          backgroundColor: Colors.green,
-                                                          duration: Duration(seconds: 2),
+                                                          content: Text(
+                                                              "Added to contacted properties"),
+                                                          backgroundColor:
+                                                              Colors.green,
+                                                          duration: Duration(
+                                                              seconds: 2),
                                                         ),
                                                       );
                                                     }
 
-                                                    String phone = 'tel:${phoneCallNumber(property.phoneNumber ?? '')}';
-                                                    if (await canLaunchUrlString(phone)) {
-                                                      await launchUrlString(phone, mode: LaunchMode.externalApplication);
+                                                    String phone =
+                                                        'tel:${phoneCallNumber(property.phoneNumber ?? '')}';
+                                                    if (await canLaunchUrlString(
+                                                        phone)) {
+                                                      await launchUrlString(
+                                                          phone,
+                                                          mode: LaunchMode
+                                                              .externalApplication);
                                                     }
                                                   },
-                                                  icon: const Icon(Icons.call, color: Colors.red),
-                                                  label: const Text("Call", style: TextStyle(color: Colors.black)),
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Colors.grey[100],
-                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                  icon: const Icon(Icons.call,
+                                                      color: Colors.red),
+                                                  label: const Text("Call",
+                                                      style: TextStyle(
+                                                          color: Colors.black)),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.grey[100],
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10)),
                                                     elevation: 2,
-                                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 12),
                                                   ),
                                                 ),
                                               ),
@@ -3005,40 +3378,77 @@ class _FliterListState extends State<FliterList> {
                                               Expanded(
                                                 child: ElevatedButton.icon(
                                                   onPressed: () async {
-                                                    final propertyId = _safePropertyId(property.id);
+                                                    final propertyId =
+                                                        _safePropertyId(
+                                                            property.id);
 
                                                     // Mark as contacted (WHATSAPP)
-                                                    final success = await markAsContacted(propertyId, contactType: "whatsapp");
+                                                    final success =
+                                                        await markAsContacted(
+                                                            propertyId,
+                                                            contactType:
+                                                                "whatsapp");
 
                                                     if (success && mounted) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
                                                         const SnackBar(
-                                                          content: Text("Added to contacted properties"),
-                                                          backgroundColor: Colors.green,
-                                                          duration: Duration(seconds: 2),
+                                                          content: Text(
+                                                              "Added to contacted properties"),
+                                                          backgroundColor:
+                                                              Colors.green,
+                                                          duration: Duration(
+                                                              seconds: 2),
                                                         ),
                                                       );
                                                     }
 
-                                                    final phone = whatsAppNumber(property.whatsapp ?? '');
-                                                    final message = Uri.encodeComponent("Hi, I'm interested in your property: ${property.title}");
-                                                    final url = Uri.parse("https://wa.me/$phone?text=$message");
+                                                    final phone =
+                                                        whatsAppNumber(
+                                                            property.whatsapp ??
+                                                                '');
+                                                    final message =
+                                                        Uri.encodeComponent(
+                                                            "Hi, I'm interested in your property: ${property.title}");
+                                                    final url = Uri.parse(
+                                                        "https://wa.me/$phone?text=$message");
 
-                                                    if (await canLaunchUrl(url)) {
-                                                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                    if (await canLaunchUrl(
+                                                        url)) {
+                                                      await launchUrl(url,
+                                                          mode: LaunchMode
+                                                              .externalApplication);
                                                     } else {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        const SnackBar(content: Text("WhatsApp not installed")),
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                        const SnackBar(
+                                                            content: Text(
+                                                                "WhatsApp not installed")),
                                                       );
                                                     }
                                                   },
-                                                  icon: Image.asset("assets/images/whats.png", height: 20),
-                                                  label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Colors.grey[100],
-                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                  icon: Image.asset(
+                                                      "assets/images/whats.png",
+                                                      height: 20),
+                                                  label: const Text("WhatsApp",
+                                                      style: TextStyle(
+                                                          color: Colors.black)),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.grey[100],
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10)),
                                                     elevation: 2,
-                                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 12),
                                                   ),
                                                 ),
                                               ),

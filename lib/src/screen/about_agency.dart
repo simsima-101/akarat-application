@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:Akarat/src/core/utils/session_manager.dart';
 import 'package:Akarat/src/screen/shimmer.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart'; // Not url_launcher_string
@@ -14,16 +15,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../device_id.dart';
+import '../core/services/api_service.dart';
 import '../core/utils/secure_storage.dart';
 
 import '../features/agency/data/models/agency_agent_model.dart';
 import '../features/agency/data/models/agency_detail_model.dart';
 import '../features/agency/data/models/agency_properties_model.dart' as propertyModel;
 import '../features/property/data/models/toggle_model.dart';
+
 import '../providers/email_enquiry_provider.dart';
 
-import '../core/services/api_service.dart';
-import '../core/utils/session_manager.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import '../widgets/read_more_text.dart';
@@ -83,7 +84,7 @@ class _About_AgencyState extends State<About_Agency> {
   Future<bool> markAsContacted(int propertyId, {required String contactType}) async {
     if (propertyId <= 0) return false;
 
-    await SessionManager().restore();
+    await SessionManager().restore(); // Important: restores token if needed
     final token = SessionManager().token ?? await SecureStorage.getToken();
     if (token == null || token.isEmpty) {
       debugPrint("No token – cannot mark as contacted");
