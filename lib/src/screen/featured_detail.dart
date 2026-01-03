@@ -319,7 +319,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
         if (item is Map) {
           final m = Map<String, dynamic>.from(item);
           final title =
-              (m['title'] ?? m['name'] ?? '').toString().toLowerCase();
+          (m['title'] ?? m['name'] ?? '').toString().toLowerCase();
           final percent = toInt(m['percentage'] ?? m['percent'] ?? m['value']);
           if (percent == null) continue;
 
@@ -460,44 +460,44 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
 // ✅ individual building fields
   String? get buildingName => _dldThenProjectInfoByKeys(
-        dldKeys: ['building_name', 'buildingName', 'building'],
-        projectInfoKey: 'building_name',
-      );
+    dldKeys: ['building_name', 'buildingName', 'building'],
+    projectInfoKey: 'building_name',
+  );
 
   String? get totalParking => _dldThenProjectInfoByKeys(
-        dldKeys: ['total_parking', 'totalParking', 'parking_spaces'],
-        projectInfoKey: 'total_parking',
-      );
+    dldKeys: ['total_parking', 'totalParking', 'parking_spaces'],
+    projectInfoKey: 'total_parking',
+  );
 
   String? get buildingArea => _dldThenProjectInfoByKeys(
-        dldKeys: ['building_area', 'buildingArea', 'area'],
-        projectInfoKey: 'building_area',
-      );
+    dldKeys: ['building_area', 'buildingArea', 'area'],
+    projectInfoKey: 'building_area',
+  );
 
   String? get yearOfCompletion => _dldThenProjectInfoByKeys(
-        dldKeys: ['year_of_completion', 'yearOfCompletion', 'completion_year'],
-        projectInfoKey: 'year_of_completion',
-      );
+    dldKeys: ['year_of_completion', 'yearOfCompletion', 'completion_year'],
+    projectInfoKey: 'year_of_completion',
+  );
 
   String? get elevators => _dldThenProjectInfoByKeys(
-        dldKeys: ['elevators', 'lift_count', 'lifts'],
-        projectInfoKey: 'elevators',
-      );
+    dldKeys: ['elevators', 'lift_count', 'lifts'],
+    projectInfoKey: 'elevators',
+  );
 
   String? get totalFloors => _dldThenProjectInfoByKeys(
-        dldKeys: ['total_floors', 'totalFloors', 'floors'],
-        projectInfoKey: 'total_floors',
-      );
+    dldKeys: ['total_floors', 'totalFloors', 'floors'],
+    projectInfoKey: 'total_floors',
+  );
 
   String? get swimmingPools => _dldThenProjectInfoByKeys(
-        dldKeys: ['swimming_pools', 'swimmingPools', 'pools'],
-        projectInfoKey: 'swimming_pools',
-      );
+    dldKeys: ['swimming_pools', 'swimmingPools', 'pools'],
+    projectInfoKey: 'swimming_pools',
+  );
 
   String? get retailCenters => _dldThenProjectInfoByKeys(
-        dldKeys: ['retail_centers', 'retailCenters', 'retail'],
-        projectInfoKey: 'retail_centers',
-      );
+    dldKeys: ['retail_centers', 'retailCenters', 'retail'],
+    projectInfoKey: 'retail_centers',
+  );
 
 // show section only if any value exists
   bool _hasBuildingInfo() {
@@ -608,10 +608,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
     final info = _projectInfoMap;
 
     return _cleanStr(_permitFirst?['completion'] ??
-            p?.completionPercentage ??
-            info?['completion'] ??
-            info?['completion_percentage'] // ✅ add this
-        );
+        p?.completionPercentage ??
+        info?['completion'] ??
+        info?['completion_percentage'] // ✅ add this
+    );
   }
 
   String? get deliveryYear {
@@ -666,7 +666,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
     final p = featuredDetailModel?.data?.property;
     return _dldThenProjectInfo(
       dldValue:
-          _permitFirst?['governmentFee'] ?? _permitFirst?['government_fee'],
+      _permitFirst?['governmentFee'] ?? _permitFirst?['government_fee'],
       projectInfoKey: 'government_fee',
       directPropertyValue: p?.governmentFee, // ✅ fallback
     );
@@ -1022,7 +1022,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
     try {
       final response =
-          await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
+      await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
@@ -1097,9 +1097,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
     final String subtitle = property.title ?? '';
 
     final String ref =
-        (property.reference != null && property.reference!.trim().isNotEmpty)
-            ? property.reference!.trim()
-            : propId.toString();
+    (property.reference != null && property.reference!.trim().isNotEmpty)
+        ? property.reference!.trim()
+        : propId.toString();
 
     final String initialMessage =
         'Hi, I found your property with ref: $ref on Akarat. '
@@ -1123,7 +1123,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
         final deviceId = await getDeviceId();
         final emailProvider =
-            Provider.of<EmailEnquiryProvider>(context, listen: false);
+        Provider.of<EmailEnquiryProvider>(context, listen: false);
 
         final ok = await emailProvider.submitEmailEnquiry(
           propertyId: propId,
@@ -1252,7 +1252,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
       if (qrStr != null && qrStr.trim().isNotEmpty) {
         final String base64Part =
-            qrStr.contains(',') ? qrStr.split(',').last.trim() : qrStr.trim();
+        qrStr.contains(',') ? qrStr.split(',').last.trim() : qrStr.trim();
 
         final bytes = base64Decode(base64Part);
 
@@ -1292,7 +1292,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
     }
 
     final periodText = (property.paymentPeriod != null &&
-            property.paymentPeriod.toString().trim().isNotEmpty)
+        property.paymentPeriod.toString().trim().isNotEmpty)
         ? "/${property.paymentPeriod}"
         : "";
 
@@ -1401,7 +1401,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
                     final message = Uri.encodeComponent("Hello");
                     final waUrl =
-                        Uri.parse("https://wa.me/$phone?text=$message");
+                    Uri.parse("https://wa.me/$phone?text=$message");
 
                     if (await canLaunchUrl(waUrl)) {
                       await launchUrl(waUrl,
@@ -1447,7 +1447,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                 itemCount: property.media?.length ?? 0,
                 itemBuilder: (BuildContext context, int index) {
                   final imageUrl =
-                      property.media![index].originalUrl.toString();
+                  property.media![index].originalUrl.toString();
 
                   return GestureDetector(
                     onTap: () {
@@ -1459,7 +1459,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         transitionDuration: const Duration(milliseconds: 300),
                         pageBuilder: (context, animation, secondaryAnimation) {
                           PageController controller =
-                              PageController(initialPage: index);
+                          PageController(initialPage: index);
                           return Scaffold(
                             backgroundColor: Colors.black,
                             body: SafeArea(
@@ -1529,7 +1529,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
             if (addressText != null) ...[
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
+                const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1592,7 +1592,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       child: Text(
                         '${property.bedrooms} beds',
                         style:
-                            const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                        const TextStyle(fontSize: 14, letterSpacing: 0.5),
                       ),
                     ),
                   ],
@@ -1607,7 +1607,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       child: Text(
                         '${property.bathrooms} baths',
                         style:
-                            const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                        const TextStyle(fontSize: 14, letterSpacing: 0.5),
                       ),
                     ),
                   ],
@@ -1624,7 +1624,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       child: Text(
                         '$resolvedSqft',
                         style:
-                            const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                        const TextStyle(fontSize: 14, letterSpacing: 0.5),
                       ),
                     ),
                   ],
@@ -1704,27 +1704,27 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           border: Border.all(color: Colors.grey.shade200),
                         ),
                         child:
-                            // _isLoadingFullDescription
-                            //     ? const Row(
-                            //         mainAxisSize: MainAxisSize.min,
-                            //         children: [
-                            //           SizedBox(
-                            //             width: 16,
-                            //             height: 16,
-                            //             child:
-                            //                 CircularProgressIndicator(strokeWidth: 2),
-                            //           ),
-                            //           SizedBox(width: 10),
-                            //           Text("Loading full description..."),
-                            //         ],
-                            //       )
-                            //     :
-                            HtmlExpandableText(
+                        // _isLoadingFullDescription
+                        //     ? const Row(
+                        //         mainAxisSize: MainAxisSize.min,
+                        //         children: [
+                        //           SizedBox(
+                        //             width: 16,
+                        //             height: 16,
+                        //             child:
+                        //                 CircularProgressIndicator(strokeWidth: 2),
+                        //           ),
+                        //           SizedBox(width: 10),
+                        //           Text("Loading full description..."),
+                        //         ],
+                        //       )
+                        //     :
+                        HtmlExpandableText(
                           htmlContent: _hasExpandedDescription
                               ? _fullDescription.replaceAll('\r\n', '<br>')
                               : (property.description ?? '')
-                                  .replaceAll('\r\n', '<br>')
-                                  .replaceAll('\n', '<br>'),
+                              .replaceAll('\r\n', '<br>')
+                              .replaceAll('\n', '<br>'),
                         ),
                       ),
                     ),
@@ -1777,7 +1777,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
             if (projectInfoRows.isNotEmpty) ...[
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1819,14 +1819,14 @@ class _Featured_DetailState extends State<Featured_Detail> {
             if (_hasProjectInfo()) ...[
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       "Project Information",
                       style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
                     Container(
@@ -2074,9 +2074,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               MyGoogleMapWidget(
-                                            latitude: latitude,
-                                            longitude: longitude,
-                                          ),
+                                                latitude: latitude,
+                                                longitude: longitude,
+                                              ),
                                         ),
                                       );
                                     },
@@ -2141,7 +2141,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           : 'https://via.placeholder.com/100',
                       fit: BoxFit.cover,
                       placeholder: (context, url) =>
-                          const CircularProgressIndicator(),
+                      const CircularProgressIndicator(),
                       errorWidget: (context, url, error) => const Icon(
                           Icons.person,
                           size: 60,
@@ -2176,7 +2176,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       height: 35,
                       width: screenSize.width * 0.5,
                       margin:
-                          const EdgeInsets.only(left: 15, right: 10, top: 15),
+                      const EdgeInsets.only(left: 15, right: 10, top: 15),
                       padding: const EdgeInsets.only(top: 8),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(8.0),
@@ -2332,7 +2332,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           child: GestureDetector(
                             onTap: property.permitInfo?.url?.isNotEmpty == true
                                 ? () => launchUrl(
-                                    Uri.parse(property.permitInfo!.url!))
+                                Uri.parse(property.permitInfo!.url!))
                                 : null,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
@@ -2408,10 +2408,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   itemCount:
-                      featuredDetailModel?.data?.recommended?.length ?? 0,
+                  featuredDetailModel?.data?.recommended?.length ?? 0,
                   itemBuilder: (context, index) {
                     final recProperty =
-                        featuredDetailModel!.data!.recommended![index];
+                    featuredDetailModel!.data!.recommended![index];
 
                     // === Resolve values for recommended property (same logic as main property) ===
                     final int resolvedBeds = recProperty.bedrooms ?? 0;
@@ -2434,14 +2434,14 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         final formatted = sizeNum
                             .toStringAsFixed(0)
                             .replaceAllMapped(
-                                RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
                                 (m) => '${m[1]},');
                         displaySize = '$formatted sqft';
                       }
                     }
 
                     final String resolvedPrice =
-                        _formatPrice(recProperty.price);
+                    _formatPrice(recProperty.price);
                     final String resolvedLocation =
                         recProperty.location?.toString() ?? 'Dubai';
 
@@ -2477,38 +2477,38 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                     top: Radius.circular(15)),
                                 child: imageUrl.isNotEmpty
                                     ? CachedNetworkImage(
-                                        imageUrl: imageUrl,
-                                        height: 120,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                        placeholder: (context, url) =>
-                                            Container(
-                                          color: Colors.grey[300],
-                                          child: const Center(
-                                              child:
-                                                  CircularProgressIndicator()),
-                                        ),
-                                        errorWidget: (_, __, ___) => Container(
-                                          height: 120,
-                                          color: Colors.grey[300],
-                                          child: const Icon(
-                                              Icons.image_not_supported,
-                                              size: 40),
-                                        ),
-                                      )
-                                    : Container(
-                                        height: 120,
+                                  imageUrl: imageUrl,
+                                  height: 120,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) =>
+                                      Container(
                                         color: Colors.grey[300],
-                                        child: const Icon(
-                                            Icons.image_not_supported,
-                                            size: 40),
+                                        child: const Center(
+                                            child:
+                                            CircularProgressIndicator()),
                                       ),
+                                  errorWidget: (_, __, ___) => Container(
+                                    height: 120,
+                                    color: Colors.grey[300],
+                                    child: const Icon(
+                                        Icons.image_not_supported,
+                                        size: 40),
+                                  ),
+                                )
+                                    : Container(
+                                  height: 120,
+                                  color: Colors.grey[300],
+                                  child: const Icon(
+                                      Icons.image_not_supported,
+                                      size: 40),
+                                ),
                               ),
 
                               // === CONTENT ===
                               Padding(
                                 padding:
-                                    const EdgeInsets.fromLTRB(10, 10, 10, 8),
+                                const EdgeInsets.fromLTRB(10, 10, 10, 8),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -2534,7 +2534,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                           Text(
                                             '$resolvedBeds bed${resolvedBeds > 1 ? 's' : ''}',
                                             style:
-                                                const TextStyle(fontSize: 13.5),
+                                            const TextStyle(fontSize: 13.5),
                                           ),
                                         ],
                                         if (resolvedBeds > 0 &&
@@ -2548,11 +2548,11 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                           Text(
                                             '$resolvedBaths bath${resolvedBaths > 1 ? 's' : ''}',
                                             style:
-                                                const TextStyle(fontSize: 13.5),
+                                            const TextStyle(fontSize: 13.5),
                                           ),
                                         ],
                                         if ((resolvedBeds > 0 ||
-                                                resolvedBaths > 0) &&
+                                            resolvedBaths > 0) &&
                                             displaySize.isNotEmpty)
                                           const SizedBox(width: 14),
                                         if (displaySize.isNotEmpty) ...[
@@ -2563,7 +2563,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                           Text(
                                             displaySize,
                                             style:
-                                                const TextStyle(fontSize: 13.5),
+                                            const TextStyle(fontSize: 13.5),
                                           ),
                                         ],
                                       ],

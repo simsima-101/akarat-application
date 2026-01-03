@@ -17,8 +17,10 @@ import 'filter_list.dart' hide Data;
 import 'full_amenities_screen.dart';
 import 'location_picker_screen.dart';
 
+import 'package:flutter/services.dart';
+
 class Filter extends StatelessWidget {
-  final dynamic data;
+  final String data;
   final int? propertyType;
   final String? propertyCategoryType;
   final String? optionType;
@@ -363,50 +365,68 @@ class _FilterDemoState extends State<FilterDemo> {
                           const SizedBox(height: 20),
 
                           // Location Picker (simplified – you can expand with Bloc if needed)
+                          // Location Picker with selected locations display
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 15),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("Location", style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                                const Text(
+                                  "Location",
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
                                 const SizedBox(height: 13),
                                 SizedBox(
                                   height: 48,
-                                  child: TextFormField(
-                                    readOnly: true,
-                                    onTap: () {
-                                      showModalBottomSheet(
-                                        context: context,
-                                        isScrollControlled: true,
-                                        backgroundColor: Colors.transparent,
-                                        builder: (_) =>
-                                        const FractionallySizedBox(
-                                          heightFactor: 0.95,
-                                          child: LocationPickerScreen(),
+                                  child: BlocBuilder<FilterBloc, FilterState>(
+                                    builder: (context, state) {
+                                      final locationText = state.selectedLocations.isEmpty
+                                          ? 'Search locations'
+                                          : state.selectedLocations.join(', ');
+
+                                      return TextFormField(
+                                        readOnly: true,
+                                        onTap: () {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            builder: (_) => const FractionallySizedBox(
+                                              heightFactor: 0.95,
+                                              child: LocationPickerScreen(),
+                                            ),
+                                          );
+                                        },
+                                        decoration: InputDecoration(
+                                          prefixIcon: const Icon(Icons.place, color: Colors.redAccent, size: 26),
+                                          hintText: 'Search locations',
+                                          hintStyle: const TextStyle(color: Colors.black54, fontSize: 16),
+                                          labelText: state.selectedLocations.isNotEmpty ? locationText : null,
+                                          labelStyle: const TextStyle(color: Colors.black87, fontSize: 16),
+                                          suffixIcon: state.selectedLocations.isNotEmpty
+                                              ? IconButton(
+                                            icon: const Icon(Icons.close),
+                                            onPressed: () {
+                                              // Clear locations in FilterBloc
+                                              context.read<FilterBloc>().add(
+                                                UpdateLocationsFromPicker([]),
+                                              );
+                                            },
+                                          )
+                                              : null,
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(5),
+                                            borderSide: const BorderSide(color: Colors.grey),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(5),
+                                            borderSide: const BorderSide(color: Colors.grey),
+                                          ),
                                         ),
                                       );
                                     },
-                                    decoration: InputDecoration(
-                                      prefixIcon: const Icon(
-                                          Icons.place, color: Colors.redAccent,
-                                          size: 26),
-                                      hintText: 'Search locations',
-                                      hintStyle: const TextStyle(
-                                          color: Colors.black54, fontSize: 16),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                              5),
-                                          borderSide: const BorderSide(
-                                              color: Colors.grey)),
-                                      focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                              5),
-                                          borderSide: const BorderSide(
-                                              color: Colors.grey)),
-                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 25),
@@ -926,6 +946,8 @@ class _FilterDemoState extends State<FilterDemo> {
                                       _) =>
                                   'AED ${actualValue.toInt()}',
                                   onChanged: (SfRangeValues newValues) {
+
+                                    HapticFeedback.selectionClick();
                                     // Dispatch event to update Bloc state
                                     context.read<FilterBloc>().add(
                                       UpdatePriceRange(
@@ -1328,6 +1350,8 @@ class _FilterDemoState extends State<FilterDemo> {
                                           actualValue, _) =>
                                       '${actualValue.toInt()} sqft',
                                       onChanged: (SfRangeValues newValues) {
+
+                                        HapticFeedback.selectionClick();
                                         // Dispatch Bloc event directly
                                         context.read<FilterBloc>().add(
                                           UpdateAreaRange(

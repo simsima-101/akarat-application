@@ -1,22 +1,22 @@
+// lib/src/screen/fav_logout.dart
+
 import 'package:Akarat/src/core/utils/secure_storage.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher_string.dart';
 
+import '../common/widgets/property_card.dart';
 import '../core/utils/session_manager.dart';
+import '../features/property/data/models/property_model.dart'; // Unified Property model
 import '../features/property/presentation/bloc/favorite_bloc.dart';
-
 import '../features/property/presentation/bloc/favorite_state.dart';
-import '../screen/ContactFormScreen.dart'; // Keep if used
-import '../screen/featured_detail.dart';
+import '../features/property/presentation/bloc/favorite_event.dart';
+import '../features/property/data/models/featuredmodel.dart' as featured;
+import '../screen/ContactFormScreen.dart';
 import '../screen/home.dart';
 import '../screen/login.dart';
 import '../screen/my_account.dart';
-import '../features/property/data/models/property_model.dart';
 
-import '../features/property/presentation/bloc/favorite_event.dart';
 
 class Fav_Logout extends StatefulWidget {
   const Fav_Logout({super.key});
@@ -25,11 +25,14 @@ class Fav_Logout extends StatefulWidget {
   State<Fav_Logout> createState() => _Fav_LogoutState();
 }
 
-class _Fav_LogoutState extends State<Fav_Logout> {
-  int pageIndex = 0;
-  String? token;
+// ======================== EXTENSION: Convert featured.Data → Property ========================
 
-  final Map<int, int> _carouselPageIndex = {};
+// ======================================================================================
+
+class _Fav_LogoutState extends State<Fav_Logout> {
+  int pageIndex = 2;
+  String? token;
+  bool hasCheckedLogin = false;
 
   @override
   void initState() {
@@ -38,16 +41,22 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
-      final fToken = await SecureStorage.getToken();
+      final currentToken = await SecureStorage.getToken();
+
       setState(() {
-        token = fToken;
+        token = currentToken;
+        hasCheckedLogin = true;
       });
 
-      context.read<FavoriteBloc>().add(const LoadFavorites());
+      if (currentToken != null && currentToken.isNotEmpty) {
+        context.read<FavoriteBloc>().add(const LoadFavorites());
+      }
     });
   }
 
   Future<void> refreshFavorites() async {
+    final currentToken = await SecureStorage.getToken();
+    if (currentToken == null || currentToken.isEmpty) return;
     context.read<FavoriteBloc>().add(const LoadFavorites());
   }
 
@@ -59,8 +68,14 @@ class _Fav_LogoutState extends State<Fav_Logout> {
         title: const Text("Clear All Favorites?"),
         content: const Text("This will remove all saved properties from your favorites. This action cannot be undone."),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel", style: TextStyle(color: Colors.grey))),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("Clear All", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Clear All", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
         ],
       ),
     );
@@ -74,12 +89,14 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Row(children: [
-        SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-        SizedBox(width: 16),
-        Text("Clearing all favorites..."),
-      ]),
-      duration: Duration(seconds: 10),
+      content: Row(
+        children: const [
+          SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+          SizedBox(width: 16),
+          Text("Clearing all favorites..."),
+        ],
+      ),
+      duration: const Duration(seconds: 10),
     ));
 
     try {
@@ -97,9 +114,9 @@ class _Fav_LogoutState extends State<Fav_Logout> {
       if (response.statusCode == 200 || response.statusCode == 204) {
         context.read<FavoriteBloc>().add(const LoadFavorites());
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("All favorites cleared successfully"),
+          content: const Text("All favorites cleared successfully"),
           backgroundColor: Colors.green,
-          duration: Duration(seconds: 3),
+          duration: const Duration(seconds: 3),
         ));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -110,10 +127,9 @@ class _Fav_LogoutState extends State<Fav_Logout> {
     } catch (e) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Error clearing favorites. Check your connection."),
+        content: const Text("Error clearing favorites. Check your connection."),
         backgroundColor: Colors.red,
       ));
-      debugPrint("Clear favorites error: $e");
     }
   }
 
@@ -130,25 +146,26 @@ class _Fav_LogoutState extends State<Fav_Logout> {
         children: [
           GestureDetector(
             onTap: () => Navigator.popUntil(context, (route) => route.isFirst),
-            child: Padding(padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Image.asset("assets/images/home.png", height: 25)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image.asset("assets/images/home.png", height: 25),
+            ),
           ),
           IconButton(
             enableFeedback: false,
             onPressed: null,
-            icon: pageIndex == 2
-                ? const Icon(Icons.favorite, color: Colors.red, size: 30)
-                : const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+            icon: const Icon(Icons.favorite, color: Colors.red, size: 30),
           ),
-          IconButton(icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28), onPressed: () => showHomeContactDialog(context)),
+          IconButton(
+            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+            onPressed: () => showHomeContactDialog(context),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
             child: IconButton(
               enableFeedback: false,
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const My_Account())),
-              icon: pageIndex == 3
-                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+              icon: const Icon(Icons.dehaze, color: Colors.red, size: 35),
             ),
           ),
         ],
@@ -158,24 +175,62 @@ class _Fav_LogoutState extends State<Fav_Logout> {
 
   @override
   Widget build(BuildContext context) {
-    final isLoggedIn = token != null && token!.isNotEmpty;
+    if (!hasCheckedLogin) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final bool isLoggedIn = token != null && token!.isNotEmpty;
 
     return BlocBuilder<FavoriteBloc, FavoriteState>(
       builder: (context, state) {
-        if (state is FavoriteLoading) {
-          return Scaffold(appBar: AppBar(title: const Text("Favorites")), body: const Center(child: CircularProgressIndicator()));
-        }
-
-        if (state is FavoriteError) {
+        // Not logged in
+        if (!isLoggedIn) {
           return Scaffold(
             backgroundColor: Colors.white,
             bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
             appBar: AppBar(
               elevation: 0,
-              surfaceTintColor: Colors.white,
+              backgroundColor: Colors.white,
               iconTheme: const IconThemeData(color: Colors.red),
               title: const Text("Favorites", style: TextStyle(color: Colors.black)),
+            ),
+            body: _loginPrompt(context),
+          );
+        }
+
+        // Loading
+        if (state is FavoriteLoading) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        // Error
+        if (state is FavoriteError) {
+          final bool isUnauthorized = state.message.contains('401') || state.message.contains('Unauthorized');
+
+          if (isUnauthorized) {
+            return Scaffold(
               backgroundColor: Colors.white,
+              bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
+              appBar: AppBar(
+                elevation: 0,
+                backgroundColor: Colors.white,
+                iconTheme: const IconThemeData(color: Colors.red),
+                title: const Text("Favorites", style: TextStyle(color: Colors.black)),
+              ),
+              body: _loginPrompt(context),
+            );
+          }
+
+          return Scaffold(
+            backgroundColor: Colors.white,
+            bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
+            appBar: AppBar(
+              elevation: 0,
+              backgroundColor: Colors.white,
+              iconTheme: const IconThemeData(color: Colors.red),
+              title: const Text("Favorites", style: TextStyle(color: Colors.black)),
             ),
             body: Center(
               child: Column(
@@ -185,34 +240,53 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                   const SizedBox(height: 16),
                   Text(state.message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, color: Colors.grey)),
                   const SizedBox(height: 20),
-                  ElevatedButton(onPressed: () => context.read<FavoriteBloc>().add(const LoadFavorites()), child: const Text("Retry")),
+                  ElevatedButton(onPressed: refreshFavorites, child: const Text("Retry")),
                 ],
               ),
             ),
           );
         }
 
+        // Loaded successfully
+        // Loaded successfully
         if (state is FavoriteLoaded) {
-          final favorites = state.favorites;
+          // No conversion needed anymore — favorites is already List<Property>
+          final List<Property> favoriteProperties = state.favorites;
+
+          final bool hasFavorites = favoriteProperties.isNotEmpty;
 
           return Scaffold(
             backgroundColor: Colors.white,
             bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
             appBar: AppBar(
               elevation: 0,
-              surfaceTintColor: Colors.white,
+              backgroundColor: Colors.white,
               iconTheme: const IconThemeData(color: Colors.red),
               title: const Text("Favorites", style: TextStyle(color: Colors.black)),
-              backgroundColor: Colors.white,
               actions: [
-                if (favorites.isNotEmpty)
-                  TextButton(onPressed: _clearAllFavorites, child: const Text("Clear All", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+                if (hasFavorites)
+                  TextButton(
+                    onPressed: _clearAllFavorites,
+                    child: const Text("Clear All", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  ),
               ],
             ),
-            body: !isLoggedIn
-                ? _loginPrompt(context)
-                : favorites.isEmpty
+            body: hasFavorites
                 ? RefreshIndicator(
+              onRefresh: refreshFavorites,
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: favoriteProperties.length,
+                itemBuilder: (context, index) {
+                  final Property property = favoriteProperties[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    child: PropertyCard(item: property),
+                  );
+                },
+              ),
+            )
+                : RefreshIndicator(
               onRefresh: refreshFavorites,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -232,259 +306,24 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                           onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const Home())),
                           icon: const Icon(Icons.explore, color: Colors.white),
                           label: const Text("Browse Properties", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
-            )
-                : RefreshIndicator(
-              onRefresh: refreshFavorites,
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: favorites.length,
-                itemBuilder: (context, index) {
-                  final item = favorites[index];
-                  final propertyId = int.tryParse(item.id ?? '') ?? 0;
-
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Card(
-                      elevation: 5,
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                GestureDetector(
-                                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => Featured_Detail(data: item.id ?? ''))),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(10),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Stack(
-                                          clipBehavior: Clip.none,
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(12),
-                                              child: AspectRatio(
-                                                aspectRatio: 1.5,
-                                                child: Stack(
-                                                  children: [
-                                                    PageView.builder(
-                                                      itemCount: (item.media?.isNotEmpty ?? false) ? item.media!.length : 1,
-                                                      onPageChanged: (idx) => setState(() => _carouselPageIndex[propertyId] = idx),
-                                                      itemBuilder: (context, pageIndex) {
-                                                        String imageUrl = item.media?[pageIndex].originalUrl ?? item.image ?? '';
-                                                        if (imageUrl.isEmpty) imageUrl = 'https://via.placeholder.com/400x300.png?text=No+Image';
-                                                        if (!imageUrl.startsWith('http')) imageUrl = 'https://akarat.com/$imageUrl';
-
-                                                        return CachedNetworkImage(
-                                                          imageUrl: imageUrl,
-                                                          fit: BoxFit.cover,
-                                                          placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
-                                                          errorWidget: (_, __, ___) => const Icon(Icons.broken_image),
-                                                        );
-                                                      },
-                                                    ),
-                                                    if (item.media != null && item.media!.length > 1)
-                                                      Positioned(
-                                                        bottom: 10,
-                                                        left: 0,
-                                                        right: 0,
-                                                        child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                          children: List.generate(item.media!.length, (dotIndex) {
-                                                            final current = _carouselPageIndex[propertyId] ?? 0;
-                                                            return Container(
-                                                              margin: const EdgeInsets.symmetric(horizontal: 3),
-                                                              width: current == dotIndex ? 10 : 6,
-                                                              height: current == dotIndex ? 10 : 6,
-                                                              decoration: BoxDecoration(color: current == dotIndex ? Colors.white : Colors.white60, shape: BoxShape.circle),
-                                                            );
-                                                          }),
-                                                        ),
-                                                      ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-
-                                            // Favorite Heart Button
-                                            Positioned(
-                                              top: 12,
-                                              right: 12,
-                                              child: Material(
-                                                color: Colors.white.withOpacity(0.85),
-                                                shape: const CircleBorder(),
-                                                child: BlocBuilder<FavoriteBloc, FavoriteState>(
-                                                  builder: (context, favState) {
-                                                    final isFavorite = favState is FavoriteLoaded && favState.favoriteIds.contains(propertyId);
-
-                                                    return IconButton(
-                                                      padding: const EdgeInsets.all(6),
-                                                      icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border_outlined, color: isFavorite ? Colors.red : Colors.grey, size: 22),
-                                                      onPressed: () {
-                                                        if (!isLoggedIn) {
-                                                          _showLoginDialog(context);
-                                                          return;
-                                                        }
-                                                        context.read<FavoriteBloc>().add(ToggleFavorite(propertyId: propertyId));
-                                                      },
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-
-                                            // Agent Avatar
-                                            Positioned(
-                                              bottom: -30,
-                                              left: 10,
-                                              child: GestureDetector(
-                                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => Featured_Detail(data: item.id ?? ''))),
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                  children: [
-                                                    CircleAvatar(
-                                                      radius: 28,
-                                                      backgroundImage: (item.agentImage?.isNotEmpty ?? false)
-                                                          ? CachedNetworkImageProvider(item.agentImage!)
-                                                          : const AssetImage("assets/images/dummy.jpg") as ImageProvider,
-                                                    ),
-                                                    const SizedBox(height: 6),
-                                                    const Text("AGENT", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF1A73E9), letterSpacing: 0.5)),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-
-                                        const SizedBox(height: 15),
-
-                                        // Property Details
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(child: Padding(padding: const EdgeInsets.only(left: 10), child: Text(item.agent ?? 'Agent', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis))),
-                                            Row(children: [
-                                              if (item.postedOn?.isNotEmpty ?? false) Text('Listed ${item.postedOn}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                                              const SizedBox(width: 4),
-                                              if (item.agencyLogo?.isNotEmpty ?? false)
-                                                Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: Container(
-                                                    height: 30,
-                                                    width: 60,
-                                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), image: DecorationImage(image: CachedNetworkImageProvider(item.agencyLogo!), fit: BoxFit.contain)),
-                                                  ),
-                                                ),
-                                            ]),
-                                          ],
-                                        ),
-
-                                        const SizedBox(height: 5),
-                                        const Divider(color: Colors.grey, thickness: 0.3),
-                                        const SizedBox(height: 8),
-
-                                        Text(item.title ?? '', style: const TextStyle(fontSize: 16, height: 1.4), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                        const SizedBox(height: 5),
-                                        Text('AED ${item.price ?? ''}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
-                                        const SizedBox(height: 5),
-
-                                        Row(children: [
-                                          Image.asset("assets/images/map.png", height: 14),
-                                          const SizedBox(width: 5),
-                                          Expanded(child: Text(item.location ?? '', overflow: TextOverflow.ellipsis)),
-                                        ]),
-
-                                        const SizedBox(height: 8),
-
-                                        Row(children: [
-                                          Image.asset("assets/images/bed.png", height: 13),
-                                          const SizedBox(width: 5),
-                                          Text(item.bedrooms?.toString() ?? '0'),
-                                          const SizedBox(width: 10),
-                                          Image.asset("assets/images/bath.png", height: 13),
-                                          const SizedBox(width: 5),
-                                          Text(item.bathrooms?.toString() ?? '0'),
-                                          const SizedBox(width: 10),
-                                          if (item.displaySize?.isNotEmpty ?? false) ...[
-                                            Image.asset("assets/images/messure.png", height: 13),
-                                            const SizedBox(width: 5),
-                                            Text(item.displaySize!, style: const TextStyle(fontWeight: FontWeight.w500)),
-                                          ],
-                                        ]),
-
-                                        const SizedBox(height: 10),
-
-                                        Row(children: [
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: ElevatedButton.icon(
-                                              onPressed: () => launchUrlString('tel:${item.phoneNumber}', mode: LaunchMode.externalApplication),
-                                              icon: const Icon(Icons.call, color: Colors.red),
-                                              label: const Text("Call", style: TextStyle(color: Colors.black)),
-                                              style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[100], shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: ElevatedButton.icon(
-                                              onPressed: () => launchUrlString('https://wa.me/${item.whatsapp}', mode: LaunchMode.externalApplication),
-                                              icon: Image.asset("assets/images/whats.png", height: 20),
-                                              label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                              style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[100], shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                        ]),
-
-                                        const SizedBox(height: 10),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
             ),
           );
         }
 
         // Fallback
-        return Scaffold(appBar: AppBar(title: const Text("Favorites")), body: const Center(child: CircularProgressIndicator()));
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
       },
-    );
-  }
-
-  void _showLoginDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-        content: const Text("Please login to manage favorites.", style: TextStyle(color: Colors.black)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel", style: TextStyle(color: Colors.red))),
-          TextButton(onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginDemo()), (route) => false), child: const Text("Login", style: TextStyle(color: Colors.red))),
-        ],
-      ),
     );
   }
 
@@ -503,7 +342,12 @@ class _Fav_LogoutState extends State<Fav_Logout> {
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const Login())),
               icon: const Icon(Icons.login),
               label: const Text("Login"),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
             ),
           ],
         ),

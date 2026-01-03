@@ -115,7 +115,7 @@ class _EmaiLoginState extends State<EmaiLogin> {
         }
       }
 
-      // Show popup error dialog
+      // Show popup error dialogs
       _showErrorDialog(errorMessage);
     }
     catch (e) {

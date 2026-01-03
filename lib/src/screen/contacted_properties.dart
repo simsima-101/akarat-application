@@ -3,7 +3,7 @@ import 'dart:convert';
 
 
 
-import '../features/property/data/models/property_model.dart' as propertyModel;
+import '../features/property/data/models/project_model.dart' as contacted;
 
 
 import 'package:Akarat/src/core/utils/session_manager.dart';
@@ -25,7 +25,7 @@ class ContactedProperties extends StatefulWidget {
 }
 
 class _ContactedPropertiesState extends State<ContactedProperties> {
-  List<propertyModel.Data> contactedProperties = [];
+  List<contacted.ProjectData> contactedProperties = [];
 
   bool isLoading = true;
   String? error;
@@ -78,7 +78,7 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
 
         setState(() {
           contactedProperties = list
-              .map((e) => propertyModel.Data.fromJson(e as Map<String, dynamic>))
+              .map((e) => contacted.ProjectData.fromJson(e as Map<String, dynamic>))
               .toList();
           isLoading = false;
         });
@@ -146,7 +146,7 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
 
   void _removeProperty(int index) async {
     final property = contactedProperties[index];
-    final originalList = List<propertyModel.Data>.from(contactedProperties);
+    final originalList = List<contacted.ProjectData>.from(contactedProperties);
 
 
     // Optimistically remove

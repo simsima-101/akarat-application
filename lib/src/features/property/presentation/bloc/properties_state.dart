@@ -3,7 +3,7 @@ part of 'properties_bloc.dart';
 enum PropertiesStatus { initial, loading, loaded, loadingMore, error }
 
 class PropertiesState extends Equatable {
-  final List<Data> properties;
+  final List<ProjectData> properties;
   final int currentPage;
   final bool hasMore;
   final PropertiesStatus status;
@@ -29,7 +29,7 @@ class PropertiesState extends Equatable {
   );
 
   PropertiesState copyWith({
-    List<Data>? properties,
+    List<ProjectData>? properties,
     int? currentPage,
     bool? hasMore,
     PropertiesStatus? status,

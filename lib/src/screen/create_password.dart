@@ -99,7 +99,7 @@ class _CreatePasswordState extends State<CreatePassword> {
   }
 
 
-// Optional: Show error in a dialog
+// Optional: Show error in a dialogs
   void _showErrorDialog(String message) {
     showDialog(
       context: context,

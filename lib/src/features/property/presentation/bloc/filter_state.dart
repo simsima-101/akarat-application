@@ -1,6 +1,6 @@
 part of 'filter_bloc.dart';
 
-// Optional: Define your models here or import them
+// Models
 class PropertyTypeResponse {
   final List<PropertyCategory> data;
   PropertyTypeResponse({required this.data});
@@ -58,76 +58,58 @@ class ChartDataArea {
   ChartDataArea(this.x, this.y);
 }
 
+// State
 class FilterState {
-  // Tabs
-  final int selectedTab; // 0 = Properties, 1 = New Projects
-
-  // Purpose (Rent / Buy)
-  final int selectedProductIndex; // 0 = Rent, 1 = Buy
-
-  // Property Type (Residential / Commercial)
-  final int? propertyType; // 0 = Residential, 1 = Commercial
-
-  // Property Category (Apartment, Villa, etc.)
+  final int selectedTab;
+  final int selectedProductIndex;
+  final int? propertyType;
   final String? propertyCategory;
-
-  // Dynamic loaded categories (from API)
   final PropertyTypeResponse? propertyTypeModel;
 
-  // Price & Area
   final double minPrice;
   final double maxPrice;
   final double minArea;
   final double maxArea;
 
-  // Chart data for sliders (optional visual bars)
   final List<ChartData> chartData;
   final List<ChartDataArea> chartDataArea;
 
-  // Multi-select filters
   final List<String> selectedBedrooms;
   final List<String> selectedBathrooms;
   final List<String> selectedLocations;
 
-  // Amenities
-  final List<Amenity> amenities; // Full list from API
+  final List<Amenity> amenities;
   final List<int> selectedAmenitiesIds;
 
-  // Furnished Type (single select)
   final List<String> furnishedTypes;
-  final int selectedFurnishedIndex; // -1 = none
+  final int selectedFurnishedIndex;
 
-  // Completion Status (Off-plan / Ready)
   final List<String> completion;
   final int? selectedCompletionIndex;
 
-  // Handover By (Q1 2025, etc.)
   final List<String> handoverOptions;
-  final int selectedHandoverIndex; // -1 = none
+  final int selectedHandoverIndex;
 
-  // % Completion
   final List<String> percentCompletionOptions;
-  final int selectedPercentCompletionIndex; // -1 = none
+  final int selectedPercentCompletionIndex;
 
-  // Rent is Paid (Yearly, Monthly, etc.)
   final List<String> rentPaidOptions;
-  final int selectedRentPaidIndex; // -1 = none
+  final int selectedRentPaidIndex;
 
-  // Agent / Agency search
   final String agentOrAgencySearchText;
 
-  // Loading & UI states
-  final bool isLoading; // General loading (e.g. property types, amenities)
-  final bool isSearchingResults; // Searching properties on "Show Results"
+  final bool isLoading;
+  final bool isSearchingResults;
   final bool hasChanges;
 
-  // Bedroom & Bathroom static lists (shown in UI)
   final List<String> bedroomList;
   final List<String> bathroomList;
 
+  final int filterResultCount; // ← Added
+
   FilterState({
     this.selectedTab = 0,
-    this.selectedProductIndex = 1, // Default to Buy
+    this.selectedProductIndex = 1,
     this.propertyType,
     this.propertyCategory,
     this.propertyTypeModel,
@@ -146,15 +128,7 @@ class FilterState {
     this.selectedFurnishedIndex = -1,
     this.completion = const ['Ready', 'Off-Plan'],
     this.selectedCompletionIndex,
-    this.handoverOptions = const [
-      'Q1 2025',
-      'Q2 2025',
-      'Q3 2025',
-      'Q4 2025',
-      '2026',
-      '2027',
-      'Ready'
-    ],
+    this.handoverOptions = const ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', '2026', '2027', 'Ready'],
     this.selectedHandoverIndex = -1,
     this.percentCompletionOptions = const ['0-25%', '26-50%', '51-75%', '76-100%'],
     this.selectedPercentCompletionIndex = -1,
@@ -166,6 +140,7 @@ class FilterState {
     this.hasChanges = false,
     this.bedroomList = const ['Studio', '1', '2', '3', '4', '5', '6+'],
     this.bathroomList = const ['1', '2', '3', '4', '5', '6+'],
+    this.filterResultCount = 107617,
   });
 
   static final FilterState initial = FilterState();
@@ -203,6 +178,7 @@ class FilterState {
     bool? hasChanges,
     List<String>? bedroomList,
     List<String>? bathroomList,
+    int? filterResultCount,
   }) {
     return FilterState(
       selectedTab: selectedTab ?? this.selectedTab,
@@ -228,8 +204,7 @@ class FilterState {
       handoverOptions: handoverOptions ?? this.handoverOptions,
       selectedHandoverIndex: selectedHandoverIndex ?? this.selectedHandoverIndex,
       percentCompletionOptions: percentCompletionOptions ?? this.percentCompletionOptions,
-      selectedPercentCompletionIndex:
-      selectedPercentCompletionIndex ?? this.selectedPercentCompletionIndex,
+      selectedPercentCompletionIndex: selectedPercentCompletionIndex ?? this.selectedPercentCompletionIndex,
       rentPaidOptions: rentPaidOptions ?? this.rentPaidOptions,
       selectedRentPaidIndex: selectedRentPaidIndex ?? this.selectedRentPaidIndex,
       agentOrAgencySearchText: agentOrAgencySearchText ?? this.agentOrAgencySearchText,
@@ -238,10 +213,10 @@ class FilterState {
       hasChanges: hasChanges ?? this.hasChanges,
       bedroomList: bedroomList ?? this.bedroomList,
       bathroomList: bathroomList ?? this.bathroomList,
+      filterResultCount: filterResultCount ?? this.filterResultCount,
     );
   }
 
-  // Optional: Helpful getter to detect if any filter is active
   bool get hasActiveFilters =>
       selectedProductIndex != 1 ||
           propertyType != null ||

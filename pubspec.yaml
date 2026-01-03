@@ -10,6 +10,13 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_localizations:   # ← Indented with 2 spaces under dependencies
+    sdk: flutter
+
+
+
+
+
   readmore: ^3.0.0
   country_code_picker: ^3.4.1
   intl_country_data: ^1.2.9
@@ -71,46 +78,12 @@ flutter_launcher_icons:
 
 # =============================================
 # THIS IS THE ONLY PART THAT WAS MISSING
-# =============================================
 flutter:
   uses-material-design: true
 
+  generate: true  # For automatic localization code generation
+
   assets:
-    - .env                        # This line fixes the white screen forever
-    - assets/images/
-    - assets/images/apartment.png
-    - assets/images/commercials.png
-    - assets/images/duplex.png
-    - assets/images/labour-camp.png
-    - assets/images/land.png
-    - assets/images/new-apartment.png
-    - assets/images/offices.png
-    - assets/images/penthouse.png
-    - assets/images/retail.png
-    - assets/images/rooms.png
-    - assets/images/shop.png
-    - assets/images/showroom.png
-    - assets/images/studio.png
-    - assets/images/townhouse.png
-    - assets/images/villa.png
-    - assets/images/warehouse.png
-    - assets/images/not_found.png
-    - assets/images/profile.png
-    - assets/images/dummy.jpg
-    - assets/images/building.png
-    - assets/images/Bulk-Unit.png
-    - assets/images/Factory.png
-    - assets/images/floor.png
-    - assets/images/hotel-apartment.png
-    - assets/images/Industrial-Land.png
-    - assets/images/Mixed-Use-Land.png
-    - assets/images/bell-black.png
-    - assets/images/bell-red.png
-    - assets/images/my-account.png
-    - assets/images/my-account-profile.png
-    - assets/images/alert_box_logout_icon.png
-    - assets/images/alert_box_delete_icon.png
-    - assets/images/ae.png
-    - assets/images/google.png
-    - assets/images/about_main.png
-    - assets/images/savealert.png
+    - .env                    # Your environment file
+    - assets/images/          # This includes EVERY file inside assets/images/ and subfolders
+

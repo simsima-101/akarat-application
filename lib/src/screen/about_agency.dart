@@ -15,12 +15,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../device_id.dart';
+import '../common/widgets/property_card.dart';
 import '../core/services/api_service.dart';
 import '../core/utils/secure_storage.dart';
 
 import '../features/agency/data/models/agency_agent_model.dart';
 import '../features/agency/data/models/agency_detail_model.dart';
 import '../features/agency/data/models/agency_properties_model.dart' as propertyModel;
+import '../features/property/data/models/fdetailmodel.dart' as fdetailModel;
 import '../features/property/data/models/toggle_model.dart';
 
 import '../providers/email_enquiry_provider.dart';
@@ -34,6 +36,12 @@ import 'featured_detail.dart';
 import 'home.dart';
 import 'login.dart';
 import 'my_account.dart';
+
+import '../features/property/data/models/property_model.dart';
+
+
+
+
 
 // Force HTTPS so iOS hardware doesn't block http:// images/redirects
 String secureUrl(String? url) {
@@ -69,6 +77,7 @@ class _About_AgencyState extends State<About_Agency> {
 
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
+
 
 
   int _safePropertyId(dynamic id) {
@@ -123,7 +132,7 @@ class _About_AgencyState extends State<About_Agency> {
     input = input.replaceAll(RegExp(r'[^\d+]'), '');
     if (input.startsWith('+971')) return input;
     if (input.startsWith('00971')) return '+971${input.substring(5)}';
-    if (input.startsWith('971')) return '+971${input.substring(3)}';
+  if (input.startsWith('971')) return '+971${input.substring(3)}';
     if (input.startsWith('0') && input.length == 10) return '+971${input.substring(1)}';
     if (input.length == 9) return '+971$input';
     return input;
@@ -140,7 +149,7 @@ class _About_AgencyState extends State<About_Agency> {
   }
 
 // API CALL: Send email inquiry to company
-  // API CALL: Send email inquiry to company (using the beautiful dialog)
+  // API CALL: Send email inquiry to company (using the beautiful dialogs)
   Future<void> _sendCompanyEmailInquiry() async {
     if (agencyDetailmodel == null) return;
 
@@ -205,7 +214,7 @@ class _About_AgencyState extends State<About_Agency> {
               backgroundColor: Colors.green,
             ),
           );
-          Navigator.pop(context); // Close dialog
+          Navigator.pop(context); // Close dialogs
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -231,7 +240,7 @@ class _About_AgencyState extends State<About_Agency> {
   int currentPage = 1;
   bool isLoadingMore = false;
   bool hasMoreData = true;
-  List<propertyModel.Property> allProperties = [];
+  List<propertyModel.Data> allProperties = [];
   propertyModel.AgencyPropertiesResponseModel? agencyPropertiesModel;
   final ScrollController _scrollController = ScrollController();
 
@@ -596,7 +605,7 @@ class _About_AgencyState extends State<About_Agency> {
     );
   }
 
-  String? getDisplaySize(propertyModel.Property property) {
+  String? getDisplaySize(propertyModel.Data property) {
     String? rawSize;
 
     // Priority 1: propertySizeSqft (first priority)
@@ -1282,254 +1291,25 @@ class _About_AgencyState extends State<About_Agency> {
                   // PROPERTIES TAB
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 0, right: 0, top: 15),
-                            child: ListView.builder(
-                              padding: const EdgeInsets.all(0),
-                              controller: _scrollController,
-                              itemCount: allProperties.length +
-                                  (isLoadingMore ? 1 : 0),
-                              physics:
-                              const AlwaysScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                if (index ==
-                                    allProperties.length) {
-                                  return const Center(
-                                    child: Padding(
-                                      padding:
-                                      EdgeInsets.all(10.0),
-                                      child:
-                                      CircularProgressIndicator(),
-                                    ),
-                                  );
-                                }
+                    child: allProperties.isEmpty && !isLoadingMore
+                        ? const Center(child: Text("No properties found"))
+                        : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      itemCount: allProperties.length + (isLoadingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == allProperties.length) {
+                          return const Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
 
-                                final property =
-                                allProperties[index];
-                                bool isFavorited =
-                                favoriteProperties
-                                    .contains(
-                                    property.id);
-
-                                return GestureDetector(
-                                  onTap: () {
-                                    String id = property.id
-                                        .toString();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            Featured_Detail(
-                                                data: id),
-                                      ),
-                                    );
-                                  },
-                                  child: Padding(
-                                    padding:
-                                    const EdgeInsets.only(
-                                        bottom: 15),
-                                    child: Card(
-                                      color: Colors.white,
-                                      borderOnForeground:
-                                      true,
-                                      shadowColor:
-                                      Colors.white,
-                                      elevation: 10,
-                                      child: Padding(
-                                        padding:
-                                        const EdgeInsets
-                                            .only(
-                                          left: 5.0,
-                                          top: 0,
-                                          right: 5,
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            Padding(
-                                              padding:
-                                              const EdgeInsets
-                                                  .only(
-                                                top: 0.0,
-                                              ),
-                                              child:
-                                              ClipRRect(
-                                                borderRadius:
-                                                BorderRadius.circular(
-                                                    12),
-                                                child: Stack(
-                                                  children: [
-                                                    AspectRatio(
-                                                      aspectRatio:
-                                                      1.6,
-                                                      child: ListView
-                                                          .builder(
-                                                        scrollDirection:
-                                                        Axis.horizontal,
-                                                        itemCount: property.media?.length ??
-                                                            0,
-                                                        itemBuilder:
-                                                            (context,
-                                                            mediaIndex) {
-                                                          return CachedNetworkImage(
-                                                            imageUrl:
-                                                            secureUrl(property.media![mediaIndex].originalUrl),
-                                                            fit:
-                                                            BoxFit.fill,
-                                                          );
-                                                        },
-                                                      ),
-                                                    ),
-                                                    // indicator dots
-                                                    Positioned(
-                                                      bottom:
-                                                      12,
-                                                      left:
-                                                      0,
-                                                      right:
-                                                      0,
-                                                      child:
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                        MainAxisAlignment.center,
-                                                        children:
-                                                        List.generate(
-                                                          property.media?.length ?? 0,
-                                                              (index) {
-                                                            final distance = (index - _currentImageIndex).abs();
-                                                            double scale;
-                                                            double opacity;
-
-                                                            if (distance == 0) {
-                                                              scale = 1.2;
-                                                              opacity = 1.0;
-                                                            } else if (distance == 1) {
-                                                              scale = 1.0;
-                                                              opacity = 0.7;
-                                                            } else if (distance == 2) {
-                                                              scale = 0.8;
-                                                              opacity = 0.5;
-                                                            } else {
-                                                              scale = 0.5;
-                                                              opacity = 0.0;
-                                                            }
-
-                                                            return AnimatedOpacity(
-                                                              duration: const Duration(milliseconds: 300),
-                                                              opacity: opacity,
-                                                              child: SizedBox(
-                                                                width: 12,
-                                                                height: 12,
-                                                                child: Center(
-                                                                  child: Container(
-                                                                    width: 8 * scale,
-                                                                    height: 8 * scale,
-                                                                    decoration: const BoxDecoration(
-                                                                      color: Colors.white,
-                                                                      shape: BoxShape.circle,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            );
-                                                          },
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding:
-                                              const EdgeInsets.only(
-                                                top: 5,
-                                              ),
-                                              child: ListTile(
-                                                title:
-                                                Padding(
-                                                  padding:
-                                                  const EdgeInsets.only(
-                                                    top: 5.0,
-                                                    bottom:
-                                                    5,
-                                                  ),
-                                                  child:
-                                                  Text(
-                                                    property.title.toString(),
-                                                    style:
-                                                    const TextStyle(
-                                                      fontSize: 16,
-                                                      height: 1.4,
-                                                    ),
-                                                  ),
-                                                ),
-                                                subtitle:
-                                                Text(
-                                                  '${property.price} AED',
-                                                  style:
-                                                  const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 22,
-                                                    height: 1.4,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            // LOCATION + SPECS ROW (clean & no overflow)
-                                            Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  // Location
-                                                  Row(
-                                                    children: [
-                                                      Image.asset("assets/images/map.png", height: 14),
-                                                      const SizedBox(width: 8),
-                                                      Expanded(
-                                                        child: Text(
-                                                          property.location ?? '',
-                                                          style: const TextStyle(fontSize: 13),
-                                                          overflow: TextOverflow.ellipsis,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 10),
-
-                                                  // Beds • Baths • Size (same style as your other screens)
-                                                  Row(
-                                                    children: [
-                                                      _buildInfoChip("assets/images/bed.png", property.bedrooms),
-                                                      if (property.bedrooms != null && property.bedrooms != "0") const SizedBox(width: 15),
-                                                      _buildInfoChip("assets/images/bath.png", property.bathrooms),
-                                                      if (property.bathrooms != null && property.bathrooms != "0") const SizedBox(width: 15),
-                                                      _buildInfoChip("assets/images/messure.png", getDisplaySize(property)),
-                                                    ]
-                                                        .where((widget) => widget is! SizedBox || (widget as SizedBox).width != null)
-                                                        .toList(),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-
-                                            const SizedBox(height: 12),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
+                        final propertyModel.Data agencyProperty = allProperties[index];
+                        final Property unifiedProperty = agencyProperty.toProperty();
+                        // Use the same beautiful card as everywhere else
+                        return PropertyCard(item: unifiedProperty);
+                      },
                     ),
                   ),
 
@@ -1897,6 +1677,8 @@ Widget _pill(String text) => Container(
     ),
   ),
 );
+
+
 
 Widget _buildTagContainer(
     {required String text,

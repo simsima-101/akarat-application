@@ -3,7 +3,7 @@ part of 'new_projects_bloc.dart';
 enum NewProjectsStatus { initial, loading, loaded, loadingMore, error }
 
 class NewProjectsState extends Equatable {
-  final List<Data> projects;
+  final List<ProjectData> projects;
   final int currentPage;
   final bool hasMore;
   final NewProjectsStatus status;
@@ -26,7 +26,7 @@ class NewProjectsState extends Equatable {
   );
 
   NewProjectsState copyWith({
-    List<Data>? projects,
+    List<ProjectData>? projects,
     int? currentPage,
     bool? hasMore,
     NewProjectsStatus? status,

@@ -21,8 +21,20 @@ class LoginRequested extends AuthEvent {
 }
 
 class RegisterRequested extends AuthEvent {
-  // Add fields if needed for registration
   const RegisterRequested();
 }
 
 class LogoutRequested extends AuthEvent {}
+
+/// New: Show the "Login required" red dialogs
+class ShowLoginRequiredDialog extends AuthEvent {
+  final BuildContext context;
+
+  const ShowLoginRequiredDialog(this.context);
+
+  @override
+  List<Object?> get props => [context];
+}
+
+/// New: Navigate to login screen (used after tapping "Login" in dialogs)
+class NavigateToLogin extends AuthEvent {}

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'property_model.dart'; // Same folder – correct!
+
 class ProjectResponseModel {
   bool? success;
   String? message;
@@ -25,7 +27,7 @@ class ProjectResponseModel {
 }
 
 class ProjectModel {
-  List<Data>? data;
+  List<ProjectData>? data;
   Links? links;
   Meta? meta;
 
@@ -33,7 +35,9 @@ class ProjectModel {
 
   ProjectModel.fromJson(Map<String, dynamic> json) {
     if (json['data'] != null && json['data'] is List) {
-      data = List<Data>.from(json['data'].map((v) => Data.fromJson(v)));
+      data = (json['data'] as List)
+          .map((v) => ProjectData.fromJson(v as Map<String, dynamic>))
+          .toList();
     }
     links = json['links'] != null ? Links.fromJson(json['links']) : null;
     meta = json['meta'] != null ? Meta.fromJson(json['meta']) : null;
@@ -54,7 +58,7 @@ class ProjectModel {
   }
 }
 
-class Data {
+class ProjectData {
   int? id;
   String? title;
   String? price;
@@ -66,7 +70,7 @@ class Data {
   int? bedrooms;
   int? bathrooms;
   String? squareFeet;
-  dynamic propertySizeSqft;     // Can be double, int, or string
+  dynamic propertySizeSqft;
   List<Media>? media;
   String? email;
   String? description;
@@ -76,7 +80,7 @@ class Data {
   String? agencyLogo;
   String? postedOn;
 
-  Data({
+  ProjectData({
     this.id,
     this.title,
     this.price,
@@ -99,9 +103,16 @@ class Data {
     this.postedOn,
   });
 
-  // THIS IS THE FIX – use factory constructor
-  factory Data.fromJson(Map<String, dynamic> json) {
-    return Data(
+  factory ProjectData.fromJson(Map<String, dynamic> json) {
+    List<Media>? parsedMedia;
+    if (json['media'] is List) {
+      parsedMedia = List<Media>.from(
+        (json['media'] as List<dynamic>)
+            .map((v) => Media.fromJson(v as Map<String, dynamic>)),
+      );
+    }
+
+    return ProjectData(
       id: json['id'],
       title: json['title']?.toString(),
       price: json['price']?.toString(),
@@ -125,11 +136,7 @@ class Data {
       agencyLogo: json['agency_logo']?.toString(),
       postedOn: json['posted_on']?.toString(),
       saved: json['saved'] == true || json['saved'] == 1,
-      media: json['media'] != null && json['media'] is List
-          ? (json['media'] as List)
-          .map((v) => Media.fromJson(v as Map<String, dynamic>))
-          .toList()
-          : null,
+      media: parsedMedia, // Now 100% typed as List<Media>?
     );
   }
 
@@ -161,7 +168,6 @@ class Data {
     return data;
   }
 
-  // Optional: keep your displaySize getter
   String get displaySize {
     if (propertySizeSqft != null) {
       final raw = propertySizeSqft.toString().trim();
@@ -185,18 +191,32 @@ class Data {
   }
 }
 
-class Media {
-  String? originalUrl;
-
-  Media({this.originalUrl});
-
-  Media.fromJson(Map<String, dynamic> json) {
-    originalUrl = json['original_url']?.toString();
+extension ProjectDataToProperty on ProjectData {
+  Property toProperty() {
+    return Property(
+      id: id?.toString() ?? '0',
+      title: title ?? 'New Project',
+      price: price ?? 'Price on request',
+      location: location ?? address ?? 'Dubai, UAE',
+      bedrooms: bedrooms ?? 0,
+      bathrooms: bathrooms ?? 0,
+      squareFeet: squareFeet ?? displaySize ?? 'N/A',
+      description: description ?? 'New off-plan project in Dubai. Contact for details.',
+      image: media?.isNotEmpty == true ? media!.first.originalUrl ?? '' : '',
+      media: media, // ← JUST PASS media DIRECTLY – it's already List<Media>?
+      agent: agentName ?? 'Developer',
+      agentImage: agentImage,
+      phoneNumber: phoneNumber,
+      whatsapp: whatsapp,
+      postedOn: postedOn,
+      agencyLogo: agencyLogo,
+    );
   }
-
-  Map<String, dynamic> toJson() => {'original_url': originalUrl};
 }
 
+
+
+// Rest of your classes (Links, Meta, MetaLinks) remain unchanged
 class Links {
   String? first;
   String? last;
@@ -205,11 +225,13 @@ class Links {
 
   Links({this.first, this.last, this.prev, this.next});
 
-  Links.fromJson(Map<String, dynamic> json) {
-    first = json['first'];
-    last = json['last'];
-    prev = json['prev'];
-    next = json['next'];
+  factory Links.fromJson(Map<String, dynamic> json) {
+    return Links(
+      first: json['first'],
+      last: json['last'],
+      prev: json['prev'],
+      next: json['next'],
+    );
   }
 
   Map<String, dynamic> toJson() => {
@@ -241,21 +263,22 @@ class Meta {
     this.total,
   });
 
-  Meta.fromJson(Map<String, dynamic> json) {
-    currentPage = json['current_page'];
-    from = json['from'];
-    lastPage = json['last_page'];
-    path = json['path'];
-    perPage = json['per_page'];
-    to = json['to'];
-    total = json['total'];
-
-    if (json['links'] != null && json['links'] is List) {
-      links = [];
-      for (var v in json['links']) {
-        links!.add(MetaLinks.fromJson(v));
-      }
-    }
+  factory Meta.fromJson(Map<String, dynamic> json) {
+    return Meta(
+      currentPage: json['current_page'],
+      from: json['from'],
+      lastPage: json['last_page'],
+      path: json['path'],
+      perPage: json['per_page'],
+      to: json['to'],
+      total: json['total'],
+      links: json['links'] != null && json['links'] is List
+          ? List<MetaLinks>.from(
+        (json['links'] as List)
+            .map((v) => MetaLinks.fromJson(v as Map<String, dynamic>)),
+      )
+          : null,
+    );
   }
 
   Map<String, dynamic> toJson() {
@@ -282,10 +305,12 @@ class MetaLinks {
 
   MetaLinks({this.url, this.label, this.active});
 
-  MetaLinks.fromJson(Map<String, dynamic> json) {
-    url = json['url'];
-    label = json['label']?.toString();
-    active = json['active'];
+  factory MetaLinks.fromJson(Map<String, dynamic> json) {
+    return MetaLinks(
+      url: json['url'],
+      label: json['label']?.toString(),
+      active: json['active'],
+    );
   }
 
   Map<String, dynamic> toJson() => {

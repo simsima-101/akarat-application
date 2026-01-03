@@ -8,21 +8,21 @@ import 'package:intl_country_data/intl_country_data.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 typedef EmailAgentSubmitCallback = Future<void> Function({
-  required String name,
-  required String email,
-  required String phone,
-  required String message,
+required String name,
+required String email,
+required String phone,
+required String message,
 });
 
 /// Open from anywhere
 Future<void> showEmailAgentDialog(
-  BuildContext context, {
-  String subtitle = '',
-  String? initialMessage,
-  String? initialPhone,
-  EmailAgentSubmitCallback? onSubmit,
-  VoidCallback? onSuccess,
-}) async {
+    BuildContext context, {
+      String subtitle = '',
+      String? initialMessage,
+      String? initialPhone,
+      EmailAgentSubmitCallback? onSubmit,
+      VoidCallback? onSuccess,
+    }) async {
   await showDialog(
     context: context,
     barrierDismissible: false,
@@ -58,7 +58,7 @@ Future<void> showHomeContactDialog(BuildContext context) async {
               "Accept": "application/json",
               "X-Device-ID": "8B368203-14FE-47F6-98C8-9933CB0AE73D",
               "Authorization":
-                  "Bearer 1092|fsHg2fMib653xIThnBMHMgtzl8Q7rILysRpFJbrb",
+              "Bearer 1092|fsHg2fMib653xIThnBMHMgtzl8Q7rILysRpFJbrb",
             },
             body: {
               "name": name.trim(),
@@ -206,13 +206,13 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
       queryParameters: {
         'subject': 'Inquiry from $name',
         'body':
-            'Name: $name\nEmail: $email\nPhone: $fullPhone\n\nMessage:\n$msg',
+        'Name: $name\nEmail: $email\nPhone: $fullPhone\n\nMessage:\n$msg',
       },
     );
 
     try {
       final launched =
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!launched) {
         if (!mounted) return;
         await showDialog(
@@ -220,7 +220,7 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
           builder: (_) => AlertDialog(
             title: const Text("No Email App"),
             content:
-                const Text("Please install Gmail or Outlook to send emails."),
+            const Text("Please install Gmail or Outlook to send emails."),
             actions: [
               TextButton(
                   onPressed: () => Navigator.pop(context),
@@ -246,117 +246,117 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
   }
 
   InputDecoration _input(String hint) => InputDecoration(
-        hintText: hint,
-        filled: true,
-        fillColor: Colors.white,
-        //  vertical: 18 → 10 (shorter fields)
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14), // 18 → 14
-          borderSide: const BorderSide(color: Color(0xFFE6E6E6)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFE6E6E6)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFDDDDDD), width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-      );
+    hintText: hint,
+    filled: true,
+    fillColor: Colors.white,
+    //  vertical: 18 → 10 (shorter fields)
+    contentPadding:
+    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14), // 18 → 14
+      borderSide: const BorderSide(color: Color(0xFFE6E6E6)),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: Color(0xFFE6E6E6)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: Color(0xFFDDDDDD), width: 1.5),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: Colors.red),
+    ),
+  );
 
   Widget _uaePrefixChip() => Container(
-        height: 48, // 56 → 48
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: const Color(0xFFE6E6E6)),
-          borderRadius:
-              const BorderRadius.horizontal(left: Radius.circular(14)),
+    height: 48, // 56 → 48
+    decoration: BoxDecoration(
+      color: Colors.white,
+      border: Border.all(color: const Color(0xFFE6E6E6)),
+      borderRadius:
+      const BorderRadius.horizontal(left: Radius.circular(14)),
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: 10),
+    child: CountryCodePicker(
+      onChanged: (code) {
+        setState(() {
+          selectedCountryCode = code.dialCode ?? "+971";
+          final intlCountry =
+          IntlCountryData.fromCountryCodeAlpha2(code.code ?? "AE");
+
+          _phoneCtrl.clear();
+
+          _maxPhoneLength = intlCountry.telephoneMaxLength;
+        });
+      },
+      initialSelection: 'AE', // UAE default
+      favorite: const [],
+      showDropDownButton: false,
+      showCountryOnly: false,
+      showOnlyCountryWhenClosed: false,
+      alignLeft: false,
+      margin: EdgeInsetsGeometry.only(left: 0, right: 8),
+      padding: EdgeInsetsGeometry.all(0),
+      headerTextStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+      closeIcon: Icon(
+        Icons.close,
+        size: 25,
+      ),
+      dialogSize: Size(double.infinity, 700),
+
+      searchDecoration: InputDecoration(
+        hintText: 'Search country',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.shade300),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: CountryCodePicker(
-          onChanged: (code) {
-            setState(() {
-              selectedCountryCode = code.dialCode ?? "+971";
-              final intlCountry =
-                  IntlCountryData.fromCountryCodeAlpha2(code.code ?? "AE");
-
-              _phoneCtrl.clear();
-
-              _maxPhoneLength = intlCountry.telephoneMaxLength;
-            });
-          },
-          initialSelection: 'AE', // UAE default
-          favorite: const [],
-          showDropDownButton: false,
-          showCountryOnly: false,
-          showOnlyCountryWhenClosed: false,
-          alignLeft: false,
-          margin: EdgeInsetsGeometry.only(left: 0, right: 8),
-          padding: EdgeInsetsGeometry.all(0),
-          headerTextStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-          closeIcon: Icon(
-            Icons.close,
-            size: 25,
-          ),
-          dialogSize: Size(double.infinity, 700),
-
-          searchDecoration: InputDecoration(
-            hintText: 'Search country',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          ),
-          dialogItemPadding:
-              EdgeInsetsGeometry.symmetric(horizontal: 12, vertical: 13),
-          // topBarPadding: EdgeInsets.only(bottom: 20),
-          searchPadding:
-              EdgeInsetsGeometry.only(bottom: 10, left: 10, right: 10),
-        ),
-      );
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+      dialogItemPadding:
+      EdgeInsetsGeometry.symmetric(horizontal: 12, vertical: 13),
+      // topBarPadding: EdgeInsets.only(bottom: 20),
+      searchPadding:
+      EdgeInsetsGeometry.only(bottom: 10, left: 10, right: 10),
+    ),
+  );
 
   Widget _phoneField() => Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _uaePrefixChip(),
-          Expanded(
-            child: TextFormField(
-              controller: _phoneCtrl,
-              validator: _phone,
-              keyboardType: TextInputType.phone,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              maxLength: _maxPhoneLength ??
-                  9, // Fallback default if no country selected
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _uaePrefixChip(),
+      Expanded(
+        child: TextFormField(
+          controller: _phoneCtrl,
+          validator: _phone,
+          keyboardType: TextInputType.phone,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          maxLength: _maxPhoneLength ??
+              9, // Fallback default if no country selected
 
-              decoration: _input('Phone').copyWith(
-                counterText: '',
-                border: const OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.horizontal(right: Radius.circular(14)),
-                  borderSide: BorderSide(color: Color(0xFFE6E6E6)),
-                ),
-                enabledBorder: const OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.horizontal(right: Radius.circular(14)),
-                  borderSide: BorderSide(color: Color(0xFFE6E6E6)),
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.horizontal(right: Radius.circular(14)),
-                  borderSide: BorderSide(color: Color(0xFFDDDDDD), width: 1.5),
-                ),
-              ),
+          decoration: _input('Phone').copyWith(
+            counterText: '',
+            border: const OutlineInputBorder(
+              borderRadius:
+              BorderRadius.horizontal(right: Radius.circular(14)),
+              borderSide: BorderSide(color: Color(0xFFE6E6E6)),
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderRadius:
+              BorderRadius.horizontal(right: Radius.circular(14)),
+              borderSide: BorderSide(color: Color(0xFFE6E6E6)),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius:
+              BorderRadius.horizontal(right: Radius.circular(14)),
+              borderSide: BorderSide(color: Color(0xFFDDDDDD), width: 1.5),
             ),
           ),
-        ],
-      );
+        ),
+      ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -401,7 +401,7 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
                     InkWell(
                       onTap: () => Navigator.pop(context),
                       child:
-                          const Icon(Icons.close, color: Colors.red, size: 24),
+                      const Icon(Icons.close, color: Colors.red, size: 24),
                     ),
                   ],
                 ),
@@ -444,7 +444,7 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
                 TextFormField(
                   controller: _msgCtrl,
                   validator: (v) =>
-                      v?.trim().isEmpty ?? true ? 'Message is required' : null,
+                  v?.trim().isEmpty ?? true ? 'Message is required' : null,
                   minLines: 3, // 5 → 3 (shorter)
                   maxLines: 6, // 8 → 6
                   decoration: _input('Write your message here...').copyWith(

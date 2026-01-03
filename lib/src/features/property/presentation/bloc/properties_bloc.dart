@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/services/api_service.dart';
 
+import '../../../../screen/filter_list.dart';
 import '../../data/models/project_model.dart'; // Adjust if your model path is different
 
 part 'properties_event.dart';
