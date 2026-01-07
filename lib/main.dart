@@ -6,7 +6,6 @@ import 'package:Akarat/src/features/property/presentation/bloc/enquiry_bloc.dart
 import 'package:Akarat/src/features/property/presentation/bloc/favorite_bloc.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/favorite_event.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/filter_bloc.dart';
-import 'package:Akarat/src/features/property/presentation/bloc/location_picker_bloc.dart';
 import 'package:Akarat/src/providers/favorite_provider.dart';
 import 'package:Akarat/src/providers/filter_provider.dart';
 import 'package:Akarat/src/providers/location_picker_provider.dart';
@@ -96,7 +95,6 @@ class MyApp extends StatelessWidget {
           BlocProvider(create: (_) => AuthBloc()..add(AppStarted())),
           BlocProvider(create: (_) => FavoriteBloc()..add(LoadFavorites())),
           BlocProvider(create: (_) => FilterBloc()),
-          BlocProvider(create: (_) => LocationPickerBloc()),
           BlocProvider(create: (_) => EnquiryBloc()),
         ],
         child: MaterialApp(

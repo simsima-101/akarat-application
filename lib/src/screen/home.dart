@@ -12,7 +12,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../common/widgets/property_card.dart';
+import '../common/widgets/property_card.dart'; // Your reusable card
 import '../core/services/api_service.dart';
 import '../features/property/data/datasources/favorite_remote_datasource.dart';
 import '../features/property/data/models/fdetailmodel.dart' as agencyProps;
@@ -21,7 +21,6 @@ import '../features/property/data/models/property_model.dart';
 import '../features/property/data/models/search_model.dart' as search;
 import '../features/property/data/models/toggle_model.dart';
 import '../features/property/presentation/bloc/filter_bloc.dart';
-import '../providers/filter_provider.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'ContactFormScreen.dart';
@@ -776,12 +775,17 @@ class _MyHomePageState extends State<HomeDemo> {
                                         border: InputBorder.none,
                                       ),
                                       onTap: () {
-                                        context.read<FilterProvider>()
-                                          ..setInitialHomeCategory(1)
-                                          ..resetAll(
-                                            context,
-                                            isUpdate: false,
-                                          );
+                                        //
+                                        // context.read<FilterProvider>()
+                                        //   ..setInitialHomeCategory(1)
+                                        //   ..resetAll(
+                                        //     context,
+                                        //     isUpdate: false,
+                                        //   );
+
+                                        context.read<FilterBloc>().add(
+                                            const FilterSetInitialHomeCategory(
+                                                0));
                                         purpose = "Rent";
                                         Navigator.push(
                                             context,
