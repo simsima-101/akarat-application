@@ -1,12 +1,13 @@
+// Filetr List
+
 import 'dart:convert';
 
-
-import 'package:Akarat/src/core/utils/session_manager.dart';
 import 'package:Akarat/src/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -20,11 +21,12 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import '../core/services/api_service.dart';
 import '../core/utils/secure_storage.dart';
+import '../core/utils/session_manager.dart';
 import '../features/property/data/datasources/favorite_remote_datasource.dart';
+import '../features/property/presentation/bloc/filter_bloc.dart';
 import '../providers/favorite_provider.dart';
 import '../providers/filter_provider.dart';
 import '../screen/ContactFormScreen.dart';
-
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'CreateAlertScreen.dart';
@@ -77,23 +79,23 @@ class _FliterListState extends State<FliterList> {
   }
 
   void toggleSavedAtIndex(int index) {
-    final filterProvider = context.read<FilterProvider>();
+    // final filterProvider = context.read<FilterProvider>();
 
-    final property = filterProvider.filterModel?.data![index];
+    // final property = filterProvider.filterModel?.data![index];
 
     // Default null to false before toggling
-    final currentSaved = property?.saved ?? false;
-    final newSaved = !currentSaved;
-
-    setState(() {
-      property?.saved = newSaved;
-
-      if (newSaved) {
-        FavoriteService.loggedInFavorites.add(property!.id!);
-      } else {
-        FavoriteService.loggedInFavorites.remove(property!.id!);
-      }
-    });
+    // final currentSaved = property?.saved ?? false;
+    // final newSaved = !currentSaved;
+    //
+    // setState(() {
+    //   property?.saved = newSaved;
+    //
+    //   if (newSaved) {
+    //     FavoriteService.loggedInFavorites.add(property!.id!);
+    //   } else {
+    //     FavoriteService.loggedInFavorites.remove(property!.id!);
+    //   }
+    // });
   }
 
   Future<bool> markAsContacted(int propertyId,
@@ -231,7 +233,7 @@ class _FliterListState extends State<FliterList> {
       return;
     }
 
-    final filterProvider = context.read<FilterProvider>();
+    final filterProvider = context.read<FilterBloc>().state;
 
     // Navigate to CreateAlertScreen and wait for result
     final initialPurpose = filterProvider.purpose;
@@ -292,7 +294,8 @@ class _FliterListState extends State<FliterList> {
           (index) => Data(
               500 + index * 100.0, yValues[index % yValues.length].toDouble()),
         );
-        final filterProvider = context.read<FilterProvider>();
+
+        final filterProvider = context.read<FilterBloc>().state;
 
         _scrollController.addListener(() {
           const threshold = 200.0;
@@ -302,7 +305,9 @@ class _FliterListState extends State<FliterList> {
                 filterProvider.nextPageUrl != null &&
                 filterProvider.nextPageUrl!.isNotEmpty) {
               debugPrint("🟢 Triggering loadMore: $filterProvider.nextPageUrl");
-              filterProvider.updateFilterCount(context, loadMore: true);
+
+              context.read<FilterBloc>().add(
+                  FilterUpdateFilterCount(context: context, loadMore: true));
             }
           }
         });
@@ -412,7 +417,10 @@ class _FliterListState extends State<FliterList> {
     // }
 
     Size screenSize = MediaQuery.sizeOf(context);
-    return Consumer<FilterProvider>(builder: (context, filterProvider, _) {
+    return BlocBuilder<FilterBloc, FilterState>(builder: (
+      context,
+      filterProvider,
+    ) {
       return Scaffold(
         bottomNavigationBar: SafeArea(
           child: buildMyNavBar(context),
@@ -486,8 +494,8 @@ class _FliterListState extends State<FliterList> {
 
                           Padding(
                               padding: const EdgeInsets.only(right: 10),
-                              child: Consumer<FilterProvider>(
-                                builder: (context, resetState, _) {
+                              child: BlocBuilder<FilterBloc, FilterState>(
+                                builder: (context, resetState) {
                                   final canReset = resetState.hasChanges;
 
                                   return TextButton(
@@ -495,11 +503,15 @@ class _FliterListState extends State<FliterList> {
                                         ? resetState.isResetLoading
                                             ? null
                                             : () async {
-                                                await resetState.resetAll(
-                                                    context,
-                                                    isUpdate: true);
-                                                resetState
-                                                    .captureInitialSnapshot(); // NEW SNAPSHOT
+                                                context.read<FilterBloc>().add(
+                                                    FilterResetAll(
+                                                        context: context,
+                                                        isUpdate: true));
+
+                                                context.read<FilterBloc>().add(
+                                                    FilterCaptureInitialSnapshot());
+
+                                                // NEW SNAPSHOT
                                                 _scrollController.jumpTo(0);
                                               }
                                         : null,
@@ -580,11 +592,13 @@ class _FliterListState extends State<FliterList> {
                       // BUY OR RENT
                       GestureDetector(
                         onTap: () {
-                          filterProvider.setSelectedFilterListProductLocally(
-                              filterProvider.selectedproduct!);
+                          context.read<FilterBloc>().add(
+                              FilterSetSelectedFilterListProductLocally(
+                                  filterProvider.selectedproduct!));
 
-                          filterProvider.setSelectedFilterListCompletionStatus(
-                              index: filterProvider.selectedCompletion);
+                          context.read<FilterBloc>().add(
+                              FilterSetSelectedFilterListCompletionStatus(
+                                  filterProvider.selectedCompletion));
 
                           showModalBottomSheet(
                             context: context,
@@ -594,8 +608,8 @@ class _FliterListState extends State<FliterList> {
                             ),
                             isScrollControlled: true,
                             builder: (context) {
-                              return Consumer<FilterProvider>(
-                                  builder: (context, purposeState, _) {
+                              return BlocBuilder<FilterBloc, FilterState>(
+                                  builder: (context, purposeState) {
                                 return Container(
                                   height:
                                       purposeState.filterListSelectedProduct ==
@@ -626,17 +640,17 @@ class _FliterListState extends State<FliterList> {
                                         child: ListView.builder(
                                           shrinkWrap: true,
                                           scrollDirection: Axis.horizontal,
-                                          itemCount:
-                                              purposeState.product.length,
+                                          itemCount: FilterBloc.product.length,
                                           itemBuilder: (context, index) {
                                             bool isSelected = purposeState
                                                     .filterListSelectedProduct ==
                                                 index;
                                             return GestureDetector(
                                               onTap: () {
-                                                purposeState
-                                                    .setSelectedFilterListProductLocally(
-                                                        index);
+                                                context.read<FilterBloc>().add(
+                                                    FilterSetSelectedFilterListProductLocally(
+                                                        index));
+
                                                 // selectedproduct = index;
                                                 // purpose = _product[index];
                                                 // selectedPurposeText =
@@ -680,7 +694,7 @@ class _FliterListState extends State<FliterList> {
                                                 ),
                                                 child: Center(
                                                   child: Text(
-                                                    purposeState.product[index],
+                                                    FilterBloc.product[index],
                                                     style: TextStyle(
                                                       color: isSelected
                                                           ? Colors.white
@@ -719,7 +733,7 @@ class _FliterListState extends State<FliterList> {
                                               scrollDirection: Axis.horizontal,
                                               child: Row(
                                                 children: List.generate(
-                                                    filterProvider.completion
+                                                    FilterBloc.completion
                                                         .length, (i) {
                                                   final bool isSelected =
                                                       filterProvider
@@ -727,11 +741,13 @@ class _FliterListState extends State<FliterList> {
                                                           i;
 
                                                   return GestureDetector(
-                                                    onTap: () async {
-                                                      await filterProvider
-                                                          .setSelectedFilterListCompletionStatus(
-                                                        index: i,
-                                                      );
+                                                    onTap: () {
+                                                      context
+                                                          .read<FilterBloc>()
+                                                          .add(
+                                                              FilterSetSelectedFilterListCompletionStatus(
+                                                            i,
+                                                          ));
                                                     },
                                                     child: Container(
                                                       // auto width based on label
@@ -785,7 +801,7 @@ class _FliterListState extends State<FliterList> {
                                                         ],
                                                       ),
                                                       child: Text(
-                                                        filterProvider
+                                                        FilterBloc
                                                             .completion[i],
                                                         style: const TextStyle(
                                                           fontSize: 14,
@@ -812,22 +828,23 @@ class _FliterListState extends State<FliterList> {
                                             // <-- add async here
                                             // await _resetPagingAndFetch();
 
-                                            await purposeState
-                                                .setSelectedProductType(
-                                              context,
-                                              purposeState
-                                                  .filterListSelectedProduct!,
-                                            );
+                                            context.read<FilterBloc>().add(
+                                                    FilterSetSelectedProductType(
+                                                  purposeState
+                                                      .filterListSelectedProduct!,
+                                                  context,
+                                                ));
 
-                                            await filterProvider
-                                                .setSelectedCompletionStatus(
-                                              context,
-                                              index: filterProvider
-                                                  .filterListSelectedCompletion,
-                                            );
+                                            context.read<FilterBloc>().add(
+                                                    FilterSetSelectedCompletionStatus(
+                                                  filterProvider
+                                                      .filterListSelectedCompletion,
+                                                  context,
+                                                ));
 
-                                            purposeState
-                                                .updateFilterCount(context);
+                                            context.read<FilterBloc>().add(
+                                                FilterUpdateFilterCount(
+                                                    context: context));
 
                                             _scrollController.jumpTo(0);
 
@@ -905,13 +922,14 @@ class _FliterListState extends State<FliterList> {
                       //PROPERTY TYPE
                       GestureDetector(
                         onTap: () async {
-                          await filterProvider
-                              .setSelectedFilterListPropertyType(
-                                  index: filterProvider.selectedPropType);
-
-                          filterProvider.setSelectedFilterListPropertyCategory(
-                            filterProvider.selectedtype,
-                          );
+                          context.read<FilterBloc>().add(
+                              FilterSetSelectedFilterListPropertyType(
+                                  filterProvider.selectedPropType));
+                          context
+                              .read<FilterBloc>()
+                              .add(FilterSetSelectedFilterListPropertyCategory(
+                                filterProvider.selectedtype,
+                              ));
 
                           showModalBottomSheet(
                             context: context,
@@ -921,8 +939,8 @@ class _FliterListState extends State<FliterList> {
                                   top: Radius.circular(20)),
                             ),
                             builder: (context) {
-                              return Consumer<FilterProvider>(
-                                  builder: (context, propertyTypeState, _) {
+                              return BlocBuilder<FilterBloc, FilterState>(
+                                  builder: (context, propertyTypeState) {
                                 return Container(
                                   height: filterProvider
                                               .filterListSelectedPropType ==
@@ -957,9 +975,9 @@ class _FliterListState extends State<FliterList> {
                                           Expanded(
                                             child: GestureDetector(
                                               onTap: () async {
-                                                await propertyTypeState
-                                                    .setSelectedFilterListPropertyType(
-                                                        index: 0);
+                                                context.read<FilterBloc>().add(
+                                                    FilterSetSelectedFilterListPropertyType(
+                                                        0));
                                               },
                                               child: AnimatedContainer(
                                                 duration: const Duration(
@@ -1035,10 +1053,10 @@ class _FliterListState extends State<FliterList> {
                                           Expanded(
                                             child: GestureDetector(
                                               onTap: () async {
-                                                await propertyTypeState
-                                                    .setSelectedFilterListPropertyType(
-                                                  index: 1,
-                                                );
+                                                context.read<FilterBloc>().add(
+                                                        FilterSetSelectedFilterListPropertyType(
+                                                      1,
+                                                    ));
                                               },
                                               child: AnimatedContainer(
                                                 duration: const Duration(
@@ -1140,9 +1158,9 @@ class _FliterListState extends State<FliterList> {
 
                                               return GestureDetector(
                                                 onTap: () async {
-                                                  propertyTypeState
-                                                      .setSelectedFilterListPropertyCategory(
-                                                          index);
+                                                  context.read<FilterBloc>().add(
+                                                      FilterSetSelectedFilterListPropertyCategory(
+                                                          index));
                                                 },
                                                 child: Container(
                                                   margin: const EdgeInsets
@@ -1225,24 +1243,27 @@ class _FliterListState extends State<FliterList> {
                                         width: double.infinity,
                                         child: ElevatedButton(
                                           onPressed: () async {
-                                            await propertyTypeState
-                                                .setSelectedPropertyType(
-                                                    context,
-                                                    index: propertyTypeState
-                                                        .filterListSelectedPropType);
+                                            context.read<FilterBloc>().add(
+                                                    FilterSetSelectedPropertyType(
+                                                  propertyTypeState
+                                                      .filterListSelectedPropType,
+                                                  context,
+                                                ));
 
                                             if (propertyTypeState
                                                     .filterListSelectedType !=
                                                 null) {
-                                              await propertyTypeState
-                                                  .setSelectedPropertyCategoryType(
-                                                context,
-                                                index: propertyTypeState
-                                                    .filterListSelectedType!,
-                                              );
+                                              context.read<FilterBloc>().add(
+                                                      FilterSetSelectedPropertyCategoryType(
+                                                    propertyTypeState
+                                                        .filterListSelectedType!,
+                                                    context,
+                                                  ));
                                             }
-                                            propertyTypeState
-                                                .updateFilterCount(context);
+
+                                            context.read<FilterBloc>().add(
+                                                FilterUpdateFilterCount(
+                                                    context: context));
 
                                             _scrollController.jumpTo(0);
 
@@ -1338,11 +1359,13 @@ class _FliterListState extends State<FliterList> {
                             double _minPrice = double.parse(min);
                             double _maxPrice = double.parse(max);
 
-                            filterProvider.setSelectedFilterRangePriceRange(
-                                minPrice: _minPrice, maxPrice: _maxPrice);
+                            context.read<FilterBloc>().add(
+                                FilterSetSelectedFilterRangePriceRange(
+                                    minPrice: _minPrice, maxPrice: _maxPrice));
                           } else {
-                            filterProvider.setSelectedFilterRangePriceRange(
-                                minPrice: 500, maxPrice: 300000);
+                            context.read<FilterBloc>().add(
+                                FilterSetSelectedFilterRangePriceRange(
+                                    minPrice: 500, maxPrice: 300000));
                           }
 
                           showModalBottomSheet(
@@ -1353,8 +1376,8 @@ class _FliterListState extends State<FliterList> {
                                   top: Radius.circular(20)),
                             ),
                             builder: (context) {
-                              return Consumer<FilterProvider>(
-                                  builder: (context, priceRangeState, _) {
+                              return BlocBuilder<FilterBloc, FilterState>(
+                                  builder: (context, priceRangeState) {
                                 return Container(
                                   height: screenSize.height * 0.38,
                                   padding: const EdgeInsets.symmetric(
@@ -1441,12 +1464,12 @@ class _FliterListState extends State<FliterList> {
                                               //     roundedMin.toStringAsFixed(0);
                                               // max_price =
                                               //     roundedMax.toStringAsFixed(0);
+                                              context.read<FilterBloc>().add(
+                                                      FilterSetSelectedFilterRangePriceRange(
+                                                    minPrice: roundedMin,
+                                                    maxPrice: roundedMax,
+                                                  ));
 
-                                              filterProvider
-                                                  .setSelectedFilterRangePriceRange(
-                                                minPrice: roundedMin,
-                                                maxPrice: roundedMax,
-                                              );
                                               // });
 
                                               // Trigger light haptic feedback on slide
@@ -1520,12 +1543,12 @@ class _FliterListState extends State<FliterList> {
                                                     SfRangeValues(finalMinPrice,
                                                         finalMaxPrice);
 
-                                                filterProvider
-                                                    .priceRangeController
-                                                    .start = finalMinPrice;
-                                                filterProvider
-                                                    .priceRangeController
-                                                    .end = finalMaxPrice;
+                                                // filterProvider
+                                                //     .priceRangeController
+                                                //     .start = finalMinPrice;
+                                                // filterProvider
+                                                //     .priceRangeController
+                                                //     .end = finalMaxPrice;
 
                                                 filterProvider.min_price =
                                                     finalMinPrice
@@ -1535,39 +1558,40 @@ class _FliterListState extends State<FliterList> {
                                                         .toStringAsFixed(0);
 
                                                 // ✅ Force update min only if not currently editing, or if value actually changed
-                                                if (!filterProvider
-                                                        .isMinTyping ||
-                                                    filterProvider
-                                                            .minPriceController
-                                                            .text !=
-                                                        finalMinPrice
-                                                            .toStringAsFixed(
-                                                                0)) {
-                                                  filterProvider
-                                                          .minPriceController
-                                                          .text =
-                                                      finalMinPrice
-                                                          .toStringAsFixed(0);
-                                                }
-
-                                                if (!filterProvider
-                                                        .isMaxTyping ||
-                                                    filterProvider
-                                                            .maxPriceController
-                                                            .text !=
-                                                        finalMaxPrice
-                                                            .toStringAsFixed(
-                                                                0)) {
-                                                  filterProvider
-                                                          .maxPriceController
-                                                          .text =
-                                                      finalMaxPrice
-                                                          .toStringAsFixed(0);
-                                                }
+                                                //   if (!filterProvider
+                                                //           .isMinTyping ||
+                                                //       filterProvider
+                                                //               .minPriceController
+                                                //               .text !=
+                                                //           finalMinPrice
+                                                //               .toStringAsFixed(
+                                                //                   0)) {
+                                                //     filterProvider
+                                                //             .minPriceController
+                                                //             .text =
+                                                //         finalMinPrice
+                                                //             .toStringAsFixed(0);
+                                                //   }
+                                                //
+                                                //   if (!filterProvider
+                                                //           .isMaxTyping ||
+                                                //       filterProvider
+                                                //               .maxPriceController
+                                                //               .text !=
+                                                //           finalMaxPrice
+                                                //               .toStringAsFixed(
+                                                //                   0)) {
+                                                //     filterProvider
+                                                //             .maxPriceController
+                                                //             .text =
+                                                //         finalMaxPrice
+                                                //             .toStringAsFixed(0);
+                                                //   }
                                               });
 
-                                              await filterProvider
-                                                  .updateFilterCount(context);
+                                              context.read<FilterBloc>().add(
+                                                  FilterUpdateFilterCount(
+                                                      context: context));
 
                                               _scrollController.jumpTo(0);
 
@@ -1650,12 +1674,14 @@ class _FliterListState extends State<FliterList> {
                           if (minArea.isNotEmpty && maxArea.isNotEmpty) {
                             double _minArea = double.parse(minArea);
                             double _maxArea = double.parse(maxArea);
-
-                            filterProvider.setSelectedFilterListAreaSize(
-                                minSqrFeet: _minArea, maxSqrFeet: _maxArea);
+                            context.read<FilterBloc>().add(
+                                FilterSetSelectedFilterListAreaSize(
+                                    minSqrFeet: _minArea,
+                                    maxSqrFeet: _maxArea));
                           } else {
-                            filterProvider.setSelectedFilterListAreaSize(
-                                minSqrFeet: 0.0, maxSqrFeet: 10000.0);
+                            context.read<FilterBloc>().add(
+                                FilterSetSelectedFilterListAreaSize(
+                                    minSqrFeet: 0.0, maxSqrFeet: 10000.0));
                           }
 
                           showModalBottomSheet(
@@ -1666,8 +1692,8 @@ class _FliterListState extends State<FliterList> {
                                   top: Radius.circular(20)),
                             ),
                             builder: (context) {
-                              return Consumer<FilterProvider>(
-                                  builder: (context, areaSizeState, _) {
+                              return BlocBuilder<FilterBloc, FilterState>(
+                                  builder: (context, areaSizeState) {
                                 return Container(
                                   height: screenSize.height * 0.38,
                                   padding: const EdgeInsets.symmetric(
@@ -1746,12 +1772,12 @@ class _FliterListState extends State<FliterList> {
                                                   ((value.end / 100).round() *
                                                           100)
                                                       .toDouble();
+                                              context.read<FilterBloc>().add(
+                                                      FilterSetSelectedFilterListAreaSize(
+                                                    minSqrFeet: roundedMin,
+                                                    maxSqrFeet: roundedMax,
+                                                  ));
 
-                                              areaSizeState
-                                                  .setSelectedFilterListAreaSize(
-                                                minSqrFeet: roundedMin,
-                                                maxSqrFeet: roundedMax,
-                                              );
                                               // Trigger light haptic feedback on slide
                                               HapticFeedback.selectionClick();
                                             },
@@ -1837,12 +1863,12 @@ class _FliterListState extends State<FliterList> {
                                               //         maxPrice: finalMaxPrice);
 
                                               setState(() {
-                                                filterProvider
-                                                    .areaRangeController
-                                                    .start = finalMinSqrFeet;
-                                                filterProvider
-                                                    .areaRangeController
-                                                    .end = finalMaxSqrFeet;
+                                                // filterProvider
+                                                //     .areaRangeController
+                                                //     .start = finalMinSqrFeet;
+                                                // filterProvider
+                                                //     .areaRangeController
+                                                //     .end = finalMaxSqrFeet;
                                                 filterProvider
                                                         .filterListValuesArea =
                                                     SfRangeValues(
@@ -1856,39 +1882,39 @@ class _FliterListState extends State<FliterList> {
                                                         .toStringAsFixed(0);
 
                                                 // ✅ Force update min only if not currently editing, or if value actually changed
-                                                if (!filterProvider
-                                                        .isMinAreaTyping ||
-                                                    filterProvider
-                                                            .minAreaController
-                                                            .text !=
-                                                        finalMinSqrFeet
-                                                            .toStringAsFixed(
-                                                                0)) {
-                                                  filterProvider
-                                                          .minAreaController
-                                                          .text =
-                                                      finalMinSqrFeet
-                                                          .toStringAsFixed(0);
-                                                }
-
-                                                if (!filterProvider
-                                                        .isMaxAreaTyping ||
-                                                    filterProvider
-                                                            .maxAreaController
-                                                            .text !=
-                                                        finalMaxSqrFeet
-                                                            .toStringAsFixed(
-                                                                0)) {
-                                                  filterProvider
-                                                          .maxAreaController
-                                                          .text =
-                                                      finalMaxSqrFeet
-                                                          .toStringAsFixed(0);
-                                                }
+                                                // if (!filterProvider
+                                                //         .isMinAreaTyping ||
+                                                //     filterProvider
+                                                //             .minAreaController
+                                                //             .text !=
+                                                //         finalMinSqrFeet
+                                                //             .toStringAsFixed(
+                                                //                 0)) {
+                                                //   filterProvider
+                                                //           .minAreaController
+                                                //           .text =
+                                                //       finalMinSqrFeet
+                                                //           .toStringAsFixed(0);
+                                                // }
+                                                //
+                                                // if (!filterProvider
+                                                //         .isMaxAreaTyping ||
+                                                //     filterProvider
+                                                //             .maxAreaController
+                                                //             .text !=
+                                                //         finalMaxSqrFeet
+                                                //             .toStringAsFixed(
+                                                //                 0)) {
+                                                //   filterProvider
+                                                //           .maxAreaController
+                                                //           .text =
+                                                //       finalMaxSqrFeet
+                                                //           .toStringAsFixed(0);
+                                                // }
                                               });
-
-                                              await filterProvider
-                                                  .updateFilterCount(context);
+                                              context.read<FilterBloc>().add(
+                                                  FilterUpdateFilterCount(
+                                                      context: context));
 
                                               _scrollController.jumpTo(0);
 
@@ -1976,8 +2002,8 @@ class _FliterListState extends State<FliterList> {
                             ),
                             isScrollControlled: true,
                             builder: (context) {
-                              return Consumer<FilterProvider>(
-                                  builder: (context, bedroomState, _) {
+                              return BlocBuilder<FilterBloc, FilterState>(
+                                  builder: (context, bedroomState) {
                                 return Container(
                                   height: screenSize.height * 0.3,
                                   width: double.infinity,
@@ -2012,18 +2038,18 @@ class _FliterListState extends State<FliterList> {
                                             scrollDirection: Axis.horizontal,
                                             physics: const ScrollPhysics(),
                                             itemCount:
-                                                bedroomState.bedroomList.length,
+                                                FilterBloc.bedroomList.length,
                                             shrinkWrap: true,
                                             itemBuilder: (context, index) {
                                               final isSelected = bedroomState
                                                   .selectedFilterListBedroomsList
-                                                  .contains(bedroomState
+                                                  .contains(FilterBloc
                                                       .bedroomList[index]);
                                               return GestureDetector(
                                                 onTap: () async {
-                                                  bedroomState
-                                                      .setSelectedFilterListBedrooms(
-                                                          index: index);
+                                                  context.read<FilterBloc>().add(
+                                                      FilterSetSelectedFilterListBedrooms(
+                                                          index));
                                                 },
                                                 child: Container(
                                                   margin: const EdgeInsets
@@ -2059,7 +2085,7 @@ class _FliterListState extends State<FliterList> {
                                                   ),
                                                   child: Center(
                                                     child: Text(
-                                                      bedroomState
+                                                      FilterBloc
                                                           .bedroomList[index],
                                                       style: TextStyle(
                                                         color: isSelected
@@ -2085,8 +2111,9 @@ class _FliterListState extends State<FliterList> {
                                               List.from(filterProvider
                                                   .selectedFilterListBedroomsList);
 
-                                          await filterProvider
-                                              .updateFilterCount(context);
+                                          context.read<FilterBloc>().add(
+                                              FilterUpdateFilterCount(
+                                                  context: context));
 
                                           _scrollController.jumpTo(0);
 
@@ -2198,9 +2225,8 @@ class _FliterListState extends State<FliterList> {
                             ),
                             isScrollControlled: true,
                             builder: (context) {
-                              return Consumer<FilterProvider>(
-                                builder:
-                                    (BuildContext context, bathRoomState, _) {
+                              return BlocBuilder<FilterBloc, FilterState>(
+                                builder: (BuildContext context, bathRoomState) {
                                   return Container(
                                     height: screenSize.height * 0.3,
                                     width: double.infinity,
@@ -2239,20 +2265,22 @@ class _FliterListState extends State<FliterList> {
                                                 scrollDirection:
                                                     Axis.horizontal,
                                                 physics: const ScrollPhysics(),
-                                                itemCount: bathRoomState
+                                                itemCount: FilterBloc
                                                     .bathroomList.length,
                                                 shrinkWrap: true,
                                                 itemBuilder: (context, index) {
                                                   final isSelected = bathRoomState
                                                       .selectedFilterListBathroomsList
-                                                      .contains(bathRoomState
+                                                      .contains(FilterBloc
                                                           .bathroomList[index]);
                                                   // Colors.grey;
                                                   return GestureDetector(
                                                     onTap: () async {
-                                                      bathRoomState
-                                                          .setSelectedFilterListBathrooms(
-                                                              index: index);
+                                                      context
+                                                          .read<FilterBloc>()
+                                                          .add(
+                                                              FilterSetSelectedFilterListBathrooms(
+                                                                  index));
                                                     },
                                                     child: Container(
                                                       // color: selectedIndex == index ? Colors.amber : Colors.transparent,
@@ -2303,7 +2331,7 @@ class _FliterListState extends State<FliterList> {
                                                       ),
                                                       child: Center(
                                                         child: Text(
-                                                          filterProvider
+                                                          FilterBloc
                                                                   .bathroomList[
                                                               index],
                                                           style: TextStyle(
@@ -2327,9 +2355,9 @@ class _FliterListState extends State<FliterList> {
                                             filterProvider.selectedBathrooms =
                                                 List.from(filterProvider
                                                     .selectedFilterListBathroomsList);
-
-                                            await filterProvider
-                                                .updateFilterCount(context);
+                                            context.read<FilterBloc>().add(
+                                                FilterUpdateFilterCount(
+                                                    context: context));
 
                                             _scrollController.jumpTo(0);
 
@@ -2476,8 +2504,7 @@ class _FliterListState extends State<FliterList> {
                       color:
                           Colors.white, // Needed to style the container inside
                       itemBuilder: (context) {
-                        final List<String> sortOptions =
-                            filterProvider.ftypeList;
+                        final List<String> sortOptions = FilterBloc.ftypeList;
 
                         return [
                           PopupMenuItem<String>(
@@ -2498,16 +2525,15 @@ class _FliterListState extends State<FliterList> {
                                       Navigator.pop(context);
 
                                       final selectedFurnishedType =
-                                          filterProvider.ftypeList
-                                              .indexOf(option);
+                                          FilterBloc.ftypeList.indexOf(option);
 
-                                      await filterProvider
-                                          .setSelectedFurnishedType(
+                                      FilterSetSelectedFurnishedType(
+                                        selectedFurnishedType,
                                         context,
-                                        index: selectedFurnishedType,
                                       );
-                                      await filterProvider
-                                          .updateFilterCount(context);
+                                      context.read<FilterBloc>().add(
+                                          FilterUpdateFilterCount(
+                                              context: context));
 
                                       _scrollController.jumpTo(0);
                                     },
@@ -2566,7 +2592,7 @@ class _FliterListState extends State<FliterList> {
                               width: 16,
                             ),
                             const SizedBox(width: 6),
-                            Text(filterProvider
+                            Text(FilterBloc
                                 .ftypeList[filterProvider.selectedIndex ?? 0]
                                 .toString()), // 👉 No TextStyle here
                             const Icon(Icons.arrow_drop_down, size: 18),

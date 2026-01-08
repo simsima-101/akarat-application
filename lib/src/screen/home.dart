@@ -1,73 +1,36 @@
-
 import 'dart:async';
-
 import 'dart:convert';
 
-
 import 'package:Akarat/src/core/utils/secure_storage.dart';
-
 import 'package:Akarat/src/core/utils/session_manager.dart';
+import 'package:Akarat/src/features/property/data/models/featuredmodel.dart'
+    as featured;
 import 'package:Akarat/src/screen/shimmer.dart';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
-
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../common/widgets/property_card.dart'; // Your reusable card
 import '../core/services/api_service.dart';
-
-
-import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/property/data/datasources/favorite_remote_datasource.dart';
-import 'package:Akarat/src/features/property/data/models/featuredmodel.dart' as featured;
 import '../features/property/data/models/fdetailmodel.dart' as agencyProps;
 import '../features/property/data/models/location_model.dart';
+import '../features/property/data/models/property_model.dart';
 import '../features/property/data/models/search_model.dart' as search;
-
 import '../features/property/data/models/toggle_model.dart';
-import '../features/property/presentation/bloc/favorite_bloc.dart';
-import '../features/property/presentation/bloc/favorite_event.dart';
-import '../features/property/presentation/bloc/favorite_state.dart';
-
-
 import '../features/property/presentation/bloc/filter_bloc.dart';
-import '../features/property/presentation/bloc/location_picker_bloc.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'ContactFormScreen.dart';
-import 'featured_detail.dart';
 import 'filter.dart' as filter;
-import 'filter_list.dart';
-
-
-
-import '../features/agency/data/models/agency_properties_model.dart' as agencyProps;
-
-
 // Remove any duplicate imports of agency_properties_model.dart
 
 import 'location_picker_screen.dart'; // ←←← THIS LINE WAS MISSING!
-
-
 import 'login.dart';
 import 'my_account.dart';
 import 'new_projects.dart';
-
-
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../features/property/presentation/bloc/properties_bloc.dart';
-import '../common/widgets/property_card.dart'; // Your reusable card
-
-import '../features/property/data/models/property_model.dart';
-
-import '../features/property/data/models/featuredmodel.dart' as featured;
-import '../features/property/data/models/property_model.dart'; // ← Unified Property class
-import '../common/widgets/property_card.dart';
 
 extension AppLocalizationExtension on BuildContext {
   AppLocalizations get loc => AppLocalizations.of(this)!;
@@ -85,7 +48,8 @@ extension FeaturedDataToProperty on featured.Data {
       bathrooms: bathrooms ?? 0,
       squareFeet: squareFeet ?? displaySize ?? 'N/A',
       // ← No 'description' field in featured.Data → use safe default
-      description: 'Beautiful property listed on Akarat.', // or leave empty if not needed
+      description:
+          'Beautiful property listed on Akarat.', // or leave empty if not needed
       image: media?.isNotEmpty == true ? media!.first.originalUrl ?? '' : '',
       media: media ?? [],
       // ← No 'agent' field → only agentName exists
@@ -99,7 +63,6 @@ extension FeaturedDataToProperty on featured.Data {
   }
 }
 
-
 class Home extends StatelessWidget {
   const Home({super.key});
 
@@ -111,7 +74,6 @@ class Home extends StatelessWidget {
     );
   }
 }
-
 
 class _FixedHeaderDelegate extends SliverPersistentHeaderDelegate {
   final double minHeight;
@@ -131,7 +93,8 @@ class _FixedHeaderDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => maxHeight;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return SizedBox.expand(child: child);
   }
 
@@ -157,13 +120,11 @@ class _MyHomePageState extends State<HomeDemo> {
 
   List<agencyProps.Property> properties = [];
 
-
-
-
-
   void checkCurrentBuildVersion() {
-    String version = const String.fromEnvironment('FLUTTER_BUILD_NAME', defaultValue: 'unknown');
-    String buildNumber = const String.fromEnvironment('FLUTTER_BUILD_NUMBER', defaultValue: 'unknown');
+    String version = const String.fromEnvironment('FLUTTER_BUILD_NAME',
+        defaultValue: 'unknown');
+    String buildNumber = const String.fromEnvironment('FLUTTER_BUILD_NUMBER',
+        defaultValue: 'unknown');
 
     print("Current Version: $version");
     print("Current Build Number: $buildNumber");
@@ -171,7 +132,6 @@ class _MyHomePageState extends State<HomeDemo> {
 
   String purpose = '';
   String propertyType = ''; // <— add this
-
 
   // ←←← ADD THIS FUNCTION INSIDE _MyHomePageState class ←←←
   String _formatAgentName(String? fullName) {
@@ -197,9 +157,9 @@ class _MyHomePageState extends State<HomeDemo> {
       'newest'; // 'featured' | 'newest' | 'price_asc' | 'price_desc'
 
   List<featured.Data> _mergeDedupFeatured(
-      List<featured.Data> a,
-      List<featured.Data> b,
-      ) {
+    List<featured.Data> a,
+    List<featured.Data> b,
+  ) {
     final map = <int, featured.Data>{};
     for (final p in [...a, ...b]) {
       final id = int.tryParse(p.id?.toString() ?? '') ?? -1;
@@ -207,7 +167,6 @@ class _MyHomePageState extends State<HomeDemo> {
     }
     return map.values.toList();
   }
-
 
   int _safePropertyId(dynamic id) {
     if (id == null) return 0;
@@ -286,10 +245,6 @@ class _MyHomePageState extends State<HomeDemo> {
     return input; // fallback
   }
 
-
-
-
-
   Widget _buildCategoryCard({
     required String imagePath,
     required String title,
@@ -341,7 +296,8 @@ class _MyHomePageState extends State<HomeDemo> {
     );
   }
 
-  Future<bool> markAsContacted(int propertyId, {required String contactType}) async {
+  Future<bool> markAsContacted(int propertyId,
+      {required String contactType}) async {
     if (propertyId <= 0) return false;
 
     await SessionManager().restore();
@@ -366,10 +322,12 @@ class _MyHomePageState extends State<HomeDemo> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint("Successfully marked property $propertyId as contacted via $contactType");
+        debugPrint(
+            "Successfully marked property $propertyId as contacted via $contactType");
         return true;
       } else {
-        debugPrint("Failed to mark contacted: ${response.statusCode} ${response.body}");
+        debugPrint(
+            "Failed to mark contacted: ${response.statusCode} ${response.body}");
         return false;
       }
     } catch (e) {
@@ -377,8 +335,6 @@ class _MyHomePageState extends State<HomeDemo> {
       return false;
     }
   }
-
-
 
   Future<void> fetchLocationSuggestions(String query) async {
     String url = query.isEmpty
@@ -403,7 +359,6 @@ class _MyHomePageState extends State<HomeDemo> {
       print('❌ Error while fetching locations: $e');
     }
   }
-
 
   bool loadingSavedProperties = true;
   List<agencyProps.Property> savedProperties = [];
@@ -448,7 +403,8 @@ class _MyHomePageState extends State<HomeDemo> {
 
     try {
       final List<agencyProps.Property> properties =
-      (await ApiService.getSavedProperties(token)).cast<agencyProps.Property>();
+          (await ApiService.getSavedProperties(token))
+              .cast<agencyProps.Property>();
       setState(() {
         savedProperties = properties;
       });
@@ -509,8 +465,10 @@ class _MyHomePageState extends State<HomeDemo> {
     super.initState();
 
     // Print app version and build number
-    String version = const String.fromEnvironment('FLUTTER_BUILD_NAME', defaultValue: 'unknown');
-    String buildNumber = const String.fromEnvironment('FLUTTER_BUILD_NUMBER', defaultValue: 'unknown');
+    String version = const String.fromEnvironment('FLUTTER_BUILD_NAME',
+        defaultValue: 'unknown');
+    String buildNumber = const String.fromEnvironment('FLUTTER_BUILD_NUMBER',
+        defaultValue: 'unknown');
 
     print("🔍 Current app version: $version");
     print("🔍 Current build number: $buildNumber");
@@ -541,9 +499,6 @@ class _MyHomePageState extends State<HomeDemo> {
     });
   }
 
-
-
-
   /// Loads the token from SecureStorage and updates state.
   /// Keep this as a CLASS METHOD (not nested inside initState).
   Future<void> _loadToken() async {
@@ -569,31 +524,31 @@ class _MyHomePageState extends State<HomeDemo> {
 
   Future<bool> _onWillPop() async {
     return (await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: Text('Are you sure?'),
-        content: Text('Do you want to exit an App'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(
-              'No',
-              style: TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.bold),
-            ),
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            title: Text('Are you sure?'),
+            content: Text('Do you want to exit an App'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(
+                  'No',
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(
+                  'Yes',
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              'Yes',
-              style: TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    )) ??
+        )) ??
         false;
   }
 
@@ -707,12 +662,12 @@ class _MyHomePageState extends State<HomeDemo> {
             final last = m.lastPage ?? 1;
             nextPageUrl = (cur < last)
                 ? ApiService.buildUri(
-              'properties',
-              query: {
-                'page': '${cur + 1}',
-                'sort_by': _currentSortKey,
-              },
-            ).toString()
+                    'properties',
+                    query: {
+                      'page': '${cur + 1}',
+                      'sort_by': _currentSortKey,
+                    },
+                  ).toString()
                 : null;
           } else {
             nextPageUrl = null;
@@ -730,9 +685,6 @@ class _MyHomePageState extends State<HomeDemo> {
       if (mounted) setState(() => isLoading = false);
     }
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -762,7 +714,8 @@ class _MyHomePageState extends State<HomeDemo> {
                         height: 40,
                         width: 40,
                         decoration: const BoxDecoration(
-                          image: DecorationImage(image: AssetImage('assets/images/app_icon.png')),
+                          image: DecorationImage(
+                              image: AssetImage('assets/images/app_icon.png')),
                         ),
                       ),
                       Container(
@@ -770,7 +723,8 @@ class _MyHomePageState extends State<HomeDemo> {
                         height: 80,
                         width: 120,
                         decoration: const BoxDecoration(
-                          image: DecorationImage(image: AssetImage('assets/images/logo-text.png')),
+                          image: DecorationImage(
+                              image: AssetImage('assets/images/logo-text.png')),
                         ),
                       ),
                     ],
@@ -778,7 +732,8 @@ class _MyHomePageState extends State<HomeDemo> {
 
                   // Search Bar - Exact match to your original
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     child: Container(
                       width: double.infinity,
                       height: 45,
@@ -786,7 +741,10 @@ class _MyHomePageState extends State<HomeDemo> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
-                          BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 6, offset: const Offset(0, 3)),
+                          BoxShadow(
+                              color: Colors.grey.withOpacity(0.2),
+                              blurRadius: 6,
+                              offset: const Offset(0, 3)),
                         ],
                       ),
                       child: Row(
@@ -798,7 +756,8 @@ class _MyHomePageState extends State<HomeDemo> {
                                 border: Border.all(color: Colors.red.shade200),
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
                               height: 45,
                               child: Row(
                                 children: [
@@ -809,21 +768,41 @@ class _MyHomePageState extends State<HomeDemo> {
                                       focusNode: _focusNode,
                                       readOnly: true,
                                       decoration: const InputDecoration(
-                                        hintText: "Search for a locality, area or city",
-                                        hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                                        hintText:
+                                            "Search for a locality, area or city",
+                                        hintStyle: TextStyle(
+                                            color: Colors.grey, fontSize: 14),
                                         border: InputBorder.none,
                                       ),
                                       onTap: () {
+                                        //
+                                        // context.read<FilterProvider>()
+                                        //   ..setInitialHomeCategory(1)
+                                        //   ..resetAll(
+                                        //     context,
+                                        //     isUpdate: false,
+                                        //   );
+
+                                        context.read<FilterBloc>().add(
+                                            const FilterSetInitialHomeCategory(
+                                                0));
+                                        purpose = "Rent";
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    filter.Filter(
+                                                      data: purpose,
+                                                    )));
+
                                         showModalBottomSheet(
                                           context: context,
                                           isScrollControlled: true,
                                           backgroundColor: Colors.transparent,
-                                          builder: (_) => BlocProvider.value(
-                                            value: context.read<LocationPickerBloc>(),
-                                            child: const FractionallySizedBox(
-                                              heightFactor: 0.95,
-                                              child: LocationPickerScreen(),
-                                            ),
+                                          builder: (_) =>
+                                              const FractionallySizedBox(
+                                            heightFactor: 0.95,
+                                            child: LocationPickerScreen(),
                                           ),
                                         );
                                       },
@@ -846,707 +825,765 @@ class _MyHomePageState extends State<HomeDemo> {
               child: featuredModel == null
                   ? const Center(child: ShimmerCard())
                   : RefreshIndicator(
-                onRefresh: () async {
-                  nextPageUrl = null;
-                  featuredModel = null;
-                  getFeaturedProperties(forceRefresh: true);
-                },
-                child: ListView.builder(
-                  controller: _scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.only(top: 8),
-                  itemCount: (featuredModel?.data?.length ?? 0) +
-                      (nextPageUrl != null ? 1 : 0) +
-                      1,
-                  itemBuilder: (context, index) {
-                    final properties = featuredModel?.data ?? [];
+                      onRefresh: () async {
+                        nextPageUrl = null;
+                        featuredModel = null;
+                        getFeaturedProperties(forceRefresh: true);
+                      },
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(top: 8),
+                        itemCount: (featuredModel?.data?.length ?? 0) +
+                            (nextPageUrl != null ? 1 : 0) +
+                            1,
+                        itemBuilder: (context, index) {
+                          final properties = featuredModel?.data ?? [];
 
-                    // Static content at index 0
-                    if (index == 0) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Location Suggestions
-                          if (locationSuggestions.isNotEmpty)
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 250),
-                              curve: Curves.easeOut,
-                              height: 220,
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Colors.black.withOpacity(0.08),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 6))
-                                ],
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: ListView.separated(
-                                  padding: EdgeInsets.zero,
-                                  itemCount: locationSuggestions.length,
-                                  separatorBuilder: (_, __) => const Divider(
-                                      height: 0,
-                                      thickness: 0.5,
-                                      indent: 12,
-                                      endIndent: 12),
-                                  itemBuilder: (context, i) {
-                                    final loc = locationSuggestions[i]
-                                        .location!;
-                                    return InkWell(
-                                      onTap: () {
-                                        _searchController.text = loc;
-                                        setState(() =>
-                                        locationSuggestions = []);
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 10),
-                                        child: Row(
-                                          children: [
-                                            const Icon(
-                                                Icons.location_on_outlined,
-                                                color: Colors.redAccent,
-                                                size: 22),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Text(loc,
-                                                  style: const TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight
-                                                          .w500)),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-
-                          // Category Row 1 - EXACT SAME HEIGHT AND STYLE
-                          Padding(
-                            padding: const EdgeInsets.only(top: 10.0),
-                            child: Row(
+                          // Static content at index 0
+                          if (index == 0) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    context.read<FilterBloc>().add(
-                                        const SetHomeCategory(0));
-                                    Navigator.push(context, MaterialPageRoute(
-                                        builder: (_) =>
-                                            filter.Filter(data: "Rent")));
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: Container(
-                                      width: screenSize.width * 0.29,
-                                      height: screenSize.height * 0.11,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                              color: Colors.grey.withOpacity(
-                                                  0.8),
-                                              offset: const Offset(7, 7),
-                                              blurRadius: 8,
-                                              spreadRadius: 2),
-                                          BoxShadow(
-                                              color: Colors.white.withOpacity(
-                                                  0.8),
-                                              offset: const Offset(-4, -4),
-                                              blurRadius: 8,
-                                              spreadRadius: 2),
-                                        ],
-                                        borderRadius: BorderRadius.circular(
-                                            12),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .center,
-                                        children: [
-                                          Image.asset(
-                                              "assets/images/ak-rent-red.png",
-                                              height: 35),
-                                          const Padding(
-                                            padding: EdgeInsets.all(4),
-                                            child: Text("Property For Rent",
-                                                style: TextStyle(fontSize: 11,
-                                                    fontWeight: FontWeight
-                                                        .bold,
-                                                    height: 1.2)),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                // Buy
-                                GestureDetector(
-                                  onTap: () {
-                                    context.read<FilterBloc>().add(
-                                        SetHomeCategory(1));
-                                    Navigator.push(context, MaterialPageRoute(
-                                        builder: (_) =>
-                                            filter.Filter(data: "Buy")));
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: Container(
-                                      width: screenSize.width * 0.29,
-                                      height: screenSize.height * 0.11,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                              color: Colors.grey.withOpacity(
-                                                  0.8),
-                                              offset: const Offset(7, 7),
-                                              blurRadius: 8,
-                                              spreadRadius: 2),
-                                          BoxShadow(
-                                              color: Colors.white.withOpacity(
-                                                  0.8),
-                                              offset: const Offset(-4, -4),
-                                              blurRadius: 8,
-                                              spreadRadius: 2),
-                                        ],
-                                        borderRadius: BorderRadius.circular(
-                                            12),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .center,
-                                        children: [
-                                          Image.asset(
-                                              "assets/images/ak-sale.png",
-                                              height: 35),
-                                          const Padding(
-                                            padding: EdgeInsets.all(4),
-                                            child: Text("Property For Sale",
-                                                style: TextStyle(fontSize: 11,
-                                                    fontWeight: FontWeight
-                                                        .bold,
-                                                    height: 1.2)),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                // Off-Plan
-                                GestureDetector(
-                                  onTap: () {
-                                    context.read<FilterBloc>().add(
-                                        SetHomeCategory(2));
-                                    Navigator.push(context, MaterialPageRoute(
-                                        builder: (_) =>
-                                            filter.Filter(data: "Buy",
-                                                optionType: 'offplan')));
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(5),
-                                    child: Container(
-                                      width: screenSize.width * 0.3,
-                                      height: screenSize.height * 0.11,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                              color: Colors.grey.withOpacity(
-                                                  0.8),
-                                              offset: const Offset(7, 7),
-                                              blurRadius: 8,
-                                              spreadRadius: 2),
-                                          BoxShadow(
-                                              color: Colors.white.withOpacity(
-                                                  0.8),
-                                              offset: const Offset(-4, -4),
-                                              blurRadius: 8,
-                                              spreadRadius: 2),
-                                        ],
-                                        borderRadius: BorderRadius.circular(
-                                            12),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .center,
-                                        children: [
-                                          Image.asset(
-                                              "assets/images/ak-off-plan.png",
-                                              height: 35),
-                                          const Padding(
-                                            padding: EdgeInsets.only(top: 5),
-                                            child: Text("Off-Plan-Properties",
-                                                style: TextStyle(fontSize: 10,
-                                                    fontWeight: FontWeight
-                                                        .bold,
-                                                    height: 1.2)),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // === CATEGORY ROW 2 ===
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2.0),
-                            child: Row(
-                              children: [
-                                // Commercial
-                                GestureDetector(
-                                  onTap: () {
-                                    context.read<FilterBloc>().add(
-                                        SetHomeCategory(3));
-                                    Navigator.push(context, MaterialPageRoute(
-                                        builder: (_) =>
-                                            filter.Filter(data: "Rent",
-                                                propertyType: 1)));
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: Container(
-                                      width: screenSize.width * 0.29,
-                                      height: screenSize.height * 0.11,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                              color: Colors.grey.withOpacity(
-                                                  0.8),
-                                              offset: const Offset(7, 7),
-                                              blurRadius: 8,
-                                              spreadRadius: 2),
-                                          BoxShadow(
-                                              color: Colors.white.withOpacity(
-                                                  0.8),
-                                              offset: const Offset(-4, -4),
-                                              blurRadius: 8,
-                                              spreadRadius: 2),
-                                        ],
-                                        borderRadius: BorderRadius.circular(
-                                            12),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .center,
-                                        children: [
-                                          Image.asset(
-                                              "assets/images/commercial_new.png",
-                                              height: 35),
-                                          const Padding(
-                                            padding: EdgeInsets.all(4),
-                                            child: Text("Commercial",
-                                                style: TextStyle(fontSize: 11,
-                                                    fontWeight: FontWeight
-                                                        .bold,
-                                                    height: 1.2)),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                // Villas
-                                GestureDetector(
-                                  onTap: () {
-                                    context.read<FilterBloc>().add(
-                                        const SetHomeCategory(4));
-                                    Navigator.push(context, MaterialPageRoute(
-                                        builder: (_) =>
-                                            filter.Filter(data: "Rent",
-                                                propertyType: 0,
-                                                propertyCategoryType: 'Villa')));
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(5),
-                                    child: Container(
-                                      width: screenSize.width * 0.3,
-                                      height: screenSize.height * 0.11,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                              color: Colors.grey.withOpacity(
-                                                  0.8),
-                                              offset: const Offset(7, 7),
-                                              blurRadius: 8,
-                                              spreadRadius: 2),
-                                          BoxShadow(
-                                              color: Colors.white.withOpacity(
-                                                  0.8),
-                                              offset: const Offset(-4, -4),
-                                              blurRadius: 8,
-                                              spreadRadius: 2),
-                                        ],
-                                        borderRadius: BorderRadius.circular(
-                                            12),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .center,
-                                        children: [
-                                          Image.asset(
-                                              "assets/images/villa-new.png",
-                                              height: 35),
-                                          const Padding(
-                                            padding: EdgeInsets.all(5),
-                                            child: Text("Villas",
-                                                style: TextStyle(fontSize: 11,
-                                                    fontWeight: FontWeight
-                                                        .bold,
-                                                    height: 1.2)),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                // Apartment
-                                GestureDetector(
-                                  onTap: () {
-                                    context.read<FilterBloc>().add(
-                                        SetHomeCategory(5));
-                                    Navigator.push(context, MaterialPageRoute(
-                                        builder: (_) =>
-                                            filter.Filter(data: "Rent",
-                                                propertyType: 0,
-                                                propertyCategoryType: 'Apartment')));
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(5),
-                                    child: Container(
-                                      width: screenSize.width * 0.3,
-                                      height: screenSize.height * 0.11,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                              color: Colors.grey.withOpacity(
-                                                  0.8),
-                                              offset: const Offset(7, 7),
-                                              blurRadius: 8,
-                                              spreadRadius: 2),
-                                          BoxShadow(
-                                              color: Colors.white.withOpacity(
-                                                  0.8),
-                                              offset: const Offset(-4, -4),
-                                              blurRadius: 8,
-                                              spreadRadius: 2),
-                                        ],
-                                        borderRadius: BorderRadius.circular(
-                                            12),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .center,
-                                        children: [
-                                          Image.asset(
-                                              "assets/images/apartment.png",
-                                              height: 35),
-                                          const Padding(
-                                            padding: EdgeInsets.all(5),
-                                            child: Text("Apartment",
-                                                style: TextStyle(fontSize: 11,
-                                                    fontWeight: FontWeight
-                                                        .bold,
-                                                    height: 1.2)),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Banner - New Projects (perfect padding & size adjustment)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10.0, vertical: 10.0),
-                            // Outer padding (top/bottom added for spacing)
-                            child: GestureDetector(
-                              onTap: () =>
-                                  Navigator.push(context, MaterialPageRoute(
-                                      builder: (_) => NewProjectsScreen())),
-                              child: Container(
-                                width: double.infinity,
-                                height: 150, // Comfortable height
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                        color: Colors.grey.withOpacity(0.5),
-                                        offset: const Offset(4, 4),
-                                        blurRadius: 8,
-                                        spreadRadius: 2),
-                                    BoxShadow(
-                                        color: Colors.white.withOpacity(0.8),
-                                        offset: const Offset(-4, -4),
-                                        blurRadius: 8,
-                                        spreadRadius: 2),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    // Left: Text section with generous padding
-                                    Expanded(
-                                      flex: 4,
-                                      child: Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            16, 16, 8, 16),
-                                        // Left-heavy padding for text
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment
-                                              .center,
-                                          crossAxisAlignment: CrossAxisAlignment
-                                              .start,
-                                          children: [
-                                            Text(
-                                              "New Projects",
-                                              style: TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 19,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Text(
-                                              "Discover more about the UAE real estate market",
-                                              style: TextStyle(
-                                                color: Colors.black87,
-                                                fontSize: 14,
-                                              ),
-                                              softWrap: true,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-
-                                    // Right: Image section with balanced padding
-                                    Expanded(
-                                      flex: 5,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(12.0),
-                                        // Even padding around image
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                              10),
-                                          child: Image.asset(
-                                            'assets/images/banner1.jpg',
-                                            fit: BoxFit.cover,
-                                            height: double.infinity,
-                                            width: double.infinity,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          // Properties Count + Sort
-                          Container(
-                            margin: const EdgeInsets.only(
-                                top: 20, left: 5, right: 15),
-                            height: screenSize.height * 0.05,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment
-                                  .spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20),
-                                  child: Text(
-                                      "${featuredModel?.totalProperties ??
-                                          0} Properties",
-                                      style: const TextStyle(
-                                          color: Colors.black, fontSize: 15)),
-                                ),
-                                PopupMenuButton<String>(
-                                  elevation: 0,
-                                  onSelected: (value) {
-                                    setState(() {
-                                      selectedSort = value;
-                                      // 🔁 Call your sorting/filter logic here
-                                    });
-                                  },
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  offset: const Offset(0, 35),
-                                  color: Colors
-                                      .white,
-                                  // Needed to style the container inside
-                                  itemBuilder: (context) {
-                                    final List<String> sortOptions = [
-                                      "Featured",
-                                      "Newest",
-                                      "Price (low)",
-                                      "Price (high)",
-                                    ];
-
-                                    return [
-                                      PopupMenuItem<String>(
-                                        enabled: false,
-                                        padding: EdgeInsets.zero,
-                                        child: Container(
-                                          width: 200,
-                                          decoration: BoxDecoration(
-                                            color: Colors
-                                                .white,
-                                            // 👈 Your dropdown background
-                                            borderRadius:
-                                            BorderRadius.circular(12),
-                                          ),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: sortOptions.map((
-                                                option) {
-                                              return InkWell(
-                                                onTap: () {
-                                                  Navigator.pop(context);
-                                                  final selectedKey =
-                                                  sortMap[option]!;
-                                                  setState(() {
-                                                    selectedSort =
-                                                        option; // for UI label
-                                                    selectedSortKey =
-                                                        selectedKey; // keep if you use elsewhere
-                                                    _currentSortKey =
-                                                        selectedKey; // <-- persist for pagination
-                                                    featuredModel =
-                                                    null; // clear existing data
-                                                    nextPageUrl =
-                                                    null; // reset pagination
-                                                  });
-                                                  getFeaturedProperties(
-                                                      forceRefresh:
-                                                      true); // will use _currentSortKey
-                                                  _scrollController.jumpTo(0);
-                                                },
-                                                child: Column(
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 16,
-                                                          vertical: 12),
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                        children: [
-                                                          Text(
-                                                            option,
-                                                            style: const TextStyle(
-                                                                color: Colors
-                                                                    .black), // 👈 Black text
-                                                          ),
-                                                          if (selectedSort ==
-                                                              option)
-                                                            const Icon(
-                                                                Icons.check,
-                                                                color: Colors
-                                                                    .green,
-                                                                size: 18),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    if (option !=
-                                                        sortOptions.last)
-                                                      const Divider(
-                                                          height: 1,
-                                                          thickness: 0.5,
-                                                          color: Colors.grey),
-                                                  ],
-                                                ),
-                                              );
-                                            }).toList(),
-                                          ),
-                                        ),
-                                      ),
-                                    ];
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 4),
+                                // Location Suggestions
+                                if (locationSuggestions.isNotEmpty)
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 250),
+                                    curve: Curves.easeOut,
+                                    height: 220,
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(color: Colors.red),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Image.asset(
-                                          "assets/images/filter.png",
-                                          height: 16,
-                                          width: 16,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                            selectedSort),
-                                        // 👉 No TextStyle here
-                                        const Icon(Icons.arrow_drop_down,
-                                            size: 18),
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.08),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 6))
                                       ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: ListView.separated(
+                                        padding: EdgeInsets.zero,
+                                        itemCount: locationSuggestions.length,
+                                        separatorBuilder: (_, __) =>
+                                            const Divider(
+                                                height: 0,
+                                                thickness: 0.5,
+                                                indent: 12,
+                                                endIndent: 12),
+                                        itemBuilder: (context, i) {
+                                          final loc =
+                                              locationSuggestions[i].location!;
+                                          return InkWell(
+                                            onTap: () {
+                                              _searchController.text = loc;
+                                              setState(() =>
+                                                  locationSuggestions = []);
+                                            },
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 10),
+                                              child: Row(
+                                                children: [
+                                                  const Icon(
+                                                      Icons
+                                                          .location_on_outlined,
+                                                      color: Colors.redAccent,
+                                                      size: 22),
+                                                  const SizedBox(width: 12),
+                                                  Expanded(
+                                                    child: Text(loc,
+                                                        style: const TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w500)),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+
+                                // Category Row 1 - EXACT SAME HEIGHT AND STYLE
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10.0),
+                                  child: Row(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          context.read<FilterBloc>().add(
+                                              const FilterSetInitialHomeCategory(
+                                                  0));
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (_) => filter.Filter(
+                                                      data: "Rent")));
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8),
+                                          child: Container(
+                                            width: screenSize.width * 0.29,
+                                            height: screenSize.height * 0.11,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.8),
+                                                    offset: const Offset(7, 7),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 2),
+                                                BoxShadow(
+                                                    color: Colors.white
+                                                        .withOpacity(0.8),
+                                                    offset:
+                                                        const Offset(-4, -4),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 2),
+                                              ],
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Image.asset(
+                                                    "assets/images/ak-rent-red.png",
+                                                    height: 35),
+                                                const Padding(
+                                                  padding: EdgeInsets.all(4),
+                                                  child: Text(
+                                                      "Property For Rent",
+                                                      style: TextStyle(
+                                                          fontSize: 11,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          height: 1.2)),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // Buy
+                                      GestureDetector(
+                                        onTap: () {
+                                          context.read<FilterBloc>().add(
+                                              FilterSetInitialHomeCategory(1));
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (_) => filter.Filter(
+                                                      data: "Buy")));
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8),
+                                          child: Container(
+                                            width: screenSize.width * 0.29,
+                                            height: screenSize.height * 0.11,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.8),
+                                                    offset: const Offset(7, 7),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 2),
+                                                BoxShadow(
+                                                    color: Colors.white
+                                                        .withOpacity(0.8),
+                                                    offset:
+                                                        const Offset(-4, -4),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 2),
+                                              ],
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Image.asset(
+                                                    "assets/images/ak-sale.png",
+                                                    height: 35),
+                                                const Padding(
+                                                  padding: EdgeInsets.all(4),
+                                                  child: Text(
+                                                      "Property For Sale",
+                                                      style: TextStyle(
+                                                          fontSize: 11,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          height: 1.2)),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // Off-Plan
+                                      GestureDetector(
+                                        onTap: () {
+                                          context.read<FilterBloc>().add(
+                                              FilterSetInitialHomeCategory(2));
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (_) => filter.Filter(
+                                                      data: "Buy",
+                                                      optionType: 'offplan')));
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(5),
+                                          child: Container(
+                                            width: screenSize.width * 0.3,
+                                            height: screenSize.height * 0.11,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.8),
+                                                    offset: const Offset(7, 7),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 2),
+                                                BoxShadow(
+                                                    color: Colors.white
+                                                        .withOpacity(0.8),
+                                                    offset:
+                                                        const Offset(-4, -4),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 2),
+                                              ],
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Image.asset(
+                                                    "assets/images/ak-off-plan.png",
+                                                    height: 35),
+                                                const Padding(
+                                                  padding:
+                                                      EdgeInsets.only(top: 5),
+                                                  child: Text(
+                                                      "Off-Plan-Properties",
+                                                      style: TextStyle(
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          height: 1.2)),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                // === CATEGORY ROW 2 ===
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2.0),
+                                  child: Row(
+                                    children: [
+                                      // Commercial
+                                      GestureDetector(
+                                        onTap: () {
+                                          context.read<FilterBloc>().add(
+                                              FilterSetInitialHomeCategory(3));
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (_) => filter.Filter(
+                                                      data: "Rent",
+                                                      propertyType: 1)));
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8),
+                                          child: Container(
+                                            width: screenSize.width * 0.29,
+                                            height: screenSize.height * 0.11,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.8),
+                                                    offset: const Offset(7, 7),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 2),
+                                                BoxShadow(
+                                                    color: Colors.white
+                                                        .withOpacity(0.8),
+                                                    offset:
+                                                        const Offset(-4, -4),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 2),
+                                              ],
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Image.asset(
+                                                    "assets/images/commercial_new.png",
+                                                    height: 35),
+                                                const Padding(
+                                                  padding: EdgeInsets.all(4),
+                                                  child: Text("Commercial",
+                                                      style: TextStyle(
+                                                          fontSize: 11,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          height: 1.2)),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Villas
+                                      GestureDetector(
+                                        onTap: () {
+                                          context.read<FilterBloc>().add(
+                                              const FilterSetInitialHomeCategory(
+                                                  4));
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (_) => filter.Filter(
+                                                      data: "Rent",
+                                                      propertyType: 0,
+                                                      propertyCategoryType:
+                                                          'Villa')));
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(5),
+                                          child: Container(
+                                            width: screenSize.width * 0.3,
+                                            height: screenSize.height * 0.11,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.8),
+                                                    offset: const Offset(7, 7),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 2),
+                                                BoxShadow(
+                                                    color: Colors.white
+                                                        .withOpacity(0.8),
+                                                    offset:
+                                                        const Offset(-4, -4),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 2),
+                                              ],
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Image.asset(
+                                                    "assets/images/villa-new.png",
+                                                    height: 35),
+                                                const Padding(
+                                                  padding: EdgeInsets.all(5),
+                                                  child: Text("Villas",
+                                                      style: TextStyle(
+                                                          fontSize: 11,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          height: 1.2)),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Apartment
+                                      GestureDetector(
+                                        onTap: () {
+                                          context.read<FilterBloc>().add(
+                                              FilterSetInitialHomeCategory(5));
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (_) => filter.Filter(
+                                                      data: "Rent",
+                                                      propertyType: 0,
+                                                      propertyCategoryType:
+                                                          'Apartment')));
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(5),
+                                          child: Container(
+                                            width: screenSize.width * 0.3,
+                                            height: screenSize.height * 0.11,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.8),
+                                                    offset: const Offset(7, 7),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 2),
+                                                BoxShadow(
+                                                    color: Colors.white
+                                                        .withOpacity(0.8),
+                                                    offset:
+                                                        const Offset(-4, -4),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 2),
+                                              ],
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Image.asset(
+                                                    "assets/images/apartment.png",
+                                                    height: 35),
+                                                const Padding(
+                                                  padding: EdgeInsets.all(5),
+                                                  child: Text("Apartment",
+                                                      style: TextStyle(
+                                                          fontSize: 11,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          height: 1.2)),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                // Banner - New Projects (perfect padding & size adjustment)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10.0, vertical: 10.0),
+                                  // Outer padding (top/bottom added for spacing)
+                                  child: GestureDetector(
+                                    onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                NewProjectsScreen())),
+                                    child: Container(
+                                      width: double.infinity,
+                                      height: 150, // Comfortable height
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                              color:
+                                                  Colors.grey.withOpacity(0.5),
+                                              offset: const Offset(4, 4),
+                                              blurRadius: 8,
+                                              spreadRadius: 2),
+                                          BoxShadow(
+                                              color:
+                                                  Colors.white.withOpacity(0.8),
+                                              offset: const Offset(-4, -4),
+                                              blurRadius: 8,
+                                              spreadRadius: 2),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          // Left: Text section with generous padding
+                                          Expanded(
+                                            flex: 4,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      16, 16, 8, 16),
+                                              // Left-heavy padding for text
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    "New Projects",
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 19,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 8),
+                                                  Text(
+                                                    "Discover more about the UAE real estate market",
+                                                    style: TextStyle(
+                                                      color: Colors.black87,
+                                                      fontSize: 14,
+                                                    ),
+                                                    softWrap: true,
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+
+                                          // Right: Image section with balanced padding
+                                          Expanded(
+                                            flex: 5,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(12.0),
+                                              // Even padding around image
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                                child: Image.asset(
+                                                  'assets/images/banner1.jpg',
+                                                  fit: BoxFit.cover,
+                                                  height: double.infinity,
+                                                  width: double.infinity,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
+
+                                // Properties Count + Sort
+                                Container(
+                                  margin: const EdgeInsets.only(
+                                      top: 20, left: 5, right: 15),
+                                  height: screenSize.height * 0.05,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: Text(
+                                            "${featuredModel?.totalProperties ?? 0} Properties",
+                                            style: const TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 15)),
+                                      ),
+                                      PopupMenuButton<String>(
+                                        elevation: 0,
+                                        onSelected: (value) {
+                                          setState(() {
+                                            selectedSort = value;
+                                            // 🔁 Call your sorting/filter logic here
+                                          });
+                                        },
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        offset: const Offset(0, 35),
+                                        color: Colors.white,
+                                        // Needed to style the container inside
+                                        itemBuilder: (context) {
+                                          final List<String> sortOptions = [
+                                            "Featured",
+                                            "Newest",
+                                            "Price (low)",
+                                            "Price (high)",
+                                          ];
+
+                                          return [
+                                            PopupMenuItem<String>(
+                                              enabled: false,
+                                              padding: EdgeInsets.zero,
+                                              child: Container(
+                                                width: 200,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  // 👈 Your dropdown background
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children:
+                                                      sortOptions.map((option) {
+                                                    return InkWell(
+                                                      onTap: () {
+                                                        Navigator.pop(context);
+                                                        final selectedKey =
+                                                            sortMap[option]!;
+                                                        setState(() {
+                                                          selectedSort =
+                                                              option; // for UI label
+                                                          selectedSortKey =
+                                                              selectedKey; // keep if you use elsewhere
+                                                          _currentSortKey =
+                                                              selectedKey; // <-- persist for pagination
+                                                          featuredModel =
+                                                              null; // clear existing data
+                                                          nextPageUrl =
+                                                              null; // reset pagination
+                                                        });
+                                                        getFeaturedProperties(
+                                                            forceRefresh:
+                                                                true); // will use _currentSortKey
+                                                        _scrollController
+                                                            .jumpTo(0);
+                                                      },
+                                                      child: Column(
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        16,
+                                                                    vertical:
+                                                                        12),
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                Text(
+                                                                  option,
+                                                                  style: const TextStyle(
+                                                                      color: Colors
+                                                                          .black), // 👈 Black text
+                                                                ),
+                                                                if (selectedSort ==
+                                                                    option)
+                                                                  const Icon(
+                                                                      Icons
+                                                                          .check,
+                                                                      color: Colors
+                                                                          .green,
+                                                                      size: 18),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          if (option !=
+                                                              sortOptions.last)
+                                                            const Divider(
+                                                                height: 1,
+                                                                thickness: 0.5,
+                                                                color: Colors
+                                                                    .grey),
+                                                        ],
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                            ),
+                                          ];
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            border:
+                                                Border.all(color: Colors.red),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Image.asset(
+                                                "assets/images/filter.png",
+                                                height: 16,
+                                                width: 16,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(selectedSort),
+                                              // 👉 No TextStyle here
+                                              const Icon(Icons.arrow_drop_down,
+                                                  size: 18),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                const SizedBox(height: 6),
                               ],
-                            ),
-                          ),
+                            );
+                          }
 
-                          const SizedBox(height: 6),
-                        ],
-                      );
-                    }
+                          final int propertyIndex = index - 1;
 
-                    final int propertyIndex = index - 1;
+                          if (propertyIndex < properties.length) {
+                            final featured.Data dataItem =
+                                properties[propertyIndex];
+                            final Property property =
+                                dataItem.toProperty(); // ← Now works!
 
-                    if (propertyIndex < properties.length) {
-                      final featured.Data dataItem = properties[propertyIndex];
-                      final Property property = dataItem.toProperty(); // ← Now works!
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 8),
+                              child: PropertyCard(item: property),
+                            );
+                          }
 
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        child: PropertyCard(item: property),
-                      );
-                    }
+                          // Loading indicator at the end
+                          if (propertyIndex == properties.length &&
+                              nextPageUrl != null) {
+                            return const Padding(
+                              padding: EdgeInsets.all(20),
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
 
-                    // Loading indicator at the end
-                    if (propertyIndex == properties.length &&
-                        nextPageUrl != null) {
-                      return const Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    }
-
-
-                    return const SizedBox.shrink();
-                  },),),),],),
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+            ),
+          ],
+        ),
       ),
-
-
 
       //),
     );
@@ -1564,7 +1601,7 @@ class _MyHomePageState extends State<HomeDemo> {
       ),
       child: Row(
         mainAxisAlignment:
-        MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+            MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
@@ -1624,7 +1661,7 @@ class _MyHomePageState extends State<HomeDemo> {
                 ).then((_) async {
                   // 🔁 Re-sync when coming back
                   final updatedFavorites =
-                  await FavoriteService.fetchApiFavorites(token);
+                      await FavoriteService.fetchApiFavorites(token);
                   setState(() {
                     FavoriteService.loggedInFavorites = updatedFavorites;
                   });
@@ -1634,7 +1671,7 @@ class _MyHomePageState extends State<HomeDemo> {
             icon: pageIndex == 2
                 ? const Icon(Icons.favorite, color: Colors.red, size: 30)
                 : const Icon(Icons.favorite_border_outlined,
-                color: Colors.red, size: 30),
+                    color: Colors.red, size: 30),
           ),
 
           // IconButton(
@@ -1699,7 +1736,7 @@ class _MyHomePageState extends State<HomeDemo> {
               icon: pageIndex == 3
                   ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
                   : const Icon(Icons.dehaze_outlined,
-                  color: Colors.red, size: 35),
+                      color: Colors.red, size: 35),
             ),
           ),
         ],

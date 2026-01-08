@@ -571,15 +571,16 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.red),
             onPressed: () async {
-              setState(() {
-                if (token == '') {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => My_Account()));
-                } else {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => My_Account()));
-                }
-              });
+              Navigator.pop(context);
+              // setState(() {
+              //   if (token == '') {
+              //     Navigator.push(context,
+              //         MaterialPageRoute(builder: (context) => My_Account()));
+              //   } else {
+              //     Navigator.push(context,
+              //         MaterialPageRoute(builder: (context) => My_Account()));
+              //   }
+              // });
             },
           ),
           actions: [
