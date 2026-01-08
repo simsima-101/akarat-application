@@ -123,6 +123,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hello'**
   String get hello;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// Title for the My Account screen
+  ///
+  /// In en, this message translates to:
+  /// **'My Account'**
+  String get myAccount;
 }
 
 class _AppLocalizationsDelegate

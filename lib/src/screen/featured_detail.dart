@@ -44,12 +44,34 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
   Map<String, dynamic>? _projectInfoRaw;
 
+
+  Widget _buildFeatureItem(IconData icon, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 19, color: Colors.redAccent),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+      ],
+    );
+  }
+
   // login data
   bool isDataRead = false;
   String token = '';
   String email = '';
   String result = '';
   final SharedPreferencesManager prefManager = SharedPreferencesManager();
+
+
+  bool isLoading = true;     // true initially (shows shimmer)
+  bool isError = false;      // tracks if fetch failed
+  String? errorMessage;      // optional detailed errorbool isLoading = true;     // true initially (shows shimmer)
+
+
 
   bool _hasProjectInfo() {
     return completionPercentage != null ||
@@ -981,12 +1003,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
   @override
   void initState() {
     super.initState();
-    // SystemChrome.setEnabledSystemUIMode(
-    //   SystemUiMode.manual,
-    //   overlays: [SystemUiOverlay.bottom],
-    // );
     readData();
-    fetchProducts(widget.data);
+    fetchProducts(widget.data); // will set isLoading = true internally
   }
 
   @override
@@ -1055,35 +1073,100 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
   // ========= PROPERTY FETCHING =========
   Future<void> fetchProducts(String data) async {
+    // Reset states
+    setState(() {
+      isLoading = true;
+      isError = false;
+      errorMessage = null;
+    });
+
     final url = ApiService.buildUri('properties/$data');
 
-    try {
-      debugPrint("📡 Fetching property detail: $url");
+    debugPrint("📡 Fetching property detail: $url");
 
-      final response = await http.get(url).timeout(const Duration(seconds: 10));
+    try {
+      final response = await http
+          .get(url)
+          .timeout(const Duration(seconds: 45)); // increased slightly
+
+      debugPrint("📶 Response status: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
 
-        // ✅ extract project_information from raw API only
+        // Check if API returned success but no data
+        if (jsonData['data'] == null) {
+          throw Exception("No property data found");
+        }
+
+        // Extract project_information from raw response
         _projectInfoRaw = jsonData['data']?['project_information'] ??
             jsonData['data']?['property']?['project_information'];
 
-        debugPrint("🟨 RAW project_information: $_projectInfoRaw");
         debugPrint("🟨 RAW project_information keys: ${_projectInfoRaw?.keys}");
 
         final parsedModel = Featured_DetailModel.fromJson(jsonData);
 
         if (!mounted) return;
-        setState(() => featuredDetailModel = parsedModel);
+
+        setState(() {
+          featuredDetailModel = parsedModel;
+          isLoading = false;
+          isError = false;
+        });
 
         _parsePermitResponse();
+
+        debugPrint("✅ Property detail loaded successfully");
       } else {
-        debugPrint('❌ API Error: ${response.statusCode}');
+        // HTTP error (404, 500, etc.)
+        final errorMsg =
+            "Server error: ${response.statusCode} - ${response.reasonPhrase}";
+        debugPrint('❌ $errorMsg');
+        debugPrint("Response body: ${response.body}");
+
+        throw Exception(errorMsg);
       }
-    } catch (e) {
-      debugPrint('🚨 Unexpected error: $e');
+    } on TimeoutException catch (_) {
+      final msg = "Request timed out. Please check your internet connection.";
+      debugPrint("⏰ $msg");
+      _handleFetchError(msg);
+    } catch (e, stackTrace) {
+      debugPrint("🚨 Fetch error: $e");
+      debugPrint(stackTrace.toString());
+
+      String userMsg = "Failed to load property details.";
+      if (e.toString().contains("No property data found")) {
+        userMsg = "Property not found or no longer available.";
+      } else if (e.toString().contains("FormatException")) {
+        userMsg = "Invalid data received from server.";
+      }
+
+      _handleFetchError(userMsg);
     }
+  }
+
+  void _handleFetchError(String message) {
+    if (!mounted) return;
+
+    setState(() {
+      isLoading = false;
+      isError = true;
+      errorMessage = message;
+    });
+
+    // Show user feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade600,
+        action: SnackBarAction(
+          label: "Retry",
+          textColor: Colors.white,
+          onPressed: () => fetchProducts(widget.data),
+        ),
+      ),
+    );
   }
 
   // ========= OPEN CONTACT FORM DIALOG =========
@@ -1218,11 +1301,58 @@ class _Featured_DetailState extends State<Featured_Detail> {
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.sizeOf(context);
 
-    if (featuredDetailModel == null) {
+    if (isLoading) {
       return Scaffold(
         body: ListView.builder(
-          itemCount: 5,
+          itemCount: 8, // more items for better shimmer feel
           itemBuilder: (context, index) => const ShimmerCard(),
+        ),
+      );
+    }
+
+    if (isError) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.red),
+            onPressed: () => Navigator.pop(context),
+          ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.wifi_off, size: 80, color: Colors.grey.shade400),
+                const SizedBox(height: 20),
+                Text(
+                  "Unable to load property",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  errorMessage ?? "Please check your connection and try again.",
+                  style: TextStyle(color: Colors.grey.shade600),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 30),
+                ElevatedButton.icon(
+                  onPressed: () => fetchProducts(widget.data),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text("Retry"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       );
     }
@@ -1647,7 +1777,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
                       ),
-                      maxLines: 2,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       softWrap: true,
                     ),
@@ -2387,12 +2517,11 @@ class _Featured_DetailState extends State<Featured_Detail> {
                 featuredDetailModel!.data!.recommended!.isNotEmpty) ...[
               Gap(10),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 17),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  children: const [
                     Text(
-                      "Recomended Properties",
+                      "Recommended Properties",
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
@@ -2401,114 +2530,93 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   ],
                 ),
               ),
-              Gap(5),
+              Gap(8),
               SizedBox(
-                height: 240,
+                height: 260, // Slightly increased for better visual balance
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  itemCount:
-                  featuredDetailModel?.data?.recommended?.length ?? 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: featuredDetailModel?.data?.recommended?.length ?? 0,
                   itemBuilder: (context, index) {
-                    final recProperty =
-                    featuredDetailModel!.data!.recommended![index];
+                    final recProperty = featuredDetailModel!.data!.recommended![index];
 
-                    // === Resolve values for recommended property (same logic as main property) ===
                     final int resolvedBeds = recProperty.bedrooms ?? 0;
                     final int resolvedBaths = recProperty.bathrooms ?? 0;
 
-                    // Size: try propertySizeSqft → squareFeet → fallback
+                    // Size calculation
                     String displaySize = '';
                     String? rawSize = recProperty.propertySizeSqft;
-                    if (rawSize == null ||
-                        rawSize.trim().isEmpty ||
-                        rawSize == '0') {
+                    if (rawSize == null || rawSize.trim().isEmpty || rawSize == '0') {
                       rawSize = recProperty.squareFeet;
                     }
-                    if (rawSize != null &&
-                        rawSize.trim().isNotEmpty &&
-                        rawSize != '0') {
+                    if (rawSize != null && rawSize.trim().isNotEmpty && rawSize != '0') {
                       final clean = rawSize.replaceAll(RegExp(r'[^0-9.]'), '');
                       final sizeNum = num.tryParse(clean);
                       if (sizeNum != null && sizeNum > 0) {
                         final formatted = sizeNum
                             .toStringAsFixed(0)
-                            .replaceAllMapped(
-                            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                                (m) => '${m[1]},');
+                            .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
                         displaySize = '$formatted sqft';
                       }
                     }
 
-                    final String resolvedPrice =
-                    _formatPrice(recProperty.price);
-                    final String resolvedLocation =
-                        recProperty.location?.toString() ?? 'Dubai';
+                    final String resolvedPrice = _formatPrice(recProperty.price);
+                    final String resolvedLocation = recProperty.location?.toString() ?? 'Dubai';
 
-                    final imageUrl = (recProperty.media?.isNotEmpty ?? false)
+                    final String imageUrl = (recProperty.media?.isNotEmpty ?? false)
                         ? recProperty.media!.first.originalUrl.toString()
                         : '';
 
                     return Container(
-                      width: 270,
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 8),
+                      width: 300,
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+
                       child: Card(
                         color: Colors.white,
-                        elevation: 5,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15)),
-                        child: GestureDetector(
+                        elevation: 6,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => Featured_Detail(
-                                    data: recProperty.id.toString()),
+                                builder: (context) => Featured_Detail(data: recProperty.id.toString()),
                               ),
                             );
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // === IMAGE ===
+                              // Image
                               ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(15)),
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                                 child: imageUrl.isNotEmpty
                                     ? CachedNetworkImage(
                                   imageUrl: imageUrl,
-                                  height: 120,
+                                  height: 130,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
-                                  placeholder: (context, url) =>
-                                      Container(
-                                        color: Colors.grey[300],
-                                        child: const Center(
-                                            child:
-                                            CircularProgressIndicator()),
-                                      ),
-                                  errorWidget: (_, __, ___) => Container(
-                                    height: 120,
+                                  placeholder: (_, __) => Container(
                                     color: Colors.grey[300],
-                                    child: const Icon(
-                                        Icons.image_not_supported,
-                                        size: 40),
+                                    child: const Center(child: CircularProgressIndicator()),
+                                  ),
+                                  errorWidget: (_, __, ___) => Container(
+                                    height: 130,
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.image_not_supported, size: 50),
                                   ),
                                 )
                                     : Container(
-                                  height: 120,
+                                  height: 130,
                                   color: Colors.grey[300],
-                                  child: const Icon(
-                                      Icons.image_not_supported,
-                                      size: 40),
+                                  child: const Icon(Icons.image_not_supported, size: 50),
                                 ),
                               ),
 
-                              // === CONTENT ===
+                              // Content
                               Padding(
-                                padding:
-                                const EdgeInsets.fromLTRB(10, 10, 10, 8),
+                                padding: const EdgeInsets.all(12),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -2516,66 +2624,43 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                     Text(
                                       'AED $resolvedPrice',
                                       style: const TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 17,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black87,
                                       ),
                                     ),
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: 10),
 
-                                    // Beds • Baths • Sqft Row
-                                    Row(
-                                      children: [
-                                        if (resolvedBeds > 0) ...[
-                                          const Icon(Icons.king_bed_outlined,
-                                              size: 18,
-                                              color: Colors.redAccent),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            '$resolvedBeds bed${resolvedBeds > 1 ? 's' : ''}',
-                                            style:
-                                            const TextStyle(fontSize: 13.5),
-                                          ),
-                                        ],
-                                        if (resolvedBeds > 0 &&
-                                            resolvedBaths > 0)
-                                          const SizedBox(width: 14),
-                                        if (resolvedBaths > 0) ...[
-                                          const Icon(Icons.bathtub_outlined,
-                                              size: 18,
-                                              color: Colors.redAccent),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            '$resolvedBaths bath${resolvedBaths > 1 ? 's' : ''}',
-                                            style:
-                                            const TextStyle(fontSize: 13.5),
-                                          ),
-                                        ],
-                                        if ((resolvedBeds > 0 ||
-                                            resolvedBaths > 0) &&
-                                            displaySize.isNotEmpty)
-                                          const SizedBox(width: 14),
-                                        if (displaySize.isNotEmpty) ...[
-                                          const Icon(Icons.square_foot,
-                                              size: 18,
-                                              color: Colors.redAccent),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            displaySize,
-                                            style:
-                                            const TextStyle(fontSize: 13.5),
-                                          ),
-                                        ],
-                                      ],
+                                    // Horizontal scrolling features row
+                                    SizedBox(
+                                      height: 30,
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        physics: const BouncingScrollPhysics(),
+                                        child: Row(
+                                          children: [
+                                            if (resolvedBeds > 0) ...[
+                                              _buildFeatureItem(Icons.king_bed_outlined, '$resolvedBeds bed${resolvedBeds > 1 ? 's' : ''}'),
+                                              const SizedBox(width: 16),
+                                            ],
+                                            if (resolvedBaths > 0) ...[
+                                              _buildFeatureItem(Icons.bathtub_outlined, '$resolvedBaths bath${resolvedBaths > 1 ? 's' : ''}'),
+                                              const SizedBox(width: 16),
+                                            ],
+                                            if (displaySize.isNotEmpty)
+                                              _buildFeatureItem(Icons.square_foot, displaySize),
+                                          ],
+                                        ),
+                                      ),
                                     ),
 
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: 10),
 
                                     // Location
                                     Text(
                                       resolvedLocation,
                                       style: const TextStyle(
-                                        fontSize: 13,
+                                        fontSize: 14,
                                         color: Colors.black87,
                                         fontWeight: FontWeight.w500,
                                       ),

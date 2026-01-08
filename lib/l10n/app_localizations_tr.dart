@@ -19,4 +19,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get hello => 'Merhaba';
+
+  @override
+  String get language => 'Dil';
+
+  @override
+  String get myAccount => 'Hesabım';
 }

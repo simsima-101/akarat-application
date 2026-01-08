@@ -3,5 +3,12 @@
   "search": "Search",
   "properties": "Properties",
   "hello": "Hello",
+  "language": "Language",
+
+  "myAccount": "My Account",
+  "@myAccount": {
+    "description": "Title for the My Account screen"
+  },
+
   "@@locale": "en"
 }

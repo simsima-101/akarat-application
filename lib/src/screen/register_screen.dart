@@ -1,7 +1,8 @@
   // lib/screen/register_screen.dart
   import 'dart:async';
 
-  import 'package:country_code_picker/country_code_picker.dart';
+  import 'package:Akarat/src/screen/privacy.dart';
+import 'package:country_code_picker/country_code_picker.dart';
   import 'package:firebase_auth/firebase_auth.dart';
   import 'package:flutter/gestures.dart';
   import 'package:flutter/material.dart';
@@ -31,6 +32,40 @@
   }
 
   class _RegisterScreenState extends State<RegisterScreen> {
+
+
+    bool get _isFormValid {
+      final first = firstController.text.trim().isNotEmpty;
+      final last = lastController.text.trim().isNotEmpty;
+      final email = emailController.text.trim();
+      final phone = phoneController.text.trim();
+      final pwd = passwordController.text;
+      final confirm = confirmController.text;
+
+      // Email validation
+      final validEmail = RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(email);
+
+      // Phone: must be exactly _maxPhoneLength digits and not empty
+      final validPhone = phone.isNotEmpty && phone.length == _maxPhoneLength;
+
+      // Password match and not empty
+      final passwordsMatch = pwd.isNotEmpty && pwd == confirm;
+
+      // Password strength rules
+      final passwordValid = pwd.length >= 8 &&
+          RegExp(r'[A-Z]').hasMatch(pwd) &&
+          RegExp(r'\d').hasMatch(pwd) &&
+          RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-\\/\[\]=;+`~]').hasMatch(pwd);
+
+      return first &&
+          last &&
+          email.isNotEmpty &&
+          validEmail &&
+          validPhone &&
+          pwd.isNotEmpty &&
+          passwordsMatch &&
+          passwordValid;
+    }
     // Controllers
     final firstController = TextEditingController();
     final lastController = TextEditingController();
@@ -47,7 +82,7 @@
     bool _isLoading = false;
     bool _hidePwd = true;
     bool _hideConfirm = true;
-    bool _agree = false;
+
 
     // Google state (separate from _isLoading)
     bool isLoading = false;
@@ -150,10 +185,7 @@
         return;
       }
 
-      if (!_agree) {
-        _showErr('Please agree to the Terms and Conditions');
-        return;
-      }
+
 
       FocusScope.of(context).unfocus();
       setState(() => _isLoading = true);
@@ -284,6 +316,15 @@
     void initState() {
       super.initState();
       passwordController.addListener(() => setState(() {}));
+
+      firstController.addListener(() => setState(() {}));
+      lastController.addListener(() => setState(() {}));
+      emailController.addListener(() => setState(() {}));
+      phoneController.addListener(() => setState(() {}));
+      passwordController.addListener(() => setState(() {}));
+      confirmController.addListener(() => setState(() {}));
+
+
       _initGoogle();
     }
 
@@ -661,104 +702,101 @@
           ),
           const SizedBox(height: 16),
 
-          // ✅ Checkbox + text in same row, nicely aligned
-          // Inside _buildScreenContent → replace the whole Row with Checkbox + RichText
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Checkbox(
-                value: _agree,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                visualDensity: const VisualDensity(
-                  horizontal: -2,
-                  vertical: -2,
-                ),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                onChanged: (v) {
-                  setState(() => _agree = v ?? false);
-                },
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: RichText(
-                  text: TextSpan(
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
-                    ),
-                    children: [
-                      const TextSpan(text: 'I agree '),
-                      TextSpan(
-                        text: 'Terms and conditions',
-                        style: const TextStyle(
-                          color: Color(0xFF2F6FE4),
-                          decoration: TextDecoration.underline,
-                        ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            // Navigate to Terms & Conditions screen
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const TermsCondition(),
-                              ),
-                            );
-                          },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+
 
           const SizedBox(height: 22),
 
-          // 🔴 Register button - centered & narrower
+          const SizedBox(height: 22),
+
+// 🔴 Register button
           Align(
             alignment: Alignment.center,
             child: SizedBox(
               width: double.infinity,
               height: 50,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF2D2D), // solid red
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
+              child: ElevatedButton(
+                onPressed: _isFormValid && !_isLoading ? _submit : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isFormValid
+                      ? const Color(0xFFFF2D2D)  // Bright red when valid
+                      : Colors.grey.shade400,   // Grey when invalid
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
                   ),
-                  onPressed: _isLoading ? null : _submit,
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'Register',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
+                  elevation: _isFormValid ? 4 : 0,
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: Colors.white,
+                  ),
+                )
+                    : const Text(
+                  'Register',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
               ),
             ),
           ),
+          const SizedBox(height: 16),
 
-          const SizedBox(height: 20),
+// ✅ New agreement text with two links
+          Center(
+            child: RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+                children: [
+                  const TextSpan(text: 'By Signing up I agree to the '),
+                  TextSpan(
+                    text: 'Terms and Conditions',
+                    style: const TextStyle(
+                      color: Color(0xFF2F6FE4),
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const TermsCondition(),
+                          ),
+                        );
+                      },
+                  ),
+                  const TextSpan(text: ' and '),
+                  TextSpan(
+                    text: 'Privacy Policy',
+                    style: const TextStyle(
+                      color: Color(0xFF2F6FE4),
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        // Replace with your actual Privacy Policy screen
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const Privacy(), // Create this screen
+                          ),
+                        );
+                      },
+                  ),
+                ],
+              ),
+            ),
+          ),
 
+          const SizedBox(height: 30),
+
+// Existing "Already have an account?" row
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -782,6 +820,32 @@
               ),
             ],
           ),
+
+          const SizedBox(height: 20),
+
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: [
+          //     const Text(
+          //       'Already have an account?  ',
+          //       style: TextStyle(color: Color(0xFF616161), fontSize: 16),
+          //     ),
+          //     GestureDetector(
+          //       onTap: () => Navigator.pushReplacement(
+          //         context,
+          //         MaterialPageRoute(builder: (_) => const LoginDemo()),
+          //       ),
+          //       child: const Text(
+          //         'Login Here',
+          //         style: TextStyle(
+          //           color: Color(0xFF2F6FE4),
+          //           fontWeight: FontWeight.w600,
+          //           decoration: TextDecoration.underline,
+          //         ),
+          //       ),
+          //     ),
+          //   ],
+          // ),
         ],
       );
     }

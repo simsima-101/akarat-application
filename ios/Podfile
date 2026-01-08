@@ -54,4 +54,3 @@ post_install do |installer|
     puts "⚠️ AppFrameworkInfo.plist or App.framework not found!"
   end
 end
-

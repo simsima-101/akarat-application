@@ -39,6 +39,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   String _provisionalTokenFromArgs = '';
 
+  final otp1Controller = TextEditingController();
+  final otp2Controller = TextEditingController();
+  final otp3Controller = TextEditingController();
+  final otp4Controller = TextEditingController();
+
+
+
   // ---- helpers ----
   ({String first, String last}) _splitName(String full) {
     final parts = full.trim().split(RegExp(r'\s+')).where((s) => s.isNotEmpty).toList();
@@ -121,12 +128,23 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   // ---- verify OTP ----
   Future<void> _verifyOtp() async {
     if (_isVerifying) return;
-    if (!_formKey.currentState!.validate()) return;
+
+    // Collect OTP from the 4 separate input boxes
+    final String otp =
+        otp1Controller.text.trim() +
+            otp2Controller.text.trim() +
+            otp3Controller.text.trim() +
+            otp4Controller.text.trim();
+
+    // Validate: Must be exactly 4 digits
+    if (otp.length != 4 || !RegExp(r'^\d{4}$').hasMatch(otp)) {
+      _err('Please enter a valid 4-digit code');
+      return;
+    }
 
     setState(() => _isVerifying = true);
 
     try {
-      final otp = otpController.text.trim();
       final resp = await ApiService.verifyOtp(email: email, otp: otp)
           .timeout(const Duration(seconds: 180));
 
@@ -135,15 +153,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       if (code == 200) {
         await HapticFeedback.lightImpact();
 
-        final Map<String, dynamic> body =
-        (resp['__raw'] is Map<String, dynamic>)
+        final Map<String, dynamic> body = (resp['__raw'] is Map<String, dynamic>)
             ? (resp['__raw'] as Map<String, dynamic>)
             : <String, dynamic>{};
 
         String? token = _extractTokenFromAny(body);
         token ??= _provisionalTokenFromArgs.isNotEmpty ? _provisionalTokenFromArgs : null;
 
-        // extract name/email if backend provided
+        // Extract name/email if backend provided
         String fullName = ((body['user'] ?? body['name']) ?? '').toString().trim();
         String emailFromApi = (body['email'] ?? '').toString().trim();
 
@@ -159,7 +176,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
         if (emailFromApi.isEmpty) emailFromApi = email;
 
-        // === persist user identity ===
+        // Persist user identity
         if ((token ?? '').isNotEmpty) {
           await SecureStorage.setToken(token!);
           await SecureStorage.setUserProfile(
@@ -169,7 +186,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             lastName: lastName,
           );
 
-          // set in-memory session
           SessionManager().setAuth(
             token: token!,
             userName: fullName,
@@ -186,7 +202,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           return;
         }
 
-        // no token → redirect to login
+        // If no token, redirect to login
         if (!mounted) return;
         Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => LoginDemo(initialEmail: email)),
@@ -243,7 +259,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   @override
   void dispose() {
+
     otpController.dispose();
+    otp1Controller.dispose();
+    otp2Controller.dispose();
+    otp3Controller.dispose();
+    otp4Controller.dispose();
     super.dispose();
   }
 
@@ -253,8 +274,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     _cooldown > 0 ? 'Resend in $_cooldown s' : "Didn't receive the code? Resend";
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Verify OTP')),
-      backgroundColor: const Color(0xFFF3F3F3),
+      backgroundColor: Colors.white,
+      appBar: AppBar(title: const Text('Verify OTP'),
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black),
+
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
@@ -304,18 +328,64 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     ]),
                   ),
 
-                TextFormField(
-                  controller: otpController,
-                  keyboardType: TextInputType.number,
-                  autofillHints: const [AutofillHints.oneTimeCode],
-                  validator: (v) => RegExp(r'^\d{4}$').hasMatch((v ?? '').trim())
-                      ? null
-                      : 'Enter the 4-digit code',
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(4),
-                  ],
+                // 4-Box OTP Input
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(4, (index) {
+                    return SizedBox(
+                      width: 64,
+                      height: 64,
+                      child: TextFormField(
+                        onChanged: (value) {
+                          if (value.length == 1) {
+                            // Move to next field
+                            if (index < 3) {
+                              FocusScope.of(context).nextFocus();
+                            } else {
+                              FocusScope.of(context).unfocus(); // Hide keyboard on last digit
+                            }
+                          } else if (value.isEmpty) {
+                            // Move back if deleted
+                            if (index > 0) {
+                              FocusScope.of(context).previousFocus();
+                            }
+                          }
+                        },
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(1),
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 20),
+                          counterText: '', // Hide character counter
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 2),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Colors.black, width: 2.5), // Red when focused
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Colors.black, width: 2),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
                 ),
+
+                const SizedBox(height: 24),
 
                 const SizedBox(height: 24),
                 SizedBox(
@@ -323,19 +393,35 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   height: 50,
                   child: ElevatedButton(
                     onPressed: _isVerifying ? null : _verifyOtp,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white, // White background
+                      foregroundColor: Colors.black, // Text/icon color
+                      elevation: 2, // Slight shadow for depth
+                      shadowColor: Colors.black26,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18), // Adjust radius as needed
+                        side: const BorderSide(color: Color(0xFFE0E0E0), width: 1), // Light border
+                      ),
+                    ),
                     child: _isVerifying
                         ? const SizedBox(
                       height: 22,
                       width: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.5),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black54),
+                      ),
                     )
                         : const Text(
                       'Verify OTP',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 16),
                 Center(
                   child: TextButton(

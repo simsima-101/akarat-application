@@ -3,5 +3,12 @@
   "search": "بحث",
   "properties": "عقارات",
   "hello": "مرحبا",
+  "language": "اللغة",
+
+  "myAccount": "حسابي",
+  "@myAccount": {
+    "description": "Title for the My Account screen"
+  },
+
   "@@locale": "ar"
 }

@@ -10,6 +10,7 @@ import 'package:Akarat/src/screen/terms_condition.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../l10n/app_localizations.dart';
 import '../core/utils/secure_storage.dart';
 import '../core/services/api_service.dart';
 import '../core/utils/session_manager.dart';
@@ -22,6 +23,8 @@ import 'home.dart';
 import 'login.dart';
 import 'personal_information.dart';
 import 'contacted_properties.dart';
+
+import 'package:app_settings/app_settings.dart';
 
 class My_Account extends StatefulWidget {
   const My_Account({super.key});
@@ -142,6 +145,8 @@ class _My_AccountState extends State<My_Account> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
       backgroundColor: Colors.white,
@@ -153,9 +158,9 @@ class _My_AccountState extends State<My_Account> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'My Account',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              Text(
+                l10n?.myAccount ?? 'My Account',
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
 
               // Profile Card
@@ -199,7 +204,7 @@ class _My_AccountState extends State<My_Account> {
                           backgroundColor: Colors.grey[200],
                           child: ClipOval(
                             child: Image.asset(
-                              'assets/images/avatar.png', // Static fallback
+                              'assets/images/avatar.png',
                               width: 60,
                               height: 60,
                               fit: BoxFit.cover,
@@ -216,14 +221,12 @@ class _My_AccountState extends State<My_Account> {
                             Text(
                               _displayName,
                               style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold),
+                                  fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               userEmail ?? '',
-                              style: const TextStyle(
-                                  fontSize: 13, color: Colors.grey),
+                              style: const TextStyle(fontSize: 13, color: Colors.grey),
                             ),
                           ],
                         )
@@ -291,6 +294,8 @@ class _My_AccountState extends State<My_Account> {
   }
 
   Widget _buildSettings(bool isLoggedIn) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       children: [
         _settingsContainer([
@@ -349,7 +354,24 @@ class _My_AccountState extends State<My_Account> {
           _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
             Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsCondition()));
           }),
+
+          // Language Tile - Opens native per-app language settings
+          _settingsTile(
+            l10n?.language ?? "Language",
+            "assets/images/terms-and-conditions.png", // Recommended: add a globe icon
+                () async {
+              try {
+                // Direct to app language settings on Android 13+ / falls back on iOS
+                await AppSettings.openAppSettings(type: AppSettingsType.appLocale);
+              } catch (e) {
+                // Fallback to general app settings
+                await AppSettings.openAppSettings(type: AppSettingsType.settings);
+              }
+            },
+          ),
         ]),
+
+        // Logout / Login Section
         _settingsContainer(
           isLoggedIn
               ? [
@@ -398,7 +420,9 @@ class _My_AccountState extends State<My_Account> {
   Widget _settingsTile(String title, String iconPath, VoidCallback onTap) {
     return ListTile(
       onTap: onTap,
-      leading: iconPath.isNotEmpty ? Image.asset(iconPath, width: 28) : null,
+      leading: iconPath.isNotEmpty
+          ? Image.asset(iconPath, width: 28, height: 28)
+          : null,
       title: Text(title, style: const TextStyle(fontSize: 16)),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
     );

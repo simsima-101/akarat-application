@@ -3,5 +3,12 @@
   "search": "Ara",
   "properties": "Emlaklar",
   "hello": "Merhaba",
+  "language": "Dil",
+
+  "myAccount": "Hesabım",
+  "@myAccount": {
+    "description": "Title for the My Account screen"
+  },
+
   "@@locale": "tr"
 }
