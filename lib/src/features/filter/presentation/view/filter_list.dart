@@ -19,21 +19,21 @@ import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../core/services/api_service.dart';
-import '../core/utils/secure_storage.dart';
-import '../core/utils/session_manager.dart';
-import '../features/property/data/datasources/favorite_remote_datasource.dart';
-import '../features/property/presentation/bloc/filter_bloc.dart';
-import '../providers/favorite_provider.dart';
-import '../providers/filter_provider.dart';
-import '../screen/ContactFormScreen.dart';
-import '../utils/fav_logout.dart';
-import '../utils/shared_preference_manager.dart';
-import 'CreateAlertScreen.dart';
-import 'featured_detail.dart';
-import 'home.dart';
-import 'login.dart';
-import 'my_account.dart';
+import '../../../../core/services/api_service.dart';
+import '../../../../core/utils/secure_storage.dart';
+import '../../../../core/utils/session_manager.dart';
+import '../../../../providers/favorite_provider.dart';
+import '../../../../screen/ContactFormScreen.dart';
+import '../../../../screen/CreateAlertScreen.dart';
+import '../../../../screen/featured_detail.dart';
+import '../../../../screen/home.dart';
+import '../../../../screen/login.dart';
+import '../../../../screen/my_account.dart';
+import '../../../../utils/fav_logout.dart';
+import '../../../../utils/shared_preference_manager.dart';
+import '../../../property/data/datasources/favorite_remote_datasource.dart';
+import '../../data/model/filtermodel.dart';
+import '../bloc/filter_bloc.dart';
 
 class FliterList extends StatefulWidget {
   const FliterList({

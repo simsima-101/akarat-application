@@ -6,8 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
 
+import '../features/filter/presentation/bloc/filter_bloc.dart';
 import '../features/property/data/models/location_model.dart';
-import '../features/property/presentation/bloc/filter_bloc.dart';
 import '../providers/location_picker_provider.dart';
 
 class LocationPickerScreen extends StatefulWidget {

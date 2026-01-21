@@ -1,6 +1,5 @@
 // lib/services/api_service.dart
 import 'dart:convert';
-import 'dart:io' show Platform;
 
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
@@ -76,7 +75,8 @@ class ApiService {
       final rc = FirebaseRemoteConfig.instance;
       print('RC api_base_url:       "${rc.getString('api_base_url')}"');
       print('Runtime override:      ${_runtimeBaseUrl ?? "(none)"}');
-      print('.env / define fallback: ${dotenv.env['API_BASE_URL'] ?? String.fromEnvironment('API_BASE_URL')}');
+      print(
+          '.env / define fallback: ${dotenv.env['API_BASE_URL'] ?? String.fromEnvironment('API_BASE_URL')}');
       print('Effective baseUrl:     $baseUrl');
     }
   }
@@ -101,7 +101,7 @@ class ApiService {
     return {
       ..._jsonHeaders,
       'Authorization': 'Bearer $cleanToken',
-      'Origin': 'https://akarat.com',  // ← Add this (helps Sanctum)
+      'Origin': 'https://akarat.com', // ← Add this (helps Sanctum)
       'Referer': 'https://akarat.com', // ← Add this (helps Sanctum)
     };
   }
@@ -125,7 +125,7 @@ class ApiService {
 
   static Uri _buildUri(String endpoint, [Map<String, String>? queryParams]) {
     final cleanEndpoint =
-    endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
+        endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
     var uri = Uri.parse('$baseUrl/$cleanEndpoint');
     if (queryParams != null) uri = uri.replace(queryParameters: queryParams);
     return uri;
@@ -192,17 +192,14 @@ class ApiService {
   ///
   ///
 
-
   // --- compatibility wrapper so existing call sites can use extractIdentity(...) ---
-  static ({String first, String last, String name, String email}) extractIdentity(
-      Map<String, dynamic> src) {
+  static ({String first, String last, String name, String email})
+      extractIdentity(Map<String, dynamic> src) {
     return extractIdentityFromAny(src);
   }
 
-
-
-  static ({String first, String last, String name, String email}) extractIdentityFromAny(
-      Map<String, dynamic> src) {
+  static ({String first, String last, String name, String email})
+      extractIdentityFromAny(Map<String, dynamic> src) {
     String pickStr(List<List<String>> paths) {
       for (final p in paths) {
         dynamic cur = src;
@@ -265,7 +262,7 @@ class ApiService {
 
   /// Try `/me` to fetch canonical identity if the login payload is thin.
   static Future<({String first, String last, String name, String email})?>
-  tryFetchMe(String token) async {
+      tryFetchMe(String token) async {
     try {
       // Try multiple possible endpoints (in order)
       final endpoints = ['/me', '/user', '/profile', '/account'];
@@ -290,10 +287,10 @@ class ApiService {
           if (id.first.isNotEmpty || id.last.isNotEmpty) {
             final fullName = '${id.first} ${id.last}'.trim();
             return (
-            first: id.first,
-            last: id.last,
-            name: fullName.isNotEmpty ? fullName : id.name,
-            email: id.email
+              first: id.first,
+              last: id.last,
+              name: fullName.isNotEmpty ? fullName : id.name,
+              email: id.email
             );
           }
 
@@ -314,18 +311,17 @@ class ApiService {
     }
   }
 
-
-
   /// Convenience: perform `/login`, return token + best-available identity.
   /// UI can use this to avoid guessing name from email on re-login.
-  static Future<({
-  String token,
-  String first,
-  String last,
-  String name,
-  String email,
-  Map<String, dynamic> raw
-  })> loginWithIdentity({
+  static Future<
+      ({
+        String token,
+        String first,
+        String last,
+        String name,
+        String email,
+        Map<String, dynamic> raw
+      })> loginWithIdentity({
     required String email,
     required String password,
   }) async {
@@ -353,11 +349,24 @@ class ApiService {
 
     // Final fallback: synthesize from email local-part (only if still empty)
     if (id.first.isEmpty && id.last.isEmpty) {
-      final local = (id.email.isNotEmpty ? id.email : _normEmail(email)).split('@').first;
-      id = (first: local, last: '', name: id.name.isNotEmpty ? id.name : local, email: id.email.isNotEmpty ? id.email : _normEmail(email));
+      final local =
+          (id.email.isNotEmpty ? id.email : _normEmail(email)).split('@').first;
+      id = (
+        first: local,
+        last: '',
+        name: id.name.isNotEmpty ? id.name : local,
+        email: id.email.isNotEmpty ? id.email : _normEmail(email)
+      );
     }
 
-    return (token: token, first: id.first, last: id.last, name: id.name, email: id.email, raw: res);
+    return (
+      token: token,
+      first: id.first,
+      last: id.last,
+      name: id.name,
+      email: id.email,
+      raw: res
+    );
   }
 
   // =========================================================
@@ -381,7 +390,7 @@ class ApiService {
   static Future<Map<String, dynamic>> loginWithGoogleIdToken(
       String firebaseIdToken) async {
     final resp =
-    await _post('/login-google', {"google_id_token": firebaseIdToken});
+        await _post('/login-google', {"google_id_token": firebaseIdToken});
 
     if (_looksHtml(resp)) {
       throw Exception(
@@ -399,14 +408,15 @@ class ApiService {
   }
 
   /// Convenience: Google login + identity (mirrors loginWithIdentity).
-  static Future<({
-  String token,
-  String first,
-  String last,
-  String name,
-  String email,
-  Map<String, dynamic> raw
-  })> loginWithGoogleIdentity(String firebaseIdToken) async {
+  static Future<
+      ({
+        String token,
+        String first,
+        String last,
+        String name,
+        String email,
+        Map<String, dynamic> raw
+      })> loginWithGoogleIdentity(String firebaseIdToken) async {
     final data = await loginWithGoogleIdToken(firebaseIdToken);
     final token = extractToken(data);
     if (token == null || token.isEmpty) {
@@ -420,16 +430,28 @@ class ApiService {
     }
     if (id.first.isEmpty && id.last.isEmpty) {
       final local = (id.email.isNotEmpty ? id.email : '').split('@').first;
-      id = (first: local, last: '', name: id.name.isNotEmpty ? id.name : local, email: id.email);
+      id = (
+        first: local,
+        last: '',
+        name: id.name.isNotEmpty ? id.name : local,
+        email: id.email
+      );
     }
 
-    return (token: token, first: id.first, last: id.last, name: id.name, email: id.email, raw: data);
+    return (
+      token: token,
+      first: id.first,
+      last: id.last,
+      name: id.name,
+      email: id.email,
+      raw: data
+    );
   }
 
   static Future<String?> tryLoginGoogle(String firebaseIdToken) async {
     try {
       final r =
-      await _post('/login-google', {'google_id_token': firebaseIdToken});
+          await _post('/login-google', {'google_id_token': firebaseIdToken});
       if (kDebugMode) {
         print('[/login-google] -> ${r.statusCode} ${r.body}');
       }
@@ -470,18 +492,18 @@ class ApiService {
 
     final res = await http
         .post(
-      _buildUri('/register'),
-      headers: _jsonHeaders,
-      body: jsonEncode({
-        'first_name': firstName,
-        'last_name': lastName,
-        'email': email,
-        'phone_country_code': cc,
-        'phone': phone,
-        'password': password,
-        'password_confirmation': passwordConfirmation,
-      }),
-    )
+          _buildUri('/register'),
+          headers: _jsonHeaders,
+          body: jsonEncode({
+            'first_name': firstName,
+            'last_name': lastName,
+            'email': email,
+            'phone_country_code': cc,
+            'phone': phone,
+            'password': password,
+            'password_confirmation': passwordConfirmation,
+          }),
+        )
         .timeout(_timeout);
     return _decorateStatus(res);
   }
@@ -560,13 +582,14 @@ class ApiService {
     final data = _decodeMap(resp.body);
 
     if (kDebugMode) {
-      print('[POST-FORM] ${resp.request?.url} -> ${resp.statusCode} ${resp.body}');
+      print(
+          '[POST-FORM] ${resp.request?.url} -> ${resp.statusCode} ${resp.body}');
     }
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       final otp = _pick(data, ['otp', 'data.otp', 'meta.otp']);
-      final emailOut =
-          _pick(data, ['email', 'data.email', 'user.email']) ?? _normEmail(email);
+      final emailOut = _pick(data, ['email', 'data.email', 'user.email']) ??
+          _normEmail(email);
       final expiresIn =
           _pickInt(data, ['expires_in', 'meta.expires_in']) ?? 300;
       final resendAfter =
@@ -608,10 +631,10 @@ class ApiService {
   }) async {
     final res = await http
         .post(
-      _buildUri('/verify-otp'),
-      headers: _jsonHeaders,
-      body: jsonEncode({'email': email, 'otp': otp}),
-    )
+          _buildUri('/verify-otp'),
+          headers: _jsonHeaders,
+          body: jsonEncode({'email': email, 'otp': otp}),
+        )
         .timeout(_timeout);
 
     Map<String, dynamic> raw;
@@ -725,8 +748,8 @@ class ApiService {
 
         final userEmail =
             _pick(data, ['email', 'data.email', 'user.email']) ?? email;
-        final userName =
-            _pick(data, ['user', 'name', 'data.name']) ?? '$firstName $lastName';
+        final userName = _pick(data, ['user', 'name', 'data.name']) ??
+            '$firstName $lastName';
 
         return {
           '__status': resp.statusCode,
@@ -739,9 +762,9 @@ class ApiService {
 
       if (resp.statusCode == 422 || resp.statusCode == 409) {
         final msg = (data['message'] ??
-            (data['errors'] is Map
-                ? (data['errors'] as Map).values.first
-                : null))
+                (data['errors'] is Map
+                    ? (data['errors'] as Map).values.first
+                    : null))
             ?.toString();
         throw Exception(msg ?? 'Completion failed. Check provided data.');
       }
@@ -761,13 +784,11 @@ class ApiService {
     required String email,
     required String password,
   }) async {
-    final res = await http
-        .post(
+    final res = await http.post(
       _buildUri('/login'),
       headers: const {'Accept': 'application/json'},
       body: {'email': _normEmail(email), 'password': password},
-    )
-        .timeout(_timeout);
+    ).timeout(_timeout);
     return _decorateStatus(res);
   }
 
@@ -778,11 +799,11 @@ class ApiService {
     final resp = await _getAuth('/me', token);
 
     if (!_looksJson(resp)) {
-      final head =
-      resp.body.substring(0, resp.body.length > 160 ? 160 : resp.body.length);
+      final head = resp.body
+          .substring(0, resp.body.length > 160 ? 160 : resp.body.length);
       throw Exception(
         'Non-JSON from /me (status ${resp.statusCode}). '
-            'Likely wrong host/guard. Head: ${head.replaceAll('\n', ' ')}',
+        'Likely wrong host/guard. Head: ${head.replaceAll('\n', ' ')}',
       );
     }
 
@@ -821,7 +842,7 @@ class ApiService {
 
       return list.map((e) {
         final p = Property.fromJson(e as Map<String, dynamic>);
-        p.saved = true;  // Mark as saved locally
+        p.saved = true; // Mark as saved locally
         return p;
       }).toList();
     }
@@ -829,14 +850,14 @@ class ApiService {
     // Better error message for debugging
     throw Exception(
       'Failed to load saved properties: ${resp.statusCode}\n'
-          'Response: ${resp.body.substring(0, resp.body.length.clamp(0, 200))}...',
+      'Response: ${resp.body.substring(0, resp.body.length.clamp(0, 200))}...',
     );
   }
 
   static Future<bool> toggleSavedProperty(
-      String token,
-      int propertyId,
-      ) async {
+    String token,
+    int propertyId,
+  ) async {
     final resp = await _postAuth(
       '/toggle-saved-property',
       token,
@@ -864,8 +885,8 @@ class ApiService {
   }
 
   static Future<List<dynamic>> getFilteredProperties(
-      Map<String, String> filters,
-      ) async {
+    Map<String, String> filters,
+  ) async {
     final resp = await _get('/filters', filters);
     if (resp.statusCode == 200) return _decodeList(resp.body);
     throw Exception('Failed to get filtered properties');
@@ -886,20 +907,21 @@ class ApiService {
       'message': message.trim(),
     });
     if (kDebugMode) {
-      print('[POST-FORM] ${resp.request?.url} -> ${resp.statusCode} ${resp.body}');
+      print(
+          '[POST-FORM] ${resp.request?.url} -> ${resp.statusCode} ${resp.body}');
     }
     return resp.statusCode == 200 || resp.statusCode == 201;
   }
 
   // ===== Alerts/Saved Searches =====
   static Future<Map<String, dynamic>> createAlert(
-      String token, {
-        required String name,
-        required String frequency,
-        required String purpose,
-        required String propertyType,
-        Map<String, dynamic>? extra,
-      }) async {
+    String token, {
+    required String name,
+    required String frequency,
+    required String purpose,
+    required String propertyType,
+    Map<String, dynamic>? extra,
+  }) async {
     final body = {
       "name": name.trim(),
       "frequency": frequency.trim(),
@@ -941,9 +963,9 @@ class ApiService {
   // Generic HTTP
   // =========================================================
   static Future<http.Response> _post(
-      String endpoint,
-      Map<String, dynamic> body,
-      ) async {
+    String endpoint,
+    Map<String, dynamic> body,
+  ) async {
     final url = _buildUri(endpoint);
     final resp = await http
         .post(url, headers: _jsonHeaders, body: jsonEncode(body))
@@ -955,10 +977,10 @@ class ApiService {
   }
 
   static Future<http.Response> _postAuth(
-      String endpoint,
-      String token,
-      Map<String, dynamic> body,
-      ) async {
+    String endpoint,
+    String token,
+    Map<String, dynamic> body,
+  ) async {
     if (token.isEmpty) {
       throw Exception('No auth token present for $baseUrl$endpoint');
     }
@@ -976,22 +998,22 @@ class ApiService {
   }
 
   static Future<http.Response> _getAuth(
-      String endpoint,
-      String token, [
-        Map<String, String>? qs,
-      ]) async {
+    String endpoint,
+    String token, [
+    Map<String, String>? qs,
+  ]) async {
     if (token.isEmpty) {
       throw Exception('No auth token present for $baseUrl$endpoint');
     }
     final url = _buildUri(endpoint, qs);
     final resp =
-    await http.get(url, headers: _authHeaders(token)).timeout(_timeout);
+        await http.get(url, headers: _authHeaders(token)).timeout(_timeout);
     if (kDebugMode) {
       if (_looksJson(resp)) {
         print('[GET*]  $url -> ${resp.statusCode}');
       } else {
-        final head =
-        resp.body.substring(0, resp.body.length > 120 ? 120 : resp.body.length);
+        final head = resp.body
+            .substring(0, resp.body.length > 120 ? 120 : resp.body.length);
         print('[GET*]  $url -> ${resp.statusCode} (Non-JSON) head: $head');
       }
     }
@@ -1002,16 +1024,16 @@ class ApiService {
   }
 
   static Future<http.Response> _get(
-      String endpoint, [
-        Map<String, String>? qs,
-      ]) async {
+    String endpoint, [
+    Map<String, String>? qs,
+  ]) async {
     final url = _buildUri(endpoint, qs);
     final resp = await http.get(url, headers: _jsonHeaders).timeout(_timeout);
     if (kDebugMode) {
       final ct = resp.headers['content-type'] ?? '';
       if (!ct.contains('application/json')) {
-        final head =
-        resp.body.substring(0, resp.body.length > 120 ? 120 : resp.body.length);
+        final head = resp.body
+            .substring(0, resp.body.length > 120 ? 120 : resp.body.length);
         print('[GET]   $url -> ${resp.statusCode} (Non-JSON) body: $head');
       } else {
         print('[GET]   $url -> ${resp.statusCode}');
@@ -1028,12 +1050,13 @@ class ApiService {
   };
 
   static Future<http.Response> _postForm(
-      String endpoint,
-      Map<String, String> fields,
-      ) async {
+    String endpoint,
+    Map<String, String> fields,
+  ) async {
     final url = _buildUri(endpoint);
-    final resp =
-    await http.post(url, headers: _formHeaders, body: fields).timeout(_timeout);
+    final resp = await http
+        .post(url, headers: _formHeaders, body: fields)
+        .timeout(_timeout);
     if (kDebugMode) {
       print('[POST-FORM] $url -> ${resp.statusCode} ${resp.body}');
     }

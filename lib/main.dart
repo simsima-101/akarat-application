@@ -1,20 +1,20 @@
 // Core utilities
 import 'package:Akarat/src/core/constants/constants.dart' as ApiService;
 import 'package:Akarat/src/core/utils/session_manager.dart';
-
 // Blocs
 import 'package:Akarat/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:Akarat/src/features/filter/presentation/bloc/filter_bloc.dart';
+import 'package:Akarat/src/features/filter/repo/filter_repo.dart';
 import 'package:Akarat/src/features/property/data/repositories/property_repository.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/enquiry_bloc.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/favorite_bloc.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/favorite_event.dart';
-import 'package:Akarat/src/features/property/presentation/bloc/filter_bloc.dart';
+// Providers
 import 'package:Akarat/src/features/property/presentation/bloc/properties_bloc.dart';
-
 // Providers
 import 'package:Akarat/src/providers/favorite_provider.dart';
-import 'package:Akarat/src/providers/filter_provider.dart';
 import 'package:Akarat/src/providers/location_picker_provider.dart';
+// Screens
 
 // Screens
 import 'package:Akarat/src/screen/forgot_password.dart';
@@ -26,7 +26,6 @@ import 'package:Akarat/src/screen/otp_verification.dart';
 import 'package:Akarat/src/screen/register_screen.dart';
 import 'package:Akarat/src/screen/reset_password.dart';
 import 'package:Akarat/src/screen/splash_screen.dart';
-
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -36,7 +35,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
 // Localization
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -48,13 +46,14 @@ import 'l10n/app_localizations.dart';
 // Global keys
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-GlobalKey<ScaffoldMessengerState>();
+    GlobalKey<ScaffoldMessengerState>();
 
 // Background message handler (must be top-level)
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  debugPrint("📬 Background message: ${message.notification?.title ?? 'No title'}");
+  debugPrint(
+      "📬 Background message: ${message.notification?.title ?? 'No title'}");
 }
 
 // Simple Bloc observer for development
@@ -128,7 +127,8 @@ Future<void> _initializeRemoteConfig() async {
     await rc.setConfigSettings(
       RemoteConfigSettings(
         fetchTimeout: const Duration(seconds: 10),
-        minimumFetchInterval: kDebugMode ? Duration.zero : const Duration(hours: 12),
+        minimumFetchInterval:
+            kDebugMode ? Duration.zero : const Duration(hours: 12),
       ),
     );
 
@@ -178,7 +178,8 @@ class _MyAppState extends State<MyApp> {
       sound: true,
     );
 
-    debugPrint('🔔 Notification permission: ${settings.authorizationStatus.name}');
+    debugPrint(
+        '🔔 Notification permission: ${settings.authorizationStatus.name}');
 
     // Token refresh
     FirebaseMessaging.instance.onTokenRefresh.listen((token) {
@@ -213,7 +214,8 @@ class _MyAppState extends State<MyApp> {
       requestSoundPermission: true,
     );
 
-    const initSettings = InitializationSettings(android: androidInit, iOS: iosInit);
+    const initSettings =
+        InitializationSettings(android: androidInit, iOS: iosInit);
 
     await _localNotifications.initialize(
       initSettings,
@@ -282,7 +284,8 @@ class _MyAppState extends State<MyApp> {
       presentSound: true,
     );
 
-    const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    const details =
+        NotificationDetails(android: androidDetails, iOS: iosDetails);
 
     await _localNotifications.show(
       id,
@@ -297,108 +300,108 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => FilterProvider()),
+        // ChangeNotifierProvider(create: (_) => FilterProvider()),
         ChangeNotifierProvider(create: (_) => LocationPickerProvider()),
         ChangeNotifierProvider(create: (_) => FavoriteProvider()),
       ],
-
-    child: MultiRepositoryProvider(
-    providers: [
-    // ─── NEW: Provide the repository once ────────────────────────
-    RepositoryProvider<PropertyRepository>(
-    create: (context) => PropertyRepository(),
-    ),
-    // ──────────────────────────────────────────────────────────────
-    ],
-      child: MultiBlocProvider(
+      child: MultiRepositoryProvider(
         providers: [
-          BlocProvider(create: (_) => AuthBloc()..add(AppStarted())),
-          BlocProvider(create: (_) => FavoriteBloc()..add(const LoadFavorites())),
-          BlocProvider(create: (_) => FilterBloc()),
-          BlocProvider(create: (_) => EnquiryBloc()),
-
-          BlocProvider<PropertiesBloc>(
-            create: (context) => PropertiesBloc(
-              repository: context.read<PropertyRepository>(),
-            )..add(const LoadProperties(endpoint: 'properties')), // auto-load
+          // ─── NEW: Provide the repository once ────────────────────────
+          RepositoryProvider<PropertyRepository>(
+            create: (context) => PropertyRepository(),
           ),
+          // ──────────────────────────────────────────────────────────────
         ],
-        child: MaterialApp(
-          title: 'Akarat',
-          debugShowCheckedModeBanner: false,
-          navigatorKey: navigatorKey,
-          scaffoldMessengerKey: scaffoldMessengerKey,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-            CountryLocalizations.delegate,
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => AuthBloc()..add(AppStarted())),
+            BlocProvider(
+                create: (_) => FavoriteBloc()..add(const LoadFavorites())),
+            BlocProvider(create: (_) => FilterBloc(FilterRepository())),
+            BlocProvider(create: (_) => EnquiryBloc()),
+            BlocProvider<PropertiesBloc>(
+              create: (context) => PropertiesBloc(
+                repository: context.read<PropertyRepository>(),
+              )..add(const LoadProperties(endpoint: 'properties')), // auto-load
+            ),
           ],
-          supportedLocales: const [
-            Locale('en'),
-            Locale('ar'),
-            Locale('tr'),
-          ],
-          localeResolutionCallback: (locale, supported) {
-            if (locale == null) return const Locale('en');
-            for (final loc in supported) {
-              if (loc.languageCode == locale.languageCode) return locale;
-            }
-            return const Locale('en');
-          },
-          theme: ThemeData(
-            useMaterial3: true,
-            colorSchemeSeed: const Color(0xFFE01E26),
-            fontFamily: 'Tajawal',
-            scaffoldBackgroundColor: Colors.white,
-          ),
-          home: const SplashScreen(),
-          routes: {
-            '/login': (_) => const Login(),
-            '/register': (_) => const RegisterScreen(),
-            '/home': (_) => const Home(),
-            '/my-account': (_) => const My_Account(),
-            '/forgot-password': (_) => const ForgotPasswordScreen(),
-            '/new-projects': (_) => const NewProjectsScreen(),
-          },
-          onGenerateRoute: (settings) {
-            if (settings.name == '/verify-otp') {
-              return MaterialPageRoute(
-                builder: (_) => const OtpVerificationScreen(),
-                settings: settings,
-              );
-            }
-
-            if (settings.name == '/reset-password') {
-              final args = settings.arguments as Map<String, dynamic>? ?? {};
-              final email = (args['email'] as String?)?.trim() ?? '';
-              final token = (args['token'] as String?)?.trim() ?? '';
-
-              if (email.isEmpty || token.isEmpty) {
+          child: MaterialApp(
+            title: 'Akarat',
+            debugShowCheckedModeBanner: false,
+            navigatorKey: navigatorKey,
+            scaffoldMessengerKey: scaffoldMessengerKey,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+              CountryLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en'),
+              Locale('ar'),
+              Locale('tr'),
+            ],
+            localeResolutionCallback: (locale, supported) {
+              if (locale == null) return const Locale('en');
+              for (final loc in supported) {
+                if (loc.languageCode == locale.languageCode) return locale;
+              }
+              return const Locale('en');
+            },
+            theme: ThemeData(
+              useMaterial3: true,
+              colorSchemeSeed: const Color(0xFFE01E26),
+              fontFamily: 'Tajawal',
+              scaffoldBackgroundColor: Colors.white,
+            ),
+            home: const SplashScreen(),
+            routes: {
+              '/login': (_) => const Login(),
+              '/register': (_) => const RegisterScreen(),
+              '/home': (_) => const Home(),
+              '/my-account': (_) => const My_Account(),
+              '/forgot-password': (_) => const ForgotPasswordScreen(),
+              '/new-projects': (_) => const NewProjectsScreen(),
+            },
+            onGenerateRoute: (settings) {
+              if (settings.name == '/verify-otp') {
                 return MaterialPageRoute(
-                  builder: (_) => const Scaffold(
-                    body: Center(child: Text('Invalid reset link')),
-                  ),
+                  builder: (_) => const OtpVerificationScreen(),
+                  settings: settings,
                 );
               }
 
-              return MaterialPageRoute(
-                builder: (_) => ResetPasswordScreen(email: email, token: token),
-                settings: settings,
-              );
-            }
+              if (settings.name == '/reset-password') {
+                final args = settings.arguments as Map<String, dynamic>? ?? {};
+                final email = (args['email'] as String?)?.trim() ?? '';
+                final token = (args['token'] as String?)?.trim() ?? '';
 
-            return null;
-          },
-          onUnknownRoute: (_) => MaterialPageRoute(
-            builder: (_) => const Scaffold(
-              body: Center(child: Text('Page Not Found')),
+                if (email.isEmpty || token.isEmpty) {
+                  return MaterialPageRoute(
+                    builder: (_) => const Scaffold(
+                      body: Center(child: Text('Invalid reset link')),
+                    ),
+                  );
+                }
+
+                return MaterialPageRoute(
+                  builder: (_) =>
+                      ResetPasswordScreen(email: email, token: token),
+                  settings: settings,
+                );
+              }
+
+              return null;
+            },
+            onUnknownRoute: (_) => MaterialPageRoute(
+              builder: (_) => const Scaffold(
+                body: Center(child: Text('Page Not Found')),
+              ),
             ),
           ),
         ),
       ),
-    ),);
+    );
   }
 }
-

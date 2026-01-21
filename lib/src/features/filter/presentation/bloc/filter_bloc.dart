@@ -9,18 +9,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
-import '../../../../core/services/api_service.dart';
-import '../../../../providers/filter_provider.dart';
 import '../../../../providers/location_picker_provider.dart';
-import '../../data/models/amenities_model.dart';
-import '../../data/models/filtermodel.dart';
-import '../../data/models/property_type_model.dart' hide Data;
+import '../../../property/data/models/amenities_model.dart';
+import '../../../property/data/models/property_type_model.dart' hide Data;
+import '../../data/model/filtermodel.dart';
+import '../../repo/filter_repo.dart';
 
 part 'filter_event.dart';
 part 'filter_state.dart';
 
 class FilterBloc extends Bloc<FilterEvent, FilterState> {
-  FilterBloc() : super(FilterState.initial()) {
+  final FilterRepository _repository;
+  FilterBloc(this._repository) : super(FilterState.initial()) {
     on<FilterInitFilterFields>(_onInitFilterFields);
     on<FilterSetSelectedProductType>(_onSetSelectedProductType);
     on<FilterSetSelectedPropertyCategoryType>(
@@ -108,9 +108,10 @@ class FilterBloc extends Bloc<FilterEvent, FilterState> {
   ];
   static const List<String> rentList = ['Yearly', 'Monthly', 'Daily'];
 
-  void _onInitFilterFields(
-      FilterInitFilterFields event, Emitter<FilterState> emit) {
+  Future<void> _onInitFilterFields(
+      FilterInitFilterFields event, Emitter<FilterState> emit) async {
     emit(state.copyWith(
+      selected: 0,
       selectedproduct: product.indexOf(event.data),
       selectedtype: null,
       selectedPropType: event.propertyType,
@@ -118,11 +119,33 @@ class FilterBloc extends Bloc<FilterEvent, FilterState> {
       selectedCompletion:
           event.optionType != null && event.optionType!.isNotEmpty ? 2 : 0,
       option: event.optionType,
-      property_type: '',
-      handoverQuarter: "",
-      handoverYear: "",
+      property_type: null,
+      handoverQuarter: null,
+      handoverYear: null,
     ));
-    add(const FilterLoadInitialData());
+    // add(const FilterLoadInitialData());
+
+    final fetchedAmenities = await _repository.fetchAmenities();
+
+    PropertyTypeModel? fetchedPropertyType;
+    if (state.selectedPropType != null) {
+      final type = state.selectedPropType == 0 ? 'Residential' : 'Commercial';
+      // final propertyUri = ApiService.buildUri('property-types/$type');
+      // final propertyResponse =
+      //     await http.get(propertyUri).timeout(const Duration(seconds: 8));
+      // if (propertyResponse.statusCode == 200) {
+      //   fetchedPropertyType =
+      //       PropertyTypeModel.fromJson(json.decode(propertyResponse.body));
+      fetchedPropertyType = await _repository.fetchPropertyTypes(type);
+
+      // }
+    }
+
+    emit(state.copyWith(
+      isLoading: false,
+      amenities: fetchedAmenities,
+      propertyTypeModel: fetchedPropertyType,
+    ));
   }
 
   void _onSetSelectedProductType(
@@ -138,7 +161,7 @@ class FilterBloc extends Bloc<FilterEvent, FilterState> {
   void _onSetSelectedPropertyCategoryType(
       FilterSetSelectedPropertyCategoryType event, Emitter<FilterState> emit) {
     if (state.selectedtype == event.index) {
-      emit(state.copyWith(selectedtype: null, property_type: ""));
+      emit(state.copyWith(selectedtype: null, property_type: null));
     } else {
       emit(state.copyWith(
         selectedtype: event.index,
@@ -444,47 +467,90 @@ class FilterBloc extends Bloc<FilterEvent, FilterState> {
     final cat = state.initialHomeCategory;
 
     int? prodIndex;
-    String newPurpose = '';
+    String? newPurpose;
     int? propType;
     String newOption = '';
     int completionIndex = 0;
+    int? selectedtype;
+    String? property_type;
+
+    //////// FOR RENT ////////
 
     // Match original Provider resetAll() logic exactly
     if (cat == 0) {
       // Rent (general)
       prodIndex = 1;
-      newPurpose = 'Rent';
+      newPurpose = product[prodIndex];
+      propType = null;
+      completionIndex = 0;
+      newOption = '';
     } else if (cat == 1) {
       // Buy (general)
       prodIndex = 0;
-      newPurpose = 'Buy';
+      newPurpose = product[prodIndex];
+      propType = null;
+      completionIndex = 0;
+      newOption = '';
     } else if (cat == 2) {
       // Off-Plan
       prodIndex = 0;
-      newPurpose = 'Buy';
+      newPurpose = product[prodIndex];
+      propType = null;
       newOption = 'offplan';
       completionIndex = 2;
     } else if (cat == 3) {
       // Commercial
       prodIndex = 1; // Rent
-      newPurpose = 'Rent';
+      newPurpose = product[prodIndex];
       propType = 1; // Commercial
+      add(FilterPropertyApi('Commercial'));
+
+      final propertYTypeModel =
+          await _repository.fetchPropertyTypes("Commercial");
+
+      completionIndex = 0;
+      newOption = '';
     } else if (cat == 4) {
       // Villas (Rent + Residential)
       prodIndex = 1;
-      newPurpose = 'Rent';
+      newPurpose = product[prodIndex];
       propType = 0;
+      add(FilterPropertyApi('Residential'));
+
+      String propertyCategoryType = "Villa";
+      final index = state.propertyTypeModel!.data!.indexWhere(
+        (item) =>
+            item.name?.trim().toLowerCase() ==
+            propertyCategoryType.trim().toLowerCase(),
+      );
+      selectedtype = index;
+      property_type = state.propertyTypeModel!.data![index].name.toString();
+
+      completionIndex = 0;
+      newOption = '';
     } else if (cat == 5) {
       // Apartments (Rent + Residential)
       prodIndex = 1;
-      newPurpose = 'Rent';
+      newPurpose = product[prodIndex];
       propType = 0;
+      add(FilterPropertyApi('Residential'));
+      String propertyCategoryType = "Apartment";
+      final index = state.propertyTypeModel!.data!.indexWhere(
+        (item) =>
+            item.name?.trim().toLowerCase() ==
+            propertyCategoryType.trim().toLowerCase(),
+      );
+      selectedtype = index;
+      property_type = state.propertyTypeModel!.data![index].name.toString();
+
+      completionIndex = 0;
+      newOption = '';
     }
 
     // Reset all UI fields
     emit(state.copyWith(
-      selectedtype: null,
-      property_type: "",
+      selectedtype: selectedtype,
+      property_type: property_type,
       values: const SfRangeValues(500.0, 300000.0),
       valuesArea: const SfRangeValues(0.0, 10000.0),
       min_price: '',
@@ -516,16 +582,6 @@ class FilterBloc extends Bloc<FilterEvent, FilterState> {
 
     // Clear locations
     event.context.read<LocationPickerProvider>().selectedLocationList.clear();
-
-    // Handle special cases: load property types and select specific category
-    if (cat == 3) {
-      // Commercial
-      add(FilterPropertyApi('Commercial'));
-    } else if (cat == 4 || cat == 5) {
-      // Villa or Apartment → load Residential and select correct type
-      add(FilterPropertyApi('Residential'));
-      // Note: UI will auto-select "Villa" or "Apartment" chip once propertyTypeModel loads
-    }
 
     // Trigger update only if requested
     if (event.isUpdate) {
@@ -591,25 +647,29 @@ class FilterBloc extends Bloc<FilterEvent, FilterState> {
     emit(state.copyWith(isLoading: true));
 
     try {
-      final amenitiesUri = ApiService.buildUri('amenities');
-      final amenitiesResponse =
-          await http.get(amenitiesUri).timeout(const Duration(seconds: 8));
-      List<Amenities> fetchedAmenities = [];
-      if (amenitiesResponse.statusCode == 200) {
-        final jsonData = json.decode(amenitiesResponse.body) as List;
-        fetchedAmenities = jsonData.map((e) => Amenities.fromJson(e)).toList();
-      }
+      // final amenitiesUri = ApiService.buildUri('amenities');
+      // final amenitiesResponse =
+      //     await http.get(amenitiesUri).timeout(const Duration(seconds: 8));
+      // List<Amenities> fetchedAmenities = [];
+      // if (amenitiesResponse.statusCode == 200) {
+      //   final jsonData = json.decode(amenitiesResponse.body) as List;
+      //   fetchedAmenities = jsonData.map((e) => Amenities.fromJson(e)).toList();
+      // }
+
+      final fetchedAmenities = await _repository.fetchAmenities();
 
       PropertyTypeModel? fetchedPropertyType;
       if (state.selectedPropType != null) {
         final type = state.selectedPropType == 0 ? 'Residential' : 'Commercial';
-        final propertyUri = ApiService.buildUri('property-types/$type');
-        final propertyResponse =
-            await http.get(propertyUri).timeout(const Duration(seconds: 8));
-        if (propertyResponse.statusCode == 200) {
-          fetchedPropertyType =
-              PropertyTypeModel.fromJson(json.decode(propertyResponse.body));
-        }
+        // final propertyUri = ApiService.buildUri('property-types/$type');
+        // final propertyResponse =
+        //     await http.get(propertyUri).timeout(const Duration(seconds: 8));
+        // if (propertyResponse.statusCode == 200) {
+        //   fetchedPropertyType =
+        //       PropertyTypeModel.fromJson(json.decode(propertyResponse.body));
+        fetchedPropertyType = await _repository.fetchPropertyTypes(type);
+
+        // }
       }
 
       emit(state.copyWith(
@@ -627,12 +687,13 @@ class FilterBloc extends Bloc<FilterEvent, FilterState> {
       FilterPropertyApi event, Emitter<FilterState> emit) async {
     emit(state.copyWith(isPropertyTypeLoading: true));
     try {
-      final uri = ApiService.buildUri('property-types/${event.purpose}');
-      final response = await http.get(uri);
-      if (response.statusCode == 200) {
-        final model = PropertyTypeModel.fromJson(jsonDecode(response.body));
-        emit(state.copyWith(propertyTypeModel: model));
-      }
+      // final uri = ApiService.buildUri('property-types/${event.purpose}');
+      // final response = await http.get(uri);
+      // if (response.statusCode == 200) {
+      //   final model = PropertyTypeModel.fromJson(jsonDecode(response.body));
+      final model = await _repository.fetchPropertyTypes(event.purpose);
+      emit(state.copyWith(propertyTypeModel: model));
+      // }
     } catch (e) {
       debugPrint('PropertyApi error: $e');
     }
@@ -642,14 +703,15 @@ class FilterBloc extends Bloc<FilterEvent, FilterState> {
   Future<void> _onFetchAmenities(
       FilterFetchAmenities event, Emitter<FilterState> emit) async {
     try {
-      final uri = ApiService.buildUri('amenities');
-      final response = await http.get(uri).timeout(const Duration(seconds: 8));
-      if (response.statusCode == 200) {
-        final list = (json.decode(response.body) as List)
-            .map((e) => Amenities.fromJson(e))
-            .toList();
-        emit(state.copyWith(amenities: list));
-      }
+      // final uri = ApiService.buildUri('amenities');
+      // final response = await http.get(uri).timeout(const Duration(seconds: 8));
+      // if (response.statusCode == 200) {
+      //   final list = (json.decode(response.body) as List)
+      //       .map((e) => Amenities.fromJson(e))
+      //       .toList();
+      final list = await _repository.fetchAmenities();
+      emit(state.copyWith(amenities: list));
+      // }
     } catch (e) {
       debugPrint('FetchAmenities error: $e');
     }

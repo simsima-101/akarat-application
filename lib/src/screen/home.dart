@@ -1,19 +1,19 @@
 import 'package:Akarat/src/core/utils/secure_storage.dart';
-import 'package:Akarat/src/features/property/data/models/featuredmodel.dart' as featured;
+import 'package:Akarat/src/features/property/data/models/featuredmodel.dart'
+    as featured;
 import 'package:Akarat/src/features/property/data/models/property_model.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/properties_bloc.dart';
-
 import 'package:Akarat/src/screen/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../common/widgets/property_card.dart';
+import '../features/filter/presentation/bloc/filter_bloc.dart';
+import '../features/filter/presentation/view/filter.dart' as filter;
 import '../features/property/data/models/project_model.dart';
-import '../features/property/presentation/bloc/filter_bloc.dart';
 import '../utils/fav_logout.dart';
 import 'ContactFormScreen.dart';
-import 'filter.dart' as filter;
 import 'location_picker_screen.dart';
 import 'login.dart';
 import 'my_account.dart';
@@ -76,7 +76,8 @@ class _FixedHeaderDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => maxHeight;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return SizedBox.expand(child: child);
   }
 
@@ -93,7 +94,7 @@ class HomeDemo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String selectedSort = "Newest";  // ← add this line here
+    String selectedSort = "Newest"; // ← add this line here
 
     final scrollController = ScrollController();
 
@@ -114,29 +115,31 @@ class HomeDemo extends StatelessWidget {
     return WillPopScope(
       onWillPop: () async {
         return (await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: Colors.white,
-            title: const Text('Are you sure?'),
-            content: const Text('Do you want to exit an App'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text(
-                  'No',
-                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                ),
+              context: context,
+              builder: (context) => AlertDialog(
+                backgroundColor: Colors.white,
+                title: const Text('Are you sure?'),
+                content: const Text('Do you want to exit an App'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text(
+                      'No',
+                      style: TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text(
+                      'Yes',
+                      style: TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text(
-                  'Yes',
-                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-        )) ??
+            )) ??
             false;
       },
       child: Scaffold(
@@ -181,7 +184,8 @@ class HomeDemo extends StatelessWidget {
 
                   // Search Bar
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     child: Container(
                       width: double.infinity,
                       height: 45,
@@ -205,7 +209,8 @@ class HomeDemo extends StatelessWidget {
                                 border: Border.all(color: Colors.red.shade200),
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
                               height: 45,
                               child: Row(
                                 children: [
@@ -216,25 +221,30 @@ class HomeDemo extends StatelessWidget {
                                       focusNode: FocusNode(),
                                       readOnly: true,
                                       decoration: const InputDecoration(
-                                        hintText: "Search for a locality, area or city",
-                                        hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                                        hintText:
+                                            "Search for a locality, area or city",
+                                        hintStyle: TextStyle(
+                                            color: Colors.grey, fontSize: 14),
                                         border: InputBorder.none,
                                       ),
                                       onTap: () {
                                         context.read<FilterBloc>().add(
-                                          const FilterSetInitialHomeCategory(0),
-                                        );
+                                              const FilterSetInitialHomeCategory(
+                                                  0),
+                                            );
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => filter.Filter(data: "Rent"),
+                                            builder: (context) =>
+                                                filter.Filter(data: "Rent"),
                                           ),
                                         );
                                         showModalBottomSheet(
                                           context: context,
                                           isScrollControlled: true,
                                           backgroundColor: Colors.transparent,
-                                          builder: (_) => const FractionallySizedBox(
+                                          builder: (_) =>
+                                              const FractionallySizedBox(
                                             heightFactor: 0.95,
                                             child: LocationPickerScreen(),
                                           ),
@@ -270,13 +280,15 @@ class HomeDemo extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Error: ${state.errorMessage ?? "Unknown error"}'),
+                          Text(
+                              'Error: ${state.errorMessage ?? "Unknown error"}'),
                           const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: () {
                               context.read<PropertiesBloc>().add(
-                                const LoadProperties(endpoint: 'properties'),
-                              );
+                                    const LoadProperties(
+                                        endpoint: 'properties'),
+                                  );
                             },
                             child: const Text('Retry'),
                           ),
@@ -307,56 +319,73 @@ class HomeDemo extends StatelessWidget {
                               // Location Suggestions (keep as is; later move to separate bloc)
                               // ... paste your location suggestions code here if you still want it ...
 
-                              // Category Row 1
+                              // Category Row 1 - EXACT SAME HEIGHT AND STYLE
                               Padding(
                                 padding: const EdgeInsets.only(top: 10.0),
                                 child: Row(
                                   children: [
                                     GestureDetector(
                                       onTap: () {
-                                        context.read<FilterBloc>().add(
-                                          const FilterSetInitialHomeCategory(0),
-                                        );
+                                        context.read<FilterBloc>()
+                                          ..add(FilterSetInitialHomeCategory(0))
+                                          ..add(FilterResetAll(
+                                              context: context,
+                                              isUpdate: false));
+
+                                        // context.read<FilterBloc>().add(
+                                        //     const FilterSetInitialHomeCategory(
+                                        //         0));
                                         Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => filter.Filter(data: "Rent"),
-                                          ),
-                                        );
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (_) => filter.Filter(
+                                                    data: "Rent")));
                                       },
                                       child: Padding(
                                         padding: const EdgeInsets.all(8),
                                         child: Container(
-                                          width: MediaQuery.of(context).size.width * 0.29,
-                                          height: MediaQuery.of(context).size.height * 0.11,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.29,
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.11,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.grey.withOpacity(0.8),
-                                                offset: const Offset(7, 7),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.8),
+                                                  offset: const Offset(7, 7),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2),
                                               BoxShadow(
-                                                color: Colors.white.withOpacity(0.8),
-                                                offset: const Offset(-4, -4),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
+                                                  color: Colors.white
+                                                      .withOpacity(0.8),
+                                                  offset: const Offset(-4, -4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2),
                                             ],
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              Image.asset("assets/images/ak-rent-red.png", height: 35),
+                                              Image.asset(
+                                                  "assets/images/ak-rent-red.png",
+                                                  height: 35),
                                               const Padding(
                                                 padding: EdgeInsets.all(4),
-                                                child: Text(
-                                                  "Property For Rent",
-                                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.2),
-                                                ),
+                                                child: Text("Property For Rent",
+                                                    style: TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        height: 1.2)),
                                               ),
                                             ],
                                           ),
@@ -366,49 +395,65 @@ class HomeDemo extends StatelessWidget {
                                     // Buy
                                     GestureDetector(
                                       onTap: () {
-                                        context.read<FilterBloc>().add(
-                                          FilterSetInitialHomeCategory(1),
-                                        );
+                                        // context.read<FilterBloc>().add(
+                                        //     FilterSetInitialHomeCategory(1));
+
+                                        context.read<FilterBloc>()
+                                          ..add(FilterSetInitialHomeCategory(1))
+                                          ..add(FilterResetAll(
+                                              context: context,
+                                              isUpdate: false));
                                         Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => filter.Filter(data: "Buy"),
-                                          ),
-                                        );
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (_) => filter.Filter(
+                                                    data: "Buy")));
                                       },
                                       child: Padding(
                                         padding: const EdgeInsets.all(8),
                                         child: Container(
-                                          width: MediaQuery.of(context).size.width * 0.29,
-                                          height: MediaQuery.of(context).size.height * 0.11,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.29,
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.11,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.grey.withOpacity(0.8),
-                                                offset: const Offset(7, 7),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.8),
+                                                  offset: const Offset(7, 7),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2),
                                               BoxShadow(
-                                                color: Colors.white.withOpacity(0.8),
-                                                offset: const Offset(-4, -4),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
+                                                  color: Colors.white
+                                                      .withOpacity(0.8),
+                                                  offset: const Offset(-4, -4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2),
                                             ],
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              Image.asset("assets/images/ak-sale.png", height: 35),
+                                              Image.asset(
+                                                  "assets/images/ak-sale.png",
+                                                  height: 35),
                                               const Padding(
                                                 padding: EdgeInsets.all(4),
-                                                child: Text(
-                                                  "Property For Sale",
-                                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.2),
-                                                ),
+                                                child: Text("Property For Sale",
+                                                    style: TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        height: 1.2)),
                                               ),
                                             ],
                                           ),
@@ -418,49 +463,65 @@ class HomeDemo extends StatelessWidget {
                                     // Off-Plan
                                     GestureDetector(
                                       onTap: () {
-                                        context.read<FilterBloc>().add(
-                                          FilterSetInitialHomeCategory(2),
-                                        );
+                                        context.read<FilterBloc>()
+                                          ..add(FilterSetInitialHomeCategory(2))
+                                          ..add(FilterResetAll(
+                                              context: context,
+                                              isUpdate: false));
                                         Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => filter.Filter(data: "Buy", optionType: 'offplan'),
-                                          ),
-                                        );
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (_) => filter.Filter(
+                                                    data: "Buy",
+                                                    optionType: 'offplan')));
                                       },
                                       child: Padding(
                                         padding: const EdgeInsets.all(5),
                                         child: Container(
-                                          width: MediaQuery.of(context).size.width * 0.3,
-                                          height: MediaQuery.of(context).size.height * 0.11,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.3,
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.11,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.grey.withOpacity(0.8),
-                                                offset: const Offset(7, 7),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.8),
+                                                  offset: const Offset(7, 7),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2),
                                               BoxShadow(
-                                                color: Colors.white.withOpacity(0.8),
-                                                offset: const Offset(-4, -4),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
+                                                  color: Colors.white
+                                                      .withOpacity(0.8),
+                                                  offset: const Offset(-4, -4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2),
                                             ],
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              Image.asset("assets/images/ak-off-plan.png", height: 35),
+                                              Image.asset(
+                                                  "assets/images/ak-off-plan.png",
+                                                  height: 35),
                                               const Padding(
-                                                padding: EdgeInsets.only(top: 5),
+                                                padding:
+                                                    EdgeInsets.only(top: 5),
                                                 child: Text(
-                                                  "Off-Plan-Properties",
-                                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, height: 1.2),
-                                                ),
+                                                    "Off-Plan-Properties",
+                                                    style: TextStyle(
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        height: 1.2)),
                                               ),
                                             ],
                                           ),
@@ -471,7 +532,7 @@ class HomeDemo extends StatelessWidget {
                                 ),
                               ),
 
-                              // Category Row 2 (Commercial, Villas, Apartment)
+                              // === CATEGORY ROW 2 ===
                               Padding(
                                 padding: const EdgeInsets.only(top: 2.0),
                                 child: Row(
@@ -479,49 +540,63 @@ class HomeDemo extends StatelessWidget {
                                     // Commercial
                                     GestureDetector(
                                       onTap: () {
-                                        context.read<FilterBloc>().add(
-                                          FilterSetInitialHomeCategory(3),
-                                        );
+                                        context.read<FilterBloc>()
+                                          ..add(FilterSetInitialHomeCategory(3))
+                                          ..add(FilterResetAll(
+                                              context: context,
+                                              isUpdate: false));
                                         Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => filter.Filter(data: "Rent", propertyType: 1),
-                                          ),
-                                        );
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (_) => filter.Filter(
+                                                    data: "Rent",
+                                                    propertyType: 1)));
                                       },
                                       child: Padding(
                                         padding: const EdgeInsets.all(8),
                                         child: Container(
-                                          width: MediaQuery.of(context).size.width * 0.29,
-                                          height: MediaQuery.of(context).size.height * 0.11,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.29,
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.11,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.grey.withOpacity(0.8),
-                                                offset: const Offset(7, 7),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.8),
+                                                  offset: const Offset(7, 7),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2),
                                               BoxShadow(
-                                                color: Colors.white.withOpacity(0.8),
-                                                offset: const Offset(-4, -4),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
+                                                  color: Colors.white
+                                                      .withOpacity(0.8),
+                                                  offset: const Offset(-4, -4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2),
                                             ],
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              Image.asset("assets/images/commercial_new.png", height: 35),
+                                              Image.asset(
+                                                  "assets/images/commercial_new.png",
+                                                  height: 35),
                                               const Padding(
                                                 padding: EdgeInsets.all(4),
-                                                child: Text(
-                                                  "Commercial",
-                                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.2),
-                                                ),
+                                                child: Text("Commercial",
+                                                    style: TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        height: 1.2)),
                                               ),
                                             ],
                                           ),
@@ -532,53 +607,65 @@ class HomeDemo extends StatelessWidget {
                                     // Villas
                                     GestureDetector(
                                       onTap: () {
-                                        context.read<FilterBloc>().add(
-                                          const FilterSetInitialHomeCategory(4),
-                                        );
+                                        context.read<FilterBloc>()
+                                          ..add(FilterSetInitialHomeCategory(4))
+                                          ..add(FilterResetAll(
+                                              context: context,
+                                              isUpdate: false));
                                         Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => filter.Filter(
-                                              data: "Rent",
-                                              propertyType: 0,
-                                              propertyCategoryType: 'Villa',
-                                            ),
-                                          ),
-                                        );
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (_) => filter.Filter(
+                                                    data: "Rent",
+                                                    propertyType: 0,
+                                                    propertyCategoryType:
+                                                        'Villa')));
                                       },
                                       child: Padding(
                                         padding: const EdgeInsets.all(5),
                                         child: Container(
-                                          width: MediaQuery.of(context).size.width * 0.3,
-                                          height: MediaQuery.of(context).size.height * 0.11,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.3,
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.11,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.grey.withOpacity(0.8),
-                                                offset: const Offset(7, 7),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.8),
+                                                  offset: const Offset(7, 7),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2),
                                               BoxShadow(
-                                                color: Colors.white.withOpacity(0.8),
-                                                offset: const Offset(-4, -4),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
+                                                  color: Colors.white
+                                                      .withOpacity(0.8),
+                                                  offset: const Offset(-4, -4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2),
                                             ],
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              Image.asset("assets/images/villa-new.png", height: 35),
+                                              Image.asset(
+                                                  "assets/images/villa-new.png",
+                                                  height: 35),
                                               const Padding(
                                                 padding: EdgeInsets.all(5),
-                                                child: Text(
-                                                  "Villas",
-                                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.2),
-                                                ),
+                                                child: Text("Villas",
+                                                    style: TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        height: 1.2)),
                                               ),
                                             ],
                                           ),
@@ -589,53 +676,65 @@ class HomeDemo extends StatelessWidget {
                                     // Apartment
                                     GestureDetector(
                                       onTap: () {
-                                        context.read<FilterBloc>().add(
-                                          FilterSetInitialHomeCategory(5),
-                                        );
+                                        context.read<FilterBloc>()
+                                          ..add(FilterSetInitialHomeCategory(5))
+                                          ..add(FilterResetAll(
+                                              context: context,
+                                              isUpdate: false));
                                         Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => filter.Filter(
-                                              data: "Rent",
-                                              propertyType: 0,
-                                              propertyCategoryType: 'Apartment',
-                                            ),
-                                          ),
-                                        );
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (_) => filter.Filter(
+                                                    data: "Rent",
+                                                    propertyType: 0,
+                                                    propertyCategoryType:
+                                                        'Apartment')));
                                       },
                                       child: Padding(
                                         padding: const EdgeInsets.all(5),
                                         child: Container(
-                                          width: MediaQuery.of(context).size.width * 0.3,
-                                          height: MediaQuery.of(context).size.height * 0.11,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.3,
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.11,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.grey.withOpacity(0.8),
-                                                offset: const Offset(7, 7),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.8),
+                                                  offset: const Offset(7, 7),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2),
                                               BoxShadow(
-                                                color: Colors.white.withOpacity(0.8),
-                                                offset: const Offset(-4, -4),
-                                                blurRadius: 8,
-                                                spreadRadius: 2,
-                                              ),
+                                                  color: Colors.white
+                                                      .withOpacity(0.8),
+                                                  offset: const Offset(-4, -4),
+                                                  blurRadius: 8,
+                                                  spreadRadius: 2),
                                             ],
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              Image.asset("assets/images/apartment.png", height: 35),
+                                              Image.asset(
+                                                  "assets/images/apartment.png",
+                                                  height: 35),
                                               const Padding(
                                                 padding: EdgeInsets.all(5),
-                                                child: Text(
-                                                  "Apartment",
-                                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.2),
-                                                ),
+                                                child: Text("Apartment",
+                                                    style: TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        height: 1.2)),
                                               ),
                                             ],
                                           ),
@@ -648,11 +747,13 @@ class HomeDemo extends StatelessWidget {
 
                               // Banner - New Projects
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10.0, vertical: 10.0),
                                 child: GestureDetector(
                                   onTap: () => Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (_) => NewProjectsScreen()),
+                                    MaterialPageRoute(
+                                        builder: (_) => NewProjectsScreen()),
                                   ),
                                   child: Container(
                                     width: double.infinity,
@@ -680,10 +781,13 @@ class HomeDemo extends StatelessWidget {
                                         Expanded(
                                           flex: 4,
                                           child: Padding(
-                                            padding: const EdgeInsets.fromLTRB(16, 16, 8, 16),
+                                            padding: const EdgeInsets.fromLTRB(
+                                                16, 16, 8, 16),
                                             child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   "New Projects",
@@ -696,7 +800,9 @@ class HomeDemo extends StatelessWidget {
                                                 const SizedBox(height: 8),
                                                 Text(
                                                   "Discover more about the UAE real estate market",
-                                                  style: TextStyle(color: Colors.black87, fontSize: 14),
+                                                  style: TextStyle(
+                                                      color: Colors.black87,
+                                                      fontSize: 14),
                                                 ),
                                               ],
                                             ),
@@ -707,7 +813,8 @@ class HomeDemo extends StatelessWidget {
                                           child: Padding(
                                             padding: const EdgeInsets.all(12.0),
                                             child: ClipRRect(
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                               child: Image.asset(
                                                 'assets/images/banner1.jpg',
                                                 fit: BoxFit.cover,
@@ -725,16 +832,21 @@ class HomeDemo extends StatelessWidget {
 
                               // Properties Count + Sort
                               Container(
-                                margin: const EdgeInsets.only(top: 20, left: 5, right: 15),
-                                height: MediaQuery.of(context).size.height * 0.05,
+                                margin: const EdgeInsets.only(
+                                    top: 20, left: 5, right: 15),
+                                height:
+                                    MediaQuery.of(context).size.height * 0.05,
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20),
                                       child: Text(
                                         "${state.totalProperties ?? items.length} Properties",
-                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                        style: const TextStyle(
+                                            color: Colors.black, fontSize: 15),
                                       ),
                                     ),
                                     PopupMenuButton<String>(
@@ -748,8 +860,8 @@ class HomeDemo extends StatelessWidget {
                                         };
                                         final sortKey = sortMap[value]!;
                                         context.read<PropertiesBloc>().add(
-                                          ChangeSort(sortBy: sortKey),
-                                        );
+                                              ChangeSort(sortBy: sortKey),
+                                            );
                                         scrollController.jumpTo(0);
                                       },
                                       shape: RoundedRectangleBorder(
@@ -772,18 +884,24 @@ class HomeDemo extends StatelessWidget {
                                         }).toList();
                                       },
                                       child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 4),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
                                           border: Border.all(color: Colors.red),
                                         ),
                                         child: Row(
                                           children: [
-                                            Image.asset("assets/images/filter.png", height: 16, width: 16),
+                                            Image.asset(
+                                                "assets/images/filter.png",
+                                                height: 16,
+                                                width: 16),
                                             const SizedBox(width: 6),
                                             Text(selectedSort),
-                                            const Icon(Icons.arrow_drop_down, size: 18),
+                                            const Icon(Icons.arrow_drop_down,
+                                                size: 18),
                                           ],
                                         ),
                                       ),
@@ -802,7 +920,8 @@ class HomeDemo extends StatelessWidget {
                           final dataItem = items[itemIndex];
                           final property = dataItem.toProperty();
                           return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 0, vertical: 10),
                             child: PropertyCard(item: property),
                           );
                         }
@@ -847,7 +966,6 @@ class HomeDemo extends StatelessWidget {
               child: Image.asset("assets/images/home.png", height: 25),
             ),
           ),
-
           IconButton(
             enableFeedback: false,
             onPressed: () async {
@@ -858,22 +976,27 @@ class HomeDemo extends StatelessWidget {
                   context: context,
                   builder: (context) => AlertDialog(
                     backgroundColor: Colors.white,
-                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    title: const Text("Login Required",
+                        style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.",
+                        style: TextStyle(color: Colors.black)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+                        child: const Text("Cancel",
+                            style: TextStyle(color: Colors.red)),
                       ),
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                            MaterialPageRoute(
+                                builder: (_) => const LoginDemo()),
                           );
                         },
-                        child: const Text("Login", style: TextStyle(color: Colors.red)),
+                        child: const Text("Login",
+                            style: TextStyle(color: Colors.red)),
                       ),
                     ],
                   ),
@@ -887,14 +1010,13 @@ class HomeDemo extends StatelessWidget {
                 });
               }
             },
-            icon: const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+            icon: const Icon(Icons.favorite_border_outlined,
+                color: Colors.red, size: 30),
           ),
-
           IconButton(
             icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
             onPressed: () => showHomeContactDialog(context),
           ),
-
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
             child: IconButton(
@@ -905,7 +1027,8 @@ class HomeDemo extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => const My_Account()),
                 );
               },
-              icon: const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+              icon: const Icon(Icons.dehaze_outlined,
+                  color: Colors.red, size: 35),
             ),
           ),
         ],

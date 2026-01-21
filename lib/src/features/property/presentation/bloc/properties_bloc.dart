@@ -4,8 +4,8 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/repositories/property_repository.dart';
 import '../../data/models/project_model.dart';
+import '../../data/repositories/property_repository.dart';
 
 part 'properties_event.dart';
 part 'properties_state.dart';
@@ -22,9 +22,9 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
   }
 
   Future<void> _onLoadProperties(
-      LoadProperties event,
-      Emitter<PropertiesState> emit,
-      ) async {
+    LoadProperties event,
+    Emitter<PropertiesState> emit,
+  ) async {
     emit(state.copyWith(status: PropertiesStatus.loading));
 
     try {
@@ -36,7 +36,8 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
 
       final newData = result.data!;
       final projects = newData.data ?? [];
-      final hasMore = (newData.meta?.currentPage ?? 1) < (newData.meta?.lastPage ?? 1);
+      final hasMore =
+          (newData.meta?.currentPage ?? 1) < (newData.meta?.lastPage ?? 1);
       final total = newData.meta?.total ?? 0;
 
       emit(state.copyWith(
@@ -56,9 +57,9 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
   }
 
   Future<void> _onLoadMoreProperties(
-      LoadMoreProperties event,
-      Emitter<PropertiesState> emit,
-      ) async {
+    LoadMoreProperties event,
+    Emitter<PropertiesState> emit,
+  ) async {
     if (!state.hasMore || state.status == PropertiesStatus.loadingMore) return;
 
     emit(state.copyWith(status: PropertiesStatus.loadingMore));
@@ -72,7 +73,8 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
 
       final newData = result.data!;
       final newProjects = newData.data ?? [];
-      final hasMore = (newData.meta?.currentPage ?? 1) < (newData.meta?.lastPage ?? 1);
+      final hasMore =
+          (newData.meta?.currentPage ?? 1) < (newData.meta?.lastPage ?? 1);
 
       emit(state.copyWith(
         properties: [...state.properties, ...newProjects],
@@ -89,9 +91,9 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
   }
 
   Future<void> _onChangeSort(
-      ChangeSort event,
-      Emitter<PropertiesState> emit,
-      ) async {
+    ChangeSort event,
+    Emitter<PropertiesState> emit,
+  ) async {
     // Clear old data for better UX during sort change
     emit(state.copyWith(
       status: PropertiesStatus.loading,
@@ -109,7 +111,8 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
 
       final newData = result.data!;
       final projects = newData.data ?? [];
-      final hasMore = (newData.meta?.currentPage ?? 1) < (newData.meta?.lastPage ?? 1);
+      final hasMore =
+          (newData.meta?.currentPage ?? 1) < (newData.meta?.lastPage ?? 1);
 
       emit(state.copyWith(
         status: PropertiesStatus.loaded,
@@ -126,9 +129,9 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
   }
 
   Future<void> _onRefreshProperties(
-      RefreshProperties event,
-      Emitter<PropertiesState> emit,
-      ) async {
+    RefreshProperties event,
+    Emitter<PropertiesState> emit,
+  ) async {
     // Reset pagination and reload
     emit(state.copyWith(
       status: PropertiesStatus.loading,

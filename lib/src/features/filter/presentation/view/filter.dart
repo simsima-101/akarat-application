@@ -13,12 +13,12 @@ import 'package:syncfusion_flutter_core/core.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
-import '../features/property/presentation/bloc/filter_bloc.dart';
-import '../providers/filter_provider.dart';
-import '../providers/location_picker_provider.dart';
+import '../../../../providers/location_picker_provider.dart';
+import '../../../../screen/full_amenities_screen.dart';
+import '../../../../screen/location_picker_screen.dart';
+import '../../data/model/filtermodel.dart';
+import '../bloc/filter_bloc.dart';
 import 'filter_list.dart' hide Data;
-import 'full_amenities_screen.dart';
-import 'location_picker_screen.dart';
 
 class Filter extends StatelessWidget {
   final dynamic data;
@@ -82,6 +82,8 @@ class _FilterDemoState extends State<FilterDemo> {
   int pageIndex = 0;
 
   TextEditingController agentOrAgencyController = TextEditingController();
+
+  final List<int> yValues = [5000, 3000, 9000, 7000, 10000, 1500, 4000];
 
   @override
   void initState() {
@@ -1449,7 +1451,11 @@ class _FilterDemoState extends State<FilterDemo> {
                             trackColor: Colors.transparent,
                             //color: Color.fromARGB(255, 126, 184, 253),
                             //opacity: 0.5,
-                            dataSource: filterProvider.chartData,
+                            dataSource: List.generate(
+                              96,
+                              (index) => Datas(500 + index * 100.0,
+                                  yValues[index % yValues.length].toDouble()),
+                            ),
                             selectionBehavior: SelectionBehavior(
                               unselectedOpacity: 0.0,
                               selectedColor: Colors.transparent,
@@ -1817,7 +1823,13 @@ class _FilterDemoState extends State<FilterDemo> {
                             plotAreaBackgroundColor: Colors.transparent,
                             series: <ColumnSeries<Dataarea, double>>[
                               ColumnSeries<Dataarea, double>(
-                                dataSource: filterProvider.chartDataarea,
+                                dataSource: List.generate(
+                                  96,
+                                  (index) => Dataarea(
+                                      x: 500 + index * 100.0,
+                                      y: yValues[index % yValues.length]
+                                          .toDouble()),
+                                ),
                                 selectionBehavior: SelectionBehavior(
                                   unselectedOpacity: 0,
                                   selectedOpacity: 0,
@@ -2281,8 +2293,8 @@ class _FilterDemoState extends State<FilterDemo> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: GridView.builder(
-                  itemCount: filterProvider.amenities.length > 5
-                      ? 5
+                  itemCount: filterProvider.amenities.length > 6
+                      ? 6
                       : filterProvider.amenities.length,
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,

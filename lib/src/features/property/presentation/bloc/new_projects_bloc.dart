@@ -1,11 +1,10 @@
+import 'dart:convert';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import '../../../../core/services/api_service.dart';
-
-import '../../../../screen/filter_list.dart';
 import '../../data/models/project_model.dart'; // Adjust if path is different
 
 part 'new_projects_event.dart';
@@ -18,9 +17,9 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
   }
 
   Future<void> _onLoadNewProjects(
-      LoadNewProjects event,
-      Emitter<NewProjectsState> emit,
-      ) async {
+    LoadNewProjects event,
+    Emitter<NewProjectsState> emit,
+  ) async {
     emit(state.copyWith(status: NewProjectsStatus.loading));
 
     try {
@@ -33,7 +32,8 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
         final fetchedData = responseModel.data!;
 
         final projects = fetchedData.data ?? [];
-        final hasMore = (fetchedData.meta?.currentPage ?? 1) < (fetchedData.meta?.lastPage ?? 1);
+        final hasMore = (fetchedData.meta?.currentPage ?? 1) <
+            (fetchedData.meta?.lastPage ?? 1);
 
         emit(state.copyWith(
           status: NewProjectsStatus.loaded,
@@ -56,15 +56,16 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
   }
 
   Future<void> _onLoadMoreNewProjects(
-      LoadMoreNewProjects event,
-      Emitter<NewProjectsState> emit,
-      ) async {
+    LoadMoreNewProjects event,
+    Emitter<NewProjectsState> emit,
+  ) async {
     if (!state.hasMore || state.status == NewProjectsStatus.loadingMore) return;
 
     emit(state.copyWith(status: NewProjectsStatus.loadingMore));
 
     try {
-      final uri = ApiService.buildUri('new-projects', query: {'page': '${state.currentPage}'});
+      final uri = ApiService.buildUri('new-projects',
+          query: {'page': '${state.currentPage}'});
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
@@ -73,7 +74,8 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
         final fetchedData = responseModel.data!;
 
         final newProjects = fetchedData.data ?? [];
-        final hasMore = (fetchedData.meta?.currentPage ?? 1) < (fetchedData.meta?.lastPage ?? 1);
+        final hasMore = (fetchedData.meta?.currentPage ?? 1) <
+            (fetchedData.meta?.lastPage ?? 1);
 
         emit(state.copyWith(
           projects: [...state.projects, ...newProjects],

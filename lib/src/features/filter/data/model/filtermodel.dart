@@ -159,22 +159,24 @@ class Data {
     if (propertySizeSqft != null && propertySizeSqft! > 0) {
       final size = propertySizeSqft!.round(); // ← Rounds to nearest integer
       final formatted = size.toString().replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (m) => '${m[1]},',
-      );
+          );
       return '$formatted sqft';
     }
 
     // 2. Fallback: old squareFeet string → clean and round
-    if (squareFeet?.isNotEmpty == true && squareFeet != '0' && squareFeet != 'null') {
+    if (squareFeet?.isNotEmpty == true &&
+        squareFeet != '0' &&
+        squareFeet != 'null') {
       final clean = squareFeet!.replaceAll(RegExp(r'[^0-9.]'), '');
       final size = num.tryParse(clean);
       if (size != null && size > 0) {
         final rounded = size.round();
         final formatted = rounded.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+              RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
               (m) => '${m[1]},',
-        );
+            );
         return '$formatted sqft';
       }
     }
@@ -329,5 +331,94 @@ class FilterParams {
       if (maxPrice.isNotEmpty) 'max_price': maxPrice,
       if (paymentPeriod.isNotEmpty) 'payment_period': paymentPeriod,
     };
+  }
+}
+
+class Dataarea {
+  Dataarea({required this.x, required this.y});
+  final double x;
+  final double y;
+}
+
+class Datas {
+  final double x, y;
+  Datas(this.x, this.y);
+}
+
+class FilterSnapshot {
+  final String agencyName;
+  final String agentName;
+  final List<String?> search;
+  final String propertyType;
+  final String furnishedStatus;
+  final List<String> bedrooms;
+  final List<String> bathrooms;
+  final String minPrice;
+  final String maxPrice;
+  final String paymentPeriod;
+  final String minSquareFeet;
+  final String maxSquareFeet;
+  final String? option;
+  final String purpose;
+  final int? propertyCategory;
+  final List<int> amenities;
+  final String handoverQuarter;
+  final String handoverYear;
+  final String completionsMax;
+  final String completionsMin;
+
+  FilterSnapshot({
+    required this.agencyName,
+    required this.agentName,
+    required this.search,
+    required this.propertyType,
+    required this.furnishedStatus,
+    required this.bedrooms,
+    required this.bathrooms,
+    required this.minPrice,
+    required this.maxPrice,
+    required this.paymentPeriod,
+    required this.minSquareFeet,
+    required this.maxSquareFeet,
+    required this.option,
+    required this.purpose,
+    this.propertyCategory,
+    required this.amenities,
+    required this.handoverQuarter,
+    required this.handoverYear,
+    required this.completionsMax,
+    required this.completionsMin,
+  });
+
+  bool isEqual(FilterSnapshot other) {
+    return agencyName == other.agencyName &&
+        agentName == other.agentName &&
+        _listEqual(search, other.search) &&
+        propertyType == other.propertyType &&
+        furnishedStatus == other.furnishedStatus &&
+        _listEqual(bedrooms, other.bedrooms) &&
+        _listEqual(bathrooms, other.bathrooms) &&
+        minPrice == other.minPrice &&
+        maxPrice == other.maxPrice &&
+        paymentPeriod == other.paymentPeriod &&
+        minSquareFeet == other.minSquareFeet &&
+        maxSquareFeet == other.maxSquareFeet &&
+        option == other.option &&
+        purpose == other.purpose &&
+        propertyCategory == other.propertyCategory &&
+        _listEqual(amenities, other.amenities) &&
+        handoverQuarter == other.handoverQuarter &&
+        handoverYear == other.handoverYear &&
+        completionsMax == other.completionsMax &&
+        completionsMin == other.completionsMin;
+  }
+
+  // Helper method to compare lists
+  bool _listEqual(List a, List b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 }
