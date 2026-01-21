@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../screen/findagent.dart';
+import '../features/find_agent/presentation/pages/findagent.dart';
 import '../screen/home.dart';
 import '../screen/my_account.dart';
 import '../screen/privacy.dart';

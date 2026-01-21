@@ -11,11 +11,13 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../core/services/api_service.dart';
 import '../../core/utils/secure_storage.dart';
 import '../../core/utils/session_manager.dart';
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/property/data/models/property_model.dart'; // Your unified Property model
 import '../../features/property/presentation/bloc/favorite_bloc.dart';
 import '../../features/property/presentation/bloc/favorite_event.dart';
 import '../../features/property/presentation/bloc/favorite_state.dart';
 import '../../screen/featured_detail.dart';
+import '../../screen/login.dart';
 
 
 
@@ -339,26 +341,38 @@ class _PropertyImageCarouselState extends State<PropertyImageCarousel> {
           right: 10,
           child: Material(
             color: Colors.transparent,
-            child: FutureBuilder<String?>(
-              future: SecureStorage.getToken(),
-              builder: (_, tokenSnap) {
-                final isLoggedIn = (tokenSnap.data ?? '').isNotEmpty;
+            child: BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                final isLoggedIn = authState is AuthAuthenticated;
+
                 return BlocBuilder<FavoriteBloc, FavoriteState>(
-                  builder: (_, state) {
+                  builder: (context, favState) {
                     final propertyId = int.tryParse(widget.item.id) ?? 0;
-                    final isFav = state is FavoriteLoaded && state.favoriteIds.contains(propertyId);
+                    final isFavorited = favState is FavoriteLoaded &&
+                        favState.favoriteIds.contains(propertyId);
+
                     return IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                       icon: Icon(
-                        isFav ? Icons.favorite : Icons.favorite_border,
-                        color: isFav ? Colors.red : Colors.white,
+                        isFavorited ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorited ? Colors.red : Colors.white,
                         shadows: const [Shadow(color: Colors.black54, blurRadius: 6)],
                         size: 28,
                       ),
-                      onPressed: isLoggedIn
-                          ? () => context.read<FavoriteBloc>().add(ToggleFavorite(propertyId: propertyId))
-                          : () => ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please login to save favorites')),
-                      ),
+                      onPressed: () {
+                        if (!isLoggedIn) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
+                          );
+                          return;
+                        }
+
+                        context.read<FavoriteBloc>().add(
+                          ToggleFavorite(propertyId: propertyId),
+                        );
+                      },
                     );
                   },
                 );

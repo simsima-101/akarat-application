@@ -20,6 +20,26 @@ class LoginRequested extends AuthEvent {
   List<Object?> get props => [email, password];
 }
 
+// lib/features/auth/presentation/bloc/auth_event.dart
+class AuthLoginSuccess extends AuthEvent {
+  final String token;
+  final String? fullName;
+  final String? email;
+  final String? firstName;
+  final String? lastName;
+
+  const AuthLoginSuccess({
+    required this.token,
+    this.fullName,
+    this.email,
+    this.firstName,
+    this.lastName,
+  });
+
+  @override
+  List<Object?> get props => [token, fullName, email, firstName, lastName];
+}
+
 class RegisterRequested extends AuthEvent {
   const RegisterRequested();
 }

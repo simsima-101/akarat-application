@@ -4,23 +4,23 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import '../core/utils/secure_storage.dart';
-import '../core/utils/language.dart';
-import '../features/agency/data/models/agency_model.dart';
-import '../features/agency/data/models/agents_model.dart';
-import '../features/auth/data/models/nationality.dart';
-import '../utils/agencyCardScreen.dart';
-import '../utils/agentcardscreen.dart';
-import 'ContactFormScreen.dart';
+import '../../../../core/utils/secure_storage.dart';
+import '../../../../core/utils/language.dart';
+import '../../../agency/data/models/agency_model.dart';
+import '../../../agency/data/models/agents_model.dart';
+import '../../../auth/data/models/nationality.dart';
+import '../../../../utils/agencyCardScreen.dart';
+import '../../../../utils/agentcardscreen.dart';
+import '../../../../screen/ContactFormScreen.dart';
 
-import '../core/services/api_service.dart';
-import '../utils/fav_logout.dart';
-import '../utils/shared_preference_manager.dart';
-import 'home.dart';
-import 'login.dart';
-import 'my_account.dart';
+import '../../../../core/services/api_service.dart';
+import '../../../../utils/fav_logout.dart';
+import '../../../../utils/shared_preference_manager.dart';
+import '../../../../screen/home.dart';
+import '../../../../screen/login.dart';
+import '../../../../screen/my_account.dart';
 
-const String kApiBase = 'akarat.com';
+// const String kApiBase = 'akarat.com';
 
 void main() {
   runApp(MyApp());
@@ -198,7 +198,9 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   // ADD THIS METHOD – fixes the "List<dynamic> is not a subtype of String?" crash
   Future<AgentsModel?> fetchAgentDetails(int agentId) async {
     try {
-      final uri = Uri.https('akarat.com', '/api/agents/$agentId');
+      // Use ApiService instead of hardcoding the domain
+      final uri = ApiService.buildUri('agents/$agentId');
+
       debugPrint('Fetching agent details: $uri');
 
       final response = await http.get(uri);
@@ -206,20 +208,25 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
 
-        // Backend returns: { "data": [...] } or just [...]
+        // Backend returns: { "data": [...] } or just [...] or { ... }
         dynamic data = jsonData is Map ? jsonData['data'] : jsonData;
 
         if (data is List && data.isNotEmpty) {
-          return AgentsModel.fromJson(data[0]); // Most common case
-        } else if (data is Map<String, dynamic>) {
-          return AgentsModel.fromJson(data); // Rare case
-        } else {
-          debugPrint("Unexpected agent detail format");
+          return AgentsModel.fromJson(data[0] as Map<String, dynamic>);
+        }
+        else if (data is Map<String, dynamic>) {
+          return AgentsModel.fromJson(data);
+        }
+        else {
+          debugPrint("Unexpected agent detail response format");
           return null;
         }
-      } else {
+      }
+      else {
         debugPrint(
-            "Agent detail failed: ${response.statusCode} ${response.body}");
+            "Agent detail request failed → ${response.statusCode}\n"
+                "Body: ${response.body.substring(0, response.body.length.clamp(0, 300))}"
+        );
         return null;
       }
     } catch (e) {
@@ -249,7 +256,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
         'nationality': selectedNationality!.trim(),
     };
 
-    final uri = Uri.https('akarat.com', '/api/agents', qp);
+    final uri = ApiService.buildUri('agents', query: qp);
     debugPrint(
         '🌐 [Agents] GET $uri (loadMore=$loadMore, requestedPage=$requestedPage)');
 
@@ -358,7 +365,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
         'service_needed': serviceValueToId[selectedAgencyService!]!,
     };
 
-    final uri = Uri.https('akarat.com', '/api/companies', qp);
+    final uri = ApiService.buildUri('companies', query: qp);
 
     debugPrint(
         '🌐 [Companies] GET $uri (loadMore=$loadMore, requestedPage=$requestedPage)');

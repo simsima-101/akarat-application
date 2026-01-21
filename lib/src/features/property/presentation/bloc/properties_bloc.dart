@@ -2,24 +2,23 @@
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/services/api_service.dart';
-
-import '../../../../screen/filter_list.dart';
-import '../../data/models/project_model.dart'; // Adjust if your model path is different
+import '../../data/repositories/property_repository.dart';
+import '../../data/models/project_model.dart';
 
 part 'properties_event.dart';
 part 'properties_state.dart';
 
 class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
-  PropertiesBloc() : super(const PropertiesState.initial()) {
+  final PropertyRepository repository;
+
+  PropertiesBloc({required this.repository})
+      : super(const PropertiesState.initial()) {
     on<LoadProperties>(_onLoadProperties);
     on<LoadMoreProperties>(_onLoadMoreProperties);
     on<RefreshProperties>(_onRefreshProperties);
+    on<ChangeSort>(_onChangeSort);
   }
 
   Future<void> _onLoadProperties(
@@ -29,34 +28,29 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
     emit(state.copyWith(status: PropertiesStatus.loading));
 
     try {
-      final uri = ApiService.buildUri(event.endpoint, query: {'page': '1'});
-      final response = await http.get(uri);
+      final result = await repository.fetchProperties(
+        endpoint: event.endpoint,
+        page: 1,
+        sortBy: null, // or pass default sort if you have one
+      );
 
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        final responseModel = ProjectResponseModel.fromJson(jsonData);
-        final fetchedData = responseModel.data!;
+      final newData = result.data!;
+      final projects = newData.data ?? [];
+      final hasMore = (newData.meta?.currentPage ?? 1) < (newData.meta?.lastPage ?? 1);
+      final total = newData.meta?.total ?? 0;
 
-        final projects = fetchedData.data ?? [];
-        final hasMore = (fetchedData.meta?.currentPage ?? 1) < (fetchedData.meta?.lastPage ?? 1);
-
-        emit(state.copyWith(
-          status: PropertiesStatus.loaded,
-          properties: projects,
-          currentPage: 2,
-          hasMore: hasMore,
-          endpoint: event.endpoint,
-        ));
-      } else {
-        emit(state.copyWith(
-          status: PropertiesStatus.error,
-          errorMessage: 'Failed to load properties',
-        ));
-      }
+      emit(state.copyWith(
+        status: PropertiesStatus.loaded,
+        properties: projects,
+        currentPage: 2,
+        hasMore: hasMore,
+        endpoint: event.endpoint,
+        totalProperties: total,
+      ));
     } catch (e) {
       emit(state.copyWith(
         status: PropertiesStatus.error,
-        errorMessage: 'Connection error',
+        errorMessage: e.toString(),
       ));
     }
   }
@@ -70,28 +64,64 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
     emit(state.copyWith(status: PropertiesStatus.loadingMore));
 
     try {
-      final uri = ApiService.buildUri(state.endpoint, query: {'page': '${state.currentPage}'});
-      final response = await http.get(uri);
+      final result = await repository.fetchProperties(
+        endpoint: state.endpoint,
+        page: state.currentPage,
+        sortBy: null, // sort stays the same during load more
+      );
 
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        final responseModel = ProjectResponseModel.fromJson(jsonData);
-        final fetchedData = responseModel.data!;
+      final newData = result.data!;
+      final newProjects = newData.data ?? [];
+      final hasMore = (newData.meta?.currentPage ?? 1) < (newData.meta?.lastPage ?? 1);
 
-        final newProjects = fetchedData.data ?? [];
-        final hasMore = (fetchedData.meta?.currentPage ?? 1) < (fetchedData.meta?.lastPage ?? 1);
-
-        emit(state.copyWith(
-          properties: [...state.properties, ...newProjects],
-          currentPage: state.currentPage + 1,
-          hasMore: hasMore,
-          status: PropertiesStatus.loaded,
-        ));
-      } else {
-        emit(state.copyWith(status: PropertiesStatus.loaded));
-      }
+      emit(state.copyWith(
+        properties: [...state.properties, ...newProjects],
+        currentPage: state.currentPage + 1,
+        hasMore: hasMore,
+        status: PropertiesStatus.loaded,
+      ));
     } catch (e) {
-      emit(state.copyWith(status: PropertiesStatus.loaded));
+      emit(state.copyWith(
+        status: PropertiesStatus.loaded, // or error if you prefer
+        errorMessage: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onChangeSort(
+      ChangeSort event,
+      Emitter<PropertiesState> emit,
+      ) async {
+    // Clear old data for better UX during sort change
+    emit(state.copyWith(
+      status: PropertiesStatus.loading,
+      properties: const [],
+      currentPage: 1,
+      hasMore: true,
+    ));
+
+    try {
+      final result = await repository.fetchProperties(
+        endpoint: state.endpoint,
+        page: 1,
+        sortBy: event.sortBy,
+      );
+
+      final newData = result.data!;
+      final projects = newData.data ?? [];
+      final hasMore = (newData.meta?.currentPage ?? 1) < (newData.meta?.lastPage ?? 1);
+
+      emit(state.copyWith(
+        status: PropertiesStatus.loaded,
+        properties: projects,
+        currentPage: 2,
+        hasMore: hasMore,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        status: PropertiesStatus.error,
+        errorMessage: e.toString(),
+      ));
     }
   }
 
@@ -99,6 +129,14 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
       RefreshProperties event,
       Emitter<PropertiesState> emit,
       ) async {
+    // Reset pagination and reload
+    emit(state.copyWith(
+      status: PropertiesStatus.loading,
+      properties: const [],
+      currentPage: 1,
+      hasMore: true,
+    ));
+
     add(LoadProperties(endpoint: state.endpoint));
   }
 }

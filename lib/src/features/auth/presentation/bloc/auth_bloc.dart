@@ -1,9 +1,17 @@
 // lib/src/features/auth/presentation/bloc/auth_bloc.dart
+import 'dart:convert';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:Akarat/src/core/utils/session_manager.dart';
 import 'package:http/http.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:http/http.dart' as http;
+
+import '../../../../core/constants/constants.dart' as ApiService;
+import '../../../../core/utils/secure_storage.dart';
+import '../../../property/presentation/bloc/favorite_event.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -20,6 +28,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutRequested>(_onLogoutRequested);
     on<ShowLoginRequiredDialog>(_onShowLoginRequiredDialog);
     on<NavigateToLogin>(_onNavigateToLogin);
+
+
+    on<AuthLoginSuccess>((event, emit) async {
+      // Optional: re-save token (you already did it in OTP screen)
+      await SecureStorage.setToken(event.token);
+
+      // Emit authenticated state
+      emit(AuthAuthenticated(
+        // You can add more fields later if needed
+        token: event.token,
+        fullName: event.fullName,
+        email: event.email,
+      ));
+
+      // Auto-load favorites after successful login
+      add(const LoadFavorites() as AuthEvent); // if you have this event in FavoriteBloc
+    });
   }
 
   Future<void> _onAppStarted(AppStarted event, Emitter<AuthState> emit) async {
@@ -30,7 +55,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     if (token != null && token.isNotEmpty) {
       await SessionManager().refreshProfileFromServer();
-      emit(AuthAuthenticated());
+
+      // FIXED: pass the token
+      emit(AuthAuthenticated(
+        token: token,
+        // fullName: SessionManager().userName,   // optional
+        // email: SessionManager().userEmail,     // optional
+        // firstName: ..., lastName: ...          // optional
+      ));
     } else {
       emit(AuthUnauthenticated());
     }
@@ -40,11 +72,65 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
 
     try {
-      // TODO: Implement actual login API call
-      // final result = await AuthRepository().login(event.email, event.password);
-      // await SessionManager().setAuth(token: result.token, ...);
+      // Your real login API call (replace with actual repository)
+      final loginResponse = await AuthRepository().login(
+        email: event.email,
+        password: event.password,
+      );
 
-      emit(AuthAuthenticated());
+      final user = loginResponse.user;
+      final authToken = loginResponse.token;
+
+      // Save session data
+      await SessionManager().setAuth(
+        token: authToken,
+        userName: user.name ??
+            (user.firstName != null && user.lastName != null
+                ? '${user.firstName} ${user.lastName}'
+                : event.email.split('@')[0]),
+        userEmail: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      );
+
+      // Send FCM token to backend
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+
+      if (fcmToken != null) {
+        try {
+          final response = await http.post(
+            Uri.parse('${ApiService.baseUrl}/api/v1/devices/register-token'),
+            headers: {
+              'Authorization': 'Bearer $authToken',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'token': fcmToken,
+              'device_type': 'android',
+            }),
+          );
+
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            debugPrint('FCM token sent to backend successfully');
+          } else {
+            debugPrint('Failed to send token: ${response.statusCode} - ${response.body}');
+          }
+        } catch (e) {
+          debugPrint('Error sending FCM token: $e');
+        }
+      }
+
+      // FIXED: Pass the token (and optionally other fields)
+      emit(AuthAuthenticated(
+        token: authToken,
+        fullName: user.name ??
+            (user.firstName != null && user.lastName != null
+                ? '${user.firstName} ${user.lastName}'
+                : null),
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      ));
     } catch (e) {
       emit(AuthError(e.toString()));
     }
@@ -140,8 +226,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
+
+
   // New: Navigate to login screen safely using global navigator key
   void _onNavigateToLogin(NavigateToLogin event, Emitter<AuthState> emit) {
     navigatorKey.currentState?.pushNamed('/login');
   }
+
+  AuthRepository() {}
 }

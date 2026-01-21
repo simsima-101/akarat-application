@@ -6,7 +6,9 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart'; // for debugPrint
 import 'package:http/http.dart' as http;
 
+import '../../../../core/services/api_service.dart';
 import '../../../../core/utils/secure_storage.dart';
+import '../../../../core/utils/session_manager.dart';
 import '../../../property/data/models/featuredmodel.dart' as featured;
 import '../../../property/data/models/property_model.dart'; // Adjust path to your unified Property model file
 import 'favorite_event.dart';
@@ -18,57 +20,59 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
     on<ToggleFavorite>(_onToggleFavorite);
   }
 
+  Future<String?> _getValidToken() async {
+    var token = SessionManager().token ?? await SecureStorage.getToken();
+    if (token == null || token.isEmpty) {
+      return null;
+    }
+    return token;
+  }
+
   Future<void> _onLoadFavorites(
       LoadFavorites event,
       Emitter<FavoriteState> emit,
       ) async {
     emit(FavoriteLoading());
 
+    final token = await _getValidToken();
+    if (token == null) {
+      emit(FavoriteLoaded([]));
+      return;
+    }
+
     try {
-      final token = await SecureStorage.getToken();
-
-      // If no token → user not logged in
-      if (token == null || token.isEmpty) {
-        emit(FavoriteLoaded([]));
-        return;
-      }
-
       final response = await http.get(
-        Uri.parse('https://akarat.com/api/saved-properties'),
+        ApiService.buildUri('saved-properties'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
         },
       );
 
-      debugPrint("Saved properties response: ${response.statusCode} ${response.body}");
+      debugPrint("Favorites GET: ${response.statusCode} ${response.body}");
 
-      // Handle 401: token invalid or expired
       if (response.statusCode == 401) {
-        await SecureStorage.deleteToken(); // Clear bad token
+        await SecureStorage.deleteToken();
+        SessionManager().clear();
         emit(FavoriteLoaded([]));
         return;
       }
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> json = jsonDecode(response.body);
+        final json = jsonDecode(response.body);
+        final rawList = json['data']['data'] as List<dynamic>? ?? [];
 
-        final List<dynamic> rawList = json['data']['data'] as List<dynamic>;
-
-        // Convert raw JSON directly to unified Property model
-        // This fixes the image loading because Property.fromJson correctly handles the 'image' field
-        // when no 'media' array is present
-        final List<Property> properties = rawList
-            .map((item) => Property.fromJson(item as Map<String, dynamic>))
+        final properties = rawList
+            .map((e) => Property.fromJson(e as Map<String, dynamic>))
             .toList();
 
         emit(FavoriteLoaded(properties));
       } else {
-        emit(FavoriteError('Failed to load favorites: ${response.statusCode}'));
+        emit(FavoriteError('Failed: ${response.statusCode}'));
       }
     } catch (e) {
-      debugPrint("Load favorites error: $e");
-      emit(FavoriteError('Error loading favorites: $e'));
+      debugPrint("Favorites load error: $e");
+      emit(FavoriteError(e.toString()));
     }
   }
 
@@ -80,29 +84,32 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
     if (currentState is! FavoriteLoaded) return;
 
     final propertyId = event.propertyId;
-    final isCurrentlyFavorited = currentState.favoriteIds.contains(propertyId);
+    final wasFavorited = currentState.favoriteIds.contains(propertyId);
 
-    // Optimistic UI update
+    // Optimistic update: toggle locally first
+    final updatedFavorites = List<Property>.from(currentState.favorites);
     final updatedIds = Set<int>.from(currentState.favoriteIds);
-    if (isCurrentlyFavorited) {
+
+    if (wasFavorited) {
       updatedIds.remove(propertyId);
+      updatedFavorites.removeWhere((p) => int.tryParse(p.id ?? '0') == propertyId);
     } else {
       updatedIds.add(propertyId);
+      // Optional: if you have the full Property object, add it here
+      // Otherwise reload full list after API success
     }
 
-    // Emit optimistic state (favorites is now List<Property>)
-    emit(FavoriteLoaded(currentState.favorites));
+    emit(FavoriteLoaded(updatedFavorites));
 
     try {
-      final token = await SecureStorage.getToken();
-      if (token == null || token.isEmpty) {
-        // Not logged in anymore → revert
-        emit(currentState);
+      final token = await _getValidToken();
+      if (token == null) {
+        emit(currentState); // revert
         return;
       }
 
       final response = await http.post(
-        Uri.parse('https://akarat.com/api/toggle-saved-property'),
+        ApiService.buildUri('toggle-saved-property'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -110,26 +117,26 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
         body: jsonEncode({"property_id": propertyId}),
       );
 
-      // Handle 401 in toggle too
+      debugPrint("Toggle favorite: ${response.statusCode} ${response.body}");
+
       if (response.statusCode == 401) {
         await SecureStorage.deleteToken();
+        SessionManager().clear();
         emit(FavoriteLoaded([]));
-        add(const LoadFavorites()); // Trigger reload to show empty
+        add(const LoadFavorites());
         return;
       }
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Success → reload fresh data from server
+        // Success → reload full fresh list from server (safest)
         add(const LoadFavorites());
       } else {
-        // Failed → revert optimistic update
+        // API failed → revert optimistic update
         emit(currentState);
-        emit(FavoriteError('Failed to update favorite'));
       }
     } catch (e) {
-      // Network error → revert
-      emit(currentState);
-      emit(FavoriteError('Network error: $e'));
+      debugPrint("Toggle error: $e");
+      emit(currentState); // revert
     }
   }
 }

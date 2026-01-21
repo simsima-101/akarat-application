@@ -160,7 +160,9 @@
                     ),
                     Expanded(
                       child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),  // ← main change here
+                        // or try: horizontal: 6   ← very common modern value
+                        //         horizontal: 8   ← safer / more conservative
                         itemCount: state.projects.length + (state.status == NewProjectsStatus.loadingMore ? 1 : 0),
                         itemBuilder: (context, index) {
                           if (index == state.projects.length) {
@@ -172,7 +174,6 @@
 
                           final item = state.projects[index];
 
-                          // Fully reusable PropertyCard with Bloc-only favorite
                           return PropertyCard(item: item.toProperty());
                         },
                       ),

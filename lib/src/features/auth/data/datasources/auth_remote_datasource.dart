@@ -11,32 +11,36 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/utils/secure_storage.dart';
 import '../../../../core/constants/constants.dart' as ApiService;
-import '../../../../core/error/exceptions.dart';        // You will create this
-        // You will create this
-import '../../../../core/services/api_client.dart';      // Or api_service.dart if you keep it
-    // Moved to core/utils
-import '../../../../core/utils/session_manager.dart';   // Optional: in-memory session (if needed)
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/services/api_client.dart';
+import '../../../../core/utils/session_manager.dart';
 import '../../../../screen/login.dart';
-       // Plain entity (create later)
-import '../models/user_model.dart';                      // JSON-serializable model (create later)
+import '../models/user_model.dart';
 
-/// iOS Client ID from Google Cloud Console (move to .env or constants later)
+// iOS Client ID from Google Cloud Console (move to .env later)
 const String _iosClientId =
     '370139668712-ema9n0o9vhq25nbqu771v5c71ehivolf.apps.googleusercontent.com';
 
+// Simple response wrapper (separate token from user data)
+class LoginResponse {
+  final UserModel user;
+  final String token;
+  final String id; // user ID from backend
+
+  LoginResponse({
+    required this.user,
+    required this.token,
+    required this.id,
+  });
+}
+
 abstract class AuthRemoteDataSource {
-  /// Email/password login – to be added from other services if exists
-  // Future<UserModel> loginWithEmail({required String email, required String password});
-
-  /// Google Sign-In full flow
   Future<UserModel> loginWithGoogle();
-
-  /// Account deletion (permanent)
   Future<void> deleteAccount(BuildContext context);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final http.Client httpClient;               // Injected shared client
+  final http.Client httpClient;
   final FirebaseAuth firebaseAuth;
   final gsi.GoogleSignIn googleSignIn;
 
@@ -47,24 +51,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   })  : firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
         googleSignIn = googleSignIn ?? gsi.GoogleSignIn.instance;
 
-  // ===================================================================
-  // Google Sign-In
-  // ===================================================================
   @override
   Future<UserModel> loginWithGoogle() async {
     try {
-      // Initialize Google Sign-In (required on iOS)
       await googleSignIn.initialize(clientId: _iosClientId);
 
-      // Try silent login first
       try {
         await googleSignIn.attemptLightweightAuthentication();
-      } catch (_) {
-        // Ignore – will show UI
-      }
+      } catch (_) {}
 
       if (!googleSignIn.supportsAuthenticate()) {
-        throw ServerException(); // or custom AuthException
+        throw ServerException();
       }
 
       final gsi.GoogleSignInAccount? googleAccount = await _authenticateWithGoogle();
@@ -72,15 +69,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException(); // User cancelled
       }
 
-      final gsi.GoogleSignInAuthentication googleAuth =
-      await googleAccount.authentication;
+      final gsi.GoogleSignInAuthentication googleAuth = await googleAccount.authentication;
       final String? googleIdToken = googleAuth.idToken;
 
       if (googleIdToken == null || googleIdToken.isEmpty) {
         throw ServerException();
       }
 
-      // Firebase authentication
+      // Firebase Auth
       final credential = GoogleAuthProvider.credential(idToken: googleIdToken);
       final userCredential = await firebaseAuth.signInWithCredential(credential);
       final firebaseUser = userCredential.user;
@@ -94,37 +90,48 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException();
       }
 
-      // Exchange with your backend
+      // Exchange with backend
       final backendResult = await _loginWithBackend(firebaseIdToken);
       if (backendResult == null) {
         throw ServerException();
       }
 
-      // Convert to domain model (you can adjust mapping as needed)
+
+
+// Create UserModel from backendResult.user
       final userModel = UserModel(
-        token: backendResult.token,
-        email: backendResult.email,
-        firstName: backendResult.first,
-        lastName: backendResult.last,
-        displayName: backendResult.displayName,
-        // add other fields if your UserModel has them
+        id: backendResult.id,
+        email: backendResult.user.email,
+        firstName: backendResult.user.firstName,
+        lastName: backendResult.user.lastName,
+        displayName: backendResult.user.displayName,
       );
 
-      // Save locally – this should be done in the repository or local datasource,
-      // but for backward compatibility we keep it here temporarily.
-      // Later move to AuthLocalDataSource.
+// Save token separately (from root of LoginResponse)
+      await SecureStorage.saveToken(backendResult.token);
+
+// Save user profile data locally
       await _saveUserProfileLocally(userModel);
+
+// Update in-memory session (use fields from userModel)
+      await SessionManager().setAuth(
+        token: backendResult.token,
+        userName: userModel.displayName ?? 'User',
+        userEmail: userModel.email,
+        firstName: userModel.firstName ?? '',
+        lastName: userModel.lastName ?? '',
+      );
+
+      return userModel;
 
       return userModel;
     } catch (e) {
       debugPrint('Google Sign-In failed: $e');
-      rethrow; // Let repository handle and map to Failure
+      rethrow;
     }
   }
 
-  // ===================================================================
-  // Account Deletion
-  // ===================================================================
+  // Account deletion (unchanged - looks good)
   @override
   Future<void> deleteAccount(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
@@ -134,10 +141,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (token == null || token.isEmpty) {
         messenger.showSnackBar(const SnackBar(content: Text('You are not logged in')));
         _navigateToLogin(context);
-        throw AuthenticationException(); // custom if you create one
+        throw AuthenticationException();
       }
 
-      final base = ApiService.baseUrl; // keep or replace with injected base URL
+      final base = ApiService.baseUrl;
       final endpoints = [
         '$base/delete',
         '$base/delete-account',
@@ -158,26 +165,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         final uri = Uri.parse(endpoint);
 
         try {
-          // Try DELETE
           response = await httpClient.delete(uri, headers: headers).timeout(const Duration(seconds: 20));
 
-          // If DELETE not allowed → try POST
           if (response.statusCode == 404 || response.statusCode == 405) {
             response = await httpClient.post(uri, headers: headers, body: jsonEncode({'confirm': true}));
           }
 
-          if (response.statusCode case 200 || 201 || 202 || 204 || 205) {
+          if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 202 || response.statusCode == 204 || response.statusCode == 205) {
             await _performFullLogout(context);
             messenger.showSnackBar(
-              const SnackBar(
-                content: Text('Account deleted successfully'),
-                backgroundColor: Colors.red,
-              ),
+              const SnackBar(content: Text('Account deleted successfully'), backgroundColor: Colors.red),
             );
             return;
           }
         } catch (_) {
-          continue; // try next endpoint
+          continue;
         }
       }
 
@@ -190,9 +192,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
-  // ===================================================================
-  // Private Helpers
-  // ===================================================================
+  // Private Helpers (updated _loginWithBackend to return id)
 
   Future<gsi.GoogleSignInAccount?> _authenticateWithGoogle() async {
     final completer = Completer<gsi.GoogleSignInAccount?>();
@@ -224,22 +224,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     return completer.future;
   }
 
-  Future<({
-  String token,
-  String first,
-  String last,
-  String email,
-  String displayName,
-  })?> _loginWithBackend(String firebaseIdToken) async {
+  Future<LoginResponse?> _loginWithBackend(String firebaseIdToken) async {
     final uri = Uri.parse('${ApiService.baseUrl}/login-google');
 
     try {
       final response = await httpClient.post(
         uri,
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
+        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
         body: jsonEncode({'google_id_token': firebaseIdToken}),
       ).timeout(const Duration(seconds: 25));
 
@@ -253,6 +244,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         final token = (data['token'] ?? data['access_token'] ?? '').toString().trim();
         if (token.isEmpty) return null;
 
+        final id = (user['id'] ?? user['user_id'] ?? '').toString().trim();
         final email = (user['email'] ?? '').toString().trim();
         final fullName = (user['name'] ?? '').toString().trim();
         String first = (user['first_name'] ?? '').toString().trim();
@@ -266,12 +258,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
         final displayName = fullName.isNotEmpty ? fullName : '$first $last'.trim();
 
-        return (
-        token: token,
-        first: first,
-        last: last,
-        email: email,
-        displayName: displayName.isNotEmpty ? displayName : 'User',
+        return LoginResponse(
+          user: UserModel(
+            id: id,
+            email: email,
+            firstName: first,
+            lastName: last,
+            displayName: displayName.isNotEmpty ? displayName : 'User',
+          ),
+          token: token,
+          id: id,
         );
       }
     } catch (e) {
@@ -282,20 +278,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   Future<void> _saveUserProfileLocally(UserModel user) async {
-    await SecureStorage.saveToken(user.token);
-    await SecureStorage.saveUserName(user.displayName);
-    await SecureStorage.saveUserEmail(user.email);
-    await SecureStorage.saveFirstName(user.firstName);
-    await SecureStorage.saveLastName(user.lastName);
-
-    // Optional: update in-memory session
-    SessionManager().setAuth(
-      token: user.token,
-      userName: user.displayName,
-      userEmail: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    );
+    // Token is saved separately now – no more user.token
+    await SecureStorage.saveUserName(user.displayName ?? 'User');
+    await SecureStorage.saveUserEmail(user.email ?? '');
+    await SecureStorage.saveFirstName(user.firstName ?? '');
+    await SecureStorage.saveLastName(user.lastName ?? '');
   }
 
   String _extractErrorMessage(http.Response? response) {
@@ -319,7 +306,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!context.mounted) return;
       Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginDemo()), // Update to your login page
+        MaterialPageRoute(builder: (_) => const LoginDemo()),
             (_) => false,
       );
     });

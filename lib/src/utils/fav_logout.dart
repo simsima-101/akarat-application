@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 
 import '../common/widgets/property_card.dart';
+import '../core/services/api_service.dart';
 import '../core/utils/session_manager.dart';
 import '../features/property/data/models/property_model.dart'; // Unified Property model
 import '../features/property/presentation/bloc/favorite_bloc.dart';
@@ -98,10 +99,9 @@ class _Fav_LogoutState extends State<Fav_Logout> {
       ),
       duration: const Duration(seconds: 10),
     ));
-
     try {
       final response = await http.delete(
-        Uri.parse('https://akarat.com/api/saved-properties/delete-all'),
+        ApiService.buildUri('saved-properties/delete-all'),   // ← This is the key change!
         headers: {
           'Authorization': 'Bearer $currentToken',
           'Accept': 'application/json',
@@ -280,7 +280,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                 itemBuilder: (context, index) {
                   final Property property = favoriteProperties[index];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 4.0),
                     child: PropertyCard(item: property),
                   );
                 },

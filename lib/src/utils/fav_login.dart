@@ -461,15 +461,24 @@ class _Fav_LoginState extends State<Fav_Login> {
                                                   },
                                                   itemBuilder: (context, index) {
                                                     String imageUrl;
+
+                                                    // 1. Get raw image path from data
                                                     if (item.media != null && item.media!.isNotEmpty) {
                                                       imageUrl = item.media![index].originalUrl ?? '';
                                                     } else {
-                                                      imageUrl = item.image ??
-                                                          'https://via.placeholder.com/400x300.png?text=No+Image';
+                                                      imageUrl = item.image ?? '';
                                                     }
 
-                                                    if (!imageUrl.startsWith('http')) {
-                                                      imageUrl = 'https://akarat.com/$imageUrl';
+                                                    // 2. Fallback if no image at all
+                                                    if (imageUrl.isEmpty) {
+                                                      imageUrl = 'https://via.placeholder.com/400x300.png?text=No+Image';
+                                                    }
+
+                                                    // 3. Make full URL using current environment's base (prod / qa / etc)
+                                                    if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+                                                      // Remove trailing /api if present, then append the path
+                                                      final base = ApiService.baseUrl.replaceAll(RegExp(r'/api/?$'), '');
+                                                      imageUrl = '$base/$imageUrl'.replaceAll('//', '/');
                                                     }
 
                                                     return ClipRRect(
@@ -477,8 +486,16 @@ class _Fav_LoginState extends State<Fav_Login> {
                                                       child: CachedNetworkImage(
                                                         imageUrl: imageUrl,
                                                         fit: BoxFit.cover,
-                                                        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                                                        errorWidget: (context, url, error) => const Icon(Icons.broken_image),
+                                                        placeholder: (context, url) => const Center(
+                                                          child: CircularProgressIndicator(),
+                                                        ),
+                                                        errorWidget: (context, url, error) => const Icon(
+                                                          Icons.broken_image,
+                                                          size: 50,
+                                                          color: Colors.grey,
+                                                        ),
+                                                        // Optional: better caching behavior
+                                                        cacheKey: imageUrl, // helps CachedNetworkImage avoid duplicates
                                                       ),
                                                     );
                                                   },
@@ -774,20 +791,28 @@ class _Fav_LoginState extends State<Fav_Login> {
 // ✅ Add this helper function outside the class (at the bottom of Fav_Login.dart)
 
 String getFullImageUrl(String? url) {
-  if (url == null || url.isEmpty) {
+  if (url == null || url.trim().isEmpty) {
     return 'https://via.placeholder.com/400x300.png?text=No+Image';
   }
 
-  if (url.contains('/conversions/') && url.endsWith('.webp')) {
-    final fallbackUrl = url
+  final trimmed = url.trim();
+
+  // Case 1: Already a full absolute URL → use as is
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+
+  // Case 2: Special handling for conversion/thumbnail paths
+  if (trimmed.contains('/conversions/') && trimmed.endsWith('.webp')) {
+    return trimmed
         .replaceAll('/conversions/', '/')
         .replaceAll('-thumbnail.webp', '.jpg');
-    return fallbackUrl;
+    // Note: If backend still uses relative paths here too → continue to base prepend below
   }
 
-  if (url.startsWith('http')) {
-    return url;
-  }
+  // Case 3: Relative path → prepend current environment's base URL
+  final base = ApiService.baseUrl.replaceAll(RegExp(r'/api/?$'), '');
 
-  return 'https://akarat.com/$url';
+  // Clean double slashes and ensure correct format
+  return '$base/$trimmed'.replaceAll('//', '/');
 }

@@ -336,21 +336,40 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       width: 64,
                       height: 64,
                       child: TextFormField(
+                        controller: [
+                          otp1Controller,
+                          otp2Controller,
+                          otp3Controller,
+                          otp4Controller,
+                        ][index],
+
                         onChanged: (value) {
-                          if (value.length == 1) {
-                            // Move to next field
-                            if (index < 3) {
-                              FocusScope.of(context).nextFocus();
-                            } else {
-                              FocusScope.of(context).unfocus(); // Hide keyboard on last digit
+                          // Handle paste (e.g. user pastes 4 digits at once)
+                          if (value.length > 1) {
+                            final chars = value.split('');
+                            for (int i = 0; i < chars.length && index + i < 4; i++) {
+                              [
+                                otp1Controller,
+                                otp2Controller,
+                                otp3Controller,
+                                otp4Controller,
+                              ][index + i].text = chars[i];
                             }
-                          } else if (value.isEmpty) {
-                            // Move back if deleted
-                            if (index > 0) {
-                              FocusScope.of(context).previousFocus();
-                            }
+                            FocusScope.of(context).unfocus();
+                            return;
+                          }
+
+                          // Move forward
+                          if (value.isNotEmpty && index < 3) {
+                            FocusScope.of(context).nextFocus();
+                          }
+
+                          // Move backward on delete
+                          if (value.isEmpty && index > 0) {
+                            FocusScope.of(context).previousFocus();
                           }
                         },
+
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -366,14 +385,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           filled: true,
                           fillColor: Colors.white,
                           contentPadding: const EdgeInsets.symmetric(vertical: 20),
-                          counterText: '', // Hide character counter
+                          counterText: '',
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 2),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.black, width: 2.5), // Red when focused
+                            borderSide: const BorderSide(color: Colors.black, width: 2.5),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -381,6 +400,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           ),
                         ),
                       ),
+
                     );
                   }),
                 ),

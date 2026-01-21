@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
 
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -12,6 +13,12 @@ class ApiService {
   // =========================================================
   // BASE URL RESOLUTION (define > .env > default) + runtime override
   // =========================================================
+// =========================================================
+// BASE URL RESOLUTION – Remote Config > Runtime > .env/define > default
+// =========================================================
+  // =========================================================
+// BASE URL RESOLUTION – Remote Config > Runtime > .env/define > default
+// =========================================================
   static String? _runtimeBaseUrl;
 
   static void setRuntimeBase(String base) {
@@ -25,44 +32,52 @@ class ApiService {
     if (kDebugMode) print('ApiService runtime base cleared.');
   }
 
-  static String get _rawBaseUrl {
-    const fromDefine = String.fromEnvironment('API_BASE_URL');
-    if (fromDefine.trim().isNotEmpty) {
-      return fromDefine.replaceFirst(RegExp(r'/+$'), '');
-    }
-    final fromEnv = (dotenv.env['API_BASE_URL'] ?? '').trim();
-    if (fromEnv.isNotEmpty) {
-      return fromEnv.replaceFirst(RegExp(r'/+$'), '');
-    }
-    return 'https://akarat.com/api';
-  }
-
-  static String get _effectiveBaseUrl {
-    var url = (_runtimeBaseUrl ?? _rawBaseUrl);
-    if (!kIsWeb &&
-        Platform.isAndroid &&
-        (url.contains('127.0.0.1') || url.contains('localhost'))) {
-      try {
-        final u = Uri.parse(url);
-        final host =
-        (u.host == 'localhost' || u.host == '127.0.0.1') ? '10.0.2.2' : u.host;
-        url = u.replace(host: host).toString();
-      } catch (_) {
-        url = url
-            .replaceFirst('127.0.0.1', '10.0.2.2')
-            .replaceFirst('localhost', '10.0.2.2');
+  static String get baseUrl {
+    // 1. Highest priority: Firebase Remote Config
+    final rc = FirebaseRemoteConfig.instance;
+    final rcValue = rc.getString('api_base_url').trim();
+    if (rcValue.isNotEmpty && rcValue.startsWith('https://')) {
+      final cleanRc = rcValue.replaceFirst(RegExp(r'/+$'), '');
+      if (kDebugMode) {
+        print('Using Remote Config base URL: $cleanRc');
       }
+      return cleanRc;
     }
-    return url;
-  }
 
-  static String get baseUrl => _effectiveBaseUrl;
+    // 2. Runtime override
+    if (_runtimeBaseUrl != null && _runtimeBaseUrl!.isNotEmpty) {
+      final clean = _runtimeBaseUrl!.replaceFirst(RegExp(r'/+$'), '');
+      if (kDebugMode) print('Using runtime override base: $clean');
+      return clean;
+    }
+
+    // 3. .env / define / hardcoded fallback
+    const fromDefine = String.fromEnvironment('API_BASE_URL');
+    final fromEnv = (dotenv.env['API_BASE_URL'] ?? '').trim();
+
+    String fallback;
+    if (fromDefine.trim().isNotEmpty) {
+      fallback = fromDefine;
+    } else if (fromEnv.isNotEmpty) {
+      fallback = fromEnv;
+    } else {
+      fallback = 'https://akarat.com/api';
+    }
+
+    final cleanFallback = fallback.replaceFirst(RegExp(r'/+$'), '');
+    if (kDebugMode) {
+      print('Falling back to base URL: $cleanFallback');
+    }
+    return cleanFallback;
+  }
 
   static void debugPrintBaseUrl() {
     if (kDebugMode) {
-      print('BASE URL (define/env):       $_rawBaseUrl');
-      print('BASE URL (runtime override): ${_runtimeBaseUrl ?? '(none)'}');
-      print('BASE URL (effective):        $_effectiveBaseUrl');
+      final rc = FirebaseRemoteConfig.instance;
+      print('RC api_base_url:       "${rc.getString('api_base_url')}"');
+      print('Runtime override:      ${_runtimeBaseUrl ?? "(none)"}');
+      print('.env / define fallback: ${dotenv.env['API_BASE_URL'] ?? String.fromEnvironment('API_BASE_URL')}');
+      print('Effective baseUrl:     $baseUrl');
     }
   }
 
@@ -111,7 +126,7 @@ class ApiService {
   static Uri _buildUri(String endpoint, [Map<String, String>? queryParams]) {
     final cleanEndpoint =
     endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
-    var uri = Uri.parse('$_effectiveBaseUrl/$cleanEndpoint');
+    var uri = Uri.parse('$baseUrl/$cleanEndpoint');
     if (queryParams != null) uri = uri.replace(queryParameters: queryParams);
     return uri;
   }
@@ -945,7 +960,7 @@ class ApiService {
       Map<String, dynamic> body,
       ) async {
     if (token.isEmpty) {
-      throw Exception('No auth token present for $_effectiveBaseUrl$endpoint');
+      throw Exception('No auth token present for $baseUrl$endpoint');
     }
     final url = _buildUri(endpoint);
     final resp = await http
@@ -966,7 +981,7 @@ class ApiService {
         Map<String, String>? qs,
       ]) async {
     if (token.isEmpty) {
-      throw Exception('No auth token present for $_effectiveBaseUrl$endpoint');
+      throw Exception('No auth token present for $baseUrl$endpoint');
     }
     final url = _buildUri(endpoint, qs);
     final resp =

@@ -1334,7 +1334,7 @@ class _AboutAgentState extends State<AboutAgent> {
 
                   //------------------------- Agent Property -----------------------------------
                   Padding(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(5),
                     child: Column(
                       children: [
                         Expanded(
@@ -1342,7 +1342,7 @@ class _AboutAgentState extends State<AboutAgent> {
                               ? const Center(child: CircularProgressIndicator())
                               : ListView.builder(
                             controller: _scrollController,
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            padding: const EdgeInsets.symmetric(horizontal: 0, vertical:10),
                             itemCount: agentProperties!.data!.length + (isLoading ? 1 : 0),
                             itemBuilder: (context, index) {
                               if (index == agentProperties!.data!.length) {

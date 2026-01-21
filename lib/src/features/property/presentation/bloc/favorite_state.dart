@@ -14,17 +14,21 @@ abstract class FavoriteState extends Equatable {
 class FavoriteInitial extends FavoriteState {}
 
 class FavoriteLoading extends FavoriteState {}
-
 class FavoriteLoaded extends FavoriteState {
   final List<Property> favorites;
   final Set<int> favoriteIds;
 
-  // Removed 'const' here — this is the key fix
   FavoriteLoaded(this.favorites)
       : favoriteIds = favorites
-      .map((p) => int.tryParse(p.id) ?? -1)
-      .where((id) => id != -1)
+      .map((p) => int.tryParse(p.id ?? '0') ?? 0)
+      .where((id) => id != 0)
       .toSet();
+
+  FavoriteLoaded copyWith({
+    List<Property>? favorites,
+  }) {
+    return FavoriteLoaded(favorites ?? this.favorites);
+  }
 
   @override
   List<Object?> get props => [favorites, favoriteIds];

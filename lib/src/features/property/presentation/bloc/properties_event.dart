@@ -7,6 +7,8 @@ abstract class PropertiesEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+
+
 class LoadProperties extends PropertiesEvent {
   final String endpoint;
   final String? sortBy;

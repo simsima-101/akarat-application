@@ -42,6 +42,8 @@ class Featured_Detail extends StatefulWidget {
 class _Featured_DetailState extends State<Featured_Detail> {
   Featured_DetailModel? featuredDetailModel;
 
+  bool _showAllAmenities = false;
+
   Map<String, dynamic>? _projectInfoRaw;
 
 
@@ -967,18 +969,25 @@ class _Featured_DetailState extends State<Featured_Detail> {
   Future<Map<String, dynamic>?> _fetchListingValidation(String ded) async {
     if (ded.isEmpty) return null;
 
-    final url =
-        "https://akarat.com/api/validate-listing/$ded/567315?isGenerateQrCode=true";
+    // Use ApiService to build the full URL dynamically
+    final uri = ApiService.buildUri(
+      'validate-listing/$ded/567315',
+      query: {'isGenerateQrCode': 'true'},
+    );
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(uri);
+
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
-        return json["result"][0];
+        return json["result"]?[0] as Map<String, dynamic>?;
+      } else {
+        debugPrint("Validation failed with status: ${response.statusCode}");
       }
     } catch (e) {
       debugPrint("Error fetching validate-listing: $e");
     }
+
     return null;
   }
 
@@ -1035,30 +1044,39 @@ class _Featured_DetailState extends State<Featured_Detail> {
       return;
     }
 
-    final url =
-        'https://akarat.com/api/validate-listing/$permitNumber/$ded?isGenerateQrCode=true';
+    final uri = ApiService.buildUri(
+      'validate-listing/$permitNumber/$ded',
+      query: {'isGenerateQrCode': 'true'},
+    );
 
     try {
-      final response =
-      await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(uri)
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
         final result = json['result'] as List<dynamic>?;
 
         if (result != null && result.isNotEmpty) {
-          final first = result.first;
-          final officialDescription =
-              first['property']?['propertyDescription']?.toString() ?? '';
+          final first = result.first as Map<String, dynamic>?;
 
-          debugPrint(" property description: $officialDescription");
+          final officialDescription =
+              first?['property']?['propertyDescription']?.toString() ?? '';
+
+          debugPrint("Property description from API: $officialDescription");
+
           setState(() {
             _fullDescription = officialDescription.trim().isNotEmpty
                 ? officialDescription.trim()
                 : (property.description ?? '');
             _hasExpandedDescription = true;
           });
+        } else {
+          debugPrint("No result found in validate-listing response");
         }
+      } else {
+        debugPrint("validate-listing failed → ${response.statusCode}");
       }
     } catch (e) {
       debugPrint('Failed to fetch verified description: $e');
@@ -2814,6 +2832,12 @@ class _Featured_DetailState extends State<Featured_Detail> {
       return const SizedBox.shrink();
     }
 
+    final int initialCount = 6;
+    final bool showButton = amenities.length > initialCount;
+
+    final displayedAmenities =
+    _showAllAmenities ? amenities : amenities.take(initialCount).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2842,7 +2866,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: amenities.length,
+              itemCount: displayedAmenities.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: isSmallScreen ? 1 : 2,
                 mainAxisSpacing: 10,
@@ -2850,12 +2874,11 @@ class _Featured_DetailState extends State<Featured_Detail> {
                 childAspectRatio: isSmallScreen ? 4.5 : 5,
               ),
               itemBuilder: (context, index) {
-                final amenity = amenities[index];
+                final amenity = displayedAmenities[index];
                 final iconUrl = amenity.icon?.trim();
 
                 return Row(
                   children: [
-                    // ✅ Only try to load network image if URL is non-empty
                     if (iconUrl != null && iconUrl.isNotEmpty)
                       SizedBox(
                         width: 18,
@@ -2863,18 +2886,13 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         child: Image.network(
                           iconUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            // debug print if needed
-                            // print('Amenity icon failed: $iconUrl -> $error');
-                            return const Icon(Icons.broken_image, size: 18);
-                          },
+                          errorBuilder: (_, __, ___) =>
+                          const Icon(Icons.broken_image, size: 18),
                         ),
                       )
                     else
                       const Icon(Icons.check_circle_outline, size: 18),
-
                     const SizedBox(width: 8),
-
                     Expanded(
                       child: Text(
                         amenity.title ?? '',
@@ -2891,9 +2909,33 @@ class _Featured_DetailState extends State<Featured_Detail> {
             );
           },
         ),
+
+        // ==== SHOW MORE / LESS BUTTON ====
+        if (showButton)
+          Padding(
+            padding: const EdgeInsets.only(top: 15, bottom: 10),
+            child: Center(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _showAllAmenities = !_showAllAmenities;
+                  });
+                },
+                child: Text(
+                  _showAllAmenities ? "Show less" : "Show more",
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blue,
+                  ),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
+
 
   Widget _buildInfoRow(String title, String value) {
     return Padding(

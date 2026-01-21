@@ -1,5 +1,6 @@
 // lib/src/screen/my_account.dart
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:Akarat/src/screen/privacy.dart';
 import 'package:Akarat/src/screen/register_screen.dart';
@@ -9,6 +10,7 @@ import 'package:Akarat/src/screen/terms_condition.dart';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../core/utils/secure_storage.dart';
@@ -18,7 +20,7 @@ import '../utils/fav_logout.dart';
 import '../widgets/custom_alert_box.dart';
 import 'ContactFormScreen.dart';
 import 'about_us.dart';
-import 'findagent.dart';
+import '../features/find_agent/presentation/pages/findagent.dart';
 import 'home.dart';
 import 'login.dart';
 import 'personal_information.dart';
@@ -369,6 +371,54 @@ class _My_AccountState extends State<My_Account> {
               }
             },
           ),
+          _settingsTile(
+            "Rate Us",
+            "assets/images/stars (1).png",
+                () async {
+              const String androidPackage = "com.akarat.drawerdemo";
+              const String iosAppId = "6745213903";
+
+              // Use country-specific link (very important for AE/UAE!)
+              final String countryCode = 'ae'; // Change to 'us', 'gb', etc. if needed
+
+              final Uri storeUrl = Platform.isIOS
+                  ? Uri.parse("https://apps.apple.com/$countryCode/app/id$iosAppId")
+                  : Platform.isAndroid
+                  ? Uri.parse("https://play.google.com/store/apps/details?id=$androidPackage")
+                  : Uri.parse("https://apps.apple.com/$countryCode/app/id$iosAppId"); // fallback
+
+              try {
+                // First try external app mode (App Store / Play Store native)
+                if (await canLaunchUrl(storeUrl)) {
+                  final bool launched = await launchUrl(
+                    storeUrl,
+                    mode: LaunchMode.externalApplication,
+                  );
+
+                  if (!launched) {
+                    debugPrint("External launch failed → trying in-app/browser fallback");
+                    await launchUrl(
+                      storeUrl,
+                      mode: LaunchMode.platformDefault, // Opens in Safari or in-app webview
+                    );
+                  }
+                } else {
+                  debugPrint("Cannot launch $storeUrl → trying platform default");
+                  await launchUrl(
+                    storeUrl,
+                    mode: LaunchMode.platformDefault,
+                  );
+                }
+              } catch (e) {
+                debugPrint("Error launching store: $e");
+                // Optional: Show a snackbar to user
+                // ScaffoldMessenger.of(context).showSnackBar(
+                //   SnackBar(content: Text("Could not open store. Please check later.")),
+                // );
+              }
+            },
+          ),
+
         ]),
 
         // Logout / Login Section

@@ -1,11 +1,15 @@
 // lib/screen/ContactFormScreen.dart
 
+import 'dart:convert';
+
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl_country_data/intl_country_data.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../core/services/api_service.dart';
 
 typedef EmailAgentSubmitCallback = Future<void> Function({
 required String name,
@@ -53,28 +57,30 @@ Future<void> showHomeContactDialog(BuildContext context) async {
       }) async {
         try {
           final response = await http.post(
-            Uri.parse("https://akarat.com/api/contact-akarat"),
+            ApiService.buildUri('contact-akarat'),
             headers: {
               "Accept": "application/json",
               "X-Device-ID": "8B368203-14FE-47F6-98C8-9933CB0AE73D",
-              "Authorization":
-              "Bearer 1092|fsHg2fMib653xIThnBMHMgtzl8Q7rILysRpFJbrb",
+              "Authorization": "Bearer 1092|fsHg2fMib653xIThnBMHMgtzl8Q7rILysRpFJbrb",
             },
-            body: {
+            body: jsonEncode({
               "name": name.trim(),
               "email": email.trim(),
               "phone": phone.trim(),
               "message": message.trim(),
-            },
+            }),
           );
 
           if (response.statusCode == 200 || response.statusCode == 201) {
             return; // success
           } else {
-            throw Exception("Server error: ${response.statusCode}");
+            throw Exception(
+              "Contact form failed: ${response.statusCode} - ${response.body}",
+            );
           }
         } catch (e) {
-          rethrow; // will be caught in _send()
+          debugPrint("Contact API error: $e");
+          rethrow; // or handle error as needed in your UI
         }
       },
     }),

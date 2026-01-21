@@ -1295,7 +1295,7 @@ class _About_AgencyState extends State<About_Agency> {
                         ? const Center(child: Text("No properties found"))
                         : ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
                       itemCount: allProperties.length + (isLoadingMore ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index == allProperties.length) {

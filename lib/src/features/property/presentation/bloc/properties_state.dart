@@ -9,6 +9,7 @@ class PropertiesState extends Equatable {
   final PropertiesStatus status;
   final String? errorMessage;
   final String endpoint;
+  final int? totalProperties;
 
   const PropertiesState({
     required this.properties,
@@ -17,6 +18,7 @@ class PropertiesState extends Equatable {
     required this.status,
     this.errorMessage,
     required this.endpoint,
+    this.totalProperties,
   });
 
   const PropertiesState.initial()
@@ -26,6 +28,7 @@ class PropertiesState extends Equatable {
     hasMore: true,
     status: PropertiesStatus.initial,
     endpoint: '',
+    totalProperties: null,
   );
 
   PropertiesState copyWith({
@@ -35,6 +38,7 @@ class PropertiesState extends Equatable {
     PropertiesStatus? status,
     String? errorMessage,
     String? endpoint,
+    int? totalProperties,
   }) {
     return PropertiesState(
       properties: properties ?? this.properties,
@@ -43,9 +47,10 @@ class PropertiesState extends Equatable {
       status: status ?? this.status,
       errorMessage: errorMessage,
       endpoint: endpoint ?? this.endpoint,
+      totalProperties: totalProperties ?? this.totalProperties,
     );
   }
 
   @override
-  List<Object?> get props => [properties, currentPage, hasMore, status, errorMessage, endpoint];
+  List<Object?> get props => [properties, currentPage, hasMore, status, errorMessage, endpoint, totalProperties];
 }
