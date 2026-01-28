@@ -3,13 +3,11 @@
 import 'dart:async';
 import 'dart:convert';
 
-
 import 'package:Akarat/src/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
@@ -17,10 +15,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../device_id.dart';
-
+import '../core/services/api_service.dart';
 import '../features/property/data/models/fdetailmodel.dart';
 import '../providers/email_enquiry_provider.dart';
-import '../core/services/api_service.dart';
 import '../utils/shared_preference_manager.dart';
 import 'ContactFormScreen.dart';
 import 'about_agent.dart';
@@ -46,7 +43,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
   Map<String, dynamic>? _projectInfoRaw;
 
-
   Widget _buildFeatureItem(IconData icon, String label) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -68,12 +64,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
   String result = '';
   final SharedPreferencesManager prefManager = SharedPreferencesManager();
 
-
-  bool isLoading = true;     // true initially (shows shimmer)
-  bool isError = false;      // tracks if fetch failed
-  String? errorMessage;      // optional detailed errorbool isLoading = true;     // true initially (shows shimmer)
-
-
+  bool isLoading = true; // true initially (shows shimmer)
+  bool isError = false; // tracks if fetch failed
+  String?
+      errorMessage; // optional detailed errorbool isLoading = true;     // true initially (shows shimmer)
 
   bool _hasProjectInfo() {
     return completionPercentage != null ||
@@ -343,7 +337,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
         if (item is Map) {
           final m = Map<String, dynamic>.from(item);
           final title =
-          (m['title'] ?? m['name'] ?? '').toString().toLowerCase();
+              (m['title'] ?? m['name'] ?? '').toString().toLowerCase();
           final percent = toInt(m['percentage'] ?? m['percent'] ?? m['value']);
           if (percent == null) continue;
 
@@ -484,44 +478,44 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
 // ✅ individual building fields
   String? get buildingName => _dldThenProjectInfoByKeys(
-    dldKeys: ['building_name', 'buildingName', 'building'],
-    projectInfoKey: 'building_name',
-  );
+        dldKeys: ['building_name', 'buildingName', 'building'],
+        projectInfoKey: 'building_name',
+      );
 
   String? get totalParking => _dldThenProjectInfoByKeys(
-    dldKeys: ['total_parking', 'totalParking', 'parking_spaces'],
-    projectInfoKey: 'total_parking',
-  );
+        dldKeys: ['total_parking', 'totalParking', 'parking_spaces'],
+        projectInfoKey: 'total_parking',
+      );
 
   String? get buildingArea => _dldThenProjectInfoByKeys(
-    dldKeys: ['building_area', 'buildingArea', 'area'],
-    projectInfoKey: 'building_area',
-  );
+        dldKeys: ['building_area', 'buildingArea', 'area'],
+        projectInfoKey: 'building_area',
+      );
 
   String? get yearOfCompletion => _dldThenProjectInfoByKeys(
-    dldKeys: ['year_of_completion', 'yearOfCompletion', 'completion_year'],
-    projectInfoKey: 'year_of_completion',
-  );
+        dldKeys: ['year_of_completion', 'yearOfCompletion', 'completion_year'],
+        projectInfoKey: 'year_of_completion',
+      );
 
   String? get elevators => _dldThenProjectInfoByKeys(
-    dldKeys: ['elevators', 'lift_count', 'lifts'],
-    projectInfoKey: 'elevators',
-  );
+        dldKeys: ['elevators', 'lift_count', 'lifts'],
+        projectInfoKey: 'elevators',
+      );
 
   String? get totalFloors => _dldThenProjectInfoByKeys(
-    dldKeys: ['total_floors', 'totalFloors', 'floors'],
-    projectInfoKey: 'total_floors',
-  );
+        dldKeys: ['total_floors', 'totalFloors', 'floors'],
+        projectInfoKey: 'total_floors',
+      );
 
   String? get swimmingPools => _dldThenProjectInfoByKeys(
-    dldKeys: ['swimming_pools', 'swimmingPools', 'pools'],
-    projectInfoKey: 'swimming_pools',
-  );
+        dldKeys: ['swimming_pools', 'swimmingPools', 'pools'],
+        projectInfoKey: 'swimming_pools',
+      );
 
   String? get retailCenters => _dldThenProjectInfoByKeys(
-    dldKeys: ['retail_centers', 'retailCenters', 'retail'],
-    projectInfoKey: 'retail_centers',
-  );
+        dldKeys: ['retail_centers', 'retailCenters', 'retail'],
+        projectInfoKey: 'retail_centers',
+      );
 
 // show section only if any value exists
   bool _hasBuildingInfo() {
@@ -632,10 +626,10 @@ class _Featured_DetailState extends State<Featured_Detail> {
     final info = _projectInfoMap;
 
     return _cleanStr(_permitFirst?['completion'] ??
-        p?.completionPercentage ??
-        info?['completion'] ??
-        info?['completion_percentage'] // ✅ add this
-    );
+            p?.completionPercentage ??
+            info?['completion'] ??
+            info?['completion_percentage'] // ✅ add this
+        );
   }
 
   String? get deliveryYear {
@@ -690,7 +684,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
     final p = featuredDetailModel?.data?.property;
     return _dldThenProjectInfo(
       dldValue:
-      _permitFirst?['governmentFee'] ?? _permitFirst?['government_fee'],
+          _permitFirst?['governmentFee'] ?? _permitFirst?['government_fee'],
       projectInfoKey: 'government_fee',
       directPropertyValue: p?.governmentFee, // ✅ fallback
     );
@@ -965,31 +959,31 @@ class _Featured_DetailState extends State<Featured_Detail> {
       ),
     );
   }
-
-  Future<Map<String, dynamic>?> _fetchListingValidation(String ded) async {
-    if (ded.isEmpty) return null;
-
-    // Use ApiService to build the full URL dynamically
-    final uri = ApiService.buildUri(
-      'validate-listing/$ded/567315',
-      query: {'isGenerateQrCode': 'true'},
-    );
-
-    try {
-      final response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-        return json["result"]?[0] as Map<String, dynamic>?;
-      } else {
-        debugPrint("Validation failed with status: ${response.statusCode}");
-      }
-    } catch (e) {
-      debugPrint("Error fetching validate-listing: $e");
-    }
-
-    return null;
-  }
+  //
+  // Future<Map<String, dynamic>?> _fetchListingValidation(String ded) async {
+  //   if (ded.isEmpty) return null;
+  //
+  //   // Use ApiService to build the full URL dynamically
+  //   final uri = ApiService.buildUri(
+  //     'validate-listing/$ded/567315',
+  //     query: {'isGenerateQrCode': 'true'},
+  //   );
+  //
+  //   try {
+  //     final response = await http.get(uri);
+  //
+  //     if (response.statusCode == 200) {
+  //       final json = jsonDecode(response.body);
+  //       return json["result"]?[0] as Map<String, dynamic>?;
+  //     } else {
+  //       debugPrint("Validation failed with status: ${response.statusCode}");
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Error fetching validate-listing: $e");
+  //   }
+  //
+  //   return null;
+  // }
 
   // ========= LOGIN / PREFS =========
   void readData() async {
@@ -1024,70 +1018,70 @@ class _Featured_DetailState extends State<Featured_Detail> {
     _messageController.dispose();
     super.dispose();
   }
-
-  Future<void> _fetchFullVerifiedDescription() async {
-    if (_hasExpandedDescription) return;
-
-    setState(() => _isLoadingFullDescription = true);
-
-    final property = featuredDetailModel?.data?.property;
-    if (property == null) {
-      setState(() => _isLoadingFullDescription = false);
-      return;
-    }
-
-    final permitNumber = property.regulatoryInfo?.dldPermitNumber ?? '';
-    final ded = property.regulatoryInfo?.ded ?? '';
-
-    if (permitNumber.isEmpty || ded.isEmpty) {
-      setState(() => _isLoadingFullDescription = false);
-      return;
-    }
-
-    final uri = ApiService.buildUri(
-      'validate-listing/$permitNumber/$ded',
-      query: {'isGenerateQrCode': 'true'},
-    );
-
-    try {
-      final response = await http
-          .get(uri)
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-        final result = json['result'] as List<dynamic>?;
-
-        if (result != null && result.isNotEmpty) {
-          final first = result.first as Map<String, dynamic>?;
-
-          final officialDescription =
-              first?['property']?['propertyDescription']?.toString() ?? '';
-
-          debugPrint("Property description from API: $officialDescription");
-
-          setState(() {
-            _fullDescription = officialDescription.trim().isNotEmpty
-                ? officialDescription.trim()
-                : (property.description ?? '');
-            _hasExpandedDescription = true;
-          });
-        } else {
-          debugPrint("No result found in validate-listing response");
-        }
-      } else {
-        debugPrint("validate-listing failed → ${response.statusCode}");
-      }
-    } catch (e) {
-      debugPrint('Failed to fetch verified description: $e');
-      setState(() {
-        _fullDescription = property.description ?? '';
-        _hasExpandedDescription = true;
-      });
-    } finally {
-      setState(() => _isLoadingFullDescription = false);
-    }
-  }
+  //
+  // Future<void> _fetchFullVerifiedDescription() async {
+  //   if (_hasExpandedDescription) return;
+  //
+  //   setState(() => _isLoadingFullDescription = true);
+  //
+  //   final property = featuredDetailModel?.data?.property;
+  //   if (property == null) {
+  //     setState(() => _isLoadingFullDescription = false);
+  //     return;
+  //   }
+  //
+  //   final permitNumber = property.regulatoryInfo?.dldPermitNumber ?? '';
+  //   final ded = property.regulatoryInfo?.ded ?? '';
+  //
+  //   if (permitNumber.isEmpty || ded.isEmpty) {
+  //     setState(() => _isLoadingFullDescription = false);
+  //     return;
+  //   }
+  //
+  //   final uri = ApiService.buildUri(
+  //     'validate-listing/$permitNumber/$ded',
+  //     query: {'isGenerateQrCode': 'true'},
+  //   );
+  //
+  //   try {
+  //     final response = await http
+  //         .get(uri)
+  //         .timeout(const Duration(seconds: 10));
+  //
+  //     if (response.statusCode == 200) {
+  //       final json = jsonDecode(response.body);
+  //       final result = json['result'] as List<dynamic>?;
+  //
+  //       if (result != null && result.isNotEmpty) {
+  //         final first = result.first as Map<String, dynamic>?;
+  //
+  //         final officialDescription =
+  //             first?['property']?['propertyDescription']?.toString() ?? '';
+  //
+  //         debugPrint("Property description from API: $officialDescription");
+  //
+  //         setState(() {
+  //           _fullDescription = officialDescription.trim().isNotEmpty
+  //               ? officialDescription.trim()
+  //               : (property.description ?? '');
+  //           _hasExpandedDescription = true;
+  //         });
+  //       } else {
+  //         debugPrint("No result found in validate-listing response");
+  //       }
+  //     } else {
+  //       debugPrint("validate-listing failed → ${response.statusCode}");
+  //     }
+  //   } catch (e) {
+  //     debugPrint('Failed to fetch verified description: $e');
+  //     setState(() {
+  //       _fullDescription = property.description ?? '';
+  //       _hasExpandedDescription = true;
+  //     });
+  //   } finally {
+  //     setState(() => _isLoadingFullDescription = false);
+  //   }
+  // }
 
   // ========= PROPERTY FETCHING =========
   Future<void> fetchProducts(String data) async {
@@ -1098,14 +1092,18 @@ class _Featured_DetailState extends State<Featured_Detail> {
       errorMessage = null;
     });
 
-    final url = ApiService.buildUri('properties/$data');
+    // final url = ApiService.buildUri('properties/$data');
 
-    debugPrint("📡 Fetching property detail: $url");
+    // debugPrint("📡 Fetching property detail: $url");
 
     try {
-      final response = await http
-          .get(url)
-          .timeout(const Duration(seconds: 45)); // increased slightly
+      // final response = await http
+      //     .get(url)
+      //     .timeout(const Duration(seconds: 45)); // increased slightly
+
+      final response = await ApiService.get(
+        'properties/$data',
+      ).timeout(const Duration(seconds: 45));
 
       debugPrint("📶 Response status: ${response.statusCode}");
 
@@ -1198,9 +1196,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
     final String subtitle = property.title ?? '';
 
     final String ref =
-    (property.reference != null && property.reference!.trim().isNotEmpty)
-        ? property.reference!.trim()
-        : propId.toString();
+        (property.reference != null && property.reference!.trim().isNotEmpty)
+            ? property.reference!.trim()
+            : propId.toString();
 
     final String initialMessage =
         'Hi, I found your property with ref: $ref on Akarat. '
@@ -1224,7 +1222,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
         final deviceId = await getDeviceId();
         final emailProvider =
-        Provider.of<EmailEnquiryProvider>(context, listen: false);
+            Provider.of<EmailEnquiryProvider>(context, listen: false);
 
         final ok = await emailProvider.submitEmailEnquiry(
           propertyId: propId,
@@ -1365,7 +1363,8 @@ class _Featured_DetailState extends State<Featured_Detail> {
                   label: const Text("Retry"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 12),
                   ),
                 ),
               ],
@@ -1400,7 +1399,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
       if (qrStr != null && qrStr.trim().isNotEmpty) {
         final String base64Part =
-        qrStr.contains(',') ? qrStr.split(',').last.trim() : qrStr.trim();
+            qrStr.contains(',') ? qrStr.split(',').last.trim() : qrStr.trim();
 
         final bytes = base64Decode(base64Part);
 
@@ -1440,7 +1439,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
     }
 
     final periodText = (property.paymentPeriod != null &&
-        property.paymentPeriod.toString().trim().isNotEmpty)
+            property.paymentPeriod.toString().trim().isNotEmpty)
         ? "/${property.paymentPeriod}"
         : "";
 
@@ -1549,7 +1548,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
 
                     final message = Uri.encodeComponent("Hello");
                     final waUrl =
-                    Uri.parse("https://wa.me/$phone?text=$message");
+                        Uri.parse("https://wa.me/$phone?text=$message");
 
                     if (await canLaunchUrl(waUrl)) {
                       await launchUrl(waUrl,
@@ -1595,7 +1594,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                 itemCount: property.media?.length ?? 0,
                 itemBuilder: (BuildContext context, int index) {
                   final imageUrl =
-                  property.media![index].originalUrl.toString();
+                      property.media![index].originalUrl.toString();
 
                   return GestureDetector(
                     onTap: () {
@@ -1607,7 +1606,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                         transitionDuration: const Duration(milliseconds: 300),
                         pageBuilder: (context, animation, secondaryAnimation) {
                           PageController controller =
-                          PageController(initialPage: index);
+                              PageController(initialPage: index);
                           return Scaffold(
                             backgroundColor: Colors.black,
                             body: SafeArea(
@@ -1677,7 +1676,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
             if (addressText != null) ...[
               Padding(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1740,7 +1739,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       child: Text(
                         '${property.bedrooms} beds',
                         style:
-                        const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                            const TextStyle(fontSize: 14, letterSpacing: 0.5),
                       ),
                     ),
                   ],
@@ -1755,7 +1754,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       child: Text(
                         '${property.bathrooms} baths',
                         style:
-                        const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                            const TextStyle(fontSize: 14, letterSpacing: 0.5),
                       ),
                     ),
                   ],
@@ -1772,7 +1771,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       child: Text(
                         '$resolvedSqft',
                         style:
-                        const TextStyle(fontSize: 14, letterSpacing: 0.5),
+                            const TextStyle(fontSize: 14, letterSpacing: 0.5),
                       ),
                     ),
                   ],
@@ -1852,27 +1851,27 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           border: Border.all(color: Colors.grey.shade200),
                         ),
                         child:
-                        // _isLoadingFullDescription
-                        //     ? const Row(
-                        //         mainAxisSize: MainAxisSize.min,
-                        //         children: [
-                        //           SizedBox(
-                        //             width: 16,
-                        //             height: 16,
-                        //             child:
-                        //                 CircularProgressIndicator(strokeWidth: 2),
-                        //           ),
-                        //           SizedBox(width: 10),
-                        //           Text("Loading full description..."),
-                        //         ],
-                        //       )
-                        //     :
-                        HtmlExpandableText(
+                            // _isLoadingFullDescription
+                            //     ? const Row(
+                            //         mainAxisSize: MainAxisSize.min,
+                            //         children: [
+                            //           SizedBox(
+                            //             width: 16,
+                            //             height: 16,
+                            //             child:
+                            //                 CircularProgressIndicator(strokeWidth: 2),
+                            //           ),
+                            //           SizedBox(width: 10),
+                            //           Text("Loading full description..."),
+                            //         ],
+                            //       )
+                            //     :
+                            HtmlExpandableText(
                           htmlContent: _hasExpandedDescription
                               ? _fullDescription.replaceAll('\r\n', '<br>')
                               : (property.description ?? '')
-                              .replaceAll('\r\n', '<br>')
-                              .replaceAll('\n', '<br>'),
+                                  .replaceAll('\r\n', '<br>')
+                                  .replaceAll('\n', '<br>'),
                         ),
                       ),
                     ),
@@ -1925,7 +1924,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
             if (projectInfoRows.isNotEmpty) ...[
               Padding(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1967,14 +1966,14 @@ class _Featured_DetailState extends State<Featured_Detail> {
             if (_hasProjectInfo()) ...[
               Padding(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       "Project Information",
                       style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
                     Container(
@@ -2222,9 +2221,9 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               MyGoogleMapWidget(
-                                                latitude: latitude,
-                                                longitude: longitude,
-                                              ),
+                                            latitude: latitude,
+                                            longitude: longitude,
+                                          ),
                                         ),
                                       );
                                     },
@@ -2289,7 +2288,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           : 'https://via.placeholder.com/100',
                       fit: BoxFit.cover,
                       placeholder: (context, url) =>
-                      const CircularProgressIndicator(),
+                          const CircularProgressIndicator(),
                       errorWidget: (context, url, error) => const Icon(
                           Icons.person,
                           size: 60,
@@ -2324,7 +2323,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                       height: 35,
                       width: screenSize.width * 0.5,
                       margin:
-                      const EdgeInsets.only(left: 15, right: 10, top: 15),
+                          const EdgeInsets.only(left: 15, right: 10, top: 15),
                       padding: const EdgeInsets.only(top: 8),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadiusDirectional.circular(8.0),
@@ -2480,7 +2479,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           child: GestureDetector(
                             onTap: property.permitInfo?.url?.isNotEmpty == true
                                 ? () => launchUrl(
-                                Uri.parse(property.permitInfo!.url!))
+                                    Uri.parse(property.permitInfo!.url!))
                                 : null,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
@@ -2554,9 +2553,11 @@ class _Featured_DetailState extends State<Featured_Detail> {
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: featuredDetailModel?.data?.recommended?.length ?? 0,
+                  itemCount:
+                      featuredDetailModel?.data?.recommended?.length ?? 0,
                   itemBuilder: (context, index) {
-                    final recProperty = featuredDetailModel!.data!.recommended![index];
+                    final recProperty =
+                        featuredDetailModel!.data!.recommended![index];
 
                     final int resolvedBeds = recProperty.bedrooms ?? 0;
                     final int resolvedBaths = recProperty.bathrooms ?? 0;
@@ -2564,42 +2565,52 @@ class _Featured_DetailState extends State<Featured_Detail> {
                     // Size calculation
                     String displaySize = '';
                     String? rawSize = recProperty.propertySizeSqft;
-                    if (rawSize == null || rawSize.trim().isEmpty || rawSize == '0') {
+                    if (rawSize == null ||
+                        rawSize.trim().isEmpty ||
+                        rawSize == '0') {
                       rawSize = recProperty.squareFeet;
                     }
-                    if (rawSize != null && rawSize.trim().isNotEmpty && rawSize != '0') {
+                    if (rawSize != null &&
+                        rawSize.trim().isNotEmpty &&
+                        rawSize != '0') {
                       final clean = rawSize.replaceAll(RegExp(r'[^0-9.]'), '');
                       final sizeNum = num.tryParse(clean);
                       if (sizeNum != null && sizeNum > 0) {
                         final formatted = sizeNum
                             .toStringAsFixed(0)
-                            .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+                            .replaceAllMapped(
+                                RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                                (m) => '${m[1]},');
                         displaySize = '$formatted sqft';
                       }
                     }
 
-                    final String resolvedPrice = _formatPrice(recProperty.price);
-                    final String resolvedLocation = recProperty.location?.toString() ?? 'Dubai';
+                    final String resolvedPrice =
+                        _formatPrice(recProperty.price);
+                    final String resolvedLocation =
+                        recProperty.location?.toString() ?? 'Dubai';
 
-                    final String imageUrl = (recProperty.media?.isNotEmpty ?? false)
-                        ? recProperty.media!.first.originalUrl.toString()
-                        : '';
+                    final String imageUrl =
+                        (recProperty.media?.isNotEmpty ?? false)
+                            ? recProperty.media!.first.originalUrl.toString()
+                            : '';
 
                     return Container(
                       width: 300,
                       margin: const EdgeInsets.symmetric(horizontal: 8),
-
                       child: Card(
                         color: Colors.white,
                         elevation: 6,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                         child: InkWell(
                           borderRadius: BorderRadius.circular(16),
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => Featured_Detail(data: recProperty.id.toString()),
+                                builder: (context) => Featured_Detail(
+                                    data: recProperty.id.toString()),
                               ),
                             );
                           },
@@ -2608,28 +2619,35 @@ class _Featured_DetailState extends State<Featured_Detail> {
                             children: [
                               // Image
                               ClipRRect(
-                                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                                borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(16)),
                                 child: imageUrl.isNotEmpty
                                     ? CachedNetworkImage(
-                                  imageUrl: imageUrl,
-                                  height: 130,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                  placeholder: (_, __) => Container(
-                                    color: Colors.grey[300],
-                                    child: const Center(child: CircularProgressIndicator()),
-                                  ),
-                                  errorWidget: (_, __, ___) => Container(
-                                    height: 130,
-                                    color: Colors.grey[300],
-                                    child: const Icon(Icons.image_not_supported, size: 50),
-                                  ),
-                                )
+                                        imageUrl: imageUrl,
+                                        height: 130,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                        placeholder: (_, __) => Container(
+                                          color: Colors.grey[300],
+                                          child: const Center(
+                                              child:
+                                                  CircularProgressIndicator()),
+                                        ),
+                                        errorWidget: (_, __, ___) => Container(
+                                          height: 130,
+                                          color: Colors.grey[300],
+                                          child: const Icon(
+                                              Icons.image_not_supported,
+                                              size: 50),
+                                        ),
+                                      )
                                     : Container(
-                                  height: 130,
-                                  color: Colors.grey[300],
-                                  child: const Icon(Icons.image_not_supported, size: 50),
-                                ),
+                                        height: 130,
+                                        color: Colors.grey[300],
+                                        child: const Icon(
+                                            Icons.image_not_supported,
+                                            size: 50),
+                                      ),
                               ),
 
                               // Content
@@ -2658,15 +2676,21 @@ class _Featured_DetailState extends State<Featured_Detail> {
                                         child: Row(
                                           children: [
                                             if (resolvedBeds > 0) ...[
-                                              _buildFeatureItem(Icons.king_bed_outlined, '$resolvedBeds bed${resolvedBeds > 1 ? 's' : ''}'),
+                                              _buildFeatureItem(
+                                                  Icons.king_bed_outlined,
+                                                  '$resolvedBeds bed${resolvedBeds > 1 ? 's' : ''}'),
                                               const SizedBox(width: 16),
                                             ],
                                             if (resolvedBaths > 0) ...[
-                                              _buildFeatureItem(Icons.bathtub_outlined, '$resolvedBaths bath${resolvedBaths > 1 ? 's' : ''}'),
+                                              _buildFeatureItem(
+                                                  Icons.bathtub_outlined,
+                                                  '$resolvedBaths bath${resolvedBaths > 1 ? 's' : ''}'),
                                               const SizedBox(width: 16),
                                             ],
                                             if (displaySize.isNotEmpty)
-                                              _buildFeatureItem(Icons.square_foot, displaySize),
+                                              _buildFeatureItem(
+                                                  Icons.square_foot,
+                                                  displaySize),
                                           ],
                                         ),
                                       ),
@@ -2836,7 +2860,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
     final bool showButton = amenities.length > initialCount;
 
     final displayedAmenities =
-    _showAllAmenities ? amenities : amenities.take(initialCount).toList();
+        _showAllAmenities ? amenities : amenities.take(initialCount).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2887,7 +2911,7 @@ class _Featured_DetailState extends State<Featured_Detail> {
                           iconUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.broken_image, size: 18),
+                              const Icon(Icons.broken_image, size: 18),
                         ),
                       )
                     else
@@ -2935,7 +2959,6 @@ class _Featured_DetailState extends State<Featured_Detail> {
       ],
     );
   }
-
 
   Widget _buildInfoRow(String title, String value) {
     return Padding(

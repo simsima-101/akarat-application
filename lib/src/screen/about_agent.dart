@@ -1,42 +1,27 @@
 import 'dart:async';
 import 'dart:convert';
 
-
+import 'package:Akarat/src/features/property/data/models/property_model.dart';
 import 'package:Akarat/src/screen/shimmer.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../device_id.dart';
 import '../common/widgets/property_card.dart';
+import '../core/services/api_service.dart';
 import '../core/utils/secure_storage.dart';
-
-
 import '../features/agency/data/models/agent_detaill.dart';
 import '../features/agency/data/models/agent_properties_model.dart';
 import '../features/agent/presentation/bloc/agent_enquiry_bloc.dart';
 import '../features/agent/presentation/bloc/agent_enquiry_event.dart';
-import '../features/property/data/models/toggle_model.dart';
-import '../providers/email_enquiry_provider.dart';
-import '../providers/favorite_provider.dart';
-
-import '../core/services/api_service.dart';
 import '../features/property/data/datasources/favorite_remote_datasource.dart';
-import '../core/utils/session_manager.dart';
 import '../utils/shared_preference_manager.dart';
 import '../widgets/read_more_text.dart';
 import 'ContactFormScreen.dart';
-import 'featured_detail.dart';
-
-import 'package:Akarat/src/features/property/data/models/property_model.dart';
-
-
 
 class AboutAgent extends StatefulWidget {
   const AboutAgent({
@@ -116,46 +101,6 @@ class _AboutAgentState extends State<AboutAgent> {
     }
     if (input.length == 9) return '971$input';
     return input; // fallback
-  }
-
-  Future<bool> markAsContacted(int propertyId,
-      {required String contactType}) async {
-    if (propertyId <= 0) return false;
-
-    await SessionManager().restore();
-    final token = SessionManager().token ?? await SecureStorage.getToken();
-    if (token == null || token.isEmpty) {
-      debugPrint("No token – cannot mark as contacted");
-      return false;
-    }
-
-    try {
-      final response = await http.post(
-        ApiService.buildUri('property-contact'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          "property_id": propertyId,
-          "contact_type": contactType, // "call" or "whatsapp"
-        }),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint(
-            "Successfully marked property $propertyId as contacted via $contactType");
-        return true;
-      } else {
-        debugPrint(
-            "Failed to mark contacted: ${response.statusCode} ${response.body}");
-        return false;
-      }
-    } catch (e) {
-      debugPrint("Exception marking contacted: $e");
-      return false;
-    }
   }
 
   Future<void> clearAgentPropertiesCache(String user) async {
@@ -278,16 +223,16 @@ class _AboutAgentState extends State<AboutAgent> {
 
         // Dispatch event to Bloc
         context.read<AgentEnquiryBloc>().add(
-          SendAgentEnquiry(
-            agentId: agentId,
-            name: name,
-            email: email,
-            phone: cleanPhone,
-            message: message.isEmpty ? '-' : message,
-            deviceId: deviceId,
-            token: token.isNotEmpty ? token : null,
-          ),
-        );
+              SendAgentEnquiry(
+                agentId: agentId,
+                name: name,
+                email: email,
+                phone: cleanPhone,
+                message: message.isEmpty ? '-' : message,
+                deviceId: deviceId,
+                token: token.isNotEmpty ? token : null,
+              ),
+            );
 
         // Close dialog immediately for better UX
         if (mounted) {
@@ -404,8 +349,12 @@ class _AboutAgentState extends State<AboutAgent> {
     }
 
     try {
-      final uri = ApiService.buildUri('agent/$data');
-      final response = await http.get(uri);
+      // final uri = ApiService.buildUri('agent/$data');
+      // final response = await http.get(uri);
+
+      final response = await ApiService.get(
+        'agent/$data',
+      ).timeout(const Duration(seconds: 25));
 
       debugPrint("Agent API Status: ${response.statusCode}");
 
@@ -488,21 +437,40 @@ class _AboutAgentState extends State<AboutAgent> {
     }
 
     // 🔍 Fetch from API
-    final uri = ApiService.buildUri('filters?search=$query'
-        '&amenities='
-        '&property_type='
-        '&furnished_status='
-        '&bedrooms='
-        '&min_price='
-        '&max_price='
-        '&payment_period='
-        '&min_square_feet='
-        '&max_square_feet='
-        '&bathrooms='
-        '&purpose=');
+    // final uri = ApiService.buildUri('filters?search=$query'
+    //     '&amenities='
+    //     '&property_type='
+    //     '&furnished_status='
+    //     '&bedrooms='
+    //     '&min_price='
+    //     '&max_price='
+    //     '&payment_period='
+    //     '&min_square_feet='
+    //     '&max_square_feet='
+    //     '&bathrooms='
+    //     '&purpose=');
 
     try {
-      final response = await http.get(uri);
+      // final response = await http.get(uri);
+
+      final response = await ApiService.get(
+        'filters',
+        query: {
+          'search': query,
+          'amenities': '',
+          'property_type': '',
+          'furnished_status': '',
+          'bedrooms': '',
+          'min_price': '',
+          'max_price': '',
+          'payment_period': '',
+          'min_square_feet': '',
+          'max_square_feet': '',
+          'bathrooms': '',
+          'purpose': '',
+        },
+      ).timeout(const Duration(seconds: 25)); // 15s timeout – safe & reasonable
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final feature = AgentProperties.fromJson(data);
@@ -529,9 +497,16 @@ class _AboutAgentState extends State<AboutAgent> {
     isLoading = true;
 
     try {
-      final uri =
-          ApiService.buildUri('agent/properties/$user?page=$currentPage');
-      final response = await http.get(uri);
+      // final uri =
+      //     ApiService.buildUri('agent/properties/$user?page=$currentPage');
+      // final response = await http.get(uri);
+
+      final response = await ApiService.get(
+        'agent/properties/$user',
+        query: {
+          'page': currentPage.toString(),
+        },
+      ).timeout(const Duration(seconds: 25));
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
@@ -598,37 +573,6 @@ class _AboutAgentState extends State<AboutAgent> {
     }
 
     isLoading = false;
-  }
-
-  ToggleModel? toggleModel;
-
-  Future<bool> toggledApi(String token, int propertyId) async {
-    try {
-      final uri = ApiService.buildUri('toggle-saved-property');
-      final response = await http.post(
-        uri,
-        headers: <String, String>{
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, dynamic>{
-          "property_id": propertyId,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        Map<String, dynamic> jsonData = json.decode(response.body);
-        toggleModel = ToggleModel.fromJson(jsonData);
-        print("✅ Toggle favorite successful");
-        return true; // ✅ success
-      } else {
-        print("❌ Toggle failed with status ${response.statusCode}");
-        return false;
-      }
-    } catch (e) {
-      print('❌ Exception during toggle: $e');
-      return false;
-    }
   }
 
   Set<int> favoriteProperties = {}; // Stores favorite property IDs
@@ -1341,24 +1285,29 @@ class _AboutAgentState extends State<AboutAgent> {
                           child: agentProperties == null
                               ? const Center(child: CircularProgressIndicator())
                               : ListView.builder(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.symmetric(horizontal: 0, vertical:10),
-                            itemCount: agentProperties!.data!.length + (isLoading ? 1 : 0),
-                            itemBuilder: (context, index) {
-                              if (index == agentProperties!.data!.length) {
-                                return const Padding(
-                                  padding: EdgeInsets.all(20),
-                                  child: Center(child: CircularProgressIndicator()),
-                                );
-                              }
+                                  controller: _scrollController,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 0, vertical: 10),
+                                  itemCount: agentProperties!.data!.length +
+                                      (isLoading ? 1 : 0),
+                                  itemBuilder: (context, index) {
+                                    if (index ==
+                                        agentProperties!.data!.length) {
+                                      return const Padding(
+                                        padding: EdgeInsets.all(20),
+                                        child: Center(
+                                            child: CircularProgressIndicator()),
+                                      );
+                                    }
 
-                              final Data item = agentProperties!.data![index];
-                              final Property property = item.toProperty();
+                                    final Data item =
+                                        agentProperties!.data![index];
+                                    final Property property = item.toProperty();
 
-                              // ← CLEAN, REUSABLE, BEAUTIFUL CARD
-                              return PropertyCard(item: property);
-                            },
-                          ),
+                                    // ← CLEAN, REUSABLE, BEAUTIFUL CARD
+                                    return PropertyCard(item: property);
+                                  },
+                                ),
                         ),
                       ],
                     ),

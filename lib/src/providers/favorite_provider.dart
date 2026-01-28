@@ -4,17 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../core/utils/secure_storage.dart';
 import '../core/services/api_service.dart';
-
-// ← FIX: Use aliases to avoid conflict
-import '../features/agency/data/models/agency_properties_model.dart' as agency;
-import '../features/property/data/models/property_model.dart'; // This is the one we want (no alias needed)
+import '../core/utils/secure_storage.dart';
 import '../features/property/data/datasources/favorite_remote_datasource.dart';
+import '../features/property/data/models/property_model.dart'; // This is the one we want (no alias needed)
 
 class FavoriteProvider with ChangeNotifier {
   // -------- Effective Base URL (respects --dart-define=API_BASE_URL=...) --------
-  static String get apiBase => ApiService.baseUrl;
 
   // ---------------- State ----------------
   final Set<int> _favoriteIds = <int>{};
@@ -37,13 +33,21 @@ class FavoriteProvider with ChangeNotifier {
       return;
     }
 
-    final base = FavoriteProvider.apiBase;
+    // final base = FavoriteProvider.apiBase;
     try {
-      final response = await http.get(
-        Uri.parse('$base/saved-property-list'),
+      // final response = await http.get(
+      //   Uri.parse('$base/saved-property-list'),
+      //   headers: {
+      //     'Authorization': 'Bearer $token',
+      //     'Accept': 'application/json',
+      //     'X-Requested-With': 'XMLHttpRequest',
+      //   },
+      // );
+
+      final response = await ApiService.get(
+        'saved-property-list',
         headers: {
           'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
         },
       );
@@ -85,7 +89,6 @@ class FavoriteProvider with ChangeNotifier {
 
   // ---------------- Local cache (guest mode support) ----------------
   Future<void> loadFavorites() async {
-    debugPrint('🔧 API_BASE_URL = $apiBase');
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getStringList('favorite_properties') ?? <String>[];
     _favoriteIds
@@ -242,7 +245,7 @@ class FavoriteProvider with ChangeNotifier {
     final optimisticWillBeSaved = !_favoriteIds.contains(id);
     await _applyLocalSet(id, optimisticWillBeSaved); // instant UI
 
-    final url = Uri.parse('$apiBase/toggle-saved-property');
+    // final url = Uri.parse('$apiBase/toggle-saved-property');
 
     final jsonHeaders = {
       'Authorization': 'Bearer $token',
@@ -253,12 +256,22 @@ class FavoriteProvider with ChangeNotifier {
 
     http.Response res;
     try {
-      debugPrint('🌍 POST $url');
-      res = await http.post(
-        url,
-        headers: jsonHeaders,
-        body: jsonEncode({'property_id': id}),
+      // debugPrint('🌍 POST $url');
+      // res = await http.post(
+      //   url,
+      //   headers: jsonHeaders,
+      //   body: jsonEncode({'property_id': id}),
+      // );
+
+      res = await ApiService.post(
+        'toggle-saved-property',
+        body: {'property_id': id},
+        headers: {
+          'Authorization': 'Bearer $token',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
       );
+
       debugPrint('🔎 Status: ${res.statusCode}  Body: ${res.body}');
     } catch (e) {
       // Rollback on network error
@@ -309,16 +322,26 @@ class FavoriteProvider with ChangeNotifier {
     // Optional retry with form-encoded
     if (res.statusCode == 400 || res.statusCode == 415) {
       try {
-        final retry = await http.post(
-          url,
+        // final retry = await http.post(
+        //   url,
+        //   headers: {
+        //     'Authorization': 'Bearer $token',
+        //     'Accept': 'application/json',
+        //     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        //     'X-Requested-With': 'XMLHttpRequest',
+        //   },
+        //   body: {'property_id': id.toString()},
+        // );
+
+        final retry = await ApiService.post(
+          'toggle-saved-property',
+          body: {'property_id': id.toString()},
           headers: {
             'Authorization': 'Bearer $token',
-            'Accept': 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'X-Requested-With': 'XMLHttpRequest',
           },
-          body: {'property_id': id.toString()},
         );
+
         debugPrint('🔁 Retry -> ${retry.statusCode}  Body: ${retry.body}');
         if (retry.statusCode == 200) {
           bool? savedFlag;

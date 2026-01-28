@@ -1,6 +1,6 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../core/services/api_service.dart';
 
@@ -8,7 +8,8 @@ class ResetPasswordScreen extends StatefulWidget {
   final String email;
   final String token;
 
-  const ResetPasswordScreen({super.key, required this.email, required this.token});
+  const ResetPasswordScreen(
+      {super.key, required this.email, required this.token});
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -17,7 +18,8 @@ class ResetPasswordScreen extends StatefulWidget {
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
   bool _isSubmitting = false;
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
@@ -44,21 +46,30 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final response = await http.post(
-        ApiService.buildUri('reset-password'),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: jsonEncode({
+      // final response = await http.post(
+      //   ApiService.buildUri('reset-password'),
+      //   headers: {
+      //     'Content-Type': 'application/json; charset=UTF-8',
+      //     'Accept': 'application/json',
+      //     'X-Requested-With': 'XMLHttpRequest',
+      //   },
+      //   body: jsonEncode({
+      //     "email": widget.email,
+      //     "token": widget.token,
+      //     "password": passwordController.text.trim(),
+      //     "password_confirmation": confirmPasswordController.text.trim(),
+      //   }),
+      // );
+
+      final response = await ApiService.post(
+        '/reset-password',
+        body: {
           "email": widget.email,
           "token": widget.token,
           "password": passwordController.text.trim(),
           "password_confirmation": confirmPasswordController.text.trim(),
-        }),
-      );
-
+        },
+      ).timeout(const Duration(seconds: 25));
 
       setState(() => _isSubmitting = false);
 
@@ -95,7 +106,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    print('ResetPasswordScreen loaded with email: ${widget.email}, token: ${widget.token}');
+    print(
+        'ResetPasswordScreen loaded with email: ${widget.email}, token: ${widget.token}');
     return Scaffold(
       appBar: AppBar(title: const Text('Reset Password')),
       body: Padding(
@@ -115,14 +127,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     hintText: 'New Password',
                     suffixIcon: IconButton(
                       icon: Icon(
-                        obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
-                      onPressed: () => setState(() => obscurePassword = !obscurePassword),
+                      onPressed: () =>
+                          setState(() => obscurePassword = !obscurePassword),
                     ),
                   ),
                   obscureText: obscurePassword,
-                  validator: (value) =>
-                  value == null || value.length < 6 ? 'Password too short' : null,
+                  validator: (value) => value == null || value.length < 6
+                      ? 'Password too short'
+                      : null,
                 ),
               ),
 
@@ -139,14 +155,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     hintText: 'Confirm New Password',
                     suffixIcon: IconButton(
                       icon: Icon(
-                        obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                        obscureConfirmPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
-                      onPressed: () => setState(() => obscureConfirmPassword = !obscureConfirmPassword),
+                      onPressed: () => setState(() =>
+                          obscureConfirmPassword = !obscureConfirmPassword),
                     ),
                   ),
                   obscureText: obscureConfirmPassword,
-                  validator: (value) =>
-                  value != passwordController.text ? 'Passwords do not match' : null,
+                  validator: (value) => value != passwordController.text
+                      ? 'Passwords do not match'
+                      : null,
                 ),
               ),
               const SizedBox(height: 24),
@@ -156,10 +176,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   onPressed: _isSubmitting ? null : _submitResetPassword,
                   child: _isSubmitting
                       ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : const Text('Reset Password'),
                 ),
               ),

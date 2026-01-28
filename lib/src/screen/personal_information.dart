@@ -1,17 +1,14 @@
-
 import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import '../core/utils/secure_storage.dart';
-
 import '../core/services/api_service.dart';
 import '../core/utils/auth_prefs.dart' as prefs;
-import '../features/auth/data/datasources/auth_local_datasource.dart';
-
+import '../core/utils/secure_storage.dart';
 import '../core/utils/session_manager.dart';
+import '../features/auth/data/datasources/auth_local_datasource.dart';
 import 'login.dart';
 
 class PersonalInformationScreen extends StatefulWidget {
@@ -74,7 +71,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         return AlertDialog(
           backgroundColor: const Color(0xFF2C2C2C), // dark like your app
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Text(
             'Delete Account?',
             style: TextStyle(
@@ -132,8 +129,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       }
     }
 
-
-
     final method = await prefs.AuthPrefs.getLoginMethod();
     final isPasswordAuth = method != LoginMethod.google;
 
@@ -178,26 +173,42 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         return;
       }
 
-      final url = Uri.parse('${ApiService.baseUrl}/update');
-      final response = await http.post(
-        url,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
+      // final url = Uri.parse('${ApiService.baseUrl}/update');
+      // final response = await http.post(
+      //   url,
+      //   headers: {
+      //     'Authorization': 'Bearer $token',
+      //     'Accept': 'application/json',
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: jsonEncode({
+      //     'first_name': _firstNameCtrl.text.trim(),
+      //     'last_name': _lastNameCtrl.text.trim(),
+      //     'name': _joinName(),
+      //     'email': _emailCtrl.text.trim(),
+      //     if (_isPasswordAuth && _newPwdCtrl.text.trim().isNotEmpty) ...{
+      //       'password': _newPwdCtrl.text,
+      //       'password_confirmation': _confirmPwdCtrl.text,
+      //       'current_password': _currentPwdCtrl.text,
+      //     },
+      //   }),
+      // );
+
+      final response = await ApiService.post(
+        '/update',
+        body: {
           'first_name': _firstNameCtrl.text.trim(),
           'last_name': _lastNameCtrl.text.trim(),
           'name': _joinName(),
           'email': _emailCtrl.text.trim(),
           if (_isPasswordAuth && _newPwdCtrl.text.trim().isNotEmpty) ...{
-            'password': _newPwdCtrl.text,
-            'password_confirmation': _confirmPwdCtrl.text,
-            'current_password': _currentPwdCtrl.text,
+            'password': _newPwdCtrl.text.trim(),
+            'password_confirmation': _confirmPwdCtrl.text.trim(),
+            'current_password': _currentPwdCtrl.text.trim(),
           },
-        }),
-      );
+        },
+        headers: {'Authorization': 'Bearer $token'},
+      ).timeout(const Duration(seconds: 25));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -205,7 +216,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         final email = _emailCtrl.text.trim();
 
         await SecureStorage.setUserProfile(name: newName, email: email);
-
 
         SessionManager().updateProfile(
           userName: newName,
@@ -273,7 +283,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   void _goToLogin() {
     Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginDemo()),
-          (route) => false,
+      (route) => false,
     );
   }
 
@@ -297,12 +307,12 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   }
 
   Widget _settingsTile(
-      String title,
-      String iconPath,
-      VoidCallback onTap, {
-        TextStyle? titleStyle,
-        Widget? trailing,
-      }) {
+    String title,
+    String iconPath,
+    VoidCallback onTap, {
+    TextStyle? titleStyle,
+    Widget? trailing,
+  }) {
     return ListTile(
       onTap: onTap,
       leading: iconPath.isNotEmpty ? Image.asset(iconPath, width: 28) : null,
@@ -378,7 +388,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                     final value = v?.trim() ?? '';
                     if (value.isEmpty) return 'Email is required';
                     final emailOk =
-                    RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
+                        RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
                     return emailOk ? null : 'Enter a valid email';
                   },
                 ),
@@ -441,7 +451,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                     controller: _currentPwdCtrl,
                     obscureText: _obscureCurrent,
                     decoration: _inputDecoration(
-                        'Current password (required to change)')
+                            'Current password (required to change)')
                         .copyWith(
                       suffixIcon: IconButton(
                         icon: Icon(_obscureCurrent

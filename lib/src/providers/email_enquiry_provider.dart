@@ -1,8 +1,8 @@
 // lib/providers/email_enquiry_provider.dart
 
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 
 import '../core/services/api_service.dart';
 
@@ -11,7 +11,9 @@ class EmailEnquiryProvider extends ChangeNotifier {
   String? lastError;
   String? lastMessage;
 
-  // Existing method - for property enquiries
+  // ───────────────────────────────────────────────
+  //  1. Property enquiry (already partially migrated)
+  // ───────────────────────────────────────────────
   Future<bool> submitEmailEnquiry({
     required int propertyId,
     required String name,
@@ -26,8 +28,6 @@ class EmailEnquiryProvider extends ChangeNotifier {
     lastMessage = null;
     notifyListeners();
 
-    final uri = ApiService.buildUri('property-email-enquiry');
-
     final Map<String, dynamic> payload = {
       "name": name,
       "email": email,
@@ -37,10 +37,7 @@ class EmailEnquiryProvider extends ChangeNotifier {
       "message": message,
     };
 
-    final Map<String, String> headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    };
+    final Map<String, String> headers = {};
 
     if (deviceId != null && deviceId.isNotEmpty) {
       headers['X-Device-ID'] = deviceId;
@@ -50,35 +47,39 @@ class EmailEnquiryProvider extends ChangeNotifier {
     }
 
     debugPrint("Email enquiry (provider)");
-    debugPrint("URL = $uri");
+    debugPrint("Endpoint = property-email-enquiry");
     debugPrint("headers = $headers");
     debugPrint("payload = $payload");
 
     try {
-      final res = await http.post(
-        uri,
-        headers: headers,
-        body: jsonEncode(payload),
+      final response = await ApiService.post(
+        'property-email-enquiry',
+        body: payload,
+        headers: headers.isNotEmpty ? headers : null,
       );
 
-      debugPrint('Email enquiry response ${res.statusCode}: ${res.body}');
+      debugPrint(
+          'Email enquiry response ${response.statusCode}: ${response.body}');
 
       Map<String, dynamic> data = {};
       try {
-        if (res.body.isNotEmpty) {
-          data = jsonDecode(res.body) as Map<String, dynamic>;
+        if (response.body.isNotEmpty) {
+          data = jsonDecode(response.body) as Map<String, dynamic>;
         }
       } catch (e) {
         debugPrint('Failed to decode response JSON: $e');
       }
 
-      final bool ok = res.statusCode == 200 && (data['status'] == true || data['success'] == true);
+      final bool ok = response.statusCode == 200 &&
+          (data['status'] == true || data['success'] == true);
 
       if (ok) {
-        lastMessage = (data['message'] as String?) ?? 'Email enquiry sent successfully';
+        lastMessage =
+            (data['message'] as String?) ?? 'Email enquiry sent successfully';
         return true;
       } else {
-        lastError = (data['message'] as String?) ?? 'Failed to submit enquiry. Please try again later.';
+        lastError = (data['message'] as String?) ??
+            'Failed to submit enquiry. Please try again later.';
         return false;
       }
     } catch (e, st) {
@@ -91,7 +92,9 @@ class EmailEnquiryProvider extends ChangeNotifier {
     }
   }
 
-  // ADD THIS METHOD HERE - For sending email to AGENT
+  // ───────────────────────────────────────────────
+  //  2. Send email to AGENT
+  // ───────────────────────────────────────────────
   Future<bool> sendAgentEmail({
     required int agentId,
     required String name,
@@ -107,8 +110,6 @@ class EmailEnquiryProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final uri = Uri.parse('${ApiService.baseUrl}/send-agent-email');
-
       final payload = {
         "agent_id": agentId,
         "name": name,
@@ -118,10 +119,7 @@ class EmailEnquiryProvider extends ChangeNotifier {
         "contact_type": "email",
       };
 
-      final headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      };
+      final headers = <String, String>{};
 
       if (deviceId != null && deviceId.isNotEmpty) {
         headers['X-Device-ID'] = deviceId;
@@ -131,18 +129,19 @@ class EmailEnquiryProvider extends ChangeNotifier {
       }
 
       debugPrint("Sending agent email enquiry");
-      debugPrint("URL: $uri");
+      debugPrint("Endpoint: send-agent-email");
       debugPrint("Payload: $payload");
 
-      final response = await http.post(
-        uri,
-        headers: headers,
-        body: jsonEncode(payload),
+      final response = await ApiService.post(
+        'send-agent-email',
+        body: payload,
+        headers: headers.isNotEmpty ? headers : null,
       );
 
       final jsonResponse = jsonDecode(response.body);
 
-      debugPrint("Agent email response ${response.statusCode}: ${response.body}");
+      debugPrint(
+          "Agent email response ${response.statusCode}: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         lastMessage = jsonResponse['message'] ?? "Message sent successfully!";
@@ -163,8 +162,9 @@ class EmailEnquiryProvider extends ChangeNotifier {
     }
   }
 
-
-  // ADD THIS METHOD - For sending email to COMPANY / AGENCY
+  // ───────────────────────────────────────────────
+  //  3. Send email to COMPANY / AGENCY
+  // ───────────────────────────────────────────────
   Future<bool> sendCompanyEmail({
     required int companyId,
     required String name,
@@ -180,8 +180,6 @@ class EmailEnquiryProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final uri = Uri.parse('${ApiService.baseUrl}/send-company-email');
-
       final payload = {
         "company_id": companyId,
         "name": name,
@@ -191,10 +189,7 @@ class EmailEnquiryProvider extends ChangeNotifier {
         "contact_type": "email",
       };
 
-      final headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      };
+      final headers = <String, String>{};
 
       if (deviceId != null && deviceId.isNotEmpty) {
         headers['X-Device-ID'] = deviceId;
@@ -204,18 +199,19 @@ class EmailEnquiryProvider extends ChangeNotifier {
       }
 
       debugPrint("Sending company email enquiry");
-      debugPrint("URL: $uri");
+      debugPrint("Endpoint: send-company-email");
       debugPrint("Payload: $payload");
 
-      final response = await http.post(
-        uri,
-        headers: headers,
-        body: jsonEncode(payload),
+      final response = await ApiService.post(
+        'send-company-email',
+        body: payload,
+        headers: headers.isNotEmpty ? headers : null,
       );
 
       final jsonResponse = jsonDecode(response.body);
 
-      debugPrint("Company email response ${response.statusCode}: ${response.body}");
+      debugPrint(
+          "Company email response ${response.statusCode}: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         lastMessage = jsonResponse['message'] ?? "Message sent successfully!";

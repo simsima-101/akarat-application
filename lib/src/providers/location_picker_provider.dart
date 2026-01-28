@@ -2,14 +2,11 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../../device_id.dart';
-import '../core/utils/secure_storage.dart';
-
-import '../features/property/data/models/location_model.dart';
-
 import '../core/services/api_service.dart';
+import '../core/utils/secure_storage.dart';
+import '../features/property/data/models/location_model.dart';
 
 class LocationPickerProvider extends ChangeNotifier {
   Future<void> clearAll() async {
@@ -161,19 +158,27 @@ class LocationPickerProvider extends ChangeNotifier {
         return;
       }
 
-      final uri = Uri.parse('${ApiService.baseUrl}/last-search');
-      final response = await http.get(
-        uri,
-        headers: token != null
-            ? {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer $token',
-                'X-Device-ID': deviceId,
-              }
-            : {
-                'Accept': 'application/json',
-                'X-Device-ID': deviceId,
-              },
+      // final uri = Uri.parse('${ApiService.baseUrl}/last-search');
+      // final response = await http.get(
+      //   uri,
+      //   headers: token != null
+      //       ? {
+      //           'Accept': 'application/json',
+      //           'Authorization': 'Bearer $token',
+      //           'X-Device-ID': deviceId,
+      //         }
+      //       : {
+      //           'Accept': 'application/json',
+      //           'X-Device-ID': deviceId,
+      //         },
+      // );
+
+      final response = await ApiService.get(
+        'last-search',
+        headers: {
+          if (token != null) 'Authorization': 'Bearer $token',
+          'X-Device-ID': deviceId,
+        },
       );
 
       if (response.statusCode == 200) {
@@ -230,8 +235,9 @@ class LocationPickerProvider extends ChangeNotifier {
       // isLoadingEmirates = true;
       // notifyListeners();
 
-      final uri = Uri.parse('${ApiService.baseUrl}/emirates');
-      final response = await http.get(uri);
+      // final uri = Uri.parse('${ApiService.baseUrl}/emirates');
+      // final response = await http.get(uri);
+      final response = await ApiService.get('emirates');
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
@@ -279,10 +285,12 @@ class LocationPickerProvider extends ChangeNotifier {
 
       // isLoadingEmiratesSubLocation = true;
       // notifyListeners();
+      //
+      // final uri =
+      //     Uri.parse('${ApiService.baseUrl}/emirates-sub-location/$emirateId');
+      // final response = await http.get(uri);
 
-      final uri =
-          Uri.parse('${ApiService.baseUrl}/emirates-sub-location/$emirateId');
-      final response = await http.get(uri);
+      final response = await ApiService.get('emirates-sub-location/$emirateId');
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
@@ -361,8 +369,6 @@ class LocationPickerProvider extends ChangeNotifier {
   ////////////////////////// ⬇⬇⬇ SAVE LAST SEARCH FUNCTIONALITY ⬇⬇⬇ //////////////////////////
 
   Future<void> saveLastSearch(List<LocationModel> locations) async {
-    final uri = Uri.parse('${ApiService.baseUrl}/save-last-search');
-
     if (locations.isEmpty) return;
 
     final normalizedLocations =
@@ -396,17 +402,28 @@ class LocationPickerProvider extends ChangeNotifier {
     }
 
     try {
-      final headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Device-ID': deviceId,
-        if (token != null) 'Authorization': 'Bearer $token',
-      };
+      // final headers = {
+      //   'Accept': 'application/json',
+      //   'Content-Type': 'application/json',
+      //   'X-Device-ID': deviceId,
+      //   if (token != null) 'Authorization': 'Bearer $token',
+      // };
+      //
+      // final uri = Uri.parse('${ApiService.baseUrl}/save-last-search');
+      //
+      // final response = await http.post(
+      //   uri,
+      //   headers: headers,
+      //   body: jsonEncode({'locations': locationTexts}),
+      // );
 
-      final response = await http.post(
-        uri,
-        headers: headers,
-        body: jsonEncode({'locations': locationTexts}),
+      final response = await ApiService.post(
+        'save-last-search',
+        body: {'locations': locationTexts},
+        headers: {
+          'X-Device-ID': deviceId ?? '',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
       );
 
       if (response.statusCode == 200) {
@@ -751,10 +768,15 @@ class LocationPickerProvider extends ChangeNotifier {
   Future<void> fetchLocationSuggestions(String query) async {
     final q = query.toString().toLowerCase().trim();
 
-    final uri = Uri.parse('${ApiService.baseUrl}/locations?q=$q');
+    // final uri = Uri.parse('${ApiService.baseUrl}/locations?q=$q');
 
     try {
-      final response = await http.get(uri);
+      // final response = await http.get(uri);
+
+      final response = await ApiService.get(
+        'locations',
+        query: {'q': q},
+      );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);

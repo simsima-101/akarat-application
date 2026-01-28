@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
-
 import '../../../core/services/api_service.dart';
 import '../../property/data/models/amenities_model.dart';
 import '../../property/data/models/property_type_model.dart';
@@ -10,8 +8,12 @@ import '../data/model/filtermodel.dart';
 class FilterRepository {
   Future<List<Amenities>> fetchAmenities() async {
     try {
-      final uri = ApiService.buildUri('amenities');
-      final response = await http.get(uri).timeout(const Duration(seconds: 30));
+      //   final uri = ApiService.buildUri('amenities');
+      //   final response = await http.get(uri).timeout(const Duration(seconds: 30));
+
+      final response = await ApiService.get(
+        'amenities',
+      ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body) as List;
@@ -26,8 +28,12 @@ class FilterRepository {
 
   Future<PropertyTypeModel?> fetchPropertyTypes(String purpose) async {
     try {
-      final uri = ApiService.buildUri('property-types/$purpose');
-      final response = await http.get(uri).timeout(const Duration(seconds: 30));
+      // final uri = ApiService.buildUri('property-types/$purpose');
+      // final response = await http.get(uri).timeout(const Duration(seconds: 30));
+
+      final response = await ApiService.get(
+        'property-types/$purpose',
+      ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         return PropertyTypeModel.fromJson(json.decode(response.body));
@@ -45,9 +51,14 @@ class FilterRepository {
     bool loadMore = false,
   }) async {
     try {
-      final uri = Uri.https('akarat.com', '/api/filters', queryParams);
+      // final uri = Uri.https('akarat.com', '/api/filters', queryParams);
+      //
+      // final response = await http.get(uri);
 
-      final response = await http.get(uri);
+      final response = await ApiService.get(
+        'api/filters',
+        query: queryParams,
+      );
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);

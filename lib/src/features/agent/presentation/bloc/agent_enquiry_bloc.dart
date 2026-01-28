@@ -1,17 +1,13 @@
 // lib/features/agent/presentation/bloc/agent_enquiry_bloc.dart
 
 import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
-import 'package:http/http.dart' as http;
 
-
-import '../../../../core/constants/constants.dart' as ApiService;
+import '../../../../core/services/api_service.dart';
 import 'agent_enquiry_event.dart';
 import 'agent_enquiry_state.dart';
-
-
 
 class AgentEnquiryBloc extends Bloc<AgentEnquiryEvent, AgentEnquiryState> {
   AgentEnquiryBloc() : super(AgentEnquiryInitial()) {
@@ -19,14 +15,14 @@ class AgentEnquiryBloc extends Bloc<AgentEnquiryEvent, AgentEnquiryState> {
   }
 
   Future<void> _onSendAgentEnquiry(
-      SendAgentEnquiry event,
-      Emitter<AgentEnquiryState> emit,
-      ) async {
+    SendAgentEnquiry event,
+    Emitter<AgentEnquiryState> emit,
+  ) async {
     emit(AgentEnquiryLoading());
 
     try {
       // Exact same endpoint as in your Provider
-      final uri = Uri.parse('${ApiService.baseUrl}/send-agent-email');
+      // final uri = Uri.parse('${ApiService.baseUrl}/send-agent-email');
 
       final payload = {
         "agent_id": event.agentId,
@@ -41,30 +37,43 @@ class AgentEnquiryBloc extends Bloc<AgentEnquiryEvent, AgentEnquiryState> {
         payload["device_id"] = event.deviceId!;
       }
 
-      final headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      };
-
-      if (event.deviceId != null && event.deviceId!.isNotEmpty) {
-        headers['X-Device-ID'] = event.deviceId!;
-      }
-
-      if (event.token != null && event.token!.isNotEmpty) {
-        headers['Authorization'] = 'Bearer ${event.token}';
-      }
+      // final headers = {
+      //   'Accept': 'application/json',
+      //   'Content-Type': 'application/json',
+      // };
+      //
+      // if (event.deviceId != null && event.deviceId!.isNotEmpty) {
+      //   headers['X-Device-ID'] = event.deviceId!;
+      // }
+      //
+      // if (event.token != null && event.token!.isNotEmpty) {
+      //   headers['Authorization'] = 'Bearer ${event.token}';
+      // }
 
       debugPrint("Sending agent email via Bloc");
-      debugPrint("URL: $uri");
+      // debugPrint("URL: $uri");
       debugPrint("Payload: $payload");
 
-      final response = await http.post(
-        uri,
-        headers: headers,
-        body: jsonEncode(payload),
+      // final response = await http.post(
+      //   uri,
+      //   headers: headers,
+      //   body: jsonEncode(payload),
+      // );
+
+      final response = await ApiService.post(
+        'send-agent-email',
+        body: payload,
+        headers: {
+          if (event.deviceId != null && event.deviceId!.isNotEmpty)
+            'X-Device-ID': event.deviceId!,
+          // Authorization is added here only if token is passed explicitly
+          if (event.token != null && event.token!.isNotEmpty)
+            'Authorization': 'Bearer ${event.token}',
+        },
       );
 
-      debugPrint("Agent email response ${response.statusCode}: ${response.body}");
+      debugPrint(
+          "Agent email response ${response.statusCode}: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonResponse = jsonDecode(response.body);
@@ -77,7 +86,8 @@ class AgentEnquiryBloc extends Bloc<AgentEnquiryEvent, AgentEnquiryState> {
       }
     } catch (e, stackTrace) {
       debugPrint("Exception in AgentEnquiryBloc: $e\n$stackTrace");
-      emit(const AgentEnquiryFailure(error: "Network error. Please try again."));
+      emit(
+          const AgentEnquiryFailure(error: "Network error. Please try again."));
     }
   }
 }

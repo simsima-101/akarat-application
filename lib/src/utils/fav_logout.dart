@@ -3,21 +3,18 @@
 import 'package:Akarat/src/core/utils/secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
 
 import '../common/widgets/property_card.dart';
 import '../core/services/api_service.dart';
 import '../core/utils/session_manager.dart';
 import '../features/property/data/models/property_model.dart'; // Unified Property model
 import '../features/property/presentation/bloc/favorite_bloc.dart';
-import '../features/property/presentation/bloc/favorite_state.dart';
 import '../features/property/presentation/bloc/favorite_event.dart';
-import '../features/property/data/models/featuredmodel.dart' as featured;
+import '../features/property/presentation/bloc/favorite_state.dart';
 import '../screen/ContactFormScreen.dart';
 import '../screen/home.dart';
 import '../screen/login.dart';
 import '../screen/my_account.dart';
-
 
 class Fav_Logout extends StatefulWidget {
   const Fav_Logout({super.key});
@@ -67,7 +64,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.white,
         title: const Text("Clear All Favorites?"),
-        content: const Text("This will remove all saved properties from your favorites. This action cannot be undone."),
+        content: const Text(
+            "This will remove all saved properties from your favorites. This action cannot be undone."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -75,7 +73,9 @@ class _Fav_LogoutState extends State<Fav_Logout> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Clear All", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            child: const Text("Clear All",
+                style:
+                    TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -83,16 +83,22 @@ class _Fav_LogoutState extends State<Fav_Logout> {
 
     if (confirm != true) return;
 
-    final currentToken = SessionManager().token ?? await SecureStorage.getToken();
+    final currentToken =
+        SessionManager().token ?? await SecureStorage.getToken();
     if (currentToken == null || currentToken.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("You are not logged in")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("You are not logged in")));
       return;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
       content: Row(
         children: const [
-          SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+          SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: Colors.white)),
           SizedBox(width: 16),
           Text("Clearing all favorites..."),
         ],
@@ -100,12 +106,19 @@ class _Fav_LogoutState extends State<Fav_Logout> {
       duration: const Duration(seconds: 10),
     ));
     try {
-      final response = await http.delete(
-        ApiService.buildUri('saved-properties/delete-all'),   // ← This is the key change!
+      // final response = await http.delete(
+      //   ApiService.buildUri('saved-properties/delete-all'),   // ← This is the key change!
+      //   headers: {
+      //     'Authorization': 'Bearer $currentToken',
+      //     'Accept': 'application/json',
+      //     'Content-Type': 'application/json',
+      //   },
+      // );
+
+      final response = await ApiService.delete(
+        'saved-properties/delete-all',
         headers: {
           'Authorization': 'Bearer $currentToken',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
         },
       );
 
@@ -138,7 +151,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
       height: 50,
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20), topRight: Radius.circular(20)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -164,7 +178,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
             padding: const EdgeInsets.only(right: 20.0),
             child: IconButton(
               enableFeedback: false,
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const My_Account())),
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const My_Account())),
               icon: const Icon(Icons.dehaze, color: Colors.red, size: 35),
             ),
           ),
@@ -192,7 +207,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
               elevation: 0,
               backgroundColor: Colors.white,
               iconTheme: const IconThemeData(color: Colors.red),
-              title: const Text("Favorites", style: TextStyle(color: Colors.black)),
+              title: const Text("Favorites",
+                  style: TextStyle(color: Colors.black)),
             ),
             body: _loginPrompt(context),
           );
@@ -207,7 +223,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
 
         // Error
         if (state is FavoriteError) {
-          final bool isUnauthorized = state.message.contains('401') || state.message.contains('Unauthorized');
+          final bool isUnauthorized = state.message.contains('401') ||
+              state.message.contains('Unauthorized');
 
           if (isUnauthorized) {
             return Scaffold(
@@ -217,7 +234,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                 elevation: 0,
                 backgroundColor: Colors.white,
                 iconTheme: const IconThemeData(color: Colors.red),
-                title: const Text("Favorites", style: TextStyle(color: Colors.black)),
+                title: const Text("Favorites",
+                    style: TextStyle(color: Colors.black)),
               ),
               body: _loginPrompt(context),
             );
@@ -230,7 +248,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
               elevation: 0,
               backgroundColor: Colors.white,
               iconTheme: const IconThemeData(color: Colors.red),
-              title: const Text("Favorites", style: TextStyle(color: Colors.black)),
+              title: const Text("Favorites",
+                  style: TextStyle(color: Colors.black)),
             ),
             body: Center(
               child: Column(
@@ -238,9 +257,12 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                 children: [
                   const Icon(Icons.error_outline, size: 80, color: Colors.grey),
                   const SizedBox(height: 16),
-                  Text(state.message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                  Text(state.message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16, color: Colors.grey)),
                   const SizedBox(height: 20),
-                  ElevatedButton(onPressed: refreshFavorites, child: const Text("Retry")),
+                  ElevatedButton(
+                      onPressed: refreshFavorites, child: const Text("Retry")),
                 ],
               ),
             ),
@@ -262,62 +284,84 @@ class _Fav_LogoutState extends State<Fav_Logout> {
               elevation: 0,
               backgroundColor: Colors.white,
               iconTheme: const IconThemeData(color: Colors.red),
-              title: const Text("Favorites", style: TextStyle(color: Colors.black)),
+              title: const Text("Favorites",
+                  style: TextStyle(color: Colors.black)),
               actions: [
                 if (hasFavorites)
                   TextButton(
                     onPressed: _clearAllFavorites,
-                    child: const Text("Clear All", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                    child: const Text("Clear All",
+                        style: TextStyle(
+                            color: Colors.red, fontWeight: FontWeight.bold)),
                   ),
               ],
             ),
             body: hasFavorites
                 ? RefreshIndicator(
-              onRefresh: refreshFavorites,
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: favoriteProperties.length,
-                itemBuilder: (context, index) {
-                  final Property property = favoriteProperties[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 4.0),
-                    child: PropertyCard(item: property),
-                  );
-                },
-              ),
-            )
+                    onRefresh: refreshFavorites,
+                    child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: favoriteProperties.length,
+                      itemBuilder: (context, index) {
+                        final Property property = favoriteProperties[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 0.0, vertical: 4.0),
+                          child: PropertyCard(item: property),
+                        );
+                      },
+                    ),
+                  )
                 : RefreshIndicator(
-              onRefresh: refreshFavorites,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.6,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.favorite_border, size: 80, color: Colors.grey[400]),
-                        const SizedBox(height: 20),
-                        const Text("No favorite properties yet", style: TextStyle(fontSize: 18, color: Colors.grey, fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 10),
-                        const Text("Tap the heart icon on any property to save it here", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Colors.grey)),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const Home())),
-                          icon: const Icon(Icons.explore, color: Colors.white),
-                          label: const Text("Browse Properties", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    onRefresh: refreshFavorites,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.favorite_border,
+                                  size: 80, color: Colors.grey[400]),
+                              const SizedBox(height: 20),
+                              const Text("No favorite properties yet",
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w500)),
+                              const SizedBox(height: 10),
+                              const Text(
+                                  "Tap the heart icon on any property to save it here",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      fontSize: 14, color: Colors.grey)),
+                              const SizedBox(height: 24),
+                              ElevatedButton.icon(
+                                onPressed: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => const Home())),
+                                icon: const Icon(Icons.explore,
+                                    color: Colors.white),
+                                label: const Text("Browse Properties",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ),
           );
         }
 
@@ -336,17 +380,21 @@ class _Fav_LogoutState extends State<Fav_Logout> {
           children: [
             const Icon(Icons.lock_outline, size: 80, color: Colors.grey),
             const SizedBox(height: 20),
-            const Text("You need to log in to view your favorite properties.", textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
+            const Text("You need to log in to view your favorite properties.",
+                textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
             const SizedBox(height: 20),
             ElevatedButton.icon(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const Login())),
+              onPressed: () => Navigator.push(
+                  context, MaterialPageRoute(builder: (_) => const Login())),
               icon: const Icon(Icons.login),
               label: const Text("Login"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
             ),
           ],

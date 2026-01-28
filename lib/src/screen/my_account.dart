@@ -8,6 +8,7 @@ import 'package:Akarat/src/screen/saved_alert_screen.dart';
 import 'package:Akarat/src/screen/support.dart';
 import 'package:Akarat/src/screen/terms_condition.dart';
 import 'package:app_settings/app_settings.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
@@ -76,7 +77,7 @@ class _My_AccountState extends State<My_Account> {
       final token = SessionManager().token;
       if (token != null && token.isNotEmpty) {
         try {
-          await ApiService.logoutUser(token);
+          await logoutUser(token);
         } catch (_) {}
       }
     } finally {
@@ -92,6 +93,62 @@ class _My_AccountState extends State<My_Account> {
     }
   }
 
+  static Future<void> logoutUser(String token) async {
+    final resp = await _postAuth('/logout', token, const {});
+    if (resp.statusCode != 200) {
+      throw Exception('Logout failed: ${resp.statusCode}');
+    }
+  }
+
+  static Future<http.Response> _postAuth(
+    String endpoint,
+    String token,
+    Map<String, dynamic> body,
+  ) async {
+    if (token.isEmpty) {
+      throw Exception(
+          'No auth token present for ${ApiService.baseUrl}$endpoint');
+    }
+    // final url = ApiService.buildUri(endpoint);
+    // final resp = await http
+    //     .post(url, headers: _authHeaders(token), body: jsonEncode(body))
+    //     .timeout(Duration(seconds: 25));
+
+    final resp = await ApiService.post(
+      endpoint,
+      body: body,
+      headers: _authHeaders(token),
+    ).timeout(const Duration(seconds: 25));
+
+    if (kDebugMode) {
+      print('[POST*] -> ${resp.statusCode} ${resp.body}');
+    }
+
+    return resp;
+  }
+
+  static Map<String, String> _authHeaders(String token) {
+    final cleanToken = token.trim();
+    debugPrint('SENDING AUTH HEADER → Bearer $cleanToken');
+
+    if (cleanToken.isEmpty) {
+      throw Exception('Empty token in _authHeaders');
+    }
+
+    return {
+      ..._jsonHeaders,
+      'Authorization': 'Bearer $cleanToken',
+      'Origin': 'https://akarat.com', // ← Add this (helps Sanctum)
+      'Referer': 'https://akarat.com', // ← Add this (helps Sanctum)
+    };
+  }
+
+  static const Map<String, String> _jsonHeaders = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json; charset=UTF-8',
+    'X-Requested-With': 'XMLHttpRequest',
+  };
+
   // ===================== DELETE ACCOUNT =====================
   Future<void> deleteAccount() async {
     try {
@@ -103,21 +160,27 @@ class _My_AccountState extends State<My_Account> {
         return;
       }
 
-      final uri = Uri.parse('${ApiService.baseUrl}/delete');
-      var resp =
-          await http.delete(uri, headers: {'Authorization': 'Bearer $token'});
+      // Primary attempt: use proper DELETE method
+      var resp = await ApiService.delete(
+        '/delete',
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
 
+      // Fallback: if backend rejects DELETE (405 or 404),
+      // use POST with _method=DELETE (common in Laravel/Sanctum)
       if (resp.statusCode == 405 || resp.statusCode == 404) {
-        resp = await http.post(
-          uri,
+        resp = await ApiService.post(
+          '/delete',
+          body: {'_method': 'DELETE'},
           headers: {
             'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
           },
-          body: jsonEncode({'_method': 'DELETE'}),
         );
       }
 
+      // Success check
       if (resp.statusCode == 200 || resp.statusCode == 204) {
         await SessionManager().signOut();
 
@@ -133,7 +196,13 @@ class _My_AccountState extends State<My_Account> {
           );
         }
       } else {
-        throw Exception('Failed: ${resp.statusCode}');
+        // Improved error with response body if available
+        String errorMsg = 'Failed: ${resp.statusCode}';
+        try {
+          final errorBody = jsonDecode(resp.body);
+          errorMsg += ' - ${errorBody['message'] ?? 'Unknown error'}';
+        } catch (_) {}
+        throw Exception(errorMsg);
       }
     } catch (e) {
       if (mounted) {

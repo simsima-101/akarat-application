@@ -1,7 +1,10 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
+
 import '../../../../core/services/api_service.dart';
-import '../models/featuredmodel.dart' as featured;   // ← adjust if you use different model
+import '../models/featuredmodel.dart'
+    as featured; // ← adjust if you use different model
 
 abstract class PropertyRemoteDataSource {
   Future<featured.FeaturedResponseModel> getProperties({
@@ -20,15 +23,23 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
     required String sortBy,
     required int page,
   }) async {
-    final uri = ApiService.buildUri(
+    // final uri = ApiService.buildUri(
+    //   'properties',
+    //   query: {
+    //     'page': page.toString(),
+    //     'sort_by': sortBy,
+    //   },
+    // );
+    //
+    // final response = await client.get(uri);
+
+    final response = await ApiService.get(
       'properties',
       query: {
         'page': page.toString(),
         'sort_by': sortBy,
       },
     );
-
-    final response = await client.get(uri);
 
     if (response.statusCode == 200) {
       return featured.FeaturedResponseModel.fromJson(

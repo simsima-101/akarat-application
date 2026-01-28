@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
-
-import '../core/utils/secure_storage.dart';
 import '../core/services/api_service.dart';
+import '../core/utils/secure_storage.dart';
 import '../core/utils/session_manager.dart';
 import 'home.dart';
 import 'login.dart';
@@ -44,11 +46,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final otp3Controller = TextEditingController();
   final otp4Controller = TextEditingController();
 
-
-
   // ---- helpers ----
   ({String first, String last}) _splitName(String full) {
-    final parts = full.trim().split(RegExp(r'\s+')).where((s) => s.isNotEmpty).toList();
+    final parts =
+        full.trim().split(RegExp(r'\s+')).where((s) => s.isNotEmpty).toList();
     if (parts.isEmpty) return (first: '', last: '');
     if (parts.length == 1) return (first: parts.first, last: '');
     return (first: parts.first, last: parts.sublist(1).join(' '));
@@ -98,7 +99,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
     final raw = ModalRoute.of(context)?.settings.arguments;
     final Map<String, dynamic> args =
-    (raw is Map) ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+        (raw is Map) ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
 
     email = (args['email'] as String?)?.trim().toLowerCase() ?? '';
     mode = (args['mode'] as String?) == 'reset' ? 'reset' : 'register';
@@ -110,17 +111,19 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     phoneCode = (args['phoneCode'] as String?)?.trim() ?? '';
     _provisionalTokenFromArgs = (args['token'] as String?)?.trim() ?? '';
 
-    final resendAfter = (args['resendAfter'] is int) ? args['resendAfter'] as int : 60;
+    final resendAfter =
+        (args['resendAfter'] is int) ? args['resendAfter'] as int : 60;
     final passedDev = (args['devOtp'] as String?)?.trim() ?? '';
     if (passedDev.isNotEmpty) _devOtpHint = passedDev;
     if (_cooldown == 0 && resendAfter > 0) _startCooldown(resendAfter);
 
     if (kDebugMode) {
-      final expiresIn = (args['expiresIn'] is int) ? args['expiresIn'] as int : 300;
+      final expiresIn =
+          (args['expiresIn'] is int) ? args['expiresIn'] as int : 300;
       debugPrint(
         'OTP args: mode=$mode email=$email first=$firstName last=$lastName '
-            'phone=$phoneCode$phone expiresIn=$expiresIn '
-            'resendAfter=$resendAfter devOtp=$_devOtpHint tokenFromArgs=${_provisionalTokenFromArgs.isNotEmpty}',
+        'phone=$phoneCode$phone expiresIn=$expiresIn '
+        'resendAfter=$resendAfter devOtp=$_devOtpHint tokenFromArgs=${_provisionalTokenFromArgs.isNotEmpty}',
       );
     }
   }
@@ -130,11 +133,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     if (_isVerifying) return;
 
     // Collect OTP from the 4 separate input boxes
-    final String otp =
-        otp1Controller.text.trim() +
-            otp2Controller.text.trim() +
-            otp3Controller.text.trim() +
-            otp4Controller.text.trim();
+    final String otp = otp1Controller.text.trim() +
+        otp2Controller.text.trim() +
+        otp3Controller.text.trim() +
+        otp4Controller.text.trim();
 
     // Validate: Must be exactly 4 digits
     if (otp.length != 4 || !RegExp(r'^\d{4}$').hasMatch(otp)) {
@@ -145,7 +147,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     setState(() => _isVerifying = true);
 
     try {
-      final resp = await ApiService.verifyOtp(email: email, otp: otp)
+      final resp = await verifyOtp(email: email, otp: otp)
           .timeout(const Duration(seconds: 180));
 
       final int code = resp['__status'] as int? ?? 500;
@@ -153,20 +155,25 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       if (code == 200) {
         await HapticFeedback.lightImpact();
 
-        final Map<String, dynamic> body = (resp['__raw'] is Map<String, dynamic>)
-            ? (resp['__raw'] as Map<String, dynamic>)
-            : <String, dynamic>{};
+        final Map<String, dynamic> body =
+            (resp['__raw'] is Map<String, dynamic>)
+                ? (resp['__raw'] as Map<String, dynamic>)
+                : <String, dynamic>{};
 
         String? token = _extractTokenFromAny(body);
-        token ??= _provisionalTokenFromArgs.isNotEmpty ? _provisionalTokenFromArgs : null;
+        token ??= _provisionalTokenFromArgs.isNotEmpty
+            ? _provisionalTokenFromArgs
+            : null;
 
         // Extract name/email if backend provided
-        String fullName = ((body['user'] ?? body['name']) ?? '').toString().trim();
+        String fullName =
+            ((body['user'] ?? body['name']) ?? '').toString().trim();
         String emailFromApi = (body['email'] ?? '').toString().trim();
 
         if (fullName.isEmpty) {
           if (firstName.isNotEmpty || lastName.isNotEmpty) {
-            fullName = [firstName, lastName].where((s) => s.isNotEmpty).join(' ');
+            fullName =
+                [firstName, lastName].where((s) => s.isNotEmpty).join(' ');
           } else if (name.isNotEmpty) {
             fullName = name;
           } else if (email.isNotEmpty) {
@@ -197,7 +204,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           if (!mounted) return;
           Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const Home()),
-                (_) => false,
+            (_) => false,
           );
           return;
         }
@@ -206,7 +213,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         if (!mounted) return;
         Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => LoginDemo(initialEmail: email)),
-              (_) => false,
+          (_) => false,
         );
       } else {
         _err(resp['message']?.toString() ?? 'Invalid or expired OTP.');
@@ -229,12 +236,52 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     }
   }
 
+  static Future<Map<String, dynamic>> verifyOtp({
+    required String email,
+    required String otp,
+  }) async {
+    // final res = await http
+    //     .post(
+    //       ApiService.buildUri('/verify-otp'),
+    //       headers: _jsonHeaders,
+    //       body: jsonEncode({'email': email, 'otp': otp}),
+    //     )
+    //     .timeout(Duration(seconds: 25));
+    final res = await ApiService.post(
+      '/verify-otp',
+      body: {'email': email, 'otp': otp},
+    ).timeout(const Duration(seconds: 25));
+
+    Map<String, dynamic> raw;
+    try {
+      raw = jsonDecode(res.body) as Map<String, dynamic>;
+    } catch (_) {
+      raw = <String, dynamic>{};
+    }
+
+    if (kDebugMode) {
+      print('[POST-JSON] ${res.request?.url} -> ${res.statusCode} ${res.body}');
+    }
+
+    return {
+      '__status': res.statusCode,
+      'message': (raw['message'] ?? '').toString(),
+      '__raw': raw,
+    };
+  }
+
+  static const Map<String, String> _jsonHeaders = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json; charset=UTF-8',
+    'X-Requested-With': 'XMLHttpRequest',
+  };
+
   Future<void> _resendOtp() async {
     if (_isResending || _cooldown > 0 || email.isEmpty) return;
 
     setState(() => _isResending = true);
     try {
-      final ok = await ApiService.resendOtp(email: email);
+      final ok = await resendOtp(email: email);
       if (ok) {
         _startCooldown(60);
         if (mounted) {
@@ -252,6 +299,79 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     }
   }
 
+  static Future<bool> resendOtp({required String email}) async {
+    const candidates = <String>[
+      '/resend-otp',
+      '/register/resend-otp',
+      '/auth/resend-otp',
+    ];
+
+    for (final ep in candidates) {
+      final resp = await _postForm(ep, {'email': email.trim().toLowerCase()});
+      if (_looksHtml(resp)) continue;
+
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        final j = _decodeMap(resp.body);
+        final ok = (j['success'] == true) ||
+            (j['status']?.toString().toLowerCase() == 'ok') ||
+            (j['message']?.toString().toLowerCase().contains('sent') ?? false);
+        return ok;
+      }
+      if (resp.statusCode == 404 || resp.statusCode == 405) continue;
+      if (resp.statusCode == 422) {
+        final j = _decodeMap(resp.body);
+        throw Exception(j['message']?.toString() ?? 'Unable to resend OTP.');
+      }
+    }
+    throw Exception(
+      'Resend OTP endpoint not found. Ask backend for POST /resend-otp.',
+    );
+  }
+
+  static bool _looksHtml(http.Response r) {
+    final ct = (r.headers['content-type'] ?? '').toLowerCase();
+    if (ct.contains('text/html')) return true;
+    final body = r.body.trimLeft();
+    return body.startsWith('<!doctype') || body.startsWith('<html');
+  }
+
+  static Map<String, dynamic> _decodeMap(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      return decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
+    } catch (_) {
+      return <String, dynamic>{};
+    }
+  }
+
+  static Future<http.Response> _postForm(
+    String endpoint,
+    Map<String, String> fields,
+  ) async {
+    // final url = ApiService.buildUri(endpoint);
+    // final resp = await http
+    //     .post(url, headers: _formHeaders, body: fields)
+    //     .timeout(Duration(seconds: 25));
+
+    final resp = await ApiService.post(
+      endpoint,
+      body: fields,
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    ).timeout(const Duration(seconds: 25));
+
+    if (kDebugMode) {
+      print('[POST-FORM] $endpoint -> ${resp.statusCode} ${resp.body}');
+    }
+    return resp;
+  }
+
+  // --- Laravel-friendly form posts ---
+  static const Map<String, String> _formHeaders = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'X-Requested-With': 'XMLHttpRequest',
+  };
+
   void _err(String m) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
@@ -259,7 +379,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   @override
   void dispose() {
-
     otpController.dispose();
     otp1Controller.dispose();
     otp2Controller.dispose();
@@ -270,15 +389,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final resendLabel =
-    _cooldown > 0 ? 'Resend in $_cooldown s' : "Didn't receive the code? Resend";
+    final resendLabel = _cooldown > 0
+        ? 'Resend in $_cooldown s'
+        : "Didn't receive the code? Resend";
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text('Verify OTP'),
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.black),
-
+      appBar: AppBar(
+          title: const Text('Verify OTP'),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
@@ -293,7 +413,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
-                Text(email, style: const TextStyle(fontSize: 16, color: Colors.black54)),
+                Text(email,
+                    style:
+                        const TextStyle(fontSize: 16, color: Colors.black54)),
                 const SizedBox(height: 16),
 
                 if (kDebugMode && (_devOtpHint?.isNotEmpty ?? false))
@@ -342,18 +464,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           otp3Controller,
                           otp4Controller,
                         ][index],
-
                         onChanged: (value) {
                           // Handle paste (e.g. user pastes 4 digits at once)
                           if (value.length > 1) {
                             final chars = value.split('');
-                            for (int i = 0; i < chars.length && index + i < 4; i++) {
+                            for (int i = 0;
+                                i < chars.length && index + i < 4;
+                                i++) {
                               [
                                 otp1Controller,
                                 otp2Controller,
                                 otp3Controller,
                                 otp4Controller,
-                              ][index + i].text = chars[i];
+                              ][index + i]
+                                  .text = chars[i];
                             }
                             FocusScope.of(context).unfocus();
                             return;
@@ -369,7 +493,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             FocusScope.of(context).previousFocus();
                           }
                         },
-
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -384,23 +507,26 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 20),
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 20),
                           counterText: '',
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 2),
+                            borderSide: const BorderSide(
+                                color: Color(0xFFE0E0E0), width: 2),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.black, width: 2.5),
+                            borderSide: const BorderSide(
+                                color: Colors.black, width: 2.5),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.black, width: 2),
+                            borderSide:
+                                const BorderSide(color: Colors.black, width: 2),
                           ),
                         ),
                       ),
-
                     );
                   }),
                 ),
@@ -419,41 +545,45 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       elevation: 2, // Slight shadow for depth
                       shadowColor: Colors.black26,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18), // Adjust radius as needed
-                        side: const BorderSide(color: Color(0xFFE0E0E0), width: 1), // Light border
+                        borderRadius: BorderRadius.circular(
+                            18), // Adjust radius as needed
+                        side: const BorderSide(
+                            color: Color(0xFFE0E0E0), width: 1), // Light border
                       ),
                     ),
                     child: _isVerifying
                         ? const SizedBox(
-                      height: 22,
-                      width: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black54),
-                      ),
-                    )
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.black54),
+                            ),
+                          )
                         : const Text(
-                      'Verify OTP',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
+                            'Verify OTP',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 Center(
                   child: TextButton(
-                    onPressed: (_isResending || _cooldown > 0) ? null : _resendOtp,
+                    onPressed:
+                        (_isResending || _cooldown > 0) ? null : _resendOtp,
                     child: _isResending
                         ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                         : Text(resendLabel,
-                        style: const TextStyle(color: Colors.blueAccent)),
+                            style: const TextStyle(color: Colors.blueAccent)),
                   ),
                 ),
 
@@ -468,8 +598,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 const SizedBox(height: 16),
                 Center(
                   child: TextButton(
-                    onPressed: () => Navigator.of(context, rootNavigator: true).push(
-                        MaterialPageRoute(builder: (_) => LoginDemo(initialEmail: email))),
+                    onPressed: () => Navigator.of(context, rootNavigator: true)
+                        .push(MaterialPageRoute(
+                            builder: (_) => LoginDemo(initialEmail: email))),
                     child: const Text(
                       'Already verified? Login',
                       style: TextStyle(decoration: TextDecoration.underline),

@@ -3,16 +3,14 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:google_sign_in/google_sign_in.dart' as gsi;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart' as gsi;
+import 'package:http/http.dart' as http;
 
-import '../../../../core/utils/secure_storage.dart';
-import '../../../../core/constants/constants.dart' as ApiService;
 import '../../../../core/error/exceptions.dart';
-import '../../../../core/services/api_client.dart';
+import '../../../../core/services/api_service.dart';
+import '../../../../core/utils/secure_storage.dart';
 import '../../../../core/utils/session_manager.dart';
 import '../../../../screen/login.dart';
 import '../models/user_model.dart';
@@ -36,7 +34,7 @@ class LoginResponse {
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> loginWithGoogle();
-  Future<void> deleteAccount(BuildContext context);
+  // Future<void> deleteAccount(BuildContext context);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -64,12 +62,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException();
       }
 
-      final gsi.GoogleSignInAccount? googleAccount = await _authenticateWithGoogle();
+      final gsi.GoogleSignInAccount? googleAccount =
+          await _authenticateWithGoogle();
       if (googleAccount == null) {
         throw ServerException(); // User cancelled
       }
 
-      final gsi.GoogleSignInAuthentication googleAuth = await googleAccount.authentication;
+      final gsi.GoogleSignInAuthentication googleAuth =
+          await googleAccount.authentication;
       final String? googleIdToken = googleAuth.idToken;
 
       if (googleIdToken == null || googleIdToken.isEmpty) {
@@ -78,7 +78,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       // Firebase Auth
       final credential = GoogleAuthProvider.credential(idToken: googleIdToken);
-      final userCredential = await firebaseAuth.signInWithCredential(credential);
+      final userCredential =
+          await firebaseAuth.signInWithCredential(credential);
       final firebaseUser = userCredential.user;
 
       if (firebaseUser == null) {
@@ -95,8 +96,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (backendResult == null) {
         throw ServerException();
       }
-
-
 
 // Create UserModel from backendResult.user
       final userModel = UserModel(
@@ -132,65 +131,65 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   // Account deletion (unchanged - looks good)
-  @override
-  Future<void> deleteAccount(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-
-    try {
-      final token = await SecureStorage.getToken();
-      if (token == null || token.isEmpty) {
-        messenger.showSnackBar(const SnackBar(content: Text('You are not logged in')));
-        _navigateToLogin(context);
-        throw AuthenticationException();
-      }
-
-      final base = ApiService.baseUrl;
-      final endpoints = [
-        '$base/delete',
-        '$base/delete-account',
-        '$base/account/delete',
-        '$base/user/delete',
-      ];
-
-      final headers = {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      };
-
-      http.Response? response;
-
-      for (final endpoint in endpoints) {
-        final uri = Uri.parse(endpoint);
-
-        try {
-          response = await httpClient.delete(uri, headers: headers).timeout(const Duration(seconds: 20));
-
-          if (response.statusCode == 404 || response.statusCode == 405) {
-            response = await httpClient.post(uri, headers: headers, body: jsonEncode({'confirm': true}));
-          }
-
-          if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 202 || response.statusCode == 204 || response.statusCode == 205) {
-            await _performFullLogout(context);
-            messenger.showSnackBar(
-              const SnackBar(content: Text('Account deleted successfully'), backgroundColor: Colors.red),
-            );
-            return;
-          }
-        } catch (_) {
-          continue;
-        }
-      }
-
-      final msg = _extractErrorMessage(response);
-      messenger.showSnackBar(SnackBar(content: Text(msg)));
-      throw ServerException();
-    } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Network error: $e')));
-      rethrow;
-    }
-  }
+  // @override
+  // Future<void> deleteAccount(BuildContext context) async {
+  //   final messenger = ScaffoldMessenger.of(context);
+  //
+  //   try {
+  //     final token = await SecureStorage.getToken();
+  //     if (token == null || token.isEmpty) {
+  //       messenger.showSnackBar(const SnackBar(content: Text('You are not logged in')));
+  //       _navigateToLogin(context);
+  //       throw AuthenticationException();
+  //     }
+  //
+  //     final base = ApiService.baseUrl;
+  //     final endpoints = [
+  //       '$base/delete',
+  //       '$base/delete-account',
+  //       '$base/account/delete',
+  //       '$base/user/delete',
+  //     ];
+  //
+  //     final headers = {
+  //       'Authorization': 'Bearer $token',
+  //       'Accept': 'application/json',
+  //       'Content-Type': 'application/json',
+  //       'X-Requested-With': 'XMLHttpRequest',
+  //     };
+  //
+  //     http.Response? response;
+  //
+  //     for (final endpoint in endpoints) {
+  //       final uri = Uri.parse(endpoint);
+  //
+  //       try {
+  //         response = await httpClient.delete(uri, headers: headers).timeout(const Duration(seconds: 20));
+  //
+  //         if (response.statusCode == 404 || response.statusCode == 405) {
+  //           response = await httpClient.post(uri, headers: headers, body: jsonEncode({'confirm': true}));
+  //         }
+  //
+  //         if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 202 || response.statusCode == 204 || response.statusCode == 205) {
+  //           await _performFullLogout(context);
+  //           messenger.showSnackBar(
+  //             const SnackBar(content: Text('Account deleted successfully'), backgroundColor: Colors.red),
+  //           );
+  //           return;
+  //         }
+  //       } catch (_) {
+  //         continue;
+  //       }
+  //     }
+  //
+  //     final msg = _extractErrorMessage(response);
+  //     messenger.showSnackBar(SnackBar(content: Text(msg)));
+  //     throw ServerException();
+  //   } catch (e) {
+  //     messenger.showSnackBar(SnackBar(content: Text('Network error: $e')));
+  //     rethrow;
+  //   }
+  // }
 
   // Private Helpers (updated _loginWithBackend to return id)
 
@@ -200,7 +199,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     try {
       subscription = googleSignIn.authenticationEvents.listen((event) {
-        if (event is gsi.GoogleSignInAuthenticationEventSignIn && !completer.isCompleted) {
+        if (event is gsi.GoogleSignInAuthenticationEventSignIn &&
+            !completer.isCompleted) {
           completer.complete(event.user);
         }
       });
@@ -225,13 +225,25 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   Future<LoginResponse?> _loginWithBackend(String firebaseIdToken) async {
-    final uri = Uri.parse('${ApiService.baseUrl}/login-google');
+    // final uri = Uri.parse('${ApiService.baseUrl}/login-google');
 
     try {
-      final response = await httpClient.post(
-        uri,
-        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
-        body: jsonEncode({'google_id_token': firebaseIdToken}),
+      // final response = await httpClient
+      //     .post(
+      //       uri,
+      //       headers: {
+      //         'Accept': 'application/json',
+      //         'Content-Type': 'application/json'
+      //       },
+      //       body: jsonEncode({'google_id_token': firebaseIdToken}),
+      //     )
+      //     .timeout(const Duration(seconds: 25));
+
+      final response = await ApiService.post(
+        'login-google',
+        body: {
+          'google_id_token': firebaseIdToken,
+        },
       ).timeout(const Duration(seconds: 25));
 
       debugPrint('[/login-google] ${response.statusCode} ${response.body}');
@@ -241,7 +253,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         final data = json['data'] as Map<String, dynamic>? ?? {};
         final user = data['user'] as Map<String, dynamic>? ?? {};
 
-        final token = (data['token'] ?? data['access_token'] ?? '').toString().trim();
+        final token =
+            (data['token'] ?? data['access_token'] ?? '').toString().trim();
         if (token.isEmpty) return null;
 
         final id = (user['id'] ?? user['user_id'] ?? '').toString().trim();
@@ -256,7 +269,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           last = parts.length > 1 ? parts.sublist(1).join(' ') : '';
         }
 
-        final displayName = fullName.isNotEmpty ? fullName : '$first $last'.trim();
+        final displayName =
+            fullName.isNotEmpty ? fullName : '$first $last'.trim();
 
         return LoginResponse(
           user: UserModel(
@@ -290,7 +304,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     try {
       final json = jsonDecode(response.body);
-      return json['message'] ?? json['error'] ?? 'Delete failed (${response.statusCode})';
+      return json['message'] ??
+          json['error'] ??
+          'Delete failed (${response.statusCode})';
     } catch (_) {
       return 'Server error (${response.statusCode})';
     }
@@ -307,7 +323,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (!context.mounted) return;
       Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const LoginDemo()),
-            (_) => false,
+        (_) => false,
       );
     });
   }

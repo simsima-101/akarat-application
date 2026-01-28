@@ -1,24 +1,21 @@
 import 'dart:convert';
 
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-
-import '../../../../core/utils/secure_storage.dart';
-import '../../../../core/utils/language.dart';
-import '../../../agency/data/models/agency_model.dart';
-import '../../../agency/data/models/agents_model.dart';
-import '../../../auth/data/models/nationality.dart';
-import '../../../../utils/agencyCardScreen.dart';
-import '../../../../utils/agentcardscreen.dart';
-import '../../../../screen/ContactFormScreen.dart';
 
 import '../../../../core/services/api_service.dart';
-import '../../../../utils/fav_logout.dart';
-import '../../../../utils/shared_preference_manager.dart';
+import '../../../../core/utils/language.dart';
+import '../../../../core/utils/secure_storage.dart';
+import '../../../../screen/ContactFormScreen.dart';
 import '../../../../screen/home.dart';
 import '../../../../screen/login.dart';
 import '../../../../screen/my_account.dart';
+import '../../../../utils/agencyCardScreen.dart';
+import '../../../../utils/agentcardscreen.dart';
+import '../../../../utils/fav_logout.dart';
+import '../../../../utils/shared_preference_manager.dart';
+import '../../../agency/data/models/agency_model.dart';
+import '../../../agency/data/models/agents_model.dart';
+import '../../../auth/data/models/nationality.dart';
 
 // const String kApiBase = 'akarat.com';
 
@@ -196,44 +193,44 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   }
 
   // ADD THIS METHOD – fixes the "List<dynamic> is not a subtype of String?" crash
-  Future<AgentsModel?> fetchAgentDetails(int agentId) async {
-    try {
-      // Use ApiService instead of hardcoding the domain
-      final uri = ApiService.buildUri('agents/$agentId');
-
-      debugPrint('Fetching agent details: $uri');
-
-      final response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-
-        // Backend returns: { "data": [...] } or just [...] or { ... }
-        dynamic data = jsonData is Map ? jsonData['data'] : jsonData;
-
-        if (data is List && data.isNotEmpty) {
-          return AgentsModel.fromJson(data[0] as Map<String, dynamic>);
-        }
-        else if (data is Map<String, dynamic>) {
-          return AgentsModel.fromJson(data);
-        }
-        else {
-          debugPrint("Unexpected agent detail response format");
-          return null;
-        }
-      }
-      else {
-        debugPrint(
-            "Agent detail request failed → ${response.statusCode}\n"
-                "Body: ${response.body.substring(0, response.body.length.clamp(0, 300))}"
-        );
-        return null;
-      }
-    } catch (e) {
-      debugPrint("Exception while fetching agent: $e");
-      return null;
-    }
-  }
+  // Future<AgentsModel?> fetchAgentDetails(int agentId) async {
+  //   try {
+  //     // Use ApiService instead of hardcoding the domain
+  //     final uri = ApiService.buildUri('agents/$agentId');
+  //
+  //     debugPrint('Fetching agent details: $uri');
+  //
+  //     final response = await http.get(uri);
+  //
+  //     if (response.statusCode == 200) {
+  //       final jsonData = json.decode(response.body);
+  //
+  //       // Backend returns: { "data": [...] } or just [...] or { ... }
+  //       dynamic data = jsonData is Map ? jsonData['data'] : jsonData;
+  //
+  //       if (data is List && data.isNotEmpty) {
+  //         return AgentsModel.fromJson(data[0] as Map<String, dynamic>);
+  //       }
+  //       else if (data is Map<String, dynamic>) {
+  //         return AgentsModel.fromJson(data);
+  //       }
+  //       else {
+  //         debugPrint("Unexpected agent detail response format");
+  //         return null;
+  //       }
+  //     }
+  //     else {
+  //       debugPrint(
+  //           "Agent detail request failed → ${response.statusCode}\n"
+  //               "Body: ${response.body.substring(0, response.body.length.clamp(0, 300))}"
+  //       );
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Exception while fetching agent: $e");
+  //     return null;
+  //   }
+  // }
 
   Future<void> agentfetch({bool loadMore = false}) async {
     if (isAgentsLoading) return;
@@ -256,12 +253,21 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
         'nationality': selectedNationality!.trim(),
     };
 
-    final uri = ApiService.buildUri('agents', query: qp);
-    debugPrint(
-        '🌐 [Agents] GET $uri (loadMore=$loadMore, requestedPage=$requestedPage)');
+    // final uri = ApiService.buildUri('agents', query: qp);
+    // debugPrint(
+    //     '🌐 [Agents] GET $uri (loadMore=$loadMore, requestedPage=$requestedPage)');
 
     try {
-      final response = await http.get(uri);
+      // final response = await http.get(uri);
+
+      debugPrint(
+          '🌐 [Agents] GET agents (loadMore=$loadMore, requestedPage=$requestedPage, query=$qp)');
+
+      final response = await ApiService.get(
+        'agents',
+        query: qp,
+      );
+
       if (response.statusCode != 200) {
         debugPrint("❌ [Agents] ${response.statusCode} ${response.body}");
         return;
@@ -365,14 +371,20 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
         'service_needed': serviceValueToId[selectedAgencyService!]!,
     };
 
-    final uri = ApiService.buildUri('companies', query: qp);
-
-    debugPrint(
-        '🌐 [Companies] GET $uri (loadMore=$loadMore, requestedPage=$requestedPage)');
+    // final uri = ApiService.buildUri('companies', query: qp);
+    //
+    // debugPrint(
+    //     '🌐 [Companies] GET $uri (loadMore=$loadMore, requestedPage=$requestedPage)');
 
     try {
-      final response =
-          await http.get(uri, headers: {'Accept': 'application/json'});
+      // final response =
+      //     await http.get(uri, headers: {'Accept': 'application/json'});
+
+      final response = await ApiService.get(
+        'companies',
+        query: qp,
+      );
+
       debugPrint('📨 [Companies] Status: ${response.statusCode}');
       if (response.statusCode != 200) {
         debugPrint('❌ [Companies] Body: ${response.body}');
@@ -529,9 +541,11 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
   Future<Nationality> fetchNationalities() async {
     // If no cache or cache is expired, fetch from API
-    final response = await http.get(
-      ApiService.buildUri('agents/nationalities'),
-    );
+    // final response = await http.get(
+    //   ApiService.buildUri('agents/nationalities'),
+    // );
+
+    final response = await ApiService.get('agents/nationalities');
 
     if (response.statusCode == 200) {
       final responseBody = response.body;
@@ -545,10 +559,12 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   }
 
   Future<Language> fetchLanguageData() async {
-    // Otherwise, fetch from API
-    final response = await http.get(
-      ApiService.buildUri('agents/languages'),
-    );
+    // // Otherwise, fetch from API
+    // final response = await http.get(
+    //   ApiService.buildUri('agents/languages'),
+    // );
+
+    final response = await ApiService.get('agents/languages');
 
     if (response.statusCode == 200) {
       final responseBody = response.body;

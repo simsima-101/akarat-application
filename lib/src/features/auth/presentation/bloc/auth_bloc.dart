@@ -1,15 +1,11 @@
 // lib/src/features/auth/presentation/bloc/auth_bloc.dart
-import 'dart:convert';
-
+import 'package:Akarat/src/core/utils/session_manager.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
-import 'package:Akarat/src/core/utils/session_manager.dart';
-import 'package:http/http.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
 
-import '../../../../core/constants/constants.dart' as ApiService;
+import '../../../../core/services/api_service.dart';
 import '../../../../core/utils/secure_storage.dart';
 import '../../../property/presentation/bloc/favorite_event.dart';
 
@@ -29,7 +25,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<ShowLoginRequiredDialog>(_onShowLoginRequiredDialog);
     on<NavigateToLogin>(_onNavigateToLogin);
 
-
     on<AuthLoginSuccess>((event, emit) async {
       // Optional: re-save token (you already did it in OTP screen)
       await SecureStorage.setToken(event.token);
@@ -43,7 +38,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ));
 
       // Auto-load favorites after successful login
-      add(const LoadFavorites() as AuthEvent); // if you have this event in FavoriteBloc
+      add(const LoadFavorites()
+          as AuthEvent); // if you have this event in FavoriteBloc
     });
   }
 
@@ -68,7 +64,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onLoginRequested(LoginRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onLoginRequested(
+      LoginRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
 
     try {
@@ -98,22 +95,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (fcmToken != null) {
         try {
-          final response = await http.post(
-            Uri.parse('${ApiService.baseUrl}/api/v1/devices/register-token'),
-            headers: {
-              'Authorization': 'Bearer $authToken',
-              'Content-Type': 'application/json',
-            },
-            body: jsonEncode({
+          // final response = await http.post(
+          //   Uri.parse('${ApiService.baseUrl}/api/v1/devices/register-token'),
+          //   headers: {
+          //     'Authorization': 'Bearer $authToken',
+          //     'Content-Type': 'application/json',
+          //   },
+          //   body: jsonEncode({
+          //     'token': fcmToken,
+          //     'device_type': 'android',
+          //   }),
+          // );
+
+          final response = await ApiService.post(
+            'api/v1/devices/register-token',
+            body: {
               'token': fcmToken,
               'device_type': 'android',
-            }),
+            },
+            headers: {
+              'Authorization': 'Bearer $authToken',
+            },
           );
 
           if (response.statusCode == 200 || response.statusCode == 201) {
             debugPrint('FCM token sent to backend successfully');
           } else {
-            debugPrint('Failed to send token: ${response.statusCode} - ${response.body}');
+            debugPrint(
+                'Failed to send token: ${response.statusCode} - ${response.body}');
           }
         } catch (e) {
           debugPrint('Error sending FCM token: $e');
@@ -136,7 +145,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onRegisterRequested(RegisterRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onRegisterRequested(
+      RegisterRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
       // Handle registration start
@@ -146,7 +156,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onLogoutRequested(LogoutRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onLogoutRequested(
+      LogoutRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     SessionManager().clear();
     emit(AuthUnauthenticated());
@@ -225,8 +236,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ),
     );
   }
-
-
 
   // New: Navigate to login screen safely using global navigator key
   void _onNavigateToLogin(NavigateToLogin event, Emitter<AuthState> emit) {

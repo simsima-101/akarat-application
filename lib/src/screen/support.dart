@@ -1,14 +1,14 @@
 import 'dart:async';
 
-
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl_country_data/intl_country_data.dart';
 
-import '../core/utils/secure_storage.dart';
-
 import '../core/services/api_service.dart';
+import '../core/utils/secure_storage.dart';
 import '../features/property/data/datasources/favorite_remote_datasource.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
@@ -104,7 +104,7 @@ class _SupportState extends State<Support> {
     setState(() => _isLoading = true);
 
     try {
-      final ok = await ApiService.submitContactForm(
+      final ok = await submitContactForm(
         name: nameController.text,
         email: emailController.text,
         phone:
@@ -166,6 +166,58 @@ class _SupportState extends State<Support> {
 
     return null; // valid
   }
+
+  static Future<bool> submitContactForm({
+    required String name,
+    required String email,
+    required String phone,
+    required String subject,
+    required String message,
+  }) async {
+    final resp = await _postForm('/contact', {
+      'name': name.trim(),
+      'email': _normEmail(email),
+      'phone': phone.trim(),
+      'subject': subject.trim(),
+      'message': message.trim(),
+    });
+    if (kDebugMode) {
+      print(
+          '[POST-FORM] ${resp.request?.url} -> ${resp.statusCode} ${resp.body}');
+    }
+    return resp.statusCode == 200 || resp.statusCode == 201;
+  }
+
+  static Future<http.Response> _postForm(
+    String endpoint,
+    Map<String, String> fields,
+  ) async {
+    final url = ApiService.buildUri(endpoint);
+    // final resp = await http
+    //     .post(url, headers: _formHeaders, body: fields)
+    //     .timeout(_timeout);
+
+    final resp = await ApiService.post(
+      endpoint,
+      body: fields,
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    ).timeout(const Duration(seconds: 25));
+
+    if (kDebugMode) {
+      print('[POST-FORM] $url -> ${resp.statusCode} ${resp.body}');
+    }
+    return resp;
+  }
+
+  // --- Laravel-friendly form posts ---
+  static const Map<String, String> _formHeaders = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'X-Requested-With': 'XMLHttpRequest',
+  };
+
+  static String _normEmail(String email) => email.trim().toLowerCase();
+  static const _timeout = Duration(seconds: 25);
 
   @override
   Widget build(BuildContext context) {

@@ -1,10 +1,12 @@
 // lib/src/core/utils/session_manager.dart
 
-import 'package:flutter/foundation.dart';
+import 'dart:convert';
 
-import 'secure_storage.dart'; // Adjust path if needed
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 
 import '../services/api_service.dart'; // Core shared API service
+import 'secure_storage.dart'; // Adjust path if needed
 
 /// Singleton in-memory session manager
 /// Holds current user session data during app runtime
@@ -79,8 +81,10 @@ class SessionManager {
   }) async {
     _token = token.trim();
     _userName = userName.trim().isNotEmpty ? userName.trim() : 'User';
-    _userEmail = userEmail?.trim().isNotEmpty == true ? userEmail!.trim() : null;
-    _firstName = firstName?.trim().isNotEmpty == true ? firstName!.trim() : null;
+    _userEmail =
+        userEmail?.trim().isNotEmpty == true ? userEmail!.trim() : null;
+    _firstName =
+        firstName?.trim().isNotEmpty == true ? firstName!.trim() : null;
     _lastName = lastName?.trim().isNotEmpty == true ? lastName!.trim() : null;
 
     // Auto-split name if first/last missing
@@ -115,9 +119,10 @@ class SessionManager {
     if (token == null || token.isEmpty) return;
 
     try {
-      final me = await ApiService.tryFetchMe(token);
+      final me = await tryFetchMe(token);
       if (me == null) {
-        if (kDebugMode) debugPrint('refreshProfileFromServer: tryFetchMe returned null');
+        if (kDebugMode)
+          debugPrint('refreshProfileFromServer: tryFetchMe returned null');
         return;
       }
 
@@ -147,8 +152,10 @@ class SessionManager {
 
       if (kDebugMode) {
         debugPrint('PROFILE REFRESHED FROM SERVER');
-        debugPrint('   → Server sent → First: "$rawFirst" | Last: "$rawLast" | Email: "$rawEmail"');
-        debugPrint('   → Saved as   → Full Name: "$nameToSave" | Email: "$rawEmail"');
+        debugPrint(
+            '   → Server sent → First: "$rawFirst" | Last: "$rawLast" | Email: "$rawEmail"');
+        debugPrint(
+            '   → Saved as   → Full Name: "$nameToSave" | Email: "$rawEmail"');
       }
     } catch (e, stack) {
       if (kDebugMode) {
@@ -156,6 +163,190 @@ class SessionManager {
         debugPrint('Stack: $stack');
       }
     }
+  }
+
+  /// Try `/me` to fetch canonical identity if the login payload is thin.
+  static Future<({String first, String last, String name, String email})?>
+      tryFetchMe(String token) async {
+    try {
+      // Try multiple possible endpoints (in order)
+      final endpoints = ['/me', '/user', '/profile', '/account'];
+
+      for (final endpoint in endpoints) {
+        try {
+          final resp = await _getAuth(endpoint, token);
+          if (resp.statusCode != 200) continue;
+
+          if (!_looksJson(resp)) continue;
+
+          final data = _decodeMap(resp.body);
+
+          // Debug: Print raw response so you can see what's returned
+          if (kDebugMode) {
+            print('[/api$endpoint] RESPONSE: ${resp.body}');
+          }
+
+          final id = extractIdentityFromAny(data);
+
+          // If we got valid first + last name → use it
+          if (id.first.isNotEmpty || id.last.isNotEmpty) {
+            final fullName = '${id.first} ${id.last}'.trim();
+            return (
+              first: id.first,
+              last: id.last,
+              name: fullName.isNotEmpty ? fullName : id.name,
+              email: id.email
+            );
+          }
+
+          // Fallback: if only 'name' exists and it's not empty
+          if (id.name.isNotEmpty) {
+            return id;
+          }
+        } catch (e) {
+          if (kDebugMode) print('Failed on $endpoint: $e');
+          continue;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      if (kDebugMode) print('tryFetchMe all failed: $e');
+      return null;
+    }
+  }
+
+  static Future<http.Response> _getAuth(
+    String endpoint,
+    String token, [
+    Map<String, String>? qs,
+  ]) async {
+    if (token.isEmpty) {
+      throw Exception(
+          'No auth token present for ${ApiService.baseUrl}$endpoint');
+    }
+    final url = ApiService.buildUri(endpoint, query: qs);
+    // final resp = await http
+    //     .get(url, headers: _authHeaders(token))
+    //     .timeout(Duration(seconds: 25));
+
+    final resp = await ApiService.get(
+      endpoint,
+      query: qs,
+      headers: _authHeaders(token),
+    );
+
+    if (kDebugMode) {
+      if (_looksJson(resp)) {
+        print('[GET*]  $url -> ${resp.statusCode}');
+      } else {
+        final head = resp.body
+            .substring(0, resp.body.length > 120 ? 120 : resp.body.length);
+        print('[GET*]  $url -> ${resp.statusCode} (Non-JSON) head: $head');
+      }
+    }
+    if (resp.statusCode == 401) {
+      throw Exception('Unauthorized (401) on $url');
+    }
+    return resp;
+  }
+
+  static Map<String, String> _authHeaders(String token) {
+    final cleanToken = token.trim();
+    debugPrint('SENDING AUTH HEADER → Bearer $cleanToken');
+
+    if (cleanToken.isEmpty) {
+      throw Exception('Empty token in _authHeaders');
+    }
+
+    return {
+      ..._jsonHeaders,
+      'Authorization': 'Bearer $cleanToken',
+      'Origin': 'https://akarat.com', // ← Add this (helps Sanctum)
+      'Referer': 'https://akarat.com', // ← Add this (helps Sanctum)
+    };
+  }
+
+  static const Map<String, String> _jsonHeaders = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json; charset=UTF-8',
+    'X-Requested-With': 'XMLHttpRequest',
+  };
+
+  static bool _looksJson(http.Response r) {
+    final ct = (r.headers['content-type'] ?? '').toLowerCase();
+    return ct.contains('application/json');
+  }
+
+  static Map<String, dynamic> _decodeMap(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      return decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
+    } catch (_) {
+      return <String, dynamic>{};
+    }
+  }
+
+  static ({String first, String last, String name, String email})
+      extractIdentityFromAny(Map<String, dynamic> src) {
+    String pickStr(List<List<String>> paths) {
+      for (final p in paths) {
+        dynamic cur = src;
+        for (final k in p) {
+          if (cur is Map && cur.containsKey(k)) {
+            cur = cur[k];
+          } else {
+            cur = null;
+            break;
+          }
+        }
+        if (cur is String && cur.trim().isNotEmpty) {
+          return cur.trim();
+        }
+      }
+      return '';
+    }
+
+    final first = pickStr([
+      ['first_name'],
+      ['user', 'first_name'],
+      ['data', 'first_name'],
+      ['data', 'user', 'first_name'],
+    ]);
+
+    final last = pickStr([
+      ['last_name'],
+      ['user', 'last_name'],
+      ['data', 'last_name'],
+      ['data', 'user', 'last_name'],
+    ]);
+
+    String name = pickStr([
+      ['name'],
+      ['user', 'name'],
+      ['data', 'name'],
+      ['data', 'user', 'name'],
+    ]);
+
+    String email = pickStr([
+      ['email'],
+      ['user', 'email'],
+      ['data', 'email'],
+      ['data', 'user', 'email'],
+    ]);
+
+    // Synthesize missing pieces from name when possible
+    String f = first, l = last;
+    if ((f.isEmpty || l.isEmpty) && name.isNotEmpty) {
+      final parts = name.split(RegExp(r'\s+'));
+      f = f.isEmpty ? (parts.isNotEmpty ? parts.first : '') : f;
+      l = l.isEmpty ? (parts.length > 1 ? parts.sublist(1).join(' ') : '') : l;
+    }
+    if (name.isEmpty) {
+      name = [f, l].where((s) => s.isNotEmpty).join(' ').trim();
+    }
+
+    return (first: f, last: l, name: name, email: email);
   }
 
   /// Update profile locally (e.g., after user edits name)

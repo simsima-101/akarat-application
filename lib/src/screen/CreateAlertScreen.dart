@@ -1,15 +1,12 @@
 import 'dart:convert';
 
-
 // Akarat imports
 import 'package:Akarat/src/core/utils/secure_storage.dart';
-
 import 'package:Akarat/src/screen/saved_alert_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import '../core/constants/constants.dart' as ApiService;
+import '../core/services/api_service.dart';
 import '../features/property/data/models/property_type_model.dart';
 import 'login.dart';
 
@@ -163,15 +160,25 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
   // Ensure unique alert name (avoids “name already taken”)
   Future<String> _uniqueName(String base, String token) async {
     try {
-      final url = Uri.parse('${ApiService.baseUrl}/saved-searches');
-      final res = await http.get(url, headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-        'X-Requested-With': 'XMLHttpRequest',
-      });
-      if (res.statusCode < 200 || res.statusCode >= 300) return base;
+      // final url = Uri.parse('${ApiService.baseUrl}/saved-searches');
+      // final res = await http.get(url, headers: {
+      //   'Accept': 'application/json',
+      //   'Authorization': 'Bearer $token',
+      //   'X-Requested-With': 'XMLHttpRequest',
+      // });
 
-      final body = res.body.isNotEmpty ? jsonDecode(res.body) : null;
+      // Note: if backend no longer requires Bearer token here → remove it
+      final response = await ApiService.get(
+        '/saved-searches',
+        headers: {
+          'Authorization': 'Bearer $token',
+          // 'X-Requested-With': 'XMLHttpRequest', // ← remove unless really needed
+        },
+      );
+
+      if (response.statusCode < 200 || response.statusCode >= 300) return base;
+
+      final body = response.body.isNotEmpty ? jsonDecode(response.body) : null;
       List<dynamic> list;
       if (body is List) {
         list = body;
@@ -210,7 +217,6 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
   }
 
   // ---------- Save ----------
-
   Future<void> _save(bool isFromSavedAlerts) async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -221,14 +227,13 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
 
     // Keep a clean label for UI/name
     final purposeForUi = _purpose.trim();
-    final typeSlug = _mapTypeForApi(
-        _propertyType); // apartment|villa|studio|office|commercial or ''
+    final typeSlug = _mapTypeForApi(_propertyType);
 
-    // 🔑 Composite key so the server treats each combo as unique
+    // Composite key so the server treats each combo as unique
     final purposeServerKey =
         '${_canonPurpose(purposeForUi)}|${typeSlug.isEmpty ? 'any' : typeSlug}';
 
-    // 1) Meaningful default name (unique by combo)
+    // 1) Meaningful default name
     String alertName = _nameCtrl.text.trim();
     if (alertName.isEmpty) {
       final labelType = _propertyType.isEmpty ? 'Any' : _propertyType;
@@ -241,9 +246,8 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
     // 2) Build payload
     final payload = <String, dynamic>{
       'alert_name': alertName,
-      'time_period':
-          _mapTimePeriodForApi(_timePeriod), // hourly|daily|weekly|monthly
-      'purpose': purposeServerKey, // <-- composite key
+      'time_period': _mapTimePeriodForApi(_timePeriod),
+      'purpose': purposeServerKey,
       if (typeSlug.isNotEmpty) 'property_type': typeSlug,
     };
 
@@ -252,50 +256,60 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
         '🛰️ Save Alert: purposeUi="$purposeForUi", purposeKey="$purposeServerKey", typeSlug="$typeSlug"');
 
     try {
-      final url = Uri.parse('${ApiService.baseUrl}/alerts');
-      final headers = <String, String>{
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'Authorization': 'Bearer $token',
-      };
+      // ────────────────────────────────────────────────
+      //   Use ApiService.post – signature headers are added automatically
+      // ────────────────────────────────────────────────
+      var response = await ApiService.post(
+        '/alerts',
+        body: payload,
+        headers: {
+          'Authorization': 'Bearer $token',
+          // 'X-Requested-With': 'XMLHttpRequest',   // ← usually not needed with new service
+        },
+      );
 
-      var res =
-          await http.post(url, headers: headers, body: jsonEncode(payload));
-      debugPrint('POST /alerts -> ${res.statusCode} ${res.body}');
+      debugPrint('POST /alerts → ${response.statusCode} ${response.body}');
 
-      // If server still says duplicate/name conflict, auto-rename & retry once
-      if (res.statusCode == 409 || res.statusCode == 422) {
+      // Handle name / conflict → retry once with different name
+      if (response.statusCode == 409 || response.statusCode == 422) {
         final newName = await _uniqueName('$alertName • 2', token);
         final retryPayload = Map<String, dynamic>.from(payload)
           ..['alert_name'] = newName;
-        res = await http.post(url,
-            headers: headers, body: jsonEncode(retryPayload));
-        debugPrint('POST /alerts (retry) -> ${res.statusCode} ${res.body}');
+
+        response = await ApiService.post(
+          '/alerts',
+          body: retryPayload,
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        debugPrint(
+            'POST /alerts (retry) → ${response.statusCode} ${response.body}');
       }
 
       if (!mounted) return;
 
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        // ✅ On success, go to SavedAlertsScreen (as you wanted)
-
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        // Success → navigate
         if (isFromSavedAlerts) {
           Navigator.pop(context);
-
-          Navigator.of(context).pushReplacement(
+          Navigator.pushReplacement(
+            context,
             MaterialPageRoute(builder: (_) => SavedAlertsScreen(token: token)),
           );
         } else {
           Navigator.pop(context);
         }
-
         return;
       }
 
-      // Show specific server error if present
+      // ── Show server error message if possible ───────────────────────
       String msg = 'Failed to save alert';
+
       try {
-        final body = res.body.isNotEmpty ? jsonDecode(res.body) : null;
+        final body =
+            response.body.isNotEmpty ? jsonDecode(response.body) : null;
         if (body is Map) {
           if (body['errors'] is Map && (body['errors'] as Map).isNotEmpty) {
             final errs = (body['errors'] as Map)
@@ -306,17 +320,28 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
                 .join('\n');
             msg = errs;
           } else if (body['message'] != null) {
-            msg = body['message']..toString();
+            msg = body['message'].toString();
           }
         }
-      } catch (_) {}
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      } catch (_) {
+        // fallback to generic message
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Network error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Network error: $e')),
+        );
+      }
     } finally {
-      if (mounted) setState(() => _submitting = false);
+      if (mounted) {
+        setState(() => _submitting = false);
+      }
     }
   }
 
@@ -326,7 +351,9 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
     try {
       final uri = Uri.parse('${ApiService.baseUrl}/property-types');
 
-      final response = await http.get(uri);
+      // final response = await http.get(uri);
+
+      final response = await ApiService.get('/property-types');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -338,8 +365,10 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
       } else {
         debugPrint("❌ Property API failed: ${response.statusCode}");
       }
-    } catch (e) {
-      debugPrint("🚨 Property API error: $e");
+    } catch (e, stack) {
+      debugPrint('🚨 Property API Exception');
+      debugPrint('➡️ Error: $e');
+      debugPrint('➡️ StackTrace: $stack');
     }
   }
 

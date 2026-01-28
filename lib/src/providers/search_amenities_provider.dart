@@ -1,10 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import '../features/property/data/models/amenities_model.dart';
 import '../core/services/api_service.dart';
+import '../features/property/data/models/amenities_model.dart';
 
 class SearchAmenitiesProvider extends ChangeNotifier {
   bool isLoading = false;
@@ -27,8 +26,15 @@ class SearchAmenitiesProvider extends ChangeNotifier {
       final encodedQuery = Uri.encodeQueryComponent(query);
 
       // Build URI via ApiService (works with your configured base URL)
-      final uri = ApiService.buildUri('amenities/search?q=$encodedQuery');
-      final response = await http.get(uri);
+      // final uri = ApiService.buildUri('amenities/search?q=$encodedQuery');
+      // final response = await http.get(uri);
+
+      final response = await ApiService.get(
+        'amenities/search',
+        query: {
+          'q': encodedQuery,
+        },
+      );
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);

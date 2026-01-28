@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/services/api_service.dart';
@@ -25,7 +25,8 @@ class FavoriteService {
   }
 
   // Toggle favorite locally
-  static Future<void> toggleFavorite(int propertyId, Set<int> currentFavorites) async {
+  static Future<void> toggleFavorite(
+      int propertyId, Set<int> currentFavorites) async {
     if (currentFavorites.contains(propertyId)) {
       currentFavorites.remove(propertyId);
     } else {
@@ -36,17 +37,27 @@ class FavoriteService {
 
   // 🔁 API: Toggle favorite on server
   static Future<bool> toggleFavoriteApi(String token, int propertyId) async {
-    final url = ApiService.buildUri('toggle-saved-property');
+    // final url = ApiService.buildUri('toggle-saved-property');
+    //
+    //
+    // final response = await http.post(
+    //   url,
+    //   headers: {
+    //     'Authorization': 'Bearer $token',
+    //     'Accept': 'application/json',
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: jsonEncode({"property_id": propertyId}),
+    // );
 
-
-    final response = await http.post(
-      url,
+    final response = await ApiService.post(
+      'toggle-saved-property',
+      body: {
+        'property_id': propertyId,
+      },
       headers: {
         'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
       },
-      body: jsonEncode({"property_id": propertyId}),
     );
 
     if (response.statusCode == 200) {
@@ -59,15 +70,21 @@ class FavoriteService {
 
   // 🔁 API: Fetch current favorites from backend
   static Future<Set<int>> fetchApiFavorites(String token) async {
-    final response = await http.get(
-      ApiService.buildUri('saved-property-list'),
+    // final response = await http.get(
+    //   ApiService.buildUri('saved-property-list'),
+    //   headers: {
+    //     'Authorization': 'Bearer $token',
+    //     'Accept': 'application/json',
+    //     'Content-Type': 'application/json; charset=UTF-8',
+    //   },
+    // );
+
+    final response = await ApiService.get(
+      'saved-property-list',
       headers: {
         'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-        'Content-Type': 'application/json; charset=UTF-8',
       },
     );
-
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);

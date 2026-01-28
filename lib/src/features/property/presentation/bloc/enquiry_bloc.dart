@@ -1,10 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import '../../../../core/services/api_service.dart';
 import '../../../../utils/shared_preference_manager.dart';
-
 
 // ====================== EVENTS ======================
 abstract class EnquiryEvent {}
@@ -59,20 +56,33 @@ class EnquiryBloc extends Bloc<EnquiryEvent, EnquiryState> {
     emit(EnquiryLoading());
 
     try {
-      final url = ApiService.buildUri('email-enquiry');
+      // final url = ApiService.buildUri('email-enquiry');
+      //
+      // final response = await http.post(
+      //   url,
+      //   headers: {'Content-Type': 'application/json'},
+      //   body: jsonEncode({
+      //     'property_id': event.propertyId,
+      //     'name': event.name,
+      //     'email': event.email,
+      //     'phone': event.phone,
+      //     'message': event.message.isEmpty ? '-' : event.message,
+      //     'device_id': event.deviceId ?? 'unknown', // ← Safe fallback
+      //     'token': event.token,
+      //   }),
+      // );
 
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
+      final response = await ApiService.post(
+        'email-enquiry',
+        body: {
           'property_id': event.propertyId,
           'name': event.name,
           'email': event.email,
           'phone': event.phone,
           'message': event.message.isEmpty ? '-' : event.message,
-          'device_id': event.deviceId ?? 'unknown', // ← Safe fallback
+          'device_id': event.deviceId ?? 'unknown',
           'token': event.token,
-        }),
+        },
       );
 
       // ... rest unchanged

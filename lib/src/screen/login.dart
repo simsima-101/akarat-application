@@ -1,18 +1,17 @@
 // lib/screen/login.dart
 import 'dart:async';
-
+import 'dart:convert';
 
 import 'package:Akarat/src/screen/register_screen.dart';
 // Firebase + Google Sign-In (v7)
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
+import 'package:http/http.dart' as http;
 
-import '../core/utils/secure_storage.dart';
 import '../core/services/api_service.dart';
-
-import '../features/auth/data/datasources/auth_local_datasource.dart';
-
+import '../core/utils/secure_storage.dart';
 import '../core/utils/session_manager.dart';
 import 'forgot_password.dart';
 import 'home.dart';
@@ -47,7 +46,6 @@ class _LoginDemoState extends State<LoginDemo> {
   @override
   void initState() {
     super.initState();
-    ApiService.debugPrintBaseUrl();
 
     // REMOVED: _ensureFreshGuestState() — This was destroying login persistence!
     // We now ONLY show Login screen when user is truly logged out (handled by SplashScreen)
@@ -80,14 +78,12 @@ class _LoginDemoState extends State<LoginDemo> {
     required String token,
     required Map<String, dynamic> loginBody,
   }) async {
-    var id = ApiService.extractIdentity(loginBody);
+    var id = extractIdentity(loginBody);
 
     if (id.first.isEmpty && id.last.isEmpty) {
-      final fetched = await ApiService.tryFetchMe(token);
+      final fetched = await tryFetchMe(token);
       if (fetched != null) id = fetched;
     }
-
-
 
     if (id.first.isEmpty && id.last.isEmpty) {
       final local =
@@ -114,6 +110,181 @@ class _LoginDemoState extends State<LoginDemo> {
     );
   }
 
+  // --- compatibility wrapper so existing call sites can use extractIdentity(...) ---
+  static ({String first, String last, String name, String email})
+      extractIdentity(Map<String, dynamic> src) {
+    return extractIdentityFromAny(src);
+  }
+
+  /// Try `/me` to fetch canonical identity if the login payload is thin.
+  static Future<({String first, String last, String name, String email})?>
+      tryFetchMe(String token) async {
+    try {
+      // Try multiple possible endpoints (in order)
+      final endpoints = ['/me', '/user', '/profile', '/account'];
+
+      for (final endpoint in endpoints) {
+        try {
+          final resp = await _getAuth(endpoint, token);
+          if (resp.statusCode != 200) continue;
+
+          if (!_looksJson(resp)) continue;
+
+          final data = _decodeMap(resp.body);
+
+          // Debug: Print raw response so you can see what's returned
+          if (kDebugMode) {
+            print('[/api$endpoint] RESPONSE: ${resp.body}');
+          }
+
+          final id = extractIdentityFromAny(data);
+
+          // If we got valid first + last name → use it
+          if (id.first.isNotEmpty || id.last.isNotEmpty) {
+            final fullName = '${id.first} ${id.last}'.trim();
+            return (
+              first: id.first,
+              last: id.last,
+              name: fullName.isNotEmpty ? fullName : id.name,
+              email: id.email
+            );
+          }
+
+          // Fallback: if only 'name' exists and it's not empty
+          if (id.name.isNotEmpty) {
+            return id;
+          }
+        } catch (e) {
+          if (kDebugMode) print('Failed on $endpoint: $e');
+          continue;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      if (kDebugMode) print('tryFetchMe all failed: $e');
+      return null;
+    }
+  }
+
+  static ({String first, String last, String name, String email})
+      extractIdentityFromAny(Map<String, dynamic> src) {
+    String pickStr(List<List<String>> paths) {
+      for (final p in paths) {
+        dynamic cur = src;
+        for (final k in p) {
+          if (cur is Map && cur.containsKey(k)) {
+            cur = cur[k];
+          } else {
+            cur = null;
+            break;
+          }
+        }
+        if (cur is String && cur.trim().isNotEmpty) {
+          return cur.trim();
+        }
+      }
+      return '';
+    }
+
+    final first = pickStr([
+      ['first_name'],
+      ['user', 'first_name'],
+      ['data', 'first_name'],
+      ['data', 'user', 'first_name'],
+    ]);
+
+    final last = pickStr([
+      ['last_name'],
+      ['user', 'last_name'],
+      ['data', 'last_name'],
+      ['data', 'user', 'last_name'],
+    ]);
+
+    String name = pickStr([
+      ['name'],
+      ['user', 'name'],
+      ['data', 'name'],
+      ['data', 'user', 'name'],
+    ]);
+
+    String email = pickStr([
+      ['email'],
+      ['user', 'email'],
+      ['data', 'email'],
+      ['data', 'user', 'email'],
+    ]);
+
+    // Synthesize missing pieces from name when possible
+    String f = first, l = last;
+    if ((f.isEmpty || l.isEmpty) && name.isNotEmpty) {
+      final parts = name.split(RegExp(r'\s+'));
+      f = f.isEmpty ? (parts.isNotEmpty ? parts.first : '') : f;
+      l = l.isEmpty ? (parts.length > 1 ? parts.sublist(1).join(' ') : '') : l;
+    }
+    if (name.isEmpty) {
+      name = [f, l].where((s) => s.isNotEmpty).join(' ').trim();
+    }
+
+    return (first: f, last: l, name: name, email: email);
+  }
+
+  static bool _looksJson(http.Response r) {
+    final ct = (r.headers['content-type'] ?? '').toLowerCase();
+    return ct.contains('application/json');
+  }
+
+  static Future<http.Response> _getAuth(
+    String endpoint,
+    String token, [
+    Map<String, String>? qs,
+  ]) async {
+    if (token.isEmpty) {
+      throw Exception(
+          'No auth token present for ${ApiService.baseUrl}$endpoint');
+    }
+    final url = ApiService.buildUri(endpoint, query: qs);
+    // final resp = await http
+    //     .get(url, headers: _authHeaders(token))
+    //     .timeout(Duration(seconds: 25));
+
+    final resp = await ApiService.get(
+      endpoint,
+      query: qs,
+      headers: _authHeaders(token),
+    ).timeout(const Duration(seconds: 25));
+
+    if (kDebugMode) {
+      if (_looksJson(resp)) {
+        print('[GET*]  $url -> ${resp.statusCode}');
+      } else {
+        final head = resp.body
+            .substring(0, resp.body.length > 120 ? 120 : resp.body.length);
+        print('[GET*]  $url -> ${resp.statusCode} (Non-JSON) head: $head');
+      }
+    }
+    if (resp.statusCode == 401) {
+      throw Exception('Unauthorized (401) on $url');
+    }
+    return resp;
+  }
+
+  static Map<String, String> _authHeaders(String token) {
+    final cleanToken = token.trim();
+    debugPrint('SENDING AUTH HEADER → Bearer $cleanToken');
+
+    if (cleanToken.isEmpty) {
+      throw Exception('Empty token in _authHeaders');
+    }
+
+    return {
+      ..._jsonHeaders,
+      'Authorization': 'Bearer $cleanToken',
+      'Origin': 'https://akarat.com', // ← Add this (helps Sanctum)
+      'Referer': 'https://akarat.com', // ← Add this (helps Sanctum)
+    };
+  }
+
   // ----------------- Email/password login -----------------
   Future<void> _login() async {
     if (isLoading) return;
@@ -128,11 +299,11 @@ class _LoginDemoState extends State<LoginDemo> {
       final email = emailController.text.trim().toLowerCase();
       final password = passwordController.text.trim();
 
-      final resp = await ApiService.login(email: email, password: password);
+      final resp = await login(email: email, password: password);
       final status = resp['__status'] as int? ?? 500;
 
       if (status == 200) {
-        final token = ApiService.extractToken(resp);
+        final token = extractToken(resp);
         if (token == null || token.isEmpty) {
           setState(() => errorMessage = 'Login succeeded but token missing.');
           return;
@@ -176,6 +347,41 @@ class _LoginDemoState extends State<LoginDemo> {
     }
   }
 
+  static Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
+    final res = await ApiService.post(
+      '/login',
+      body: {
+        'email': email.trim().toLowerCase(),
+        'password': password,
+      },
+    ).timeout(const Duration(seconds: 25));
+
+    // Optional: throw early on non-200
+    if (res.statusCode != 200) {
+      try {
+        final error = jsonDecode(res.body);
+        throw Exception(error['message'] ?? 'Login failed (${res.statusCode})');
+      } catch (_) {
+        throw Exception('Login failed (${res.statusCode})');
+      }
+    }
+
+    return _decorateStatus(res);
+  }
+
+  static Map<String, dynamic> _decorateStatus(http.Response r) {
+    Map<String, dynamic> m = {};
+    try {
+      final v = jsonDecode(r.body);
+      if (v is Map<String, dynamic>) m = v;
+    } catch (_) {}
+    m['__status'] = r.statusCode;
+    return m;
+  }
+
   // ----------------- Google Sign-In -----------------
   Future<void> _signInWithGoogle() async {
     if (isLoading) return;
@@ -216,14 +422,13 @@ class _LoginDemoState extends State<LoginDemo> {
       if (firebaseIdToken == null)
         throw Exception('Failed to get Firebase token.');
 
-      final data = await ApiService.loginWithGoogleIdToken(firebaseIdToken);
-      final token = ApiService.extractToken(data);
+      final data = await loginWithGoogleIdToken(firebaseIdToken);
+      final token = extractToken(data);
       if (token == null || token.isEmpty) {
         throw Exception('Account inactive or deleted.');
       }
 
       await _hydrateAfterAuth(token: token, loginBody: data);
-
 
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
@@ -238,6 +443,82 @@ class _LoginDemoState extends State<LoginDemo> {
     } finally {
       await sub?.cancel();
       if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  static String? extractToken(Map<String, dynamic> m) {
+    final t1 = (m['token'] ?? '').toString().trim();
+    if (t1.isNotEmpty) return t1;
+    final t2 = (m['access_token'] ?? '').toString().trim();
+    if (t2.isNotEmpty) return t2;
+    final d = m['data'];
+    if (d is Map<String, dynamic>) {
+      final t3 = (d['token'] ?? '').toString().trim();
+      if (t3.isNotEmpty) return t3;
+      final t4 = (d['access_token'] ?? '').toString().trim();
+      if (t4.isNotEmpty) return t4;
+    }
+    return null;
+  }
+
+  static Future<Map<String, dynamic>> loginWithGoogleIdToken(
+      String firebaseIdToken) async {
+    final resp =
+        await _post('/login-google', {"google_id_token": firebaseIdToken});
+
+    if (_looksHtml(resp)) {
+      throw Exception(
+        'Non-JSON from /login-google (HTML). Check API_BASE_URL (QA vs PROD) and route.',
+      );
+    }
+
+    final data = _decodeMap(resp.body);
+    if (resp.statusCode >= 200 && resp.statusCode < 300) {
+      return data;
+    }
+    throw Exception(
+      data['message'] ?? 'Google login failed (${resp.statusCode})',
+    );
+  }
+
+  static Future<http.Response> _post(
+    String endpoint,
+    Map<String, dynamic> body,
+  ) async {
+    final url = ApiService.buildUri(endpoint);
+    // final resp = await http
+    //     .post(url, headers: _jsonHeaders, body: jsonEncode(body))
+    //     .timeout(Duration(seconds: 25));
+    final resp = await ApiService.post(
+      endpoint,
+      body: body, // ← pass Dart map directly — ApiService does jsonEncode
+    ).timeout(const Duration(seconds: 25));
+
+    if (kDebugMode) {
+      print('[POST]  $url -> ${resp.statusCode} ${resp.body}');
+    }
+    return resp;
+  }
+
+  static const Map<String, String> _jsonHeaders = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json; charset=UTF-8',
+    'X-Requested-With': 'XMLHttpRequest',
+  };
+
+  static bool _looksHtml(http.Response r) {
+    final ct = (r.headers['content-type'] ?? '').toLowerCase();
+    if (ct.contains('text/html')) return true;
+    final body = r.body.trimLeft();
+    return body.startsWith('<!doctype') || body.startsWith('<html');
+  }
+
+  static Map<String, dynamic> _decodeMap(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      return decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
+    } catch (_) {
+      return <String, dynamic>{};
     }
   }
 

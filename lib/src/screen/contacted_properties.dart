@@ -1,20 +1,13 @@
 // lib/screen/contacted_properties.dart
 import 'dart:convert';
 
-
-
-import '../features/property/data/models/project_model.dart' as contacted;
-
-
 import 'package:Akarat/src/core/utils/session_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 
 import '../core/services/api_service.dart';
 import '../core/utils/secure_storage.dart';
-
-
+import '../features/property/data/models/project_model.dart' as contacted;
 import 'featured_detail.dart';
 
 class ContactedProperties extends StatefulWidget {
@@ -55,14 +48,21 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
         return;
       }
 
-      final uri = ApiService.buildUri('contacted-properties');
-      final response = await http.get(
-        uri,
+      // final uri = ApiService.buildUri('contacted-properties');
+      // final response = await http.get(
+      //   uri,
+      //   headers: {
+      //     'Accept': 'application/json',
+      //     'Authorization': 'Bearer $token',
+      //   },
+      // );
+
+      final response = await ApiService.get(
+        'contacted-properties',
         headers: {
-          'Accept': 'application/json',
           'Authorization': 'Bearer $token',
         },
-      );
+      ).timeout(const Duration(seconds: 25));
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
@@ -78,7 +78,8 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
 
         setState(() {
           contactedProperties = list
-              .map((e) => contacted.ProjectData.fromJson(e as Map<String, dynamic>))
+              .map((e) =>
+                  contacted.ProjectData.fromJson(e as Map<String, dynamic>))
               .toList();
           isLoading = false;
         });
@@ -106,15 +107,22 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
       await SessionManager().restore();
       String? token = SessionManager().token ?? await SecureStorage.getToken();
       if (token == null) return false;
+      //
+      // final uri = ApiService.buildUri('contacted-property/$propertyId');
+      // final response = await http.delete(
+      //   uri,
+      //   headers: {
+      //     'Accept': 'application/json',
+      //     'Authorization': 'Bearer $token',
+      //   },
+      // );
 
-      final uri = ApiService.buildUri('contacted-property/$propertyId');
-      final response = await http.delete(
-        uri,
+      final response = await ApiService.delete(
+        'contacted-property/$propertyId',
         headers: {
-          'Accept': 'application/json',
           'Authorization': 'Bearer $token',
         },
-      );
+      ).timeout(const Duration(seconds: 25));
 
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
@@ -128,15 +136,22 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
       String? token = SessionManager().token ?? await SecureStorage.getToken();
       if (token == null) return false;
 
-      final uri =
-          ApiService.buildUri('contacted-properties'); // Correct for clear all
-      final response = await http.delete(
-        uri,
+      // final uri =
+      //     ApiService.buildUri('contacted-properties'); // Correct for clear all
+      // final response = await http.delete(
+      //   uri,
+      //   headers: {
+      //     'Accept': 'application/json',
+      //     'Authorization': 'Bearer $token',
+      //   },
+      // );
+
+      final response = await ApiService.delete(
+        'contacted-properties',
         headers: {
-          'Accept': 'application/json',
           'Authorization': 'Bearer $token',
         },
-      );
+      ).timeout(const Duration(seconds: 25));
 
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
@@ -147,7 +162,6 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
   void _removeProperty(int index) async {
     final property = contactedProperties[index];
     final originalList = List<contacted.ProjectData>.from(contactedProperties);
-
 
     // Optimistically remove
     setState(() {

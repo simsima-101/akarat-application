@@ -1,14 +1,14 @@
 // lib/providers/profile_image_provider.dart
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../core/utils/secure_storage.dart';
-
 import '../core/services/api_service.dart';
+import '../core/utils/secure_storage.dart';
 
 class ProfileImageProvider extends ChangeNotifier {
   File? _image;
@@ -30,7 +30,9 @@ class ProfileImageProvider extends ChangeNotifier {
       final email = await SecureStorage.getUserEmail();
 
       _currentEmail = email?.trim().isNotEmpty == true ? email : null;
-      _currentUser = username?.trim().isNotEmpty == true ? username!.trim().toLowerCase() : null;
+      _currentUser = username?.trim().isNotEmpty == true
+          ? username!.trim().toLowerCase()
+          : null;
 
       if (_currentUser != null) {
         await loadImageForUser(_currentUser!);
@@ -49,17 +51,29 @@ class ProfileImageProvider extends ChangeNotifier {
   Future<void> fetchRemoteProfileImage(String email) async {
     try {
       final token = await SecureStorage.getToken();
-      final baseHost = ApiService.baseUrl.replaceFirst(RegExp(r'^https?://'), '');
+      // final baseHost = ApiService.baseUrl.replaceFirst(RegExp(r'^https?://'), '');
+      //
+      // final uri = Uri.https(baseHost, '/agents', {
+      //   'email': email,
+      //   'per_page': '1',
+      // });
+      //
+      // final response = await http.get(uri, headers: {
+      //   'Accept': 'application/json',
+      //   if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+      // }).timeout(const Duration(seconds: 15));
 
-      final uri = Uri.https(baseHost, '/agents', {
-        'email': email,
-        'per_page': '1',
-      });
-
-      final response = await http.get(uri, headers: {
-        'Accept': 'application/json',
-        if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-      }).timeout(const Duration(seconds: 15));
+      final response = await ApiService.get(
+        'agents',
+        query: {
+          'email': email,
+          'per_page': '1',
+        },
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': 'Bearer $token',
+        },
+      );
 
       List<dynamic> agents = [];
 
@@ -72,14 +86,27 @@ class ProfileImageProvider extends ChangeNotifier {
 
       // Fallback: search by email
       if (agents.isEmpty) {
-        final searchUri = Uri.https(baseHost, '/agents', {
-          'search': email,
-          'per_page': '1',
-        });
-        final resp = await http.get(searchUri, headers: {
-          'Accept': 'application/json',
-          if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-        }).timeout(const Duration(seconds: 15));
+        // final searchUri = Uri.https(baseHost, '/agents', {
+        //   'search': email,
+        //   'per_page': '1',
+        // });
+        // final resp = await http.get(searchUri, headers: {
+        //   'Accept': 'application/json',
+        //   if (token != null && token.isNotEmpty)
+        //     'Authorization': 'Bearer $token',
+        // }).timeout(const Duration(seconds: 15));
+
+        final resp = await ApiService.get(
+          'agents',
+          query: {
+            'search': email,
+            'per_page': '1',
+          },
+          headers: {
+            if (token != null && token.isNotEmpty)
+              'Authorization': 'Bearer $token',
+          },
+        );
 
         if (resp.statusCode == 200) {
           final json = jsonDecode(resp.body);
@@ -92,13 +119,16 @@ class ProfileImageProvider extends ChangeNotifier {
       String? url;
       if (agents.isNotEmpty) {
         final agent = agents.first as Map<String, dynamic>;
-        url = (agent['image'] ?? agent['agent_image'] ?? agent['profile_image'])?.toString();
+        url = (agent['image'] ?? agent['agent_image'] ?? agent['profile_image'])
+            ?.toString();
       }
 
       if (url != null && url.isNotEmpty) {
-        if (url.startsWith('http://')) url = url.replaceFirst('http://', 'https://');
+        if (url.startsWith('http://'))
+          url = url.replaceFirst('http://', 'https://');
         final sep = url.contains('?') ? '&' : '?';
-        _remoteImageUrl = '$url${sep}ts=${DateTime.now().millisecondsSinceEpoch}';
+        _remoteImageUrl =
+            '$url${sep}ts=${DateTime.now().millisecondsSinceEpoch}';
       } else {
         _remoteImageUrl = null;
       }
@@ -168,31 +198,76 @@ class ProfileImageProvider extends ChangeNotifier {
     }
   }
 
-  /// Upload to backend
+  // /// Upload to backend
+  // Future<void> uploadPickedImageToServer(File file) async {
+  //   try {
+  //     final token = await SecureStorage.getToken();
+  //     if (token == null) return;
+  //
+  //     final uri = Uri.parse('${ApiService.baseUrl}/agent/profile-image');
+  //
+  //     final request = http.MultipartRequest('POST', uri)
+  //       ..headers['Authorization'] = 'Bearer $token'
+  //       ..files.add(await http.MultipartFile.fromPath('image', file.path));
+  //
+  //     final response = await request.send();
+  //     final body = await response.stream.bytesToString();
+  //
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       final json = jsonDecode(body);
+  //       final url =
+  //           (json['image_url'] ?? json['url'] ?? json['image'])?.toString();
+  //       if (url != null && url.isNotEmpty) {
+  //         final cleanUrl = url.startsWith('http://')
+  //             ? url.replaceFirst('http://', 'https://')
+  //             : url;
+  //         final sep = cleanUrl.contains('?') ? '&' : '?';
+  //         _remoteImageUrl =
+  //             '$cleanUrl${sep}ts=${DateTime.now().millisecondsSinceEpoch}';
+  //         _image = null;
+  //         notifyListeners();
+  //       }
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Upload failed: $e");
+  //   }
+  // }
+
   Future<void> uploadPickedImageToServer(File file) async {
     try {
       final token = await SecureStorage.getToken();
       if (token == null) return;
 
-      final uri = Uri.parse('${ApiService.baseUrl}/agent/profile-image');
+      final streamedResponse = await ApiService.uploadMultipart(
+        endpoint: 'agent/profile-image',
+        file: file,
+        fileFieldName: 'image', // matches what your backend expects
+        // extraFields: {'caption': 'Profile photo'}, // if needed
+        extraHeaders: {
+          'Authorization': 'Bearer $token',
+        },
+      );
 
-      final request = http.MultipartRequest('POST', uri)
-        ..headers['Authorization'] = 'Bearer $token'
-        ..files.add(await http.MultipartFile.fromPath('image', file.path));
-
-      final response = await request.send();
-      final body = await response.stream.bytesToString();
+      final response = await http.Response.fromStream(streamedResponse);
+      final body = response.body;
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final json = jsonDecode(body);
-        final url = (json['image_url'] ?? json['url'] ?? json['image'])?.toString();
+        final url =
+            (json['image_url'] ?? json['url'] ?? json['image'])?.toString();
+
         if (url != null && url.isNotEmpty) {
-          final cleanUrl = url.startsWith('http://') ? url.replaceFirst('http://', 'https://') : url;
+          final cleanUrl = url.startsWith('http://')
+              ? url.replaceFirst('http://', 'https://')
+              : url;
           final sep = cleanUrl.contains('?') ? '&' : '?';
-          _remoteImageUrl = '$cleanUrl${sep}ts=${DateTime.now().millisecondsSinceEpoch}';
+          _remoteImageUrl =
+              '$cleanUrl${sep}ts=${DateTime.now().millisecondsSinceEpoch}';
           _image = null;
           notifyListeners();
         }
+      } else {
+        debugPrint('Upload failed: ${response.statusCode} - $body');
       }
     } catch (e) {
       debugPrint("Upload failed: $e");

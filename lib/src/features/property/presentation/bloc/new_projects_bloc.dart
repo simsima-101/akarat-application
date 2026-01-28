@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:http/http.dart' as http;
 
 import '../../../../core/services/api_service.dart';
 import '../../data/models/project_model.dart'; // Adjust if path is different
@@ -23,8 +22,13 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
     emit(state.copyWith(status: NewProjectsStatus.loading));
 
     try {
-      final uri = ApiService.buildUri('new-projects', query: {'page': '1'});
-      final response = await http.get(uri);
+      // final uri = ApiService.buildUri('new-projects', query: {'page': '1'});
+      // final response = await http.get(uri);
+
+      final response = await ApiService.get(
+        'new-projects',
+        query: {'page': '1'},
+      );
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
@@ -64,9 +68,14 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
     emit(state.copyWith(status: NewProjectsStatus.loadingMore));
 
     try {
-      final uri = ApiService.buildUri('new-projects',
-          query: {'page': '${state.currentPage}'});
-      final response = await http.get(uri);
+      // final uri = ApiService.buildUri('new-projects',
+      //     query: {'page': '${state.currentPage}'});
+      // final response = await http.get(uri);
+
+      final response = await ApiService.get(
+        'new-projects',
+        query: {'page': '${state.currentPage}'},
+      );
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);

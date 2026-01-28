@@ -4,12 +4,10 @@ import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart'; // for debugPrint
-import 'package:http/http.dart' as http;
 
 import '../../../../core/services/api_service.dart';
 import '../../../../core/utils/secure_storage.dart';
 import '../../../../core/utils/session_manager.dart';
-import '../../../property/data/models/featuredmodel.dart' as featured;
 import '../../../property/data/models/property_model.dart'; // Adjust path to your unified Property model file
 import 'favorite_event.dart';
 import 'favorite_state.dart';
@@ -29,9 +27,9 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
   }
 
   Future<void> _onLoadFavorites(
-      LoadFavorites event,
-      Emitter<FavoriteState> emit,
-      ) async {
+    LoadFavorites event,
+    Emitter<FavoriteState> emit,
+  ) async {
     emit(FavoriteLoading());
 
     final token = await _getValidToken();
@@ -41,11 +39,18 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
     }
 
     try {
-      final response = await http.get(
-        ApiService.buildUri('saved-properties'),
+      // final response = await http.get(
+      //   ApiService.buildUri('saved-properties'),
+      //   headers: {
+      //     'Authorization': 'Bearer $token',
+      //     'Accept': 'application/json',
+      //   },
+      //
+
+      final response = await ApiService.get(
+        'saved-properties',
         headers: {
           'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
         },
       );
 
@@ -77,9 +82,9 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
   }
 
   Future<void> _onToggleFavorite(
-      ToggleFavorite event,
-      Emitter<FavoriteState> emit,
-      ) async {
+    ToggleFavorite event,
+    Emitter<FavoriteState> emit,
+  ) async {
     final currentState = state;
     if (currentState is! FavoriteLoaded) return;
 
@@ -92,7 +97,8 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
 
     if (wasFavorited) {
       updatedIds.remove(propertyId);
-      updatedFavorites.removeWhere((p) => int.tryParse(p.id ?? '0') == propertyId);
+      updatedFavorites
+          .removeWhere((p) => int.tryParse(p.id ?? '0') == propertyId);
     } else {
       updatedIds.add(propertyId);
       // Optional: if you have the full Property object, add it here
@@ -108,13 +114,23 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
         return;
       }
 
-      final response = await http.post(
-        ApiService.buildUri('toggle-saved-property'),
+      // final response = await http.post(
+      //   ApiService.buildUri('toggle-saved-property'),
+      //   headers: {
+      //     'Authorization': 'Bearer $token',
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: jsonEncode({"property_id": propertyId}),
+      // );
+
+      final response = await ApiService.post(
+        'toggle-saved-property',
+        body: {
+          "property_id": propertyId,
+        },
         headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
         },
-        body: jsonEncode({"property_id": propertyId}),
       );
 
       debugPrint("Toggle favorite: ${response.statusCode} ${response.body}");

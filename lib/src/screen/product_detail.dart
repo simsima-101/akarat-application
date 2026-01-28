@@ -2,15 +2,14 @@ import 'dart:convert';
 
 import 'package:Akarat/src/screen/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../features/property/data/models/product_model.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import '../core/services/api_service.dart';
+import '../features/property/data/models/product_model.dart';
 import '../utils/shared_preference_manager.dart';
 import 'about_agent.dart';
 import 'full_map_screen.dart';
@@ -64,30 +63,30 @@ class _Product_DetailState extends State<Product_Detail> {
     return input; // fallback
   }
 
-  Future<bool> toggledApi(String token, int id) async {
-    final url = ApiService.buildUri('toggle-saved-property');
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: {'property_id': id.toString()},
-      );
-
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        debugPrint('Toggle API failed: ${response.statusCode}');
-        return false;
-      }
-    } catch (e) {
-      debugPrint('Toggle API exception: $e');
-      return false;
-    }
-  }
+  // Future<bool> toggledApi(String token, int id) async {
+  //   final url = ApiService.buildUri('toggle-saved-property');
+  //
+  //   try {
+  //     final response = await http.post(
+  //       url,
+  //       headers: {
+  //         'Accept': 'application/json',
+  //         'Authorization': 'Bearer $token',
+  //       },
+  //       body: {'property_id': id.toString()},
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       return true;
+  //     } else {
+  //       debugPrint('Toggle API failed: ${response.statusCode}');
+  //       return false;
+  //     }
+  //   } catch (e) {
+  //     debugPrint('Toggle API exception: $e');
+  //     return false;
+  //   }
+  // }
 
   String token = '';
   String email = '';
@@ -150,10 +149,14 @@ class _Product_DetailState extends State<Product_Detail> {
     }
 
     // Otherwise, fetch fresh from API
-    final url = ApiService.buildUri('properties/$data');
+    // final url = ApiService.buildUri('properties/$data');
 
     try {
-      final response = await http.get(url);
+      // final response = await http.get(url);
+
+      final response = await ApiService.get('properties/$data')
+          .timeout(const Duration(seconds: 25));
+
       debugPrint("Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
@@ -170,10 +173,12 @@ class _Product_DetailState extends State<Product_Detail> {
         }
 
         final qrCount = parsedModel.data?.qr?.length ?? 0;
-        debugPrint("✅ Product title: ${productModels?.data?.title ?? 'No title'}");
+        debugPrint(
+            "✅ Product title: ${productModels?.data?.title ?? 'No title'}");
         debugPrint("✅ QR items from API: $qrCount");
       } else {
-        debugPrint("❌ Failed to fetch product. Status Code: ${response.statusCode}");
+        debugPrint(
+            "❌ Failed to fetch product. Status Code: ${response.statusCode}");
       }
     } catch (e) {
       debugPrint("❌ Exception occurred: $e");
@@ -227,7 +232,7 @@ class _Product_DetailState extends State<Product_Detail> {
                 itemCount: productModels?.data?.media?.length ?? 0,
                 itemBuilder: (BuildContext context, int index) {
                   final imageUrl =
-                  productModels!.data!.media![index].originalUrl.toString();
+                      productModels!.data!.media![index].originalUrl.toString();
                   return GestureDetector(
                     onTap: () {
                       showGeneralDialog(
@@ -237,7 +242,7 @@ class _Product_DetailState extends State<Product_Detail> {
                         transitionDuration: const Duration(milliseconds: 300),
                         pageBuilder: (context, animation, secondaryAnimation) {
                           PageController controller =
-                          PageController(initialPage: index);
+                              PageController(initialPage: index);
                           return Scaffold(
                             backgroundColor: Colors.black,
                             body: SafeArea(
@@ -246,12 +251,10 @@ class _Product_DetailState extends State<Product_Detail> {
                                   PageView.builder(
                                     controller: controller,
                                     itemCount:
-                                    productModels?.data?.media?.length ?? 0,
+                                        productModels?.data?.media?.length ?? 0,
                                     itemBuilder: (context, pageIndex) {
                                       final previewUrl = productModels!
-                                          .data!
-                                          .media![pageIndex]
-                                          .originalUrl
+                                          .data!.media![pageIndex].originalUrl
                                           .toString();
                                       return InteractiveViewer(
                                         child: CachedNetworkImage(
@@ -410,8 +413,7 @@ class _Product_DetailState extends State<Product_Detail> {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 15.0),
-                    child:
-                    Image.asset("assets/images/messure.png", height: 20),
+                    child: Image.asset("assets/images/messure.png", height: 20),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 3.0),
@@ -608,7 +610,7 @@ class _Product_DetailState extends State<Product_Detail> {
                           width: 18,
                           height: 18,
                           errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.broken_image, size: 18),
+                              const Icon(Icons.broken_image, size: 18),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -650,8 +652,7 @@ class _Product_DetailState extends State<Product_Detail> {
             const SizedBox(height: 5),
 
             Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -706,8 +707,7 @@ class _Product_DetailState extends State<Product_Detail> {
 
             // ===== STATIC DEMO / PROJECT CARD =====
             Container(
-              margin:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -728,8 +728,7 @@ class _Product_DetailState extends State<Product_Detail> {
                           const SizedBox(height: 15),
                           Container(
                             height: 30,
-                            padding:
-                            const EdgeInsets.symmetric(horizontal: 10),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
                             decoration: BoxDecoration(
                               color: Colors.green,
                               borderRadius: BorderRadius.circular(8.0),
@@ -764,7 +763,7 @@ class _Product_DetailState extends State<Product_Detail> {
                           GestureDetector(
                             onTap: () {
                               String agentId =
-                              productModels!.data!.agentId.toString();
+                                  productModels!.data!.agentId.toString();
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -831,8 +830,7 @@ class _Product_DetailState extends State<Product_Detail> {
 
             Container(
               height: screenSize.height * 0.3,
-              margin:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               decoration: BoxDecoration(
                 borderRadius: BorderRadiusDirectional.circular(15.0),
                 boxShadow: const [
@@ -896,8 +894,7 @@ class _Product_DetailState extends State<Product_Detail> {
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 12,
                                       ),
-                                      textStyle:
-                                      const TextStyle(fontSize: 12),
+                                      textStyle: const TextStyle(fontSize: 12),
                                     ),
                                     onPressed: () {
                                       Navigator.push(
@@ -905,9 +902,9 @@ class _Product_DetailState extends State<Product_Detail> {
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               MyGoogleMapWidget(
-                                                latitude: latitude,
-                                                longitude: longitude,
-                                              ),
+                                            latitude: latitude,
+                                            longitude: longitude,
+                                          ),
                                         ),
                                       );
                                     },
@@ -947,8 +944,7 @@ class _Product_DetailState extends State<Product_Detail> {
             const SizedBox(height: 5),
 
             Padding(
-              padding:
-              const EdgeInsets.symmetric(vertical: 0, horizontal: 15),
+              padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 15),
               child: Column(
                 children: [
                   Container(
@@ -1038,13 +1034,11 @@ class _Product_DetailState extends State<Product_Detail> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      String agentId =
-                      productModels!.data!.agentId.toString();
+                      String agentId = productModels!.data!.agentId.toString();
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              AboutAgent(data: agentId),
+                          builder: (context) => AboutAgent(data: agentId),
                         ),
                       );
                     },
@@ -1058,8 +1052,7 @@ class _Product_DetailState extends State<Product_Detail> {
                       ),
                       padding: const EdgeInsets.only(top: 8),
                       decoration: BoxDecoration(
-                        borderRadius:
-                        BorderRadiusDirectional.circular(8.0),
+                        borderRadius: BorderRadiusDirectional.circular(8.0),
                         boxShadow: const [
                           BoxShadow(
                             color: Colors.red,
@@ -1128,25 +1121,21 @@ class _Product_DetailState extends State<Product_Detail> {
                   const SizedBox(height: 10),
                   _buildInfoRow(
                     "DLD Permit Number",
-                    productModels!
-                        .data!.regulatoryInfo?.dldPermitNumber
-                        ?.toString() ??
+                    productModels!.data!.regulatoryInfo?.dldPermitNumber
+                            ?.toString() ??
                         '',
                   ),
                   _buildInfoRow(
                     "DED",
-                    productModels!.data!.regulatoryInfo?.ded?.toString() ??
-                        '',
+                    productModels!.data!.regulatoryInfo?.ded?.toString() ?? '',
                   ),
                   _buildInfoRow(
                     "RERA",
-                    productModels!.data!.regulatoryInfo?.rera?.toString() ??
-                        '',
+                    productModels!.data!.regulatoryInfo?.rera?.toString() ?? '',
                   ),
                   _buildInfoRow(
                     "BRN",
-                    productModels!.data!.regulatoryInfo?.brn?.toString() ??
-                        '',
+                    productModels!.data!.regulatoryInfo?.brn?.toString() ?? '',
                   ),
                   const SizedBox(height: 5),
                   Center(
@@ -1172,8 +1161,7 @@ class _Product_DetailState extends State<Product_Detail> {
                               final imageUrl = qrItem.qrUrl;
                               return GestureDetector(
                                 onTap: () async {
-                                  if (qrLink != null &&
-                                      qrLink.isNotEmpty) {
+                                  if (qrLink != null && qrLink.isNotEmpty) {
                                     final Uri url = Uri.parse(qrLink);
                                     if (await canLaunchUrl(url)) {
                                       await launchUrl(
@@ -1244,11 +1232,10 @@ class _Product_DetailState extends State<Product_Detail> {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount:
-                productModels?.data?.recommendedProperties?.length ??
-                    0,
+                    productModels?.data?.recommendedProperties?.length ?? 0,
                 itemBuilder: (context, index) {
                   final property =
-                  productModels!.data!.recommendedProperties![index];
+                      productModels!.data!.recommendedProperties![index];
                   final imageUrl = (property.media?.isNotEmpty ?? false)
                       ? property.media!.first.originalUrl.toString()
                       : "";
@@ -1267,8 +1254,7 @@ class _Product_DetailState extends State<Product_Detail> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  Product_Detail(data: id),
+                              builder: (context) => Product_Detail(data: id),
                             ),
                           );
                         },
@@ -1278,35 +1264,33 @@ class _Product_DetailState extends State<Product_Detail> {
                             Stack(
                               children: [
                                 ClipRRect(
-                                  borderRadius:
-                                  const BorderRadius.vertical(
+                                  borderRadius: const BorderRadius.vertical(
                                     top: Radius.circular(15),
                                   ),
                                   child: imageUrl.isNotEmpty
                                       ? Image.network(
-                                    imageUrl,
-                                    height: 120,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  )
+                                          imageUrl,
+                                          height: 120,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        )
                                       : Container(
-                                    height: 120,
-                                    width: double.infinity,
-                                    color: Colors.grey.shade300,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.image_not_supported,
-                                      ),
-                                    ),
-                                  ),
+                                          height: 120,
+                                          width: double.infinity,
+                                          color: Colors.grey.shade300,
+                                          child: const Center(
+                                            child: Icon(
+                                              Icons.image_not_supported,
+                                            ),
+                                          ),
+                                        ),
                                 ),
                               ],
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8),
                               child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     "${property.price} AED",
@@ -1324,8 +1308,7 @@ class _Product_DetailState extends State<Product_Detail> {
                                         color: Colors.red,
                                       ),
                                       const SizedBox(width: 4),
-                                      Text(
-                                          "${property.bedrooms ?? 0} beds"),
+                                      Text("${property.bedrooms ?? 0} beds"),
                                       const SizedBox(width: 8),
                                       const Icon(
                                         Icons.square_foot,
@@ -1490,8 +1473,7 @@ class _Product_DetailState extends State<Product_Detail> {
                 final phoneRaw = productModels!.data!.whatsapp ?? '';
                 final phone = whatsAppNumber(phoneRaw);
                 final message = Uri.encodeComponent("Hello");
-                final waUrl =
-                Uri.parse("https://wa.me/$phone?text=$message");
+                final waUrl = Uri.parse("https://wa.me/$phone?text=$message");
 
                 if (await canLaunchUrl(waUrl)) {
                   try {
@@ -1538,15 +1520,15 @@ class _Product_DetailState extends State<Product_Detail> {
             },
             icon: pageIndex == 3
                 ? const Icon(
-              Icons.dehaze,
-              color: Colors.red,
-              size: 35,
-            )
+                    Icons.dehaze,
+                    color: Colors.red,
+                    size: 35,
+                  )
                 : const Icon(
-              Icons.dehaze_outlined,
-              color: Colors.red,
-              size: 35,
-            ),
+                    Icons.dehaze_outlined,
+                    color: Colors.red,
+                    size: 35,
+                  ),
           ),
         ],
       ),

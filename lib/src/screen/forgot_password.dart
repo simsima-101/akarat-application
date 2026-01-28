@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:flutter/material.dart';
 
 import '../core/services/api_service.dart';
 
@@ -23,25 +23,33 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     final email = emailController.text.trim();
     try {
-      final response = await http.post(
-        ApiService.buildUri('forgot-password'),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json; charset=UTF-8',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: jsonEncode({
-          'email': email,
-        }),
-      );
+      // final response = await http.post(
+      //   ApiService.buildUri('forgot-password'),
+      //   headers: {
+      //     'Accept': 'application/json',
+      //     'Content-Type': 'application/json; charset=UTF-8',
+      //     'X-Requested-With': 'XMLHttpRequest',
+      //   },
+      //   body: jsonEncode({
+      //     'email': email,
+      //   }),
+      // );
 
+      final response = await ApiService.post(
+        'forgot-password',
+        body: {
+          'email': email,
+        },
+      );
 
       final responseData = jsonDecode(response.body);
       setState(() => _isSubmitting = false);
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(responseData['message'] ?? 'Reset email sent successfully.')),
+          SnackBar(
+              content: Text(
+                  responseData['message'] ?? 'Reset email sent successfully.')),
         );
         await Future.delayed(const Duration(seconds: 2));
         print('Navigating to /verify-otp with email: $email');
@@ -53,13 +61,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         print('Navigator.pushNamed called');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(responseData['message'] ?? 'Failed to send reset email.')),
+          SnackBar(
+              content: Text(
+                  responseData['message'] ?? 'Failed to send reset email.')),
         );
       }
     } catch (e) {
       setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Something went wrong. Please try again.')),
+        const SnackBar(
+            content: Text('Something went wrong. Please try again.')),
       );
     }
   }
@@ -130,7 +141,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         children: [
                           const Text(
                             'Forgot your password?',
-                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
                           const Text(
@@ -146,7 +158,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             decoration: InputDecoration(
                               labelText: 'Email',
                               prefixIcon: const Icon(Icons.email_outlined),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10)),
                               filled: true,
                               fillColor: Colors.white,
                             ),
@@ -154,7 +167,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your email';
                               }
-                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                  .hasMatch(value)) {
                                 return 'Invalid email format';
                               }
                               return null;
@@ -166,7 +180,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             width: double.infinity,
                             height: 48,
                             child: ElevatedButton(
-                              onPressed: _isSubmitting ? null : _submitForgotPassword,
+                              onPressed:
+                                  _isSubmitting ? null : _submitForgotPassword,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue,
                                 disabledBackgroundColor: Colors.blue.shade200,
@@ -176,24 +191,26 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               ),
                               child: _isSubmitting
                                   ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
                                   : const Text(
-                                'Submit',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
+                                      'Submit',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
                             ),
                           ),
                           // Back to Login Button
                           Padding(
                             padding: const EdgeInsets.only(top: 16.0),
                             child: TextButton.icon(
-                              icon: const Icon(Icons.arrow_back, color: Colors.black54),
+                              icon: const Icon(Icons.arrow_back,
+                                  color: Colors.black54),
                               label: const Text(
                                 'Back to Login',
                                 style: TextStyle(
@@ -220,5 +237,3 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 }
-
-

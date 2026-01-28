@@ -2,20 +2,19 @@ import 'dart:convert';
 
 import 'package:Akarat/src/utils/shared_preference_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+
+import '../core/services/api_service.dart';
+import '../features/property/data/datasources/favorite_remote_datasource.dart';
 import '../features/property/data/models/favoritemodel.dart' as favModel;
 import '../features/property/data/models/toggle_model.dart';
 import '../screen/home.dart';
 import '../screen/login.dart';
 import '../screen/my_account.dart';
 import '../screen/product_detail.dart';
-import '../core/services/api_service.dart';
-import '../features/property/data/datasources/favorite_remote_datasource.dart';
 
 class Fav_Login extends StatefulWidget {
   const Fav_Login({super.key});
@@ -37,7 +36,6 @@ class _Fav_LoginState extends State<Fav_Login> {
 
   final PageController _pageController = PageController();
   int _currentImageIndex = 0;
-
 
   // For phone calls: Always output in +971... format
   // Phone sanitizer: always outputs +971XXXXXXXXX
@@ -66,15 +64,14 @@ class _Fav_LoginState extends State<Fav_Login> {
     return input; // fallback
   }
 
-
   void readData() async {
     token = await prefManager.readStringFromPref();
     email = await prefManager.readStringFromPrefemail();
     result = await prefManager.readStringFromPrefresult();
 
-
     if (token.isNotEmpty) {
-      FavoriteService.loggedInFavorites = await FavoriteService.fetchApiFavorites(token);
+      FavoriteService.loggedInFavorites =
+          await FavoriteService.fetchApiFavorites(token);
     }
 
     setState(() {
@@ -109,7 +106,8 @@ class _Fav_LoginState extends State<Fav_Login> {
       final cachedData = prefs.getString(cacheKey);
       if (cachedData != null) {
         try {
-          final cachedModel = favModel.FavoriteResponseModel.fromJson(json.decode(cachedData));
+          final cachedModel =
+              favModel.FavoriteResponseModel.fromJson(json.decode(cachedData));
           setState(() {
             favoriteModel = cachedModel.data?.data ?? [];
             print("favoriteModel length (cache): ${favoriteModel.length}");
@@ -129,16 +127,22 @@ class _Fav_LoginState extends State<Fav_Login> {
 
     // Fetch from API
     try {
-      final response = await http.get(
-        ApiService.buildUri('saved-properties'),
+      // final response = await http.get(
+      //   ApiService.buildUri('saved-properties'),
+      //   headers: {
+      //     'Authorization': 'Bearer $token',
+      //     'Content-Type': 'application/json; charset=UTF-8',
+      //     'Accept': 'application/json',
+      //     'X-Requested-With': 'XMLHttpRequest',
+      //   },
+      // );
+
+      final response = await ApiService.get(
+        'saved-properties',
         headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
         },
-      );
-
+      ).timeout(const Duration(seconds: 25));
 
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
@@ -201,6 +205,7 @@ class _Fav_LoginState extends State<Fav_Login> {
       });
     }
   }
+
   Set<int> favoriteProperties = {};
 
   void toggleFavorite(int propertyId) async {
@@ -208,15 +213,13 @@ class _Fav_LoginState extends State<Fav_Login> {
       if (favoriteProperties.contains(propertyId)) {
         favoriteProperties.remove(propertyId); // ❌ Remove from favorites
       } else {
-        favoriteProperties.add(propertyId);    // ✅ Add to favorites
+        favoriteProperties.add(propertyId); // ✅ Add to favorites
       }
     });
 
-    await _saveFavorites();     // 💾 Save updated favorites
-    await getFilesApi(token);   // 🔄 Refresh list from API
+    await _saveFavorites(); // 💾 Save updated favorites
+    await getFilesApi(token); // 🔄 Refresh list from API
   }
-
-
 
   Future<void> _loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
@@ -228,22 +231,28 @@ class _Fav_LoginState extends State<Fav_Login> {
 
   Future<void> _saveFavorites() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-        'favorite_properties', favoriteProperties.map((id) => id.toString()).toList());
+    await prefs.setStringList('favorite_properties',
+        favoriteProperties.map((id) => id.toString()).toList());
   }
 
   Future<bool> toggledApi(String token, int propertyId) async {
     try {
-      final response = await http.post(
-        ApiService.buildUri('toggle-saved-property/$propertyId'),
+      // final response = await http.post(
+      //   ApiService.buildUri('toggle-saved-property/$propertyId'),
+      //   headers: {
+      //     'Authorization': 'Bearer $token',
+      //     'Content-Type': 'application/json; charset=UTF-8',
+      //     'Accept': 'application/json',
+      //     'X-Requested-With': 'XMLHttpRequest',
+      //   },
+      // );
+
+      final response = await ApiService.post(
+        'toggle-saved-property/$propertyId',
         headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
         },
-      );
-
+      ).timeout(const Duration(seconds: 25));
 
       if (response.statusCode == 200) {
         print("✅ Favorite toggled successfully");
@@ -258,13 +267,11 @@ class _Fav_LoginState extends State<Fav_Login> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     List<favModel.Data> allFavorites = favoriteModel
         .where((item) => FavoriteService.loggedInFavorites.contains(item.id))
         .toList();
-
 
     Size screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
@@ -302,15 +309,21 @@ class _Fav_LoginState extends State<Fav_Login> {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => My_Account()));
                             },
                             child: Container(
-                              margin: const EdgeInsets.only(left: 10, top: 5, bottom: 0),
+                              margin: const EdgeInsets.only(
+                                  left: 10, top: 5, bottom: 0),
                               height: 35,
                               width: 35,
-                              padding: const EdgeInsets.only(top: 7, left: 7, right: 7, bottom: 7),
+                              padding: const EdgeInsets.only(
+                                  top: 7, left: 7, right: 7, bottom: 7),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadiusDirectional.circular(20.0),
+                                borderRadius:
+                                    BorderRadiusDirectional.circular(20.0),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey,
@@ -337,7 +350,9 @@ class _Fav_LoginState extends State<Fav_Login> {
                           SizedBox(width: screenSize.width * 0.28),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Text("Saved", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                            child: Text("Saved",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 20)),
                           )
                         ],
                       ),
@@ -382,7 +397,10 @@ class _Fav_LoginState extends State<Fav_Login> {
                         ],
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text('Favorites', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      child: Text('Favorites',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15)),
                     ),
                     Container(
                       margin: const EdgeInsets.only(left: 10),
@@ -407,7 +425,10 @@ class _Fav_LoginState extends State<Fav_Login> {
                         ],
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text('Searches', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      child: Text('Searches',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15)),
                     ),
                   ],
                 ),
@@ -419,328 +440,446 @@ class _Fav_LoginState extends State<Fav_Login> {
                     final item = allFavorites[index];
                     String id = item.id.toString();
 
-                    print('🏷️ Property ${item.id} using URL → "${item.image}"');
-                    bool isFavorited = FavoriteService.loggedInFavorites.contains(item.id);
+                    print(
+                        '🏷️ Property ${item.id} using URL → "${item.image}"');
+                    bool isFavorited =
+                        FavoriteService.loggedInFavorites.contains(item.id);
 
                     return SingleChildScrollView(
                         child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Product_Detail(data: item.id.toString()),
-                              ),
-                            );
-                          },
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                Product_Detail(data: item.id.toString()),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                            left: 5.0, right: 5, top: 0, bottom: 15),
+                        child: Card(
+                          color: Colors.white,
+                          elevation: 20,
+                          shadowColor: Colors.white,
                           child: Padding(
-                            padding: const EdgeInsets.only(left: 5.0, right: 5, top: 0, bottom: 15),
-                            child: Card(
-                              color: Colors.white,
-                              elevation: 20,
-                              shadowColor: Colors.white,
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 5.0, top: 0, right: 5, bottom: 10),
-                                child: Column(
-                                  children: [
-                                    ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Stack(children: [
-                                          AspectRatio(
-                                            aspectRatio: 1.5,
-                                            child: Stack(
-                                              children: [
-                                                PageView.builder(
-                                                  controller: _pageController,
-                                                  itemCount: (item.media != null && item.media!.isNotEmpty)
-                                                      ? item.media!.length
-                                                      : 1, // fallback if no media
-                                                  onPageChanged: (index) {
-                                                    setState(() {
-                                                      _currentImageIndex = index;
-                                                    });
-                                                  },
-                                                  itemBuilder: (context, index) {
-                                                    String imageUrl;
+                            padding: const EdgeInsets.only(
+                                left: 5.0, top: 0, right: 5, bottom: 10),
+                            child: Column(
+                              children: [
+                                ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Stack(children: [
+                                      AspectRatio(
+                                        aspectRatio: 1.5,
+                                        child: Stack(
+                                          children: [
+                                            PageView.builder(
+                                              controller: _pageController,
+                                              itemCount: (item.media != null &&
+                                                      item.media!.isNotEmpty)
+                                                  ? item.media!.length
+                                                  : 1, // fallback if no media
+                                              onPageChanged: (index) {
+                                                setState(() {
+                                                  _currentImageIndex = index;
+                                                });
+                                              },
+                                              itemBuilder: (context, index) {
+                                                String imageUrl;
 
-                                                    // 1. Get raw image path from data
-                                                    if (item.media != null && item.media!.isNotEmpty) {
-                                                      imageUrl = item.media![index].originalUrl ?? '';
-                                                    } else {
-                                                      imageUrl = item.image ?? '';
-                                                    }
+                                                // 1. Get raw image path from data
+                                                if (item.media != null &&
+                                                    item.media!.isNotEmpty) {
+                                                  imageUrl = item.media![index]
+                                                          .originalUrl ??
+                                                      '';
+                                                } else {
+                                                  imageUrl = item.image ?? '';
+                                                }
 
-                                                    // 2. Fallback if no image at all
-                                                    if (imageUrl.isEmpty) {
-                                                      imageUrl = 'https://via.placeholder.com/400x300.png?text=No+Image';
-                                                    }
+                                                // 2. Fallback if no image at all
+                                                if (imageUrl.isEmpty) {
+                                                  imageUrl =
+                                                      'https://via.placeholder.com/400x300.png?text=No+Image';
+                                                }
 
-                                                    // 3. Make full URL using current environment's base (prod / qa / etc)
-                                                    if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
-                                                      // Remove trailing /api if present, then append the path
-                                                      final base = ApiService.baseUrl.replaceAll(RegExp(r'/api/?$'), '');
-                                                      imageUrl = '$base/$imageUrl'.replaceAll('//', '/');
-                                                    }
+                                                // 3. Make full URL using current environment's base (prod / qa / etc)
+                                                if (!imageUrl.startsWith(
+                                                        'http://') &&
+                                                    !imageUrl.startsWith(
+                                                        'https://')) {
+                                                  // Remove trailing /api if present, then append the path
+                                                  final base = ApiService
+                                                      .baseUrl
+                                                      .replaceAll(
+                                                          RegExp(r'/api/?$'),
+                                                          '');
+                                                  imageUrl = '$base/$imageUrl'
+                                                      .replaceAll('//', '/');
+                                                }
 
-                                                    return ClipRRect(
-                                                      borderRadius: BorderRadius.circular(12),
-                                                      child: CachedNetworkImage(
-                                                        imageUrl: imageUrl,
-                                                        fit: BoxFit.cover,
-                                                        placeholder: (context, url) => const Center(
-                                                          child: CircularProgressIndicator(),
-                                                        ),
-                                                        errorWidget: (context, url, error) => const Icon(
-                                                          Icons.broken_image,
-                                                          size: 50,
-                                                          color: Colors.grey,
-                                                        ),
-                                                        // Optional: better caching behavior
-                                                        cacheKey: imageUrl, // helps CachedNetworkImage avoid duplicates
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
+                                                return ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: imageUrl,
+                                                    fit: BoxFit.cover,
+                                                    placeholder:
+                                                        (context, url) =>
+                                                            const Center(
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    ),
+                                                    errorWidget:
+                                                        (context, url, error) =>
+                                                            const Icon(
+                                                      Icons.broken_image,
+                                                      size: 50,
+                                                      color: Colors.grey,
+                                                    ),
+                                                    // Optional: better caching behavior
+                                                    cacheKey:
+                                                        imageUrl, // helps CachedNetworkImage avoid duplicates
+                                                  ),
+                                                );
+                                              },
+                                            ),
 
-                                                // Optional: Dot indicator
-                                                if (item.media != null && item.media!.length > 1)
-                                                  Positioned(
-                                                    bottom: 8,
-                                                    right: 8,
-                                                    child: Row(
-                                                      children: List.generate(
-                                                        item.media!.length,
-                                                            (dotIndex) => Container(
-                                                          margin: const EdgeInsets.symmetric(horizontal: 2),
-                                                          width: 6,
-                                                          height: 6,
-                                                          decoration: BoxDecoration(
-                                                            shape: BoxShape.circle,
-                                                            color: _currentImageIndex == dotIndex
+                                            // Optional: Dot indicator
+                                            if (item.media != null &&
+                                                item.media!.length > 1)
+                                              Positioned(
+                                                bottom: 8,
+                                                right: 8,
+                                                child: Row(
+                                                  children: List.generate(
+                                                    item.media!.length,
+                                                    (dotIndex) => Container(
+                                                      margin: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 2),
+                                                      width: 6,
+                                                      height: 6,
+                                                      decoration: BoxDecoration(
+                                                        shape: BoxShape.circle,
+                                                        color:
+                                                            _currentImageIndex ==
+                                                                    dotIndex
                                                                 ? Colors.white
-                                                                : Colors.white38,
-                                                          ),
-                                                        ),
+                                                                : Colors
+                                                                    .white38,
                                                       ),
                                                     ),
                                                   ),
-                                              ],
-                                            ),
-                                          ),
-
-
-                                          Positioned(
-                                            top: 10,
-                                            right: 10,
-                                            child: Container(
-                                              height: 35,
-                                              width: 35,
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                shape: BoxShape.circle,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.grey.withOpacity(0.5),
-                                                    blurRadius: 4,
-                                                    offset: Offset(2, 2),
-                                                  ),
-                                                ],
-                                              ),
-                                              child: Center(
-                                                child: IconButton(
-                                                    icon: Icon(
-                                                      (token.isNotEmpty && FavoriteService.loggedInFavorites.contains(item.id))
-                                                          ? Icons.favorite
-                                                          : Icons.favorite_border,
-                                                      color: (token.isNotEmpty && FavoriteService.loggedInFavorites.contains(item.id))
-                                                          ? Colors.red
-                                                          : Colors.grey,
-                                                      size: 20,
-                                                    ),
-
-
-
-                                                    onPressed: () async {
-                                                      if (token.isEmpty) {
-                                                        Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
-                                                        return;
-                                                      }
-
-                                                      final isNowSaved = !FavoriteService.loggedInFavorites.contains(item.id!);
-
-                                                      // 🔄 Immediate UI update
-                                                      setState(() {
-                                                        if (isNowSaved) {
-                                                          FavoriteService.loggedInFavorites.add(item.id!);
-                                                        } else {
-                                                          FavoriteService.loggedInFavorites.remove(item.id!);
-                                                        }
-                                                      });
-
-                                                      // 🔌 Call API
-                                                      final success = await toggledApi(token, item.id!);
-
-                                                      // ✅ If failed, revert the UI
-                                                      if (!success) {
-                                                        setState(() {
-                                                          if (isNowSaved) {
-                                                            FavoriteService.loggedInFavorites.remove(item.id!);
-                                                          } else {
-                                                            FavoriteService.loggedInFavorites.add(item.id!);
-                                                          }
-                                                        });
-                                                      } else {
-                                                        // Optional if you want updated list: await getFilesApi(token);
-                                                      }
-                                                    }
-
-
                                                 ),
                                               ),
-                                            ),
-                                          ),
-
-                                          // Positioned(
-                                          //   top: 5,
-                                          //   right: 10,
-                                          //   child: Container(
-                                          //     margin: const EdgeInsets.only(left: 320, top: 10, bottom: 0),
-                                          //     height: 35,
-                                          //     width: 35,
-                                          //     padding: const EdgeInsets.only(top: 0, left: 0, right: 5, bottom: 5),
-                                          //     decoration: BoxDecoration(
-                                          //       borderRadius: BorderRadiusDirectional.circular(20.0),
-                                          //       boxShadow: [
-                                          //         BoxShadow(
-                                          //           color: Colors.grey,
-                                          //           offset: const Offset(0.3, 0.3),
-                                          //           blurRadius: 0.3,
-                                          //           spreadRadius: 0.3,
-                                          //         ),
-                                          //         BoxShadow(
-                                          //           color: Colors.white,
-                                          //           offset: const Offset(0.0, 0.0),
-                                          //           blurRadius: 0.0,
-                                          //           spreadRadius: 0.0,
-                                          //         ),
-                                          //       ],
-                                          //     ),
-                                          //     child: IconButton(
-                                          //       padding: EdgeInsets.only(left: 5, top: 7),
-                                          //       alignment: Alignment.center,
-                                          //       icon: Icon(
-                                          //         isFavorited ? Icons.favorite : Icons.favorite_border,
-                                          //         color: isFavorited ? Colors.red : Colors.red,
-                                          //       ),
-                                          //       onPressed: () async {
-                                          //         if (token.isEmpty) {
-                                          //           Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
-                                          //           return;
-                                          //         }
-                                          //         final success = await toggledApi(token, item.id);
-                                          //         if (success) {
-                                          //           await getFilesApi(token);
-                                          //         }
-                                          //       },
-                                          //     ),
-                                          //   ),
-                                          // ),
-                                        ])),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 3),
-                                      child: ListTile(
-                                        title: Text(item.title.toString(), style: TextStyle(fontSize: 16, height: 1.4)),
-                                        subtitle: Padding(
-                                          padding: const EdgeInsets.only(top: 3.0),
-                                          child: Text('${item.price} AED', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, height: 1.4)),
+                                          ],
                                         ),
                                       ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(left: 15, right: 5, top: 0, bottom: 0),
-                                          child: Image.asset("assets/images/map.png", height: 14),
-                                        ),
-                                        Expanded(
-                                          child: Text(item.address.toString(), style: TextStyle(fontSize: 13, height: 1.4, overflow: TextOverflow.visible)),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Padding(padding: const EdgeInsets.only(left: 15, right: 5, top: 5), child: Image.asset("assets/images/bed.png", height: 13)),
-                                        Padding(padding: const EdgeInsets.only(left: 5, right: 5, top: 5), child: Text(item.bedrooms.toString())),
-                                        Padding(padding: const EdgeInsets.only(left: 10, right: 5, top: 5), child: Image.asset("assets/images/bath.png", height: 13)),
-                                        Padding(padding: const EdgeInsets.only(left: 5, right: 5, top: 5), child: Text(item.bathrooms.toString())),
-                                        Padding(padding: const EdgeInsets.only(left: 10, right: 5, top: 5), child: Image.asset("assets/images/messure.png", height: 13)),
-                                        Padding(padding: const EdgeInsets.only(left: 5, right: 5, top: 5), child: Text(item.squareFeet.toString())),
-                                      ],
-                                    ),
-                                    SizedBox(height: 15),
-                                    Row(
-                                      children: [
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: ElevatedButton.icon(
-                                            onPressed: () async {
-                                              String phone = 'tel:${phoneCallNumber(item.phone ?? '')}';
-                                              try {
-                                                final bool launched = await launchUrlString(
-                                                  phone,
-                                                  mode: LaunchMode.externalApplication,
-                                                );
-                                                if (!launched) print("❌ Could not launch dialer");
-                                              } catch (e) {
-                                                print("❌ Exception: $e");
-                                              }
-                                            },
-                                            icon: const Icon(Icons.call, color: Colors.red),
-                                            label: const Text("Call", style: TextStyle(color: Colors.black)),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.grey[100],
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                              elevation: 2,
-                                              padding: const EdgeInsets.symmetric(vertical: 10),
-                                            ),
+
+                                      Positioned(
+                                        top: 10,
+                                        right: 10,
+                                        child: Container(
+                                          height: 35,
+                                          width: 35,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                blurRadius: 4,
+                                                offset: Offset(2, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: IconButton(
+                                                icon: Icon(
+                                                  (token.isNotEmpty &&
+                                                          FavoriteService
+                                                              .loggedInFavorites
+                                                              .contains(
+                                                                  item.id))
+                                                      ? Icons.favorite
+                                                      : Icons.favorite_border,
+                                                  color: (token.isNotEmpty &&
+                                                          FavoriteService
+                                                              .loggedInFavorites
+                                                              .contains(
+                                                                  item.id))
+                                                      ? Colors.red
+                                                      : Colors.grey,
+                                                  size: 20,
+                                                ),
+                                                onPressed: () async {
+                                                  if (token.isEmpty) {
+                                                    Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder:
+                                                                (context) =>
+                                                                    Login()));
+                                                    return;
+                                                  }
+
+                                                  final isNowSaved =
+                                                      !FavoriteService
+                                                          .loggedInFavorites
+                                                          .contains(item.id!);
+
+                                                  // 🔄 Immediate UI update
+                                                  setState(() {
+                                                    if (isNowSaved) {
+                                                      FavoriteService
+                                                          .loggedInFavorites
+                                                          .add(item.id!);
+                                                    } else {
+                                                      FavoriteService
+                                                          .loggedInFavorites
+                                                          .remove(item.id!);
+                                                    }
+                                                  });
+
+                                                  // 🔌 Call API
+                                                  final success =
+                                                      await toggledApi(
+                                                          token, item.id!);
+
+                                                  // ✅ If failed, revert the UI
+                                                  if (!success) {
+                                                    setState(() {
+                                                      if (isNowSaved) {
+                                                        FavoriteService
+                                                            .loggedInFavorites
+                                                            .remove(item.id!);
+                                                      } else {
+                                                        FavoriteService
+                                                            .loggedInFavorites
+                                                            .add(item.id!);
+                                                      }
+                                                    });
+                                                  } else {
+                                                    // Optional if you want updated list: await getFilesApi(token);
+                                                  }
+                                                }),
                                           ),
                                         ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: ElevatedButton.icon(
-                                            onPressed: () async {
-                                              final phone = whatsAppNumber(item.whatsapp ?? '');
-                                              final message = Uri.encodeComponent("Hello");
-                                              final url = Uri.parse("https://wa.me/$phone?text=$message");
-                                              if (await canLaunchUrl(url)) {
-                                                try {
-                                                  final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
-                                                  if (!launched) print("❌ Could not launch WhatsApp");
-                                                } catch (e) {
-                                                  print("❌ Exception: $e");
-                                                }
-                                              } else {
-                                                print("❌ WhatsApp not available");
-                                              }
-                                            },
-                                            icon: Image.asset("assets/images/whats.png", height: 20),
-                                            label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.grey[100],
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                              elevation: 2,
-                                              padding: const EdgeInsets.symmetric(vertical: 10),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                      ],
+                                      ),
+
+                                      // Positioned(
+                                      //   top: 5,
+                                      //   right: 10,
+                                      //   child: Container(
+                                      //     margin: const EdgeInsets.only(left: 320, top: 10, bottom: 0),
+                                      //     height: 35,
+                                      //     width: 35,
+                                      //     padding: const EdgeInsets.only(top: 0, left: 0, right: 5, bottom: 5),
+                                      //     decoration: BoxDecoration(
+                                      //       borderRadius: BorderRadiusDirectional.circular(20.0),
+                                      //       boxShadow: [
+                                      //         BoxShadow(
+                                      //           color: Colors.grey,
+                                      //           offset: const Offset(0.3, 0.3),
+                                      //           blurRadius: 0.3,
+                                      //           spreadRadius: 0.3,
+                                      //         ),
+                                      //         BoxShadow(
+                                      //           color: Colors.white,
+                                      //           offset: const Offset(0.0, 0.0),
+                                      //           blurRadius: 0.0,
+                                      //           spreadRadius: 0.0,
+                                      //         ),
+                                      //       ],
+                                      //     ),
+                                      //     child: IconButton(
+                                      //       padding: EdgeInsets.only(left: 5, top: 7),
+                                      //       alignment: Alignment.center,
+                                      //       icon: Icon(
+                                      //         isFavorited ? Icons.favorite : Icons.favorite_border,
+                                      //         color: isFavorited ? Colors.red : Colors.red,
+                                      //       ),
+                                      //       onPressed: () async {
+                                      //         if (token.isEmpty) {
+                                      //           Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+                                      //           return;
+                                      //         }
+                                      //         final success = await toggledApi(token, item.id);
+                                      //         if (success) {
+                                      //           await getFilesApi(token);
+                                      //         }
+                                      //       },
+                                      //     ),
+                                      //   ),
+                                      // ),
+                                    ])),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 3),
+                                  child: ListTile(
+                                    title: Text(item.title.toString(),
+                                        style: TextStyle(
+                                            fontSize: 16, height: 1.4)),
+                                    subtitle: Padding(
+                                      padding: const EdgeInsets.only(top: 3.0),
+                                      child: Text('${item.price} AED',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 22,
+                                              height: 1.4)),
+                                    ),
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 15,
+                                          right: 5,
+                                          top: 0,
+                                          bottom: 0),
+                                      child: Image.asset(
+                                          "assets/images/map.png",
+                                          height: 14),
+                                    ),
+                                    Expanded(
+                                      child: Text(item.address.toString(),
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              height: 1.4,
+                                              overflow: TextOverflow.visible)),
                                     ),
                                   ],
                                 ),
-                              ),
+                                Row(
+                                  children: [
+                                    Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 15, right: 5, top: 5),
+                                        child: Image.asset(
+                                            "assets/images/bed.png",
+                                            height: 13)),
+                                    Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 5, right: 5, top: 5),
+                                        child: Text(item.bedrooms.toString())),
+                                    Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 10, right: 5, top: 5),
+                                        child: Image.asset(
+                                            "assets/images/bath.png",
+                                            height: 13)),
+                                    Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 5, right: 5, top: 5),
+                                        child: Text(item.bathrooms.toString())),
+                                    Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 10, right: 5, top: 5),
+                                        child: Image.asset(
+                                            "assets/images/messure.png",
+                                            height: 13)),
+                                    Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 5, right: 5, top: 5),
+                                        child:
+                                            Text(item.squareFeet.toString())),
+                                  ],
+                                ),
+                                SizedBox(height: 15),
+                                Row(
+                                  children: [
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: () async {
+                                          String phone =
+                                              'tel:${phoneCallNumber(item.phone ?? '')}';
+                                          try {
+                                            final bool launched =
+                                                await launchUrlString(
+                                              phone,
+                                              mode: LaunchMode
+                                                  .externalApplication,
+                                            );
+                                            if (!launched)
+                                              print(
+                                                  "❌ Could not launch dialer");
+                                          } catch (e) {
+                                            print("❌ Exception: $e");
+                                          }
+                                        },
+                                        icon: const Icon(Icons.call,
+                                            color: Colors.red),
+                                        label: const Text("Call",
+                                            style:
+                                                TextStyle(color: Colors.black)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.grey[100],
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10)),
+                                          elevation: 2,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 10),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: () async {
+                                          final phone = whatsAppNumber(
+                                              item.whatsapp ?? '');
+                                          final message =
+                                              Uri.encodeComponent("Hello");
+                                          final url = Uri.parse(
+                                              "https://wa.me/$phone?text=$message");
+                                          if (await canLaunchUrl(url)) {
+                                            try {
+                                              final launched = await launchUrl(
+                                                  url,
+                                                  mode: LaunchMode
+                                                      .externalApplication);
+                                              if (!launched)
+                                                print(
+                                                    "❌ Could not launch WhatsApp");
+                                            } catch (e) {
+                                              print("❌ Exception: $e");
+                                            }
+                                          } else {
+                                            print("❌ WhatsApp not available");
+                                          }
+                                        },
+                                        icon: Image.asset(
+                                            "assets/images/whats.png",
+                                            height: 20),
+                                        label: const Text("WhatsApp",
+                                            style:
+                                                TextStyle(color: Colors.black)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.grey[100],
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10)),
+                                          elevation: 2,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 10),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                        ));
+                        ),
+                      ),
+                    ));
                   },
                 ),
               ),
@@ -748,7 +887,7 @@ class _Fav_LoginState extends State<Fav_Login> {
   }
 
   Container buildMyNavBar(BuildContext context) {
-    return  Container(
+    return Container(
       height: 50,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -758,12 +897,14 @@ class _Fav_LoginState extends State<Fav_Login> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        mainAxisAlignment:
+            MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
             onTap: () async {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Home()));
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -775,11 +916,13 @@ class _Fav_LoginState extends State<Fav_Login> {
             child: IconButton(
               enableFeedback: false,
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => My_Account()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => My_Account()));
               },
               icon: pageIndex == 3
                   ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+                  : const Icon(Icons.dehaze_outlined,
+                      color: Colors.red, size: 35),
             ),
           ),
         ],

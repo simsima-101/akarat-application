@@ -1,17 +1,14 @@
 import 'dart:convert';
 
-
-
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
-import '../core/constants/constants.dart' as ApiService;
+import '../core/services/api_service.dart';
 import '../core/utils/secure_storage.dart';
 import '../features/property/data/datasources/favorite_remote_datasource.dart';
 import '../features/property/data/models/saved_alert_model.dart';
-
 import '../utils/fav_logout.dart';
 import 'CreateAlertScreen.dart';
 import 'home.dart';
@@ -88,15 +85,22 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
 
   Future<List<SavedAlert>> _loadList(String token) async {
     debugPrint("tokensss : ${token}");
-    final url = Uri.parse('${ApiService.baseUrl}/saved-searches');
-    final res = await http.get(
-      url,
+    // final url = Uri.parse('${ApiService.baseUrl}/saved-searches');
+    // final res = await http.get(
+    //   url,
+    //   headers: {
+    //     'Accept': 'application/json',
+    //     'Authorization': 'Bearer $token',
+    //     'X-Requested-With': 'XMLHttpRequest',
+    //   },
+    // );
+
+    final res = await ApiService.get(
+      '/saved-searches',
       headers: {
-        'Accept': 'application/json',
         'Authorization': 'Bearer $token',
-        'X-Requested-With': 'XMLHttpRequest',
       },
-    );
+    ).timeout(const Duration(seconds: 25));
 
     if (res.statusCode == 401) {
       if (!mounted) throw Exception('Not authenticated');
@@ -145,12 +149,19 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
   Future<void> _deleteAlert(SavedAlert a) async {
     if (_token == null) return;
     try {
-      final url = Uri.parse('${ApiService.baseUrl}/alerts/${a.id}');
-      final res = await http.delete(url, headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $_token',
-        'X-Requested-With': 'XMLHttpRequest',
-      });
+      // final url = Uri.parse('${ApiService.baseUrl}/alerts/${a.id}');
+      // final res = await http.delete(url, headers: {
+      //   'Accept': 'application/json',
+      //   'Authorization': 'Bearer $_token',
+      //   'X-Requested-With': 'XMLHttpRequest',
+      // });
+
+      final res = await ApiService.delete(
+        '/alerts/${a.id}',
+        headers: {
+          'Authorization': 'Bearer $_token',
+        },
+      ).timeout(const Duration(seconds: 25));
 
       Future<void> applyLocalDelete() async {
         setState(() {
@@ -165,13 +176,20 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         await applyLocalDelete();
       } else {
-        final fallback =
-            Uri.parse('${ApiService.baseUrl}/saved-searches/${a.id}');
-        final res2 = await http.delete(fallback, headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $_token',
-          'X-Requested-With': 'XMLHttpRequest',
-        });
+        // final fallback =
+        //     Uri.parse('${ApiService.baseUrl}/saved-searches/${a.id}');
+        // final res2 = await http.delete(fallback, headers: {
+        //   'Accept': 'application/json',
+        //   'Authorization': 'Bearer $_token',
+        //   'X-Requested-With': 'XMLHttpRequest',
+        // });
+        final res2 = await ApiService.delete(
+          '/saved-searches/${a.id}',
+          headers: {
+            'Authorization': 'Bearer $_token',
+          },
+        ).timeout(const Duration(seconds: 15));
+
         if (res2.statusCode >= 200 && res2.statusCode < 300) {
           await applyLocalDelete();
         } else {
@@ -194,28 +212,42 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
     _deletingAll = true;
 
     try {
-      final base = ApiService.baseUrl;
-      final url = Uri.parse('$base/alerts-deleteall');
+      // final base = ApiService.baseUrl;
+      // final url = Uri.parse('$base/alerts-deleteall');
+      //
+      // final res = await http.delete(
+      //   url,
+      //   headers: {
+      //     'Accept': 'application/json',
+      //     'Authorization': 'Bearer $_token',
+      //     'X-Requested-With': 'XMLHttpRequest',
+      //   },
+      // );
 
-      final res = await http.delete(
-        url,
+      final res = await ApiService.delete(
+        '/alerts-deleteall',
         headers: {
-          'Accept': 'application/json',
           'Authorization': 'Bearer $_token',
-          'X-Requested-With': 'XMLHttpRequest',
         },
-      );
+      ).timeout(const Duration(seconds: 15));
 
       http.Response? fallbackRes;
       if (res.statusCode == 405 || res.statusCode == 404) {
-        fallbackRes = await http.post(
-          url,
+        // fallbackRes = await http.post(
+        //   url,
+        //   headers: {
+        //     'Accept': 'application/json',
+        //     'Authorization': 'Bearer $_token',
+        //     'X-Requested-With': 'XMLHttpRequest',
+        //   },
+        // );
+
+        fallbackRes = await ApiService.post(
+          '/alerts-deleteall',
           headers: {
-            'Accept': 'application/json',
             'Authorization': 'Bearer $_token',
-            'X-Requested-With': 'XMLHttpRequest',
           },
-        );
+        ).timeout(const Duration(seconds: 15));
       }
 
       final ok = (res.statusCode >= 200 && res.statusCode < 300) ||

@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/services/api_service.dart';
@@ -11,21 +10,23 @@ class UserProvider with ChangeNotifier {
   String? _username;
   String? _email;
   String? _result;
-  final List<Map<String, dynamic>> _guestFavorites = []; // ✅ Guest favorites list
+  final List<Map<String, dynamic>> _guestFavorites =
+      []; // ✅ Guest favorites list
 
   String? get token => _token;
   String? get username => _username;
-  String? get email => _email;       // ✅ Getter
+  String? get email => _email; // ✅ Getter
   String? get result => _result;
   bool get isLoggedIn => _token != null;
-  List<Map<String, dynamic>> get guestFavorites => List.unmodifiable(_guestFavorites);
+  List<Map<String, dynamic>> get guestFavorites =>
+      List.unmodifiable(_guestFavorites);
 
   /// Load saved user session (call this on app start)
   Future<void> loadUser() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('token');
     _username = prefs.getString('username');
-    _email = prefs.getString('email');     // ✅ Load email
+    _email = prefs.getString('email'); // ✅ Load email
     _result = prefs.getString('result');
 
     // Load guest favorites
@@ -38,7 +39,8 @@ class UserProvider with ChangeNotifier {
   }
 
   /// Save user session after login
-  Future<void> setUser(String token, String username, {String? email, String? result}) async {
+  Future<void> setUser(String token, String username,
+      {String? email, String? result}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
     await prefs.setString('username', username);
@@ -58,15 +60,14 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-
   /// Logout user (clears session + guest favorites)
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
     await prefs.remove('username');
     await prefs.remove('guest_favorites');
-    await prefs.remove('email');   // ✅ Clear email
-    await prefs.remove('result');  // ✅ Clear result
+    await prefs.remove('email'); // ✅ Clear email
+    await prefs.remove('result'); // ✅ Clear result
 
     _token = null;
     _username = null;
@@ -80,14 +81,20 @@ class UserProvider with ChangeNotifier {
   Future<bool> deleteAccount() async {
     if (_token == null) return false;
 
-    final response = await http.delete(
-      ApiService.buildUri('delete-account'),
+    // final response = await http.delete(
+    //   ApiService.buildUri('delete-account'),
+    //   headers: {
+    //     'Accept': 'application/json',
+    //     'Authorization': 'Bearer $_token',
+    //   },
+    // );
+
+    final response = await ApiService.delete(
+      'delete-account',
       headers: {
-        'Accept': 'application/json',
         'Authorization': 'Bearer $_token',
       },
     );
-
 
     if (response.statusCode == 200) {
       await logout();
