@@ -1,32 +1,26 @@
-// FILTER  UI
-
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:syncfusion_flutter_core/core.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
+import '../../../../providers/filter_provider.dart';
 import '../../../../providers/location_picker_provider.dart';
 import '../../../../screen/full_amenities_screen.dart';
 import '../../../../screen/location_picker_screen.dart';
 import '../../data/model/filtermodel.dart';
-import '../bloc/filter_bloc.dart';
-import 'filter_list.dart' hide Data;
+import 'filter_list.dart';
 
-/// ✅ Main Filter wrapper widget
 class Filter extends StatelessWidget {
   final dynamic data;
   final int? propertyType;
   final String? propertyCategoryType;
   final String? optionType;
-
   const Filter({
     super.key,
     required this.data,
@@ -37,63 +31,34 @@ class Filter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Detect device/app language
-    final currentLang = Localizations.localeOf(context).languageCode; // 'en' or 'ar'
-
     return FilterDemo(
       data: data,
       propertyType: propertyType,
       propertyCategoryType: propertyCategoryType,
       optionType: optionType,
-      currentLang: currentLang,
-    );
+    ); // ✅ No MaterialApp — just return the screen
   }
 }
 
-/// ✅ Stateful Filter screen
 class FilterDemo extends StatefulWidget {
   final dynamic data;
   final int? propertyType;
   final String? propertyCategoryType;
   final String? optionType;
-  final String currentLang; // added currentLang here
 
-  const FilterDemo({
-    super.key,
-    required this.data,
-    this.propertyType,
-    this.propertyCategoryType,
-    this.optionType,
-    this.currentLang = 'en',
-  });
+  const FilterDemo(
+      {super.key,
+      required this.data,
+      this.optionType,
+      this.propertyType,
+      this.propertyCategoryType});
 
   @override
   _FilterDemoState createState() => _FilterDemoState();
 }
 
 class _FilterDemoState extends State<FilterDemo> {
-  RangeController priceRangeController = RangeController(
-    start: 500.0,
-    end: 300000.0,
-  );
-
-  RangeController areaRangeController = RangeController(
-    start: 0.0,
-    end: 10000,
-  );
-  RangeController priceRangeSelectionController = RangeController(
-    start: 500.0,
-    end: 300000.0,
-  );
-  RangeController areaRangeSelectionController = RangeController(
-    start: 0.0,
-    end: 10000,
-  );
   int pageIndex = 0;
-
-  TextEditingController agentOrAgencyController = TextEditingController();
-
-  final List<int> yValues = [5000, 3000, 9000, 7000, 10000, 1500, 4000];
 
   @override
   void initState() {
@@ -101,21 +66,13 @@ class _FilterDemoState extends State<FilterDemo> {
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
-        context.read<FilterBloc>().add(FilterInitFilterFields(
+        context.read<FilterProvider>().initFilterFields(
+              context,
               data: widget.data,
               propertyType: widget.propertyType,
               propertyCategoryType: widget.propertyCategoryType,
               optionType: widget.optionType,
-              context: context,
-            ));
-
-        // context.read<FilterProvider>().initFilterFields(
-        //       context,
-        //       data: widget.data,
-        //       propertyType: widget.propertyType,
-        //       propertyCategoryType: widget.propertyCategoryType,
-        //       optionType: widget.optionType,
-        //     );
+            );
       },
     );
   }
@@ -123,16 +80,16 @@ class _FilterDemoState extends State<FilterDemo> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
-    return BlocBuilder<FilterBloc, FilterState>(
-        builder: (context, filterProvider) {
-      final int rentIndex = FilterBloc.product.indexOf('Rent');
-      final int buyIndex = FilterBloc.product.indexOf('Buy');
+
+    return Consumer<FilterProvider>(builder: (context, filterProvider, _) {
+      final int rentIndex = filterProvider.product.indexOf('Rent');
+      final int buyIndex = filterProvider.product.indexOf('Buy');
 
       final bool isNewProjects = filterProvider.selected == 1;
       final bool isProperties = filterProvider.selected == 0;
-      final bool isOffPlan =
-          FilterBloc.completion.elementAt(filterProvider.selectedCompletion) ==
-              'Off-Plan';
+      final bool isOffPlan = filterProvider.completion
+              .elementAt(filterProvider.selectedCompletion) ==
+          'Off-Plan';
 
       final bool showProductPills = isProperties; // Properties only
       final bool showRentPaid = isProperties &&
@@ -179,80 +136,76 @@ class _FilterDemoState extends State<FilterDemo> {
               icon: const Icon(Icons.close, color: Colors.red),
               onPressed: () async {
                 if (filterProvider.isFromFilterList) {
-                  context.read<FilterBloc>().add(await FilterShowResult(
-                        context: context,
-                        autoUpdate: false,
-                        onFilterResultNotZero: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              settings: const RouteSettings(name: 'FliterList'),
-                              builder: (context) => FliterList(
-                                  // filterModel: filterProvider.filterModel,
-                                  // // forceRefresh: true,
-                                  // // 👇 send the exact UI selections forward
-                                  // selectedPurpose: filterProvider
-                                  //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
-                                  // selectedPropertyType: filterProvider
-                                  //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
-                                  ),
+                  await filterProvider.showResult(
+                    context,
+                    autoUpdate: false,
+                    onFilterResultNotZero: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          settings: const RouteSettings(name: 'FliterList'),
+                          builder: (context) => FliterList(
+                              // filterModel: filterProvider.filterModel,
+                              // // forceRefresh: true,
+                              // // 👇 send the exact UI selections forward
+                              // selectedPurpose: filterProvider
+                              //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
+                              // selectedPropertyType: filterProvider
+                              //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
+                              ),
+                        ),
+                      );
+                    },
+                    onFilterResultZero: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Scaffold(
+                            appBar: AppBar(
+                              title: Text('Results'),
+                              backgroundColor: Colors.red,
                             ),
-                          );
-                        },
-                        onFilterResultZero: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Scaffold(
-                                appBar: AppBar(
-                                  title: Text('Results'),
-                                  backgroundColor: Colors.red,
-                                ),
-                                body: Container(
-                                  color: Colors.white,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Image.asset(
-                                            "assets/images/not_found.png",
-                                            width: 50,
-                                            height: 50),
-                                        SizedBox(height: 20),
-                                        Text('No Property Found',
-                                            style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold)),
-                                        SizedBox(height: 10),
-                                        Text(
-                                          'Please select other filters to get results.',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.black54),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        SizedBox(height: 30),
-                                        ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.red),
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text('Back to Filters',
-                                              style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.white)),
-                                        ),
-                                      ],
+                            body: Container(
+                              color: Colors.white,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Image.asset("assets/images/not_found.png",
+                                        width: 50, height: 50),
+                                    SizedBox(height: 20),
+                                    Text('No Property Found',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      'Please select other filters to get results.',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.black54),
+                                      textAlign: TextAlign.center,
                                     ),
-                                  ),
+                                    SizedBox(height: 30),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text('Back to Filters',
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.white)),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ));
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 } else {
                   Navigator.pop(context);
                 }
@@ -260,32 +213,34 @@ class _FilterDemoState extends State<FilterDemo> {
             ),
 
             actions: [
-              TextButton(
-                onPressed: filterProvider.hasChanges
-                    ? filterProvider.isResetLoading
-                        ? null
-                        : () async {
-                            context.read<FilterBloc>().add(FilterResetAll(
-                                context: context, isUpdate: false));
+              Consumer<FilterProvider>(
+                builder: (context, resetState, _) {
+                  final canReset = resetState.hasChanges;
 
-                            context
-                                .read<FilterBloc>()
-                                .add(FilterCaptureInitialSnapshot());
-                          }
-                    : null,
-                child: filterProvider.isResetLoading
-                    ? CupertinoActivityIndicator(
-                        radius: 13,
-                      )
-                    : Text(
-                        "Reset",
-                        style: TextStyle(
-                          color: filterProvider.hasChanges
-                              ? Colors.red
-                              : Colors.grey,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                  return TextButton(
+                    onPressed: canReset
+                        ? resetState.isResetLoading
+                            ? null
+                            : () async {
+                                await resetState.resetAll(context,
+                                    isUpdate: false);
+                                resetState
+                                    .captureInitialSnapshot(); // NEW SNAPSHOT
+                              }
+                        : null,
+                    child: resetState.isResetLoading
+                        ? CupertinoActivityIndicator(
+                            radius: 13,
+                          )
+                        : Text(
+                            "Reset",
+                            style: TextStyle(
+                              color: canReset ? Colors.red : Colors.grey,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  );
+                },
               )
             ],
           ),
@@ -319,9 +274,7 @@ class _FilterDemoState extends State<FilterDemo> {
                         // ✅ UPDATED: Properties toggle
                         GestureDetector(
                           onTap: () async {
-                            context
-                                .read<FilterBloc>()
-                                .add(FilterSetProperties(context));
+                            await filterProvider.setProperties(context);
                           },
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 150),
@@ -368,9 +321,7 @@ class _FilterDemoState extends State<FilterDemo> {
                         // New Projects
                         GestureDetector(
                           onTap: () async {
-                            context
-                                .read<FilterBloc>()
-                                .add(FilterSetNewProjects(context));
+                            await filterProvider.setNewProjects(context);
                           },
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 150),
@@ -432,18 +383,16 @@ class _FilterDemoState extends State<FilterDemo> {
                         child: ListView.builder(
                           shrinkWrap: true,
                           scrollDirection: Axis.horizontal,
-                          itemCount: FilterBloc.product.length,
+                          itemCount: filterProvider.product.length,
                           itemBuilder: (context, index) {
                             final isSelected =
                                 filterProvider.selectedproduct == index;
                             return GestureDetector(
                               onTap: () async {
-                                context
-                                    .read<FilterBloc>()
-                                    .add(FilterSetSelectedProductType(
-                                      index,
-                                      context,
-                                    ));
+                                await filterProvider.setSelectedProductType(
+                                  context,
+                                  index,
+                                );
                               },
                               child: Container(
                                 width: 180,
@@ -480,7 +429,7 @@ class _FilterDemoState extends State<FilterDemo> {
                                   ],
                                 ),
                                 child: Text(
-                                  FilterBloc.product[index],
+                                  filterProvider.product[index],
                                   style: const TextStyle(
                                     color: Colors.black,
                                     letterSpacing: 0.5,
@@ -688,9 +637,8 @@ class _FilterDemoState extends State<FilterDemo> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () async {
-                        context
-                            .read<FilterBloc>()
-                            .add(FilterSetSelectedPropertyType(0, context));
+                        await filterProvider.setSelectedPropertyType(context,
+                            index: 0);
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 150),
@@ -751,9 +699,10 @@ class _FilterDemoState extends State<FilterDemo> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () async {
-                        context
-                            .read<FilterBloc>()
-                            .add(FilterSetSelectedPropertyType(1, context));
+                        await filterProvider.setSelectedPropertyType(
+                          context,
+                          index: 1,
+                        );
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 150),
@@ -825,10 +774,12 @@ class _FilterDemoState extends State<FilterDemo> {
                           filterProvider.propertyTypeModel?.data?.length ?? 0,
                       itemBuilder: (context, index) {
                         return GestureDetector(
-                          onTap: () {
-                            context.read<FilterBloc>().add(
-                                FilterSetSelectedPropertyCategoryType(
-                                    index, context));
+                          onTap: () async {
+                            await filterProvider
+                                .setSelectedPropertyCategoryType(
+                              context,
+                              index: index,
+                            );
                           },
                           child: Container(
                             margin: const EdgeInsets.symmetric(
@@ -929,16 +880,18 @@ class _FilterDemoState extends State<FilterDemo> {
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
-                          children:
-                              List.generate(FilterBloc.completion.length, (i) {
+                          children: List.generate(
+                              filterProvider.completion.length, (i) {
                             final bool isSelected =
                                 filterProvider.selectedCompletion == i;
 
                             return GestureDetector(
                               onTap: () async {
-                                context.read<FilterBloc>().add(
-                                    FilterSetSelectedCompletionStatus(
-                                        i, context));
+                                await filterProvider
+                                    .setSelectedCompletionStatus(
+                                  context,
+                                  index: i,
+                                );
                               },
                               child: Container(
                                 // auto width based on label
@@ -975,7 +928,7 @@ class _FilterDemoState extends State<FilterDemo> {
                                   ],
                                 ),
                                 child: Text(
-                                  FilterBloc.completion[i],
+                                  filterProvider.completion[i],
                                   style: const TextStyle(
                                     fontSize: 14,
                                     letterSpacing: 0.2,
@@ -1054,14 +1007,14 @@ class _FilterDemoState extends State<FilterDemo> {
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: TextFormField(
-                          // controller: filterProvider.minPriceController,
+                          controller: filterProvider.minPriceController,
                           keyboardType: TextInputType.number,
                           decoration:
                               const InputDecoration(border: InputBorder.none),
-                          // onTap: () => filterProvider.isMinTyping =
-                          //     true, // 👈 starts typing
-                          // onEditingComplete: () => filterProvider.isMinTyping =
-                          //     false, // 👈 ends typing (on "done")
+                          onTap: () => filterProvider.isMinTyping =
+                              true, // 👈 starts typing
+                          onEditingComplete: () => filterProvider.isMinTyping =
+                              false, // 👈 ends typing (on "done")
                           onChanged: (val) async {
                             final start = double.tryParse(val) ?? 0;
                             if (start <= filterProvider.values.end) {
@@ -1198,13 +1151,13 @@ class _FilterDemoState extends State<FilterDemo> {
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: TextFormField(
-                          // controller: filterProvider.maxPriceController,
+                          controller: filterProvider.maxPriceController,
                           keyboardType: TextInputType.number,
                           decoration:
                               const InputDecoration(border: InputBorder.none),
-                          // onTap: () => filterProvider.isMaxTyping = true,
-                          // onEditingComplete: () =>
-                          //     filterProvider.isMaxTyping = false,
+                          onTap: () => filterProvider.isMaxTyping = true,
+                          onEditingComplete: () =>
+                              filterProvider.isMaxTyping = false,
                           onChanged: (val) async {
                             final end = double.tryParse(val) ?? 0;
                             if (end >= filterProvider.values.start) {
@@ -1331,33 +1284,33 @@ class _FilterDemoState extends State<FilterDemo> {
                     inactiveColor: Color(0x80F1EEEE),
                     enableTooltip: true,
                     shouldAlwaysShowTooltip: true,
-                    controller: priceRangeController,
+                    controller: filterProvider.priceRangeController,
 
                     tooltipTextFormatterCallback: (actualValue, _) =>
                         'AED ${actualValue.toInt()}',
                     onChanged: (SfRangeValues value) async {
-                      // setState(() {
-                      //   filterProvider.values =
-                      //       SfRangeValues(value.start, value.end);
-                      //   filterProvider.min_price =
-                      //       value.start.toStringAsFixed(0);
-                      //   filterProvider.max_price = value.end.toStringAsFixed(0);
-                      //
-                      //   // ✅ Force update min only if not currently editing, or if value actually changed
-                      //   if (
-                      //       filterProvider.minPriceController.text !=
-                      //           value.start.toStringAsFixed(0)) {
-                      //     filterProvider.minPriceController.text =
-                      //         value.start.toStringAsFixed(0);
-                      //   }
-                      //
-                      //   if (
-                      //       filterProvider.maxPriceController.text !=
-                      //           value.end.toStringAsFixed(0)) {
-                      //     filterProvider.maxPriceController.text =
-                      //         value.end.toStringAsFixed(0);
-                      //   }
-                      // });
+                      setState(() {
+                        filterProvider.values =
+                            SfRangeValues(value.start, value.end);
+                        filterProvider.min_price =
+                            value.start.toStringAsFixed(0);
+                        filterProvider.max_price = value.end.toStringAsFixed(0);
+
+                        // ✅ Force update min only if not currently editing, or if value actually changed
+                        if (!filterProvider.isMinTyping ||
+                            filterProvider.minPriceController.text !=
+                                value.start.toStringAsFixed(0)) {
+                          filterProvider.minPriceController.text =
+                              value.start.toStringAsFixed(0);
+                        }
+
+                        if (!filterProvider.isMaxTyping ||
+                            filterProvider.maxPriceController.text !=
+                                value.end.toStringAsFixed(0)) {
+                          filterProvider.maxPriceController.text =
+                              value.end.toStringAsFixed(0);
+                        }
+                      });
 
                       // await filterProvider.showResult(
                       //   context,
@@ -1461,18 +1414,14 @@ class _FilterDemoState extends State<FilterDemo> {
                             trackColor: Colors.transparent,
                             //color: Color.fromARGB(255, 126, 184, 253),
                             //opacity: 0.5,
-                            dataSource: List.generate(
-                              96,
-                              (index) => Datas(500 + index * 100.0,
-                                  yValues[index % yValues.length].toDouble()),
-                            ),
+                            dataSource: filterProvider.chartData,
                             selectionBehavior: SelectionBehavior(
                               unselectedOpacity: 0.0,
                               selectedColor: Colors.transparent,
                               selectedOpacity: 0.0,
                               unselectedColor: Colors.transparent,
-                              // selectionController:
-                              //     filterProvider.priceRangeController,
+                              selectionController:
+                                  filterProvider.priceRangeController,
                             ),
                             xValueMapper: (Datas sales, int index) => sales.x,
                             yValueMapper: (Datas sales, int index) => sales.y,
@@ -1526,16 +1475,15 @@ class _FilterDemoState extends State<FilterDemo> {
                   child: ListView.builder(
                     padding: EdgeInsets.zero,
                     scrollDirection: Axis.horizontal,
-                    itemCount: FilterBloc.bedroomList.length,
+                    itemCount: filterProvider.bedroomList.length,
                     itemBuilder: (context, index) {
                       final isSelected = filterProvider.selectedBedrooms
-                          .contains(FilterBloc.bedroomList[index]);
+                          .contains(filterProvider.bedroomList[index]);
 
                       return GestureDetector(
                         onTap: () async {
-                          context
-                              .read<FilterBloc>()
-                              .add(FilterSetSelectedBedrooms(index, context));
+                          await filterProvider.setSelectedBedrooms(context,
+                              index: index);
                         },
                         child: Container(
                           margin: const EdgeInsets.symmetric(
@@ -1576,7 +1524,7 @@ class _FilterDemoState extends State<FilterDemo> {
                                 SizedBox(width: 4),
                               ],
                               Text(
-                                FilterBloc.bedroomList[index],
+                                filterProvider.bedroomList[index],
                                 style: TextStyle(
                                   color: Colors.black,
                                   letterSpacing: 0.5,
@@ -1624,16 +1572,15 @@ class _FilterDemoState extends State<FilterDemo> {
                   height: 60,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: FilterBloc.bathroomList.length,
+                    itemCount: filterProvider.bathroomList.length,
                     itemBuilder: (context, index) {
                       final isSelected = filterProvider.selectedBathrooms
-                          .contains(FilterBloc.bathroomList[index]);
+                          .contains(filterProvider.bathroomList[index]);
 
                       return GestureDetector(
-                        onTap: () {
-                          context
-                              .read<FilterBloc>()
-                              .add(FilterSetSelectedBathrooms(index, context));
+                        onTap: () async {
+                          await filterProvider.setSelectedBathrooms(context,
+                              index: index);
                         },
                         child: Container(
                           alignment: Alignment.center,
@@ -1674,7 +1621,7 @@ class _FilterDemoState extends State<FilterDemo> {
                                 SizedBox(width: 4),
                               ],
                               Text(
-                                FilterBloc.bathroomList[index],
+                                filterProvider.bathroomList[index],
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 15,
@@ -1727,14 +1674,14 @@ class _FilterDemoState extends State<FilterDemo> {
                             padding: const EdgeInsets.only(left: 8),
                             decoration: _inputBoxDecoration(),
                             child: TextFormField(
-                              // controller: filterProvider.minAreaController,
+                              controller: filterProvider.minAreaController,
                               keyboardType: TextInputType.number,
                               decoration: const InputDecoration(
                                   border: InputBorder.none),
-                              // onTap: () =>
-                              //     filterProvider.isMinAreaTyping = true,
-                              // onEditingComplete: () =>
-                              //     filterProvider.isMinAreaTyping = false,
+                              onTap: () =>
+                                  filterProvider.isMinAreaTyping = true,
+                              onEditingComplete: () =>
+                                  filterProvider.isMinAreaTyping = false,
                               onChanged: (val) {
                                 final start = double.tryParse(val) ?? 0;
                                 if (start <= filterProvider.valuesArea.end) {
@@ -1762,14 +1709,14 @@ class _FilterDemoState extends State<FilterDemo> {
                             padding: const EdgeInsets.only(left: 8),
                             decoration: _inputBoxDecoration(),
                             child: TextFormField(
-                              // controller: filterProvider.maxAreaController,
+                              controller: filterProvider.maxAreaController,
                               keyboardType: TextInputType.number,
                               decoration: const InputDecoration(
                                   border: InputBorder.none),
-                              // onTap: () =>
-                              //     filterProvider.isMaxAreaTyping = true,
-                              // onEditingComplete: () =>
-                              //     filterProvider.isMaxAreaTyping = false,
+                              onTap: () =>
+                                  filterProvider.isMaxAreaTyping = true,
+                              onEditingComplete: () =>
+                                  filterProvider.isMaxAreaTyping = false,
                               onChanged: (val) {
                                 final end = double.tryParse(val) ?? 0;
                                 if (end >= filterProvider.valuesArea.start) {
@@ -1808,15 +1755,10 @@ class _FilterDemoState extends State<FilterDemo> {
                         shouldAlwaysShowTooltip: true,
                         activeColor: const Color(0xFF2575D4),
                         inactiveColor: const Color(0x80F1EEEE),
-                        controller: areaRangeController,
+                        controller: filterProvider.areaRangeController,
                         onChanged: (value) async {
-                          context
-                              .read<FilterBloc>()
-                              .add(FilterSetSelectedAreaRange(
-                                value,
-                                context,
-                              ));
-
+                          await filterProvider.setSelectedAreaRange(context,
+                              value: value);
                           // Trigger light haptic feedback on slide
                           HapticFeedback.selectionClick();
                         },
@@ -1833,19 +1775,13 @@ class _FilterDemoState extends State<FilterDemo> {
                             plotAreaBackgroundColor: Colors.transparent,
                             series: <ColumnSeries<Dataarea, double>>[
                               ColumnSeries<Dataarea, double>(
-                                dataSource: List.generate(
-                                  96,
-                                  (index) => Dataarea(
-                                      x: 500 + index * 100.0,
-                                      y: yValues[index % yValues.length]
-                                          .toDouble()),
-                                ),
+                                dataSource: filterProvider.chartDataarea,
                                 selectionBehavior: SelectionBehavior(
                                   unselectedOpacity: 0,
                                   selectedOpacity: 0,
                                   unselectedColor: Colors.transparent,
-                                  // selectionController:
-                                  //     filterProvider.areaRangeController,
+                                  selectionController:
+                                      filterProvider.areaRangeController,
                                 ),
                                 xValueMapper: (Dataarea sales, int index) =>
                                     sales.x,
@@ -1898,13 +1834,15 @@ class _FilterDemoState extends State<FilterDemo> {
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     physics: const ScrollPhysics(),
-                    itemCount: FilterBloc.ftypeList.length,
+                    itemCount: filterProvider.ftypeList.length,
                     itemBuilder: (context, index) {
                       final isSelected = filterProvider.selectedIndex == index;
                       return GestureDetector(
-                        onTap: () {
-                          context.read<FilterBloc>().add(
-                              FilterSetSelectedFurnishedType(index, context));
+                        onTap: () async {
+                          await filterProvider.setSelectedFurnishedType(
+                            context,
+                            index: index,
+                          );
                         },
                         child: Container(
                           margin: const EdgeInsets.symmetric(
@@ -1944,7 +1882,7 @@ class _FilterDemoState extends State<FilterDemo> {
                                 SizedBox(width: 4),
                               ],
                               Text(
-                                FilterBloc.ftypeList[index],
+                                filterProvider.ftypeList[index],
                                 style: TextStyle(
                                   color: Colors.black,
                                   letterSpacing: 0.5,
@@ -1995,7 +1933,7 @@ class _FilterDemoState extends State<FilterDemo> {
                             scrollDirection: Axis.horizontal,
                             child: Row(
                               children: List.generate(
-                                  FilterBloc.handoverOptions.length, (i) {
+                                  filterProvider.handoverOptions.length, (i) {
                                 final bool isSelected =
                                     filterProvider.selectedHandover == i;
 
@@ -2003,16 +1941,18 @@ class _FilterDemoState extends State<FilterDemo> {
                                   width: chipWidth,
                                   margin: EdgeInsets.only(
                                       right: i ==
-                                              FilterBloc
+                                              filterProvider
                                                       .handoverOptions.length -
                                                   1
                                           ? 0
                                           : spacing),
                                   child: GestureDetector(
                                     onTap: () async {
-                                      context.read<FilterBloc>().add(
-                                          FilterSetSelectedHandOverBy(
-                                              i, context));
+                                      await filterProvider
+                                          .setSelectedHandOverBy(
+                                        context,
+                                        index: i,
+                                      );
                                     },
                                     child: Container(
                                       constraints:
@@ -2049,7 +1989,7 @@ class _FilterDemoState extends State<FilterDemo> {
                                         ],
                                       ),
                                       child: Text(
-                                        FilterBloc.handoverOptions[i],
+                                        filterProvider.handoverOptions[i],
                                         textAlign: TextAlign.center,
                                         style: const TextStyle(
                                           fontSize: 13,
@@ -2100,8 +2040,8 @@ class _FilterDemoState extends State<FilterDemo> {
                             scrollDirection: Axis.horizontal,
                             child: Row(
                               children: List.generate(
-                                  FilterBloc.percentCompletionOptions.length,
-                                  (i) {
+                                  filterProvider
+                                      .percentCompletionOptions.length, (i) {
                                 final bool isSelected =
                                     filterProvider.selectedPercentCompletion ==
                                         i;
@@ -2110,19 +2050,20 @@ class _FilterDemoState extends State<FilterDemo> {
                                   width: chipWidth,
                                   margin: EdgeInsets.only(
                                     right: i ==
-                                            FilterBloc.percentCompletionOptions
+                                            filterProvider
+                                                    .percentCompletionOptions
                                                     .length -
                                                 1
                                         ? 0
                                         : spacing,
                                   ),
                                   child: GestureDetector(
-                                    onTap: () {
-                                      context.read<FilterBloc>().add(
-                                              FilterSetSelectedCompletionPercentage(
-                                            i,
-                                            context,
-                                          ));
+                                    onTap: () async {
+                                      filterProvider
+                                          .setSelectedCompletionPercentage(
+                                        context,
+                                        index: i,
+                                      );
                                     },
                                     child: Container(
                                       constraints:
@@ -2159,7 +2100,8 @@ class _FilterDemoState extends State<FilterDemo> {
                                         ],
                                       ),
                                       child: Text(
-                                        FilterBloc.percentCompletionOptions[i],
+                                        filterProvider
+                                            .percentCompletionOptions[i],
                                         textAlign: TextAlign.center,
                                         style: const TextStyle(
                                           fontSize: 13,
@@ -2219,7 +2161,7 @@ class _FilterDemoState extends State<FilterDemo> {
                         height: 48,
                         width: double.infinity,
                         child: TextFormField(
-                          controller: agentOrAgencyController,
+                          controller: filterProvider.agentOrAgencyController,
                           // onChanged: (value) {
                           //   EasyDebounce.debounce(
                           //     'agentFilter',
@@ -2282,7 +2224,6 @@ class _FilterDemoState extends State<FilterDemo> {
 
               // --- Amenities (always for Properties) ---
               const SizedBox(height: 15),
-
               Row(
                 children: const [
                   Padding(
@@ -2300,14 +2241,12 @@ class _FilterDemoState extends State<FilterDemo> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 10),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: GridView.builder(
-                  itemCount: filterProvider.amenities.length > 6
-                      ? 6
+                  itemCount: filterProvider.amenities.length > 5
+                      ? 5
                       : filterProvider.amenities.length,
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
@@ -2318,27 +2257,23 @@ class _FilterDemoState extends State<FilterDemo> {
                     mainAxisSpacing: 12,
                   ),
                   itemBuilder: (context, index) {
-                    final amenity = filterProvider.amenities[index];
-                    final isSelected = filterProvider.selectedAmenitiesId.contains(amenity.id);
-
-                    // Get current language from context (no widget.currentLang needed)
-                    final currentLangCode = Localizations.localeOf(context).languageCode;
-                    final isArabic = currentLangCode == 'ar';
+                    final isSelected = filterProvider.selectedAmenitiesId
+                        .contains(filterProvider.amenities[index].id);
 
                     return GestureDetector(
-                      onTap: () {
-                        context.read<FilterBloc>().add(
-                          FilterSetSelectedAmenities(
-                            index,
-                            context,
-                          ),
+                      onTap: () async {
+                        await filterProvider.setSelectedAmenities(
+                          context,
+                          index: index,
                         );
                       },
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(
-                            color: isSelected ? Colors.black87 : Colors.grey.shade300,
+                            color: isSelected
+                                ? Colors.black87
+                                : Colors.grey.shade300,
                             width: isSelected ? 2 : 1,
                           ),
                           borderRadius: BorderRadius.circular(10),
@@ -2352,38 +2287,30 @@ class _FilterDemoState extends State<FilterDemo> {
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Row(
-                          textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
                           children: [
-                            // Icon
                             CachedNetworkImage(
-                              imageUrl: amenity.icon ?? '',
+                              imageUrl:
+                                  filterProvider.amenities[index].icon ?? '',
                               width: 18,
                               height: 18,
                               placeholder: (context, url) => const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               ),
-                              errorWidget: (context, url, error) => const Icon(
-                                Icons.broken_image,
-                                size: 18,
-                              ),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.broken_image, size: 18),
                             ),
                             const SizedBox(width: 10),
-
-                            // Title
                             Expanded(
                               child: Text(
-                                amenity.getTitle(currentLangCode) ?? 'N/A',
-                                style: TextStyle(
+                                filterProvider.amenities[index].title ?? '',
+                                style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.black,
-                                  fontFamily: isArabic ? 'Tajawal' : null,
-                                  height: 1.3,
                                 ),
-                                textAlign: isArabic ? TextAlign.right : TextAlign.left,
-                                textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
                               ),
                             ),
                           ],
@@ -2393,13 +2320,11 @@ class _FilterDemoState extends State<FilterDemo> {
                   },
                 ),
               ),
-
               if (filterProvider.amenities.length > 6)
                 Padding(
                   padding: const EdgeInsets.only(top: 10.0),
                   child: TextButton(
                     onPressed: () async {
-                      // Precache images (good practice)
                       await Future.wait(
                         filterProvider.amenities.map((a) async {
                           final url = a.icon;
@@ -2412,26 +2337,25 @@ class _FilterDemoState extends State<FilterDemo> {
                         }),
                       );
 
-                      // Navigate to full selection screen (no currentLang needed anymore)
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => FullAmenitiesScreen(
                             allAmenities: filterProvider.amenities,
-                            selectedAmenitiesIds: filterProvider.selectedAmenitiesId,
-                            onDone: (selected) {
-                              setState(() {
-                                filterProvider.selectedAmenitiesId = selected;
-                              });
+                            selectedAmenitiesIds:
+                                filterProvider.selectedAmenitiesId,
+                            onDone: (selected) async {
+                              setState(() => filterProvider
+                                  .selectedAmenitiesId = selected);
+                              // await filterProvider
+                              //     .updateFilterCount(context);
                             },
                           ),
                         ),
                       );
                     },
                     child: Text(
-                      Localizations.localeOf(context).languageCode == 'ar'
-                          ? 'عرض المزيد من وسائل الراحة'
-                          : 'Show more amenities',
+                      "Show more amenities",
                       style: const TextStyle(
                         color: Colors.blueAccent,
                         fontWeight: FontWeight.bold,
@@ -2440,12 +2364,12 @@ class _FilterDemoState extends State<FilterDemo> {
                     ),
                   ),
                 ),
-
               if (!isBuyMode) ...[
                 const SizedBox(height: 10),
                 const Divider(height: 1, indent: 15, endIndent: 15),
                 const SizedBox(height: 20),
               ],
+
               //real estate
               if (showRentPaid) ...[
                 Row(
@@ -2473,17 +2397,15 @@ class _FilterDemoState extends State<FilterDemo> {
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       physics: const ScrollPhysics(),
-                      itemCount: FilterBloc.rentList.length,
+                      itemCount: filterProvider.rentList.length,
                       itemBuilder: (context, index) {
                         final isSelected = filterProvider.selectedrent == index;
                         return GestureDetector(
-                          onTap: () {
-                            context
-                                .read<FilterBloc>()
-                                .add(FilterSetSelectedRentType(
-                                  index,
-                                  context,
-                                ));
+                          onTap: () async {
+                            await filterProvider.setSelectedRentType(
+                              context,
+                              index: index,
+                            );
                           },
                           child: Container(
                             margin: const EdgeInsets.all(5),
@@ -2522,7 +2444,7 @@ class _FilterDemoState extends State<FilterDemo> {
                                   const SizedBox(width: 4),
                                 ],
                                 Text(
-                                  FilterBloc.rentList[index],
+                                  filterProvider.rentList[index],
                                   style: const TextStyle(
                                     color: Colors.black,
                                     letterSpacing: 0.5,
@@ -2553,80 +2475,76 @@ class _FilterDemoState extends State<FilterDemo> {
               GestureDetector(
                 onTap: () async {
                   if (filterProvider.isLoading) return;
-                  context.read<FilterBloc>().add(FilterShowResult(
-                        context: context,
-                        autoUpdate: false,
-                        onFilterResultNotZero: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              settings: const RouteSettings(name: 'FliterList'),
-                              builder: (context) => FliterList(
-                                  // filterModel: filterProvider.filterModel,
-                                  // // forceRefresh: true,
-                                  // // 👇 send the exact UI selections forward
-                                  // selectedPurpose: filterProvider
-                                  //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
-                                  // selectedPropertyType: filterProvider
-                                  //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
-                                  ),
+                  await filterProvider.showResult(
+                    context,
+                    autoUpdate: false,
+                    onFilterResultNotZero: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          settings: const RouteSettings(name: 'FliterList'),
+                          builder: (context) => FliterList(
+                              // filterModel: filterProvider.filterModel,
+                              // // forceRefresh: true,
+                              // // 👇 send the exact UI selections forward
+                              // selectedPurpose: filterProvider
+                              //     .currentUiPurpose, // "Buy" | "Rent" | "New Projects"
+                              // selectedPropertyType: filterProvider
+                              //     .currentPropertyType, // "Apartment" | "Villa" | "Studio" | "Offices" | "Commercials" | ''
+                              ),
+                        ),
+                      );
+                    },
+                    onFilterResultZero: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Scaffold(
+                            appBar: AppBar(
+                              title: Text('Results'),
+                              backgroundColor: Colors.red,
                             ),
-                          );
-                        },
-                        onFilterResultZero: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Scaffold(
-                                appBar: AppBar(
-                                  title: Text('Results'),
-                                  backgroundColor: Colors.red,
-                                ),
-                                body: Container(
-                                  color: Colors.white,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Image.asset(
-                                            "assets/images/not_found.png",
-                                            width: 50,
-                                            height: 50),
-                                        SizedBox(height: 20),
-                                        Text('No Property Found',
-                                            style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold)),
-                                        SizedBox(height: 10),
-                                        Text(
-                                          'Please select other filters to get results.',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.black54),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        SizedBox(height: 30),
-                                        ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.red),
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text('Back to Filters',
-                                              style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.white)),
-                                        ),
-                                      ],
+                            body: Container(
+                              color: Colors.white,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Image.asset("assets/images/not_found.png",
+                                        width: 50, height: 50),
+                                    SizedBox(height: 20),
+                                    Text('No Property Found',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      'Please select other filters to get results.',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.black54),
+                                      textAlign: TextAlign.center,
                                     ),
-                                  ),
+                                    SizedBox(height: 30),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text('Back to Filters',
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.white)),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ));
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
                 child: Padding(
                   padding: const EdgeInsets.only(

@@ -1,3 +1,5 @@
+import '../../../property/data/models/property_model.dart';
+
 class FilterResponseModel {
   bool? success;
   String? message;
@@ -23,7 +25,7 @@ class FilterResponseModel {
 }
 
 class FilterModel {
-  List<Data>? data;
+  List<Property>? data;
   Links? links;
   Meta? meta;
 
@@ -31,7 +33,7 @@ class FilterModel {
 
   FilterModel.fromJson(Map<String, dynamic> json) {
     data = json['data'] != null
-        ? List<Data>.from(json['data'].map((v) => Data.fromJson(v)))
+        ? List<Property>.from(json['data'].map((v) => Property.fromJson(v)))
         : [];
     links = json['links'] != null ? Links.fromJson(json['links']) : null;
     meta = json['meta'] != null ? Meta.fromJson(json['meta']) : null;
@@ -51,140 +53,140 @@ class FilterModel {
     return data;
   }
 }
-
-class Data {
-  int? id;
-  String? title;
-  String? price;
-  String? address;
-  String? location;
-  String? phoneNumber;
-  String? whatsapp;
-  String? email;
-  String? paymentPeriod;
-  int? bedrooms;
-  int? bathrooms;
-  String? squareFeet;
-  String? postedOn;
-  String? agencyLogo;
-  List<Media>? media;
-  bool? saved;
-  String? agentName;
-  String? agentImage;
-
-  // NEW: Accurate size from backend
-  double? propertySizeSqft;
-
-  Data({
-    this.id,
-    this.title,
-    this.price,
-    this.address,
-    this.location,
-    this.phoneNumber,
-    this.whatsapp,
-    this.email,
-    this.paymentPeriod,
-    this.bedrooms,
-    this.bathrooms,
-    this.squareFeet,
-    this.media,
-    this.saved,
-    this.agentName,
-    this.agentImage,
-    this.postedOn,
-    this.agencyLogo,
-    this.propertySizeSqft, // ← NEW FIELD
-  });
-
-  Data.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    title = json['title'];
-    price = json['price'];
-    address = json['address'];
-    location = json['location'];
-    phoneNumber = json['phone_number'];
-    whatsapp = json['whatsapp'];
-    paymentPeriod = json['payment_period'];
-    bedrooms = json['bedrooms'];
-    bathrooms = json['bathrooms'];
-    squareFeet = json['square_feet'];
-    saved = json['saved'];
-    agentName = json['agent'];
-    agentImage = json['agent_image'];
-    postedOn = json['posted_on'];
-    agencyLogo = json['agency_logo'];
-    media = json['media'] != null
-        ? List<Media>.from(json['media'].map((v) => Media.fromJson(v)))
-        : [];
-
-    // PARSE propertySizeSqft safely
-    final sizeVal = json['propertySizeSqft'];
-    if (sizeVal != null) {
-      if (sizeVal is num) {
-        propertySizeSqft = sizeVal.toDouble();
-      } else if (sizeVal is String) {
-        propertySizeSqft = double.tryParse(sizeVal.trim());
-      }
-    }
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['title'] = title;
-    data['price'] = price;
-    data['address'] = address;
-    data['location'] = location;
-    data['phone_number'] = phoneNumber;
-    data['whatsapp'] = whatsapp;
-    data['payment_period'] = paymentPeriod;
-    data['bedrooms'] = bedrooms;
-    data['bathrooms'] = bathrooms;
-    data['square_feet'] = squareFeet;
-    data['agent'] = agentName;
-    data['agent_image'] = agentImage;
-    data['posted_on'] = postedOn;
-    data['agency_logo'] = agencyLogo;
-    data['propertySizeSqft'] = propertySizeSqft; // ← include in JSON
-    if (media != null) {
-      data['media'] = media!.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
-
-  // SMART SIZE GETTER - NO DECIMAL POINTS EVER
-  String get displaySize {
-    // 1. Priority: propertySizeSqft (accurate double) → always round to whole number
-    if (propertySizeSqft != null && propertySizeSqft! > 0) {
-      final size = propertySizeSqft!.round(); // ← Rounds to nearest integer
-      final formatted = size.toString().replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (m) => '${m[1]},',
-          );
-      return '$formatted sqft';
-    }
-
-    // 2. Fallback: old squareFeet string → clean and round
-    if (squareFeet?.isNotEmpty == true &&
-        squareFeet != '0' &&
-        squareFeet != 'null') {
-      final clean = squareFeet!.replaceAll(RegExp(r'[^0-9.]'), '');
-      final size = num.tryParse(clean);
-      if (size != null && size > 0) {
-        final rounded = size.round();
-        final formatted = rounded.toString().replaceAllMapped(
-              RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-              (m) => '${m[1]},',
-            );
-        return '$formatted sqft';
-      }
-    }
-
-    // Hide if no valid size
-    return '';
-  }
-}
+//
+// class Data {
+//   int? id;
+//   String? title;
+//   String? price;
+//   String? address;
+//   String? location;
+//   String? phoneNumber;
+//   String? whatsapp;
+//   String? email;
+//   String? paymentPeriod;
+//   int? bedrooms;
+//   int? bathrooms;
+//   String? squareFeet;
+//   String? postedOn;
+//   String? agencyLogo;
+//   List<Media>? media;
+//   bool? saved;
+//   String? agentName;
+//   String? agentImage;
+//
+//   // NEW: Accurate size from backend
+//   double? propertySizeSqft;
+//
+//   Data({
+//     this.id,
+//     this.title,
+//     this.price,
+//     this.address,
+//     this.location,
+//     this.phoneNumber,
+//     this.whatsapp,
+//     this.email,
+//     this.paymentPeriod,
+//     this.bedrooms,
+//     this.bathrooms,
+//     this.squareFeet,
+//     this.media,
+//     this.saved,
+//     this.agentName,
+//     this.agentImage,
+//     this.postedOn,
+//     this.agencyLogo,
+//     this.propertySizeSqft, // ← NEW FIELD
+//   });
+//
+//   Data.fromJson(Map<String, dynamic> json) {
+//     id = json['id'];
+//     title = json['title'];
+//     price = json['price'];
+//     address = json['address'];
+//     location = json['location'];
+//     phoneNumber = json['phone_number'];
+//     whatsapp = json['whatsapp'];
+//     paymentPeriod = json['payment_period'];
+//     bedrooms = json['bedrooms'];
+//     bathrooms = json['bathrooms'];
+//     squareFeet = json['square_feet'];
+//     saved = json['saved'];
+//     agentName = json['agent'];
+//     agentImage = json['agent_image'];
+//     postedOn = json['posted_on'];
+//     agencyLogo = json['agency_logo'];
+//     media = json['media'] != null
+//         ? List<Media>.from(json['media'].map((v) => Media.fromJson(v)))
+//         : [];
+//
+//     // PARSE propertySizeSqft safely
+//     final sizeVal = json['propertySizeSqft'];
+//     if (sizeVal != null) {
+//       if (sizeVal is num) {
+//         propertySizeSqft = sizeVal.toDouble();
+//       } else if (sizeVal is String) {
+//         propertySizeSqft = double.tryParse(sizeVal.trim());
+//       }
+//     }
+//   }
+//
+//   Map<String, dynamic> toJson() {
+//     final Map<String, dynamic> data = <String, dynamic>{};
+//     data['id'] = id;
+//     data['title'] = title;
+//     data['price'] = price;
+//     data['address'] = address;
+//     data['location'] = location;
+//     data['phone_number'] = phoneNumber;
+//     data['whatsapp'] = whatsapp;
+//     data['payment_period'] = paymentPeriod;
+//     data['bedrooms'] = bedrooms;
+//     data['bathrooms'] = bathrooms;
+//     data['square_feet'] = squareFeet;
+//     data['agent'] = agentName;
+//     data['agent_image'] = agentImage;
+//     data['posted_on'] = postedOn;
+//     data['agency_logo'] = agencyLogo;
+//     data['propertySizeSqft'] = propertySizeSqft; // ← include in JSON
+//     if (media != null) {
+//       data['media'] = media!.map((v) => v.toJson()).toList();
+//     }
+//     return data;
+//   }
+//
+//   // SMART SIZE GETTER - NO DECIMAL POINTS EVER
+//   String get displaySize {
+//     // 1. Priority: propertySizeSqft (accurate double) → always round to whole number
+//     if (propertySizeSqft != null && propertySizeSqft! > 0) {
+//       final size = propertySizeSqft!.round(); // ← Rounds to nearest integer
+//       final formatted = size.toString().replaceAllMapped(
+//             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+//             (m) => '${m[1]},',
+//           );
+//       return '$formatted sqft';
+//     }
+//
+//     // 2. Fallback: old squareFeet string → clean and round
+//     if (squareFeet?.isNotEmpty == true &&
+//         squareFeet != '0' &&
+//         squareFeet != 'null') {
+//       final clean = squareFeet!.replaceAll(RegExp(r'[^0-9.]'), '');
+//       final size = num.tryParse(clean);
+//       if (size != null && size > 0) {
+//         final rounded = size.round();
+//         final formatted = rounded.toString().replaceAllMapped(
+//               RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+//               (m) => '${m[1]},',
+//             );
+//         return '$formatted sqft';
+//       }
+//     }
+//
+//     // Hide if no valid size
+//     return '';
+//   }
+// }
 
 class Media {
   String? originalUrl;

@@ -2,24 +2,17 @@
 import 'package:Akarat/src/core/constants/constants.dart' as ApiService;
 import 'package:Akarat/src/core/localization/language_controller.dart';
 import 'package:Akarat/src/core/utils/session_manager.dart';
-
 // Blocs
 import 'package:Akarat/src/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:Akarat/src/features/filter/presentation/bloc/filter_bloc.dart';
-import 'package:Akarat/src/features/filter/repo/filter_repo.dart';
 import 'package:Akarat/src/features/property/data/repositories/property_repository.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/enquiry_bloc.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/favorite_bloc.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/favorite_event.dart';
-
 import 'package:Akarat/src/features/property/presentation/bloc/properties_bloc.dart';
-
 // Providers
 import 'package:Akarat/src/providers/favorite_provider.dart';
 import 'package:Akarat/src/providers/filter_provider.dart';
 import 'package:Akarat/src/providers/location_picker_provider.dart';
-import 'package:Akarat/src/providers/search_amenities_provider.dart';
-
 // Screens
 import 'package:Akarat/src/screen/forgot_password.dart';
 import 'package:Akarat/src/screen/home.dart';
@@ -30,7 +23,6 @@ import 'package:Akarat/src/screen/otp_verification.dart';
 import 'package:Akarat/src/screen/register_screen.dart';
 import 'package:Akarat/src/screen/reset_password.dart';
 import 'package:Akarat/src/screen/splash_screen.dart';
-
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -40,7 +32,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
 // Localization
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -52,13 +43,14 @@ import 'l10n/app_localizations.dart';
 // Global keys
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-GlobalKey<ScaffoldMessengerState>();
+    GlobalKey<ScaffoldMessengerState>();
 
 // Background message handler
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  debugPrint("📬 Background message: ${message.notification?.title ?? 'No title'}");
+  debugPrint(
+      "📬 Background message: ${message.notification?.title ?? 'No title'}");
 }
 
 // Bloc observer
@@ -116,7 +108,8 @@ Future<void> _initializeRemoteConfig() async {
     await rc.setConfigSettings(
       RemoteConfigSettings(
         fetchTimeout: const Duration(seconds: 10),
-        minimumFetchInterval: kDebugMode ? Duration.zero : const Duration(hours: 12),
+        minimumFetchInterval:
+            kDebugMode ? Duration.zero : const Duration(hours: 12),
       ),
     );
 
@@ -194,14 +187,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   // ──────────────────────────────────────────────────────────────────────────────
   Future<void> _setupNotifications() async {
-    await FirebaseMessaging.instance.requestPermission(alert: true, sound: true);
+    await FirebaseMessaging.instance
+        .requestPermission(alert: true, sound: true);
 
     FirebaseMessaging.onMessage.listen(_showLocalNotification);
 
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosInit = DarwinInitializationSettings();
 
-    const initSettings = InitializationSettings(android: androidInit, iOS: iosInit);
+    const initSettings =
+        InitializationSettings(android: androidInit, iOS: iosInit);
 
     await _localNotifications.initialize(initSettings);
   }
@@ -234,7 +229,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => FilterProvider()),
-        ChangeNotifierProvider(create: (_) => AmenitiesProvider()),
         ChangeNotifierProvider(create: (_) => LocationPickerProvider()),
         ChangeNotifierProvider(create: (_) => FavoriteProvider()),
         ChangeNotifierProvider(
@@ -252,12 +246,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             child: MultiBlocProvider(
               providers: [
                 BlocProvider(create: (_) => AuthBloc()..add(AppStarted())),
-                BlocProvider(create: (_) => FavoriteBloc()..add(const LoadFavorites())),
                 BlocProvider(
-                  create: (context) => FilterBloc(
-                    context.read<FilterRepository>(),   // ← pass it here
-                  ),
-                ),
+                    create: (_) => FavoriteBloc()..add(const LoadFavorites())),
+                // BlocProvider(
+                //   create: (context) => FilterBloc(
+                //     context.read<FilterRepository>(), // ← pass it here
+                //   ),
+                // ),
                 BlocProvider(create: (_) => EnquiryBloc()),
                 BlocProvider(
                   create: (context) => PropertiesBloc(
@@ -271,7 +266,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     Navigator.pushNamedAndRemoveUntil(
                       context,
                       '/login',
-                          (_) => false,
+                      (_) => false,
                     );
                   }
                 },
@@ -280,9 +275,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   debugShowCheckedModeBanner: false,
                   navigatorKey: navigatorKey,
                   scaffoldMessengerKey: scaffoldMessengerKey,
-
                   locale: lang.locale,
-
                   supportedLocales: const [
                     Locale('en'),
                     Locale('ar'),
@@ -295,7 +288,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     GlobalCupertinoLocalizations.delegate,
                     CountryLocalizations.delegate,
                   ],
-
                   builder: (context, child) {
                     return Directionality(
                       textDirection: lang.languageCode == 'ar'
@@ -309,15 +301,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                       ),
                     );
                   },
-
                   theme: ThemeData(
                     useMaterial3: true,
                     colorSchemeSeed: const Color(0xFFE01E26),
                     fontFamily: 'Tajawal',
                   ),
-
                   home: const SplashScreen(),
-
                   routes: {
                     '/login': (_) => const Login(),
                     '/register': (_) => const RegisterScreen(),
@@ -326,7 +315,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     '/forgot-password': (_) => const ForgotPasswordScreen(),
                     '/new-projects': (_) => const NewProjectsScreen(),
                   },
-
                   onGenerateRoute: (settings) {
                     if (settings.name == '/verify-otp') {
                       return MaterialPageRoute(
@@ -335,7 +323,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     }
 
                     if (settings.name == '/reset-password') {
-                      final args = settings.arguments as Map<String, dynamic>? ?? {};
+                      final args =
+                          settings.arguments as Map<String, dynamic>? ?? {};
                       return MaterialPageRoute(
                         builder: (_) => ResetPasswordScreen(
                           email: args['email'] ?? '',

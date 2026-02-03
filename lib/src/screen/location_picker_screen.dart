@@ -1,13 +1,10 @@
-// LOCATION PROVIDER
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
 
-import '../features/filter/presentation/bloc/filter_bloc.dart';
 import '../features/property/data/models/location_model.dart';
+import '../providers/filter_provider.dart';
 import '../providers/location_picker_provider.dart';
 
 class LocationPickerScreen extends StatefulWidget {
@@ -63,109 +60,106 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     // final filterProvider = context.read<FilterProvider>();
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
-      child: BlocBuilder<FilterBloc, FilterState>(
-          builder: (context, filterProvider) {
-        return Consumer<LocationPickerProvider>(
-            builder: (context, locationProvider, _) {
-          return Container(
-            // Outer sheet container
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius:
-                  BorderRadius.vertical(top: Radius.circular(_sheetRadius)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildHeader(context, locationProvider),
-                const SizedBox(height: 1),
-                const Divider(
-                  thickness: 0.8,
-                  height: 1,
-                  indent: 0,
-                  endIndent: 0,
-                ),
-                const SizedBox(height: 12),
-                Column(
-                  children: [
-                    // SEARCH FIELD
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: SizedBox(
-                        height: 49,
-                        child: TextFormField(
-                          controller: locationProvider.searchController,
-                          onChanged: (q) async {
-                            // EasyDebounce.debounce(
-                            //   'fetch location',
-                            //   Duration(milliseconds: 0),
-                            //   () {
-                            locationProvider.fetchLocationSuggestions(q);
-                            // },
-                            // );
-                          },
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(
-                              Icons.place_sharp,
-                              size: 23,
-                            ),
-                            hintText: 'e.g. Dubai Marina',
-                            hintStyle: const TextStyle(color: Colors.black45),
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 14),
-                            suffixIcon: locationProvider
-                                    .searchController.text.isNotEmpty
-                                ? IconButton(
-                                    icon: const Icon(Icons.close),
-                                    onPressed: () {
-                                      locationProvider.clearSearchSuggestions();
-                                    },
-                                  )
-                                : null,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: _borderColor),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: _borderColor),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Colors.black),
-                            ),
+      child: Consumer2<LocationPickerProvider, FilterProvider>(
+          builder: (context, locationProvider, filterProvider, _) {
+        return Container(
+          // Outer sheet container
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius:
+                BorderRadius.vertical(top: Radius.circular(_sheetRadius)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildHeader(context, locationProvider, filterProvider),
+              const SizedBox(height: 1),
+              const Divider(
+                thickness: 0.8,
+                height: 1,
+                indent: 0,
+                endIndent: 0,
+              ),
+              const SizedBox(height: 12),
+              Column(
+                children: [
+                  // SEARCH FIELD
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: SizedBox(
+                      height: 49,
+                      child: TextFormField(
+                        controller: locationProvider.searchController,
+                        onChanged: (q) async {
+                          // EasyDebounce.debounce(
+                          //   'fetch location',
+                          //   Duration(milliseconds: 0),
+                          //   () {
+                          locationProvider.fetchLocationSuggestions(q);
+                          // },
+                          // );
+                        },
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(
+                            Icons.place_sharp,
+                            size: 23,
+                          ),
+                          hintText: 'e.g. Dubai Marina',
+                          hintStyle: const TextStyle(color: Colors.black45),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 14),
+                          suffixIcon: locationProvider
+                                  .searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.close),
+                                  onPressed: () {
+                                    locationProvider.clearSearchSuggestions();
+                                  },
+                                )
+                              : null,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: _borderColor),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: _borderColor),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.black),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    _buildSelectedChipsRow(locationProvider),
-                    if (locationProvider.selectedLocationList.isNotEmpty)
-                      const SizedBox(height: 15),
-                    if (locationProvider.selectedLocationList.isNotEmpty)
-                      const Divider(
-                        thickness: 0.8,
-                        height: 1,
-                        indent: 0,
-                        endIndent: 0,
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                Expanded(child: _buildBody(locationProvider)),
-                const Divider(
-                  thickness: 0.8,
-                  height: 1,
-                  indent: 0,
-                  endIndent: 0,
-                ),
-                _buildFooter(locationProvider),
-              ],
-            ),
-          );
-        });
+                  ),
+                  const SizedBox(height: 12),
+                  _buildSelectedChipsRow(locationProvider, filterProvider),
+                  if (locationProvider.selectedLocationList.isNotEmpty)
+                    const SizedBox(height: 15),
+                  if (locationProvider.selectedLocationList.isNotEmpty)
+                    const Divider(
+                      thickness: 0.8,
+                      height: 1,
+                      indent: 0,
+                      endIndent: 0,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 5),
+              Expanded(child: _buildBody(locationProvider, filterProvider)),
+              const Divider(
+                thickness: 0.8,
+                height: 1,
+                indent: 0,
+                endIndent: 0,
+              ),
+              _buildFooter(locationProvider, filterProvider),
+            ],
+          ),
+        );
       }),
     );
   }
@@ -173,6 +167,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   Widget _buildHeader(
     BuildContext context,
     LocationPickerProvider locationProvider,
+    FilterProvider filterProvider,
   ) {
     return Padding(
       padding: const EdgeInsets.only(top: 8, left: 4, right: 4, bottom: 0),
@@ -199,9 +194,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 ? null
                 : () async {
                     await locationProvider.clearAll();
-                    context
-                        .read<FilterBloc>()
-                        .add(FilterUpdateFilterCount(context: context));
+                    await filterProvider.updateFilterCount(context);
                   },
             child: Text('Clear All',
                 style: TextStyle(
@@ -219,6 +212,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
   Widget _buildSelectedChipsRow(
     LocationPickerProvider locationProvider,
+    FilterProvider filterProvider,
   ) {
     if (locationProvider.selectedLocationList.isEmpty)
       return const SizedBox.shrink();
@@ -236,12 +230,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
               locModel: item,
               onTap: () async {
                 await locationProvider.removeSelectedLocations(item);
-
-                context
-                    .read<FilterBloc>()
-                    .add(FilterUpdateFilterCount(context: context));
-
-                // await filterProvider.updateFilterCount(context);
+                await filterProvider.updateFilterCount(context);
               });
         },
       ),
@@ -272,8 +261,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   }
 
   Widget _buildBody(
-    LocationPickerProvider locationProvider,
-  ) {
+      LocationPickerProvider locationProvider, FilterProvider filterProvider) {
     if (locationProvider.searchController.text.isNotEmpty) {
       return locationProvider.locationSuggestionsList.isEmpty
           ? Center(
@@ -305,9 +293,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                       locationModel: locModel,
                     );
                     locationProvider.clearSearchSuggestions();
-                    context
-                        .read<FilterBloc>()
-                        .add(FilterUpdateFilterCount(context: context));
+                    await filterProvider.updateFilterCount(context);
                   },
                 );
               },
@@ -348,9 +334,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                             locationModel: lastSearch,
                           );
 
-                          context
-                              .read<FilterBloc>()
-                              .add(FilterUpdateFilterCount(context: context));
+                          await filterProvider.updateFilterCount(context);
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -414,9 +398,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                             await locationProvider.addSelectedLocation(
                                 locationModel: popularLoc);
 
-                            context
-                                .read<FilterBloc>()
-                                .add(FilterUpdateFilterCount(context: context));
+                            await filterProvider.updateFilterCount(context);
                           },
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
@@ -486,25 +468,20 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   }
 
   Widget _buildFooter(
-    LocationPickerProvider locationProvider,
-  ) {
+      LocationPickerProvider locationProvider, FilterProvider filterProvider) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18)
           .copyWith(bottom: 50, top: 10),
       child: Row(
         children: [
           Expanded(
-            child: BlocBuilder<FilterBloc, FilterState>(
-                builder: (context, filterProvider) {
-              return Text(
-                "${filterProvider.displayedFilterResultCount} results",
-                // locationProvider.selectedLocationList.isNotEmpty
-                // ? '88,795 results'
-                // : '107,617 results',
-                style:
-                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-              );
-            }),
+            child: Text(
+              "${filterProvider.displayedFilterResultCount} results",
+              // locationProvider.selectedLocationList.isNotEmpty
+              // ? '88,795 results'
+              // : '107,617 results',
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            ),
           ),
           ElevatedButton(
             onPressed: () =>

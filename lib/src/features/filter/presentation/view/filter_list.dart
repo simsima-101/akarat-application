@@ -1,39 +1,32 @@
-// Filetr List
-
 import 'dart:convert';
 
-import 'package:Akarat/src/screen/shimmer.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:Akarat/src/common/widgets/property_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../../../core/services/api_service.dart';
 import '../../../../core/utils/secure_storage.dart';
 import '../../../../core/utils/session_manager.dart';
 import '../../../../providers/favorite_provider.dart';
+import '../../../../providers/filter_provider.dart';
 import '../../../../screen/ContactFormScreen.dart';
 import '../../../../screen/CreateAlertScreen.dart';
-import '../../../../screen/featured_detail.dart';
 import '../../../../screen/home.dart';
 import '../../../../screen/login.dart';
 import '../../../../screen/my_account.dart';
+import '../../../../screen/shimmer.dart';
 import '../../../../utils/fav_logout.dart';
 import '../../../../utils/shared_preference_manager.dart';
 import '../../../property/data/datasources/favorite_remote_datasource.dart';
 import '../../data/model/filtermodel.dart';
-import '../bloc/filter_bloc.dart';
 
 class FliterList extends StatefulWidget {
   const FliterList({
@@ -79,23 +72,23 @@ class _FliterListState extends State<FliterList> {
   }
 
   void toggleSavedAtIndex(int index) {
-    // final filterProvider = context.read<FilterProvider>();
+    final filterProvider = context.read<FilterProvider>();
 
-    // final property = filterProvider.filterModel?.data![index];
+    final property = filterProvider.filterModel?.data![index];
 
     // Default null to false before toggling
-    // final currentSaved = property?.saved ?? false;
-    // final newSaved = !currentSaved;
-    //
-    // setState(() {
-    //   property?.saved = newSaved;
-    //
-    //   if (newSaved) {
-    //     FavoriteService.loggedInFavorites.add(property!.id!);
-    //   } else {
-    //     FavoriteService.loggedInFavorites.remove(property!.id!);
-    //   }
-    // });
+    final currentSaved = property?.saved ?? false;
+    final newSaved = !currentSaved;
+
+    setState(() {
+      property?.saved = newSaved;
+
+      if (newSaved) {
+        FavoriteService.loggedInFavorites.add(int.parse(property!.id!));
+      } else {
+        FavoriteService.loggedInFavorites.remove(property!.id!);
+      }
+    });
   }
 
   Future<bool> markAsContacted(int propertyId,
@@ -233,7 +226,7 @@ class _FliterListState extends State<FliterList> {
       return;
     }
 
-    final filterProvider = context.read<FilterBloc>().state;
+    final filterProvider = context.read<FilterProvider>();
 
     // Navigate to CreateAlertScreen and wait for result
     final initialPurpose = filterProvider.purpose;
@@ -294,8 +287,7 @@ class _FliterListState extends State<FliterList> {
           (index) => Data(
               500 + index * 100.0, yValues[index % yValues.length].toDouble()),
         );
-
-        final filterProvider = context.read<FilterBloc>().state;
+        final filterProvider = context.read<FilterProvider>();
 
         _scrollController.addListener(() {
           const threshold = 200.0;
@@ -305,9 +297,7 @@ class _FliterListState extends State<FliterList> {
                 filterProvider.nextPageUrl != null &&
                 filterProvider.nextPageUrl!.isNotEmpty) {
               debugPrint("🟢 Triggering loadMore: $filterProvider.nextPageUrl");
-
-              context.read<FilterBloc>().add(
-                  FilterUpdateFilterCount(context: context, loadMore: true));
+              filterProvider.updateFilterCount(context, loadMore: true);
             }
           }
         });
@@ -417,10 +407,7 @@ class _FliterListState extends State<FliterList> {
     // }
 
     Size screenSize = MediaQuery.sizeOf(context);
-    return BlocBuilder<FilterBloc, FilterState>(builder: (
-      context,
-      filterProvider,
-    ) {
+    return Consumer<FilterProvider>(builder: (context, filterProvider, _) {
       return Scaffold(
         bottomNavigationBar: SafeArea(
           child: buildMyNavBar(context),
@@ -494,8 +481,8 @@ class _FliterListState extends State<FliterList> {
 
                           Padding(
                               padding: const EdgeInsets.only(right: 10),
-                              child: BlocBuilder<FilterBloc, FilterState>(
-                                builder: (context, resetState) {
+                              child: Consumer<FilterProvider>(
+                                builder: (context, resetState, _) {
                                   final canReset = resetState.hasChanges;
 
                                   return TextButton(
@@ -503,15 +490,11 @@ class _FliterListState extends State<FliterList> {
                                         ? resetState.isResetLoading
                                             ? null
                                             : () async {
-                                                context.read<FilterBloc>().add(
-                                                    FilterResetAll(
-                                                        context: context,
-                                                        isUpdate: true));
-
-                                                context.read<FilterBloc>().add(
-                                                    FilterCaptureInitialSnapshot());
-
-                                                // NEW SNAPSHOT
+                                                await resetState.resetAll(
+                                                    context,
+                                                    isUpdate: true);
+                                                resetState
+                                                    .captureInitialSnapshot(); // NEW SNAPSHOT
                                                 _scrollController.jumpTo(0);
                                               }
                                         : null,
@@ -592,13 +575,11 @@ class _FliterListState extends State<FliterList> {
                       // BUY OR RENT
                       GestureDetector(
                         onTap: () {
-                          context.read<FilterBloc>().add(
-                              FilterSetSelectedFilterListProductLocally(
-                                  filterProvider.selectedproduct!));
+                          filterProvider.setSelectedFilterListProductLocally(
+                              filterProvider.selectedproduct!);
 
-                          context.read<FilterBloc>().add(
-                              FilterSetSelectedFilterListCompletionStatus(
-                                  filterProvider.selectedCompletion));
+                          filterProvider.setSelectedFilterListCompletionStatus(
+                              index: filterProvider.selectedCompletion);
 
                           showModalBottomSheet(
                             context: context,
@@ -608,8 +589,8 @@ class _FliterListState extends State<FliterList> {
                             ),
                             isScrollControlled: true,
                             builder: (context) {
-                              return BlocBuilder<FilterBloc, FilterState>(
-                                  builder: (context, purposeState) {
+                              return Consumer<FilterProvider>(
+                                  builder: (context, purposeState, _) {
                                 return Container(
                                   height:
                                       purposeState.filterListSelectedProduct ==
@@ -640,17 +621,17 @@ class _FliterListState extends State<FliterList> {
                                         child: ListView.builder(
                                           shrinkWrap: true,
                                           scrollDirection: Axis.horizontal,
-                                          itemCount: FilterBloc.product.length,
+                                          itemCount:
+                                              purposeState.product.length,
                                           itemBuilder: (context, index) {
                                             bool isSelected = purposeState
                                                     .filterListSelectedProduct ==
                                                 index;
                                             return GestureDetector(
                                               onTap: () {
-                                                context.read<FilterBloc>().add(
-                                                    FilterSetSelectedFilterListProductLocally(
-                                                        index));
-
+                                                purposeState
+                                                    .setSelectedFilterListProductLocally(
+                                                        index);
                                                 // selectedproduct = index;
                                                 // purpose = _product[index];
                                                 // selectedPurposeText =
@@ -694,7 +675,7 @@ class _FliterListState extends State<FliterList> {
                                                 ),
                                                 child: Center(
                                                   child: Text(
-                                                    FilterBloc.product[index],
+                                                    purposeState.product[index],
                                                     style: TextStyle(
                                                       color: isSelected
                                                           ? Colors.white
@@ -733,7 +714,7 @@ class _FliterListState extends State<FliterList> {
                                               scrollDirection: Axis.horizontal,
                                               child: Row(
                                                 children: List.generate(
-                                                    FilterBloc.completion
+                                                    filterProvider.completion
                                                         .length, (i) {
                                                   final bool isSelected =
                                                       filterProvider
@@ -741,13 +722,11 @@ class _FliterListState extends State<FliterList> {
                                                           i;
 
                                                   return GestureDetector(
-                                                    onTap: () {
-                                                      context
-                                                          .read<FilterBloc>()
-                                                          .add(
-                                                              FilterSetSelectedFilterListCompletionStatus(
-                                                            i,
-                                                          ));
+                                                    onTap: () async {
+                                                      await filterProvider
+                                                          .setSelectedFilterListCompletionStatus(
+                                                        index: i,
+                                                      );
                                                     },
                                                     child: Container(
                                                       // auto width based on label
@@ -801,7 +780,7 @@ class _FliterListState extends State<FliterList> {
                                                         ],
                                                       ),
                                                       child: Text(
-                                                        FilterBloc
+                                                        filterProvider
                                                             .completion[i],
                                                         style: const TextStyle(
                                                           fontSize: 14,
@@ -828,23 +807,22 @@ class _FliterListState extends State<FliterList> {
                                             // <-- add async here
                                             // await _resetPagingAndFetch();
 
-                                            context.read<FilterBloc>().add(
-                                                    FilterSetSelectedProductType(
-                                                  purposeState
-                                                      .filterListSelectedProduct!,
-                                                  context,
-                                                ));
+                                            await purposeState
+                                                .setSelectedProductType(
+                                              context,
+                                              purposeState
+                                                  .filterListSelectedProduct!,
+                                            );
 
-                                            context.read<FilterBloc>().add(
-                                                    FilterSetSelectedCompletionStatus(
-                                                  filterProvider
-                                                      .filterListSelectedCompletion,
-                                                  context,
-                                                ));
+                                            await filterProvider
+                                                .setSelectedCompletionStatus(
+                                              context,
+                                              index: filterProvider
+                                                  .filterListSelectedCompletion,
+                                            );
 
-                                            context.read<FilterBloc>().add(
-                                                FilterUpdateFilterCount(
-                                                    context: context));
+                                            purposeState
+                                                .updateFilterCount(context);
 
                                             _scrollController.jumpTo(0);
 
@@ -922,14 +900,13 @@ class _FliterListState extends State<FliterList> {
                       //PROPERTY TYPE
                       GestureDetector(
                         onTap: () async {
-                          context.read<FilterBloc>().add(
-                              FilterSetSelectedFilterListPropertyType(
-                                  filterProvider.selectedPropType));
-                          context
-                              .read<FilterBloc>()
-                              .add(FilterSetSelectedFilterListPropertyCategory(
-                                filterProvider.selectedtype,
-                              ));
+                          await filterProvider
+                              .setSelectedFilterListPropertyType(
+                                  index: filterProvider.selectedPropType);
+
+                          filterProvider.setSelectedFilterListPropertyCategory(
+                            filterProvider.selectedtype,
+                          );
 
                           showModalBottomSheet(
                             context: context,
@@ -939,8 +916,8 @@ class _FliterListState extends State<FliterList> {
                                   top: Radius.circular(20)),
                             ),
                             builder: (context) {
-                              return BlocBuilder<FilterBloc, FilterState>(
-                                  builder: (context, propertyTypeState) {
+                              return Consumer<FilterProvider>(
+                                  builder: (context, propertyTypeState, _) {
                                 return Container(
                                   height: filterProvider
                                               .filterListSelectedPropType ==
@@ -975,9 +952,9 @@ class _FliterListState extends State<FliterList> {
                                           Expanded(
                                             child: GestureDetector(
                                               onTap: () async {
-                                                context.read<FilterBloc>().add(
-                                                    FilterSetSelectedFilterListPropertyType(
-                                                        0));
+                                                await propertyTypeState
+                                                    .setSelectedFilterListPropertyType(
+                                                        index: 0);
                                               },
                                               child: AnimatedContainer(
                                                 duration: const Duration(
@@ -1053,10 +1030,10 @@ class _FliterListState extends State<FliterList> {
                                           Expanded(
                                             child: GestureDetector(
                                               onTap: () async {
-                                                context.read<FilterBloc>().add(
-                                                        FilterSetSelectedFilterListPropertyType(
-                                                      1,
-                                                    ));
+                                                await propertyTypeState
+                                                    .setSelectedFilterListPropertyType(
+                                                  index: 1,
+                                                );
                                               },
                                               child: AnimatedContainer(
                                                 duration: const Duration(
@@ -1158,9 +1135,9 @@ class _FliterListState extends State<FliterList> {
 
                                               return GestureDetector(
                                                 onTap: () async {
-                                                  context.read<FilterBloc>().add(
-                                                      FilterSetSelectedFilterListPropertyCategory(
-                                                          index));
+                                                  propertyTypeState
+                                                      .setSelectedFilterListPropertyCategory(
+                                                          index);
                                                 },
                                                 child: Container(
                                                   margin: const EdgeInsets
@@ -1243,27 +1220,24 @@ class _FliterListState extends State<FliterList> {
                                         width: double.infinity,
                                         child: ElevatedButton(
                                           onPressed: () async {
-                                            context.read<FilterBloc>().add(
-                                                    FilterSetSelectedPropertyType(
-                                                  propertyTypeState
-                                                      .filterListSelectedPropType,
-                                                  context,
-                                                ));
+                                            await propertyTypeState
+                                                .setSelectedPropertyType(
+                                                    context,
+                                                    index: propertyTypeState
+                                                        .filterListSelectedPropType);
 
                                             if (propertyTypeState
                                                     .filterListSelectedType !=
                                                 null) {
-                                              context.read<FilterBloc>().add(
-                                                      FilterSetSelectedPropertyCategoryType(
-                                                    propertyTypeState
-                                                        .filterListSelectedType!,
-                                                    context,
-                                                  ));
+                                              await propertyTypeState
+                                                  .setSelectedPropertyCategoryType(
+                                                context,
+                                                index: propertyTypeState
+                                                    .filterListSelectedType!,
+                                              );
                                             }
-
-                                            context.read<FilterBloc>().add(
-                                                FilterUpdateFilterCount(
-                                                    context: context));
+                                            propertyTypeState
+                                                .updateFilterCount(context);
 
                                             _scrollController.jumpTo(0);
 
@@ -1359,13 +1333,11 @@ class _FliterListState extends State<FliterList> {
                             double _minPrice = double.parse(min);
                             double _maxPrice = double.parse(max);
 
-                            context.read<FilterBloc>().add(
-                                FilterSetSelectedFilterRangePriceRange(
-                                    minPrice: _minPrice, maxPrice: _maxPrice));
+                            filterProvider.setSelectedFilterRangePriceRange(
+                                minPrice: _minPrice, maxPrice: _maxPrice);
                           } else {
-                            context.read<FilterBloc>().add(
-                                FilterSetSelectedFilterRangePriceRange(
-                                    minPrice: 500, maxPrice: 300000));
+                            filterProvider.setSelectedFilterRangePriceRange(
+                                minPrice: 500, maxPrice: 300000);
                           }
 
                           showModalBottomSheet(
@@ -1376,8 +1348,8 @@ class _FliterListState extends State<FliterList> {
                                   top: Radius.circular(20)),
                             ),
                             builder: (context) {
-                              return BlocBuilder<FilterBloc, FilterState>(
-                                  builder: (context, priceRangeState) {
+                              return Consumer<FilterProvider>(
+                                  builder: (context, priceRangeState, _) {
                                 return Container(
                                   height: screenSize.height * 0.38,
                                   padding: const EdgeInsets.symmetric(
@@ -1464,12 +1436,12 @@ class _FliterListState extends State<FliterList> {
                                               //     roundedMin.toStringAsFixed(0);
                                               // max_price =
                                               //     roundedMax.toStringAsFixed(0);
-                                              context.read<FilterBloc>().add(
-                                                      FilterSetSelectedFilterRangePriceRange(
-                                                    minPrice: roundedMin,
-                                                    maxPrice: roundedMax,
-                                                  ));
 
+                                              filterProvider
+                                                  .setSelectedFilterRangePriceRange(
+                                                minPrice: roundedMin,
+                                                maxPrice: roundedMax,
+                                              );
                                               // });
 
                                               // Trigger light haptic feedback on slide
@@ -1543,12 +1515,12 @@ class _FliterListState extends State<FliterList> {
                                                     SfRangeValues(finalMinPrice,
                                                         finalMaxPrice);
 
-                                                // filterProvider
-                                                //     .priceRangeController
-                                                //     .start = finalMinPrice;
-                                                // filterProvider
-                                                //     .priceRangeController
-                                                //     .end = finalMaxPrice;
+                                                filterProvider
+                                                    .priceRangeController
+                                                    .start = finalMinPrice;
+                                                filterProvider
+                                                    .priceRangeController
+                                                    .end = finalMaxPrice;
 
                                                 filterProvider.min_price =
                                                     finalMinPrice
@@ -1558,40 +1530,39 @@ class _FliterListState extends State<FliterList> {
                                                         .toStringAsFixed(0);
 
                                                 // ✅ Force update min only if not currently editing, or if value actually changed
-                                                //   if (!filterProvider
-                                                //           .isMinTyping ||
-                                                //       filterProvider
-                                                //               .minPriceController
-                                                //               .text !=
-                                                //           finalMinPrice
-                                                //               .toStringAsFixed(
-                                                //                   0)) {
-                                                //     filterProvider
-                                                //             .minPriceController
-                                                //             .text =
-                                                //         finalMinPrice
-                                                //             .toStringAsFixed(0);
-                                                //   }
-                                                //
-                                                //   if (!filterProvider
-                                                //           .isMaxTyping ||
-                                                //       filterProvider
-                                                //               .maxPriceController
-                                                //               .text !=
-                                                //           finalMaxPrice
-                                                //               .toStringAsFixed(
-                                                //                   0)) {
-                                                //     filterProvider
-                                                //             .maxPriceController
-                                                //             .text =
-                                                //         finalMaxPrice
-                                                //             .toStringAsFixed(0);
-                                                //   }
+                                                if (!filterProvider
+                                                        .isMinTyping ||
+                                                    filterProvider
+                                                            .minPriceController
+                                                            .text !=
+                                                        finalMinPrice
+                                                            .toStringAsFixed(
+                                                                0)) {
+                                                  filterProvider
+                                                          .minPriceController
+                                                          .text =
+                                                      finalMinPrice
+                                                          .toStringAsFixed(0);
+                                                }
+
+                                                if (!filterProvider
+                                                        .isMaxTyping ||
+                                                    filterProvider
+                                                            .maxPriceController
+                                                            .text !=
+                                                        finalMaxPrice
+                                                            .toStringAsFixed(
+                                                                0)) {
+                                                  filterProvider
+                                                          .maxPriceController
+                                                          .text =
+                                                      finalMaxPrice
+                                                          .toStringAsFixed(0);
+                                                }
                                               });
 
-                                              context.read<FilterBloc>().add(
-                                                  FilterUpdateFilterCount(
-                                                      context: context));
+                                              await filterProvider
+                                                  .updateFilterCount(context);
 
                                               _scrollController.jumpTo(0);
 
@@ -1674,14 +1645,12 @@ class _FliterListState extends State<FliterList> {
                           if (minArea.isNotEmpty && maxArea.isNotEmpty) {
                             double _minArea = double.parse(minArea);
                             double _maxArea = double.parse(maxArea);
-                            context.read<FilterBloc>().add(
-                                FilterSetSelectedFilterListAreaSize(
-                                    minSqrFeet: _minArea,
-                                    maxSqrFeet: _maxArea));
+
+                            filterProvider.setSelectedFilterListAreaSize(
+                                minSqrFeet: _minArea, maxSqrFeet: _maxArea);
                           } else {
-                            context.read<FilterBloc>().add(
-                                FilterSetSelectedFilterListAreaSize(
-                                    minSqrFeet: 0.0, maxSqrFeet: 10000.0));
+                            filterProvider.setSelectedFilterListAreaSize(
+                                minSqrFeet: 0.0, maxSqrFeet: 10000.0);
                           }
 
                           showModalBottomSheet(
@@ -1692,8 +1661,8 @@ class _FliterListState extends State<FliterList> {
                                   top: Radius.circular(20)),
                             ),
                             builder: (context) {
-                              return BlocBuilder<FilterBloc, FilterState>(
-                                  builder: (context, areaSizeState) {
+                              return Consumer<FilterProvider>(
+                                  builder: (context, areaSizeState, _) {
                                 return Container(
                                   height: screenSize.height * 0.38,
                                   padding: const EdgeInsets.symmetric(
@@ -1772,12 +1741,12 @@ class _FliterListState extends State<FliterList> {
                                                   ((value.end / 100).round() *
                                                           100)
                                                       .toDouble();
-                                              context.read<FilterBloc>().add(
-                                                      FilterSetSelectedFilterListAreaSize(
-                                                    minSqrFeet: roundedMin,
-                                                    maxSqrFeet: roundedMax,
-                                                  ));
 
+                                              areaSizeState
+                                                  .setSelectedFilterListAreaSize(
+                                                minSqrFeet: roundedMin,
+                                                maxSqrFeet: roundedMax,
+                                              );
                                               // Trigger light haptic feedback on slide
                                               HapticFeedback.selectionClick();
                                             },
@@ -1863,12 +1832,12 @@ class _FliterListState extends State<FliterList> {
                                               //         maxPrice: finalMaxPrice);
 
                                               setState(() {
-                                                // filterProvider
-                                                //     .areaRangeController
-                                                //     .start = finalMinSqrFeet;
-                                                // filterProvider
-                                                //     .areaRangeController
-                                                //     .end = finalMaxSqrFeet;
+                                                filterProvider
+                                                    .areaRangeController
+                                                    .start = finalMinSqrFeet;
+                                                filterProvider
+                                                    .areaRangeController
+                                                    .end = finalMaxSqrFeet;
                                                 filterProvider
                                                         .filterListValuesArea =
                                                     SfRangeValues(
@@ -1882,39 +1851,39 @@ class _FliterListState extends State<FliterList> {
                                                         .toStringAsFixed(0);
 
                                                 // ✅ Force update min only if not currently editing, or if value actually changed
-                                                // if (!filterProvider
-                                                //         .isMinAreaTyping ||
-                                                //     filterProvider
-                                                //             .minAreaController
-                                                //             .text !=
-                                                //         finalMinSqrFeet
-                                                //             .toStringAsFixed(
-                                                //                 0)) {
-                                                //   filterProvider
-                                                //           .minAreaController
-                                                //           .text =
-                                                //       finalMinSqrFeet
-                                                //           .toStringAsFixed(0);
-                                                // }
-                                                //
-                                                // if (!filterProvider
-                                                //         .isMaxAreaTyping ||
-                                                //     filterProvider
-                                                //             .maxAreaController
-                                                //             .text !=
-                                                //         finalMaxSqrFeet
-                                                //             .toStringAsFixed(
-                                                //                 0)) {
-                                                //   filterProvider
-                                                //           .maxAreaController
-                                                //           .text =
-                                                //       finalMaxSqrFeet
-                                                //           .toStringAsFixed(0);
-                                                // }
+                                                if (!filterProvider
+                                                        .isMinAreaTyping ||
+                                                    filterProvider
+                                                            .minAreaController
+                                                            .text !=
+                                                        finalMinSqrFeet
+                                                            .toStringAsFixed(
+                                                                0)) {
+                                                  filterProvider
+                                                          .minAreaController
+                                                          .text =
+                                                      finalMinSqrFeet
+                                                          .toStringAsFixed(0);
+                                                }
+
+                                                if (!filterProvider
+                                                        .isMaxAreaTyping ||
+                                                    filterProvider
+                                                            .maxAreaController
+                                                            .text !=
+                                                        finalMaxSqrFeet
+                                                            .toStringAsFixed(
+                                                                0)) {
+                                                  filterProvider
+                                                          .maxAreaController
+                                                          .text =
+                                                      finalMaxSqrFeet
+                                                          .toStringAsFixed(0);
+                                                }
                                               });
-                                              context.read<FilterBloc>().add(
-                                                  FilterUpdateFilterCount(
-                                                      context: context));
+
+                                              await filterProvider
+                                                  .updateFilterCount(context);
 
                                               _scrollController.jumpTo(0);
 
@@ -2002,8 +1971,8 @@ class _FliterListState extends State<FliterList> {
                             ),
                             isScrollControlled: true,
                             builder: (context) {
-                              return BlocBuilder<FilterBloc, FilterState>(
-                                  builder: (context, bedroomState) {
+                              return Consumer<FilterProvider>(
+                                  builder: (context, bedroomState, _) {
                                 return Container(
                                   height: screenSize.height * 0.3,
                                   width: double.infinity,
@@ -2038,18 +2007,18 @@ class _FliterListState extends State<FliterList> {
                                             scrollDirection: Axis.horizontal,
                                             physics: const ScrollPhysics(),
                                             itemCount:
-                                                FilterBloc.bedroomList.length,
+                                                bedroomState.bedroomList.length,
                                             shrinkWrap: true,
                                             itemBuilder: (context, index) {
                                               final isSelected = bedroomState
                                                   .selectedFilterListBedroomsList
-                                                  .contains(FilterBloc
+                                                  .contains(bedroomState
                                                       .bedroomList[index]);
                                               return GestureDetector(
                                                 onTap: () async {
-                                                  context.read<FilterBloc>().add(
-                                                      FilterSetSelectedFilterListBedrooms(
-                                                          index));
+                                                  bedroomState
+                                                      .setSelectedFilterListBedrooms(
+                                                          index: index);
                                                 },
                                                 child: Container(
                                                   margin: const EdgeInsets
@@ -2085,7 +2054,7 @@ class _FliterListState extends State<FliterList> {
                                                   ),
                                                   child: Center(
                                                     child: Text(
-                                                      FilterBloc
+                                                      bedroomState
                                                           .bedroomList[index],
                                                       style: TextStyle(
                                                         color: isSelected
@@ -2111,9 +2080,8 @@ class _FliterListState extends State<FliterList> {
                                               List.from(filterProvider
                                                   .selectedFilterListBedroomsList);
 
-                                          context.read<FilterBloc>().add(
-                                              FilterUpdateFilterCount(
-                                                  context: context));
+                                          await filterProvider
+                                              .updateFilterCount(context);
 
                                           _scrollController.jumpTo(0);
 
@@ -2225,8 +2193,9 @@ class _FliterListState extends State<FliterList> {
                             ),
                             isScrollControlled: true,
                             builder: (context) {
-                              return BlocBuilder<FilterBloc, FilterState>(
-                                builder: (BuildContext context, bathRoomState) {
+                              return Consumer<FilterProvider>(
+                                builder:
+                                    (BuildContext context, bathRoomState, _) {
                                   return Container(
                                     height: screenSize.height * 0.3,
                                     width: double.infinity,
@@ -2265,22 +2234,20 @@ class _FliterListState extends State<FliterList> {
                                                 scrollDirection:
                                                     Axis.horizontal,
                                                 physics: const ScrollPhysics(),
-                                                itemCount: FilterBloc
+                                                itemCount: bathRoomState
                                                     .bathroomList.length,
                                                 shrinkWrap: true,
                                                 itemBuilder: (context, index) {
                                                   final isSelected = bathRoomState
                                                       .selectedFilterListBathroomsList
-                                                      .contains(FilterBloc
+                                                      .contains(bathRoomState
                                                           .bathroomList[index]);
                                                   // Colors.grey;
                                                   return GestureDetector(
                                                     onTap: () async {
-                                                      context
-                                                          .read<FilterBloc>()
-                                                          .add(
-                                                              FilterSetSelectedFilterListBathrooms(
-                                                                  index));
+                                                      bathRoomState
+                                                          .setSelectedFilterListBathrooms(
+                                                              index: index);
                                                     },
                                                     child: Container(
                                                       // color: selectedIndex == index ? Colors.amber : Colors.transparent,
@@ -2331,7 +2298,7 @@ class _FliterListState extends State<FliterList> {
                                                       ),
                                                       child: Center(
                                                         child: Text(
-                                                          FilterBloc
+                                                          filterProvider
                                                                   .bathroomList[
                                                               index],
                                                           style: TextStyle(
@@ -2355,9 +2322,9 @@ class _FliterListState extends State<FliterList> {
                                             filterProvider.selectedBathrooms =
                                                 List.from(filterProvider
                                                     .selectedFilterListBathroomsList);
-                                            context.read<FilterBloc>().add(
-                                                FilterUpdateFilterCount(
-                                                    context: context));
+
+                                            await filterProvider
+                                                .updateFilterCount(context);
 
                                             _scrollController.jumpTo(0);
 
@@ -2504,7 +2471,8 @@ class _FliterListState extends State<FliterList> {
                       color:
                           Colors.white, // Needed to style the container inside
                       itemBuilder: (context) {
-                        final List<String> sortOptions = FilterBloc.ftypeList;
+                        final List<String> sortOptions =
+                            filterProvider.ftypeList;
 
                         return [
                           PopupMenuItem<String>(
@@ -2525,15 +2493,16 @@ class _FliterListState extends State<FliterList> {
                                       Navigator.pop(context);
 
                                       final selectedFurnishedType =
-                                          FilterBloc.ftypeList.indexOf(option);
+                                          filterProvider.ftypeList
+                                              .indexOf(option);
 
-                                      FilterSetSelectedFurnishedType(
-                                        selectedFurnishedType,
+                                      await filterProvider
+                                          .setSelectedFurnishedType(
                                         context,
+                                        index: selectedFurnishedType,
                                       );
-                                      context.read<FilterBloc>().add(
-                                          FilterUpdateFilterCount(
-                                              context: context));
+                                      await filterProvider
+                                          .updateFilterCount(context);
 
                                       _scrollController.jumpTo(0);
                                     },
@@ -2592,7 +2561,7 @@ class _FliterListState extends State<FliterList> {
                               width: 16,
                             ),
                             const SizedBox(width: 6),
-                            Text(FilterBloc
+                            Text(filterProvider
                                 .ftypeList[filterProvider.selectedIndex ?? 0]
                                 .toString()), // 👉 No TextStyle here
                             const Icon(Icons.arrow_drop_down, size: 18),
@@ -2734,760 +2703,762 @@ class _FliterListState extends State<FliterList> {
 
                               final property = items[index];
 
-                              return Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 5,
-                                  right: 5,
-                                  top: 3,
-                                  bottom: 8,
-                                ),
-                                child: Card(
-                                  elevation: 20,
-                                  shadowColor: Colors.white,
-                                  color: Colors.white,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => Featured_Detail(
-                                              data: property.id.toString()),
-                                        ),
-                                      );
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 5.0, top: 1, right: 5),
-                                      child: Column(
-                                        children: [
-                                          Column(
-                                            children: [
-                                              Stack(
-                                                clipBehavior: Clip.none,
-                                                // ✅ Allows the overlap outside the Stack
-                                                children: [
-                                                  // 🖼️ Property Image Carousel with Rounded Corners
-                                                  ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                    child: AspectRatio(
-                                                      aspectRatio: 1.4,
-                                                      child: PageView.builder(
-                                                        controller:
-                                                            _pageController,
-                                                        scrollDirection:
-                                                            Axis.horizontal,
-                                                        itemCount: property
-                                                                .media
-                                                                ?.length ??
-                                                            0,
-                                                        onPageChanged: (index) {
-                                                          setState(() {
-                                                            _currentImageIndex =
-                                                                index;
-                                                          });
-                                                        },
-                                                        itemBuilder: (context,
-                                                            imgIndex) {
-                                                          return CachedNetworkImage(
-                                                            imageUrl: property
-                                                                .media![
-                                                                    imgIndex]
-                                                                .originalUrl
-                                                                .toString(),
-                                                            fit: BoxFit.cover,
-                                                            placeholder: (context,
-                                                                    url) =>
-                                                                Shimmer
-                                                                    .fromColors(
-                                                              baseColor: Colors
-                                                                  .grey
-                                                                  .shade300,
-                                                              highlightColor:
-                                                                  Colors.grey
-                                                                      .shade100,
-                                                              child: Container(
-                                                                width: double
-                                                                    .infinity,
-                                                                height: 200,
-                                                                color: Colors
-                                                                    .white,
-                                                              ),
-                                                            ),
-                                                          );
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ),
+                              return PropertyCard(item: property);
 
-                                                  // ⚪ Image Indicator Dots
-                                                  Positioned(
-                                                    bottom: 12,
-                                                    left: 0,
-                                                    right: 0,
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: List.generate(
-                                                        property.media
-                                                                ?.length ??
-                                                            0,
-                                                        (index) {
-                                                          final distance = (index -
-                                                                  _currentImageIndex)
-                                                              .abs();
-                                                          double scale;
-                                                          double opacity;
-
-                                                          if (distance == 0) {
-                                                            scale = 1.2;
-                                                            opacity = 1.0;
-                                                          } else if (distance ==
-                                                              1) {
-                                                            scale = 1.0;
-                                                            opacity = 0.7;
-                                                          } else if (distance ==
-                                                              2) {
-                                                            scale = 0.8;
-                                                            opacity = 0.5;
-                                                          } else {
-                                                            scale = 0.5;
-                                                            opacity = 0.0;
-                                                          }
-
-                                                          return AnimatedOpacity(
-                                                            duration: Duration(
-                                                                milliseconds:
-                                                                    300),
-                                                            opacity: opacity,
-                                                            child: SizedBox(
-                                                              width: 12,
-                                                              // fixed size for layout stability
-                                                              height: 12,
-                                                              child: Center(
-                                                                child:
-                                                                    Container(
-                                                                  width:
-                                                                      8 * scale,
-                                                                  height:
-                                                                      8 * scale,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    shape: BoxShape
-                                                                        .circle,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          );
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ),
-
-                                                  // ❤️ Favorite Icon
-                                                  // ❤️ Favorite Icon
-
-                                                  // ❤️ Favorite Icon
-                                                  Positioned(
-                                                    top: 10,
-                                                    right: 10,
-                                                    child: Material(
-                                                      color: Colors.white,
-                                                      shape:
-                                                          const CircleBorder(),
-                                                      elevation: 4,
-                                                      child: Consumer<
-                                                          FavoriteProvider>(
-                                                        builder: (context,
-                                                            favProvider, _) {
-                                                          final isLoggedIn =
-                                                              token.isNotEmpty;
-                                                          final isFav = isLoggedIn &&
-                                                              favProvider
-                                                                  .isFavorite(
-                                                                      property
-                                                                          .id!); // ✅ Only true for logged-in users
-
-                                                          // debugPrint("fav length :${favProvider.fav}");
-
-                                                          return IconButton(
-                                                            icon: Icon(
-                                                              isFav
-                                                                  ? Icons
-                                                                      .favorite
-                                                                  : Icons
-                                                                      .favorite_border,
-                                                              color: isFav
-                                                                  ? Colors.red
-                                                                  : Colors
-                                                                      .grey, // ✅ Grey for logged-out users
-                                                              size: 20,
-                                                            ),
-                                                            onPressed:
-                                                                () async {
-                                                              if (!isLoggedIn) {
-                                                                // 🔒 Show login prompt
-                                                                showDialog(
-                                                                  context:
-                                                                      context,
-                                                                  builder:
-                                                                      (ctx) =>
-                                                                          Dialog(
-                                                                    backgroundColor:
-                                                                        Colors
-                                                                            .transparent,
-                                                                    insetPadding:
-                                                                        EdgeInsets
-                                                                            .zero,
-                                                                    child:
-                                                                        Container(
-                                                                      height:
-                                                                          70,
-                                                                      margin: const EdgeInsets
-                                                                          .only(
-                                                                          bottom:
-                                                                              80,
-                                                                          left:
-                                                                              20,
-                                                                          right:
-                                                                              20),
-                                                                      decoration:
-                                                                          BoxDecoration(
-                                                                        color: Colors
-                                                                            .red,
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(10),
-                                                                      ),
-                                                                      child:
-                                                                          Stack(
-                                                                        clipBehavior:
-                                                                            Clip.none,
-                                                                        children: [
-                                                                          Positioned(
-                                                                            top:
-                                                                                -14,
-                                                                            right:
-                                                                                -10,
-                                                                            child:
-                                                                                Material(
-                                                                              color: Colors.transparent,
-                                                                              child: IconButton(
-                                                                                icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                                                                                onPressed: () => Navigator.of(ctx).pop(),
-                                                                                padding: EdgeInsets.zero,
-                                                                                constraints: const BoxConstraints(),
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                          Positioned(
-                                                                            left:
-                                                                                16,
-                                                                            right:
-                                                                                16,
-                                                                            bottom:
-                                                                                12,
-                                                                            child:
-                                                                                Row(
-                                                                              children: [
-                                                                                const Expanded(
-                                                                                  child: Text(
-                                                                                    'Login required to add favorites.',
-                                                                                    style: TextStyle(color: Colors.white, fontSize: 13),
-                                                                                  ),
-                                                                                ),
-                                                                                const SizedBox(width: 12),
-                                                                                GestureDetector(
-                                                                                  onTap: () {
-                                                                                    Navigator.of(ctx).pop();
-                                                                                    Navigator.of(ctx).pushNamed('/login');
-                                                                                  },
-                                                                                  child: const Text(
-                                                                                    'Login',
-                                                                                    style: TextStyle(
-                                                                                      color: Colors.white,
-                                                                                      fontWeight: FontWeight.bold,
-                                                                                      decoration: TextDecoration.underline,
-                                                                                      decorationColor: Colors.white,
-                                                                                      decorationThickness: 1.5,
-                                                                                    ),
-                                                                                  ),
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                );
-                                                                return;
-                                                              }
-
-                                                              // ✅ Use Provider's API-integrated method
-                                                              final success = await favProvider
-                                                                  .toggleFavoriteWithApi(
-                                                                      property
-                                                                          .id!,
-                                                                      token,
-                                                                      context);
-
-                                                              if (!success) {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(
-                                                                  const SnackBar(
-                                                                      content: Text(
-                                                                          "Failed to update favorite.")),
-                                                                );
-                                                              }
-                                                            },
-                                                          );
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ),
-
-                                                  // 👈 returns an empty widget when not logged in
-
-                                                  // 👈 Return nothing if not logged in
-
-                                                  // 🧑‍💼 Overlapping Agent Profile Image
-                                                  // 🧑‍💼 Overlapping Agent Profile Image
-                                                  // 🧑‍💼 Agent Profile with Navigation to Featured_Detail
-                                                  // 🟢 Positioned Circle Avatar (left: 10)
-                                                  Positioned(
-                                                    bottom: -30,
-                                                    left: 10,
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                Featured_Detail(
-                                                                    data: property
-                                                                        .id
-                                                                        .toString()),
-                                                          ),
-                                                        );
-                                                      },
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          CircleAvatar(
-                                                            radius: 28,
-                                                            backgroundImage: (property
-                                                                            .agentImage !=
-                                                                        null &&
-                                                                    property
-                                                                        .agentImage!
-                                                                        .isNotEmpty)
-                                                                ? CachedNetworkImageProvider(
-                                                                    property
-                                                                        .agentImage!)
-                                                                : const AssetImage(
-                                                                        "assets/images/dummy.jpg")
-                                                                    as ImageProvider,
-                                                          ),
-                                                          const SizedBox(
-                                                              height: 6),
-                                                          Transform.translate(
-                                                            offset: const Offset(
-                                                                -5,
-                                                                0), // shift 4 pixels to the left
-                                                            child: Text(
-                                                              "AGENT",
-                                                              style: TextStyle(
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                                color: Color(
-                                                                    0xFF1A73E9),
-                                                                letterSpacing:
-                                                                    0.5,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-
-                                              // 🔽 Spacer so that the overlapping image is not clipped
-                                              const SizedBox(height: 15),
-
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 0,
-                                                    right: 0,
-                                                    top: 4,
-                                                    bottom: 4),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    // Agent Name
-                                                    Expanded(
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(left: 10),
-                                                        child: Text(
-                                                          property.agentName ??
-                                                              'Agent',
-                                                          style:
-                                                              const TextStyle(
-                                                            fontSize: 15,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            color: Colors.black,
-                                                          ),
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                        ),
-                                                      ),
-                                                    ),
-
-                                                    // Listed text + agency logo
-                                                    Row(
-                                                      children: [
-                                                        if (property.postedOn !=
-                                                                null &&
-                                                            property.postedOn!
-                                                                .isNotEmpty)
-                                                          Text(
-                                                            'Listed ${property.postedOn}',
-                                                            style:
-                                                                const TextStyle(
-                                                              fontSize: 13,
-                                                              color:
-                                                                  Colors.grey,
-                                                            ),
-                                                          ),
-                                                        const SizedBox(
-                                                            width: 4),
-                                                        if (property.agencyLogo !=
-                                                                null &&
-                                                            property.agencyLogo!
-                                                                .isNotEmpty)
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: Container(
-                                                              height: 30,
-                                                              width: 60,
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            4),
-                                                                image:
-                                                                    DecorationImage(
-                                                                  image: CachedNetworkImageProvider(
-                                                                      property
-                                                                          .agencyLogo!),
-                                                                  fit: BoxFit
-                                                                      .contain,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              SizedBox(
-                                                height: 5,
-                                              ),
-
-// 👇 Divider line here
-                                              const Divider(
-                                                thickness: 0.3,
-                                                color: Colors.grey,
-                                                height: 6,
-                                              ),
-                                            ],
-                                          ),
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 5),
-                                            child: ListTile(
-                                              title: Text(
-                                                property.title.toString(),
-                                                style: TextStyle(
-                                                    fontSize: 16, height: 1.4),
-                                              ),
-                                              subtitle: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    top: 8.0),
-                                                child: Text(
-                                                  '${property.price} AED',
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 22,
-                                                      height: 1.4),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Row(
-                                            children: [
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 10, right: 5, top: 0),
-                                                child: Image.asset(
-                                                    "assets/images/map.png",
-                                                    height: 14),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 0, right: 0, top: 0),
-                                                child: Text(
-                                                  property.location.toString(),
-                                                  style: TextStyle(
-                                                      fontSize: 13,
-                                                      height: 1.4,
-                                                      overflow:
-                                                          TextOverflow.visible),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 8),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8.0),
-                                            child: Row(
-                                              children: [
-                                                // === BEDS: Only show if > 0 ===
-                                                if ((property.bedrooms ?? 0) >
-                                                    0) ...[
-                                                  Image.asset(
-                                                      "assets/images/bed.png",
-                                                      height: 13),
-                                                  const SizedBox(width: 5),
-                                                  Text(
-                                                    '${property.bedrooms}',
-                                                    style: const TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w500),
-                                                  ),
-                                                  const SizedBox(
-                                                      width:
-                                                          15), // spacing between bed & bath
-                                                ],
-
-                                                // === BATHS: Only show if > 0 ===
-                                                if ((property.bathrooms ?? 0) >
-                                                    0) ...[
-                                                  Image.asset(
-                                                      "assets/images/bath.png",
-                                                      height: 13),
-                                                  const SizedBox(width: 5),
-                                                  Text(
-                                                    '${property.bathrooms}',
-                                                    style: const TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w500),
-                                                  ),
-                                                  const SizedBox(width: 15),
-                                                ],
-
-                                                // === SIZE: Only show if valid (you already have this logic — keep it!)
-                                                if (property.displaySize
-                                                        .isNotEmpty &&
-                                                    property.displaySize !=
-                                                        '0 sqft') ...[
-                                                  Image.asset(
-                                                      "assets/images/messure.png",
-                                                      height: 13),
-                                                  const SizedBox(width: 5),
-                                                  Text(
-                                                    property.displaySize,
-                                                    style: const TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w500),
-                                                  ),
-                                                ],
-                                              ],
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            height: 10,
-                                          ),
-                                          Row(
-                                            children: [
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: ElevatedButton.icon(
-                                                  onPressed: () async {
-                                                    final propertyId =
-                                                        _safePropertyId(
-                                                            property.id);
-
-                                                    // Mark as contacted (CALL)
-                                                    final success =
-                                                        await markAsContacted(
-                                                            propertyId,
-                                                            contactType:
-                                                                "call");
-
-                                                    if (success && mounted) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                        const SnackBar(
-                                                          content: Text(
-                                                              "Added to contacted properties"),
-                                                          backgroundColor:
-                                                              Colors.green,
-                                                          duration: Duration(
-                                                              seconds: 2),
-                                                        ),
-                                                      );
-                                                    }
-
-                                                    String phone =
-                                                        'tel:${phoneCallNumber(property.phoneNumber ?? '')}';
-                                                    if (await canLaunchUrlString(
-                                                        phone)) {
-                                                      await launchUrlString(
-                                                          phone,
-                                                          mode: LaunchMode
-                                                              .externalApplication);
-                                                    }
-                                                  },
-                                                  icon: const Icon(Icons.call,
-                                                      color: Colors.red),
-                                                  label: const Text("Call",
-                                                      style: TextStyle(
-                                                          color: Colors.black)),
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.grey[100],
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10)),
-                                                    elevation: 2,
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        vertical: 12),
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: ElevatedButton.icon(
-                                                  onPressed: () async {
-                                                    final propertyId =
-                                                        _safePropertyId(
-                                                            property.id);
-
-                                                    // Mark as contacted (WHATSAPP)
-                                                    final success =
-                                                        await markAsContacted(
-                                                            propertyId,
-                                                            contactType:
-                                                                "whatsapp");
-
-                                                    if (success && mounted) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                        const SnackBar(
-                                                          content: Text(
-                                                              "Added to contacted properties"),
-                                                          backgroundColor:
-                                                              Colors.green,
-                                                          duration: Duration(
-                                                              seconds: 2),
-                                                        ),
-                                                      );
-                                                    }
-
-                                                    final phone =
-                                                        whatsAppNumber(
-                                                            property.whatsapp ??
-                                                                '');
-                                                    final message =
-                                                        Uri.encodeComponent(
-                                                            "Hi, I'm interested in your property: ${property.title}");
-                                                    final url = Uri.parse(
-                                                        "https://wa.me/$phone?text=$message");
-
-                                                    if (await canLaunchUrl(
-                                                        url)) {
-                                                      await launchUrl(url,
-                                                          mode: LaunchMode
-                                                              .externalApplication);
-                                                    } else {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                        const SnackBar(
-                                                            content: Text(
-                                                                "WhatsApp not installed")),
-                                                      );
-                                                    }
-                                                  },
-                                                  icon: Image.asset(
-                                                      "assets/images/whats.png",
-                                                      height: 20),
-                                                  label: const Text("WhatsApp",
-                                                      style: TextStyle(
-                                                          color: Colors.black)),
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.grey[100],
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10)),
-                                                    elevation: 2,
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        vertical: 12),
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 10),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
+//                               return Padding(
+//                                 padding: const EdgeInsets.only(
+//                                   left: 5,
+//                                   right: 5,
+//                                   top: 3,
+//                                   bottom: 8,
+//                                 ),
+//                                 child: Card(
+//                                   elevation: 20,
+//                                   shadowColor: Colors.white,
+//                                   color: Colors.white,
+//                                   child: GestureDetector(
+//                                     onTap: () {
+//                                       Navigator.push(
+//                                         context,
+//                                         MaterialPageRoute(
+//                                           builder: (context) => Featured_Detail(
+//                                               data: property.id.toString()),
+//                                         ),
+//                                       );
+//                                     },
+//                                     child: Padding(
+//                                       padding: const EdgeInsets.only(
+//                                           left: 5.0, top: 1, right: 5),
+//                                       child: Column(
+//                                         children: [
+//                                           Column(
+//                                             children: [
+//                                               Stack(
+//                                                 clipBehavior: Clip.none,
+//                                                 // ✅ Allows the overlap outside the Stack
+//                                                 children: [
+//                                                   // 🖼️ Property Image Carousel with Rounded Corners
+//                                                   ClipRRect(
+//                                                     borderRadius:
+//                                                         BorderRadius.circular(
+//                                                             12),
+//                                                     child: AspectRatio(
+//                                                       aspectRatio: 1.4,
+//                                                       child: PageView.builder(
+//                                                         controller:
+//                                                             _pageController,
+//                                                         scrollDirection:
+//                                                             Axis.horizontal,
+//                                                         itemCount: property
+//                                                                 .media
+//                                                                 ?.length ??
+//                                                             0,
+//                                                         onPageChanged: (index) {
+//                                                           setState(() {
+//                                                             _currentImageIndex =
+//                                                                 index;
+//                                                           });
+//                                                         },
+//                                                         itemBuilder: (context,
+//                                                             imgIndex) {
+//                                                           return CachedNetworkImage(
+//                                                             imageUrl: property
+//                                                                 .media![
+//                                                                     imgIndex]
+//                                                                 .originalUrl
+//                                                                 .toString(),
+//                                                             fit: BoxFit.cover,
+//                                                             placeholder: (context,
+//                                                                     url) =>
+//                                                                 Shimmer
+//                                                                     .fromColors(
+//                                                               baseColor: Colors
+//                                                                   .grey
+//                                                                   .shade300,
+//                                                               highlightColor:
+//                                                                   Colors.grey
+//                                                                       .shade100,
+//                                                               child: Container(
+//                                                                 width: double
+//                                                                     .infinity,
+//                                                                 height: 200,
+//                                                                 color: Colors
+//                                                                     .white,
+//                                                               ),
+//                                                             ),
+//                                                           );
+//                                                         },
+//                                                       ),
+//                                                     ),
+//                                                   ),
+//
+//                                                   // ⚪ Image Indicator Dots
+//                                                   Positioned(
+//                                                     bottom: 12,
+//                                                     left: 0,
+//                                                     right: 0,
+//                                                     child: Row(
+//                                                       mainAxisAlignment:
+//                                                           MainAxisAlignment
+//                                                               .center,
+//                                                       children: List.generate(
+//                                                         property.media
+//                                                                 ?.length ??
+//                                                             0,
+//                                                         (index) {
+//                                                           final distance = (index -
+//                                                                   _currentImageIndex)
+//                                                               .abs();
+//                                                           double scale;
+//                                                           double opacity;
+//
+//                                                           if (distance == 0) {
+//                                                             scale = 1.2;
+//                                                             opacity = 1.0;
+//                                                           } else if (distance ==
+//                                                               1) {
+//                                                             scale = 1.0;
+//                                                             opacity = 0.7;
+//                                                           } else if (distance ==
+//                                                               2) {
+//                                                             scale = 0.8;
+//                                                             opacity = 0.5;
+//                                                           } else {
+//                                                             scale = 0.5;
+//                                                             opacity = 0.0;
+//                                                           }
+//
+//                                                           return AnimatedOpacity(
+//                                                             duration: Duration(
+//                                                                 milliseconds:
+//                                                                     300),
+//                                                             opacity: opacity,
+//                                                             child: SizedBox(
+//                                                               width: 12,
+//                                                               // fixed size for layout stability
+//                                                               height: 12,
+//                                                               child: Center(
+//                                                                 child:
+//                                                                     Container(
+//                                                                   width:
+//                                                                       8 * scale,
+//                                                                   height:
+//                                                                       8 * scale,
+//                                                                   decoration:
+//                                                                       BoxDecoration(
+//                                                                     color: Colors
+//                                                                         .white,
+//                                                                     shape: BoxShape
+//                                                                         .circle,
+//                                                                   ),
+//                                                                 ),
+//                                                               ),
+//                                                             ),
+//                                                           );
+//                                                         },
+//                                                       ),
+//                                                     ),
+//                                                   ),
+//
+//                                                   // ❤️ Favorite Icon
+//                                                   // ❤️ Favorite Icon
+//
+//                                                   // ❤️ Favorite Icon
+//                                                   Positioned(
+//                                                     top: 10,
+//                                                     right: 10,
+//                                                     child: Material(
+//                                                       color: Colors.white,
+//                                                       shape:
+//                                                           const CircleBorder(),
+//                                                       elevation: 4,
+//                                                       child: Consumer<
+//                                                           FavoriteProvider>(
+//                                                         builder: (context,
+//                                                             favProvider, _) {
+//                                                           final isLoggedIn =
+//                                                               token.isNotEmpty;
+//                                                           final isFav = isLoggedIn &&
+//                                                               favProvider
+//                                                                   .isFavorite(
+//                                                                       property
+//                                                                           .id!); // ✅ Only true for logged-in users
+//
+//                                                           // debugPrint("fav length :${favProvider.fav}");
+//
+//                                                           return IconButton(
+//                                                             icon: Icon(
+//                                                               isFav
+//                                                                   ? Icons
+//                                                                       .favorite
+//                                                                   : Icons
+//                                                                       .favorite_border,
+//                                                               color: isFav
+//                                                                   ? Colors.red
+//                                                                   : Colors
+//                                                                       .grey, // ✅ Grey for logged-out users
+//                                                               size: 20,
+//                                                             ),
+//                                                             onPressed:
+//                                                                 () async {
+//                                                               if (!isLoggedIn) {
+//                                                                 // 🔒 Show login prompt
+//                                                                 showDialog(
+//                                                                   context:
+//                                                                       context,
+//                                                                   builder:
+//                                                                       (ctx) =>
+//                                                                           Dialog(
+//                                                                     backgroundColor:
+//                                                                         Colors
+//                                                                             .transparent,
+//                                                                     insetPadding:
+//                                                                         EdgeInsets
+//                                                                             .zero,
+//                                                                     child:
+//                                                                         Container(
+//                                                                       height:
+//                                                                           70,
+//                                                                       margin: const EdgeInsets
+//                                                                           .only(
+//                                                                           bottom:
+//                                                                               80,
+//                                                                           left:
+//                                                                               20,
+//                                                                           right:
+//                                                                               20),
+//                                                                       decoration:
+//                                                                           BoxDecoration(
+//                                                                         color: Colors
+//                                                                             .red,
+//                                                                         borderRadius:
+//                                                                             BorderRadius.circular(10),
+//                                                                       ),
+//                                                                       child:
+//                                                                           Stack(
+//                                                                         clipBehavior:
+//                                                                             Clip.none,
+//                                                                         children: [
+//                                                                           Positioned(
+//                                                                             top:
+//                                                                                 -14,
+//                                                                             right:
+//                                                                                 -10,
+//                                                                             child:
+//                                                                                 Material(
+//                                                                               color: Colors.transparent,
+//                                                                               child: IconButton(
+//                                                                                 icon: const Icon(Icons.close, color: Colors.white, size: 20),
+//                                                                                 onPressed: () => Navigator.of(ctx).pop(),
+//                                                                                 padding: EdgeInsets.zero,
+//                                                                                 constraints: const BoxConstraints(),
+//                                                                               ),
+//                                                                             ),
+//                                                                           ),
+//                                                                           Positioned(
+//                                                                             left:
+//                                                                                 16,
+//                                                                             right:
+//                                                                                 16,
+//                                                                             bottom:
+//                                                                                 12,
+//                                                                             child:
+//                                                                                 Row(
+//                                                                               children: [
+//                                                                                 const Expanded(
+//                                                                                   child: Text(
+//                                                                                     'Login required to add favorites.',
+//                                                                                     style: TextStyle(color: Colors.white, fontSize: 13),
+//                                                                                   ),
+//                                                                                 ),
+//                                                                                 const SizedBox(width: 12),
+//                                                                                 GestureDetector(
+//                                                                                   onTap: () {
+//                                                                                     Navigator.of(ctx).pop();
+//                                                                                     Navigator.of(ctx).pushNamed('/login');
+//                                                                                   },
+//                                                                                   child: const Text(
+//                                                                                     'Login',
+//                                                                                     style: TextStyle(
+//                                                                                       color: Colors.white,
+//                                                                                       fontWeight: FontWeight.bold,
+//                                                                                       decoration: TextDecoration.underline,
+//                                                                                       decorationColor: Colors.white,
+//                                                                                       decorationThickness: 1.5,
+//                                                                                     ),
+//                                                                                   ),
+//                                                                                 ),
+//                                                                               ],
+//                                                                             ),
+//                                                                           ),
+//                                                                         ],
+//                                                                       ),
+//                                                                     ),
+//                                                                   ),
+//                                                                 );
+//                                                                 return;
+//                                                               }
+//
+//                                                               // ✅ Use Provider's API-integrated method
+//                                                               final success = await favProvider
+//                                                                   .toggleFavoriteWithApi(
+//                                                                       property
+//                                                                           .id!,
+//                                                                       token,
+//                                                                       context);
+//
+//                                                               if (!success) {
+//                                                                 ScaffoldMessenger.of(
+//                                                                         context)
+//                                                                     .showSnackBar(
+//                                                                   const SnackBar(
+//                                                                       content: Text(
+//                                                                           "Failed to update favorite.")),
+//                                                                 );
+//                                                               }
+//                                                             },
+//                                                           );
+//                                                         },
+//                                                       ),
+//                                                     ),
+//                                                   ),
+//
+//                                                   // 👈 returns an empty widget when not logged in
+//
+//                                                   // 👈 Return nothing if not logged in
+//
+//                                                   // 🧑‍💼 Overlapping Agent Profile Image
+//                                                   // 🧑‍💼 Overlapping Agent Profile Image
+//                                                   // 🧑‍💼 Agent Profile with Navigation to Featured_Detail
+//                                                   // 🟢 Positioned Circle Avatar (left: 10)
+//                                                   Positioned(
+//                                                     bottom: -30,
+//                                                     left: 10,
+//                                                     child: GestureDetector(
+//                                                       onTap: () {
+//                                                         Navigator.push(
+//                                                           context,
+//                                                           MaterialPageRoute(
+//                                                             builder: (context) =>
+//                                                                 Featured_Detail(
+//                                                                     data: property
+//                                                                         .id
+//                                                                         .toString()),
+//                                                           ),
+//                                                         );
+//                                                       },
+//                                                       child: Column(
+//                                                         crossAxisAlignment:
+//                                                             CrossAxisAlignment
+//                                                                 .center,
+//                                                         children: [
+//                                                           CircleAvatar(
+//                                                             radius: 28,
+//                                                             backgroundImage: (property
+//                                                                             .agentImage !=
+//                                                                         null &&
+//                                                                     property
+//                                                                         .agentImage!
+//                                                                         .isNotEmpty)
+//                                                                 ? CachedNetworkImageProvider(
+//                                                                     property
+//                                                                         .agentImage!)
+//                                                                 : const AssetImage(
+//                                                                         "assets/images/dummy.jpg")
+//                                                                     as ImageProvider,
+//                                                           ),
+//                                                           const SizedBox(
+//                                                               height: 6),
+//                                                           Transform.translate(
+//                                                             offset: const Offset(
+//                                                                 -5,
+//                                                                 0), // shift 4 pixels to the left
+//                                                             child: Text(
+//                                                               "AGENT",
+//                                                               style: TextStyle(
+//                                                                 fontSize: 12,
+//                                                                 fontWeight:
+//                                                                     FontWeight
+//                                                                         .w500,
+//                                                                 color: Color(
+//                                                                     0xFF1A73E9),
+//                                                                 letterSpacing:
+//                                                                     0.5,
+//                                                               ),
+//                                                             ),
+//                                                           ),
+//                                                         ],
+//                                                       ),
+//                                                     ),
+//                                                   ),
+//                                                 ],
+//                                               ),
+//
+//                                               // 🔽 Spacer so that the overlapping image is not clipped
+//                                               const SizedBox(height: 15),
+//
+//                                               Padding(
+//                                                 padding: const EdgeInsets.only(
+//                                                     left: 0,
+//                                                     right: 0,
+//                                                     top: 4,
+//                                                     bottom: 4),
+//                                                 child: Row(
+//                                                   mainAxisAlignment:
+//                                                       MainAxisAlignment
+//                                                           .spaceBetween,
+//                                                   crossAxisAlignment:
+//                                                       CrossAxisAlignment.center,
+//                                                   children: [
+//                                                     // Agent Name
+//                                                     Expanded(
+//                                                       child: Padding(
+//                                                         padding:
+//                                                             const EdgeInsets
+//                                                                 .only(left: 10),
+//                                                         child: Text(
+//                                                           property.agentName ??
+//                                                               'Agent',
+//                                                           style:
+//                                                               const TextStyle(
+//                                                             fontSize: 15,
+//                                                             fontWeight:
+//                                                                 FontWeight.w600,
+//                                                             color: Colors.black,
+//                                                           ),
+//                                                           overflow: TextOverflow
+//                                                               .ellipsis,
+//                                                         ),
+//                                                       ),
+//                                                     ),
+//
+//                                                     // Listed text + agency logo
+//                                                     Row(
+//                                                       children: [
+//                                                         if (property.postedOn !=
+//                                                                 null &&
+//                                                             property.postedOn!
+//                                                                 .isNotEmpty)
+//                                                           Text(
+//                                                             'Listed ${property.postedOn}',
+//                                                             style:
+//                                                                 const TextStyle(
+//                                                               fontSize: 13,
+//                                                               color:
+//                                                                   Colors.grey,
+//                                                             ),
+//                                                           ),
+//                                                         const SizedBox(
+//                                                             width: 4),
+//                                                         if (property.agencyLogo !=
+//                                                                 null &&
+//                                                             property.agencyLogo!
+//                                                                 .isNotEmpty)
+//                                                           Padding(
+//                                                             padding:
+//                                                                 const EdgeInsets
+//                                                                     .all(8.0),
+//                                                             child: Container(
+//                                                               height: 30,
+//                                                               width: 60,
+//                                                               decoration:
+//                                                                   BoxDecoration(
+//                                                                 borderRadius:
+//                                                                     BorderRadius
+//                                                                         .circular(
+//                                                                             4),
+//                                                                 image:
+//                                                                     DecorationImage(
+//                                                                   image: CachedNetworkImageProvider(
+//                                                                       property
+//                                                                           .agencyLogo!),
+//                                                                   fit: BoxFit
+//                                                                       .contain,
+//                                                                 ),
+//                                                               ),
+//                                                             ),
+//                                                           ),
+//                                                       ],
+//                                                     ),
+//                                                   ],
+//                                                 ),
+//                                               ),
+//
+//                                               SizedBox(
+//                                                 height: 5,
+//                                               ),
+//
+// // 👇 Divider line here
+//                                               const Divider(
+//                                                 thickness: 0.3,
+//                                                 color: Colors.grey,
+//                                                 height: 6,
+//                                               ),
+//                                             ],
+//                                           ),
+//                                           Padding(
+//                                             padding:
+//                                                 const EdgeInsets.only(top: 5),
+//                                             child: ListTile(
+//                                               title: Text(
+//                                                 property.title.toString(),
+//                                                 style: TextStyle(
+//                                                     fontSize: 16, height: 1.4),
+//                                               ),
+//                                               subtitle: Padding(
+//                                                 padding: const EdgeInsets.only(
+//                                                     top: 8.0),
+//                                                 child: Text(
+//                                                   '${property.price} AED',
+//                                                   style: TextStyle(
+//                                                       fontWeight:
+//                                                           FontWeight.bold,
+//                                                       fontSize: 22,
+//                                                       height: 1.4),
+//                                                 ),
+//                                               ),
+//                                             ),
+//                                           ),
+//                                           Row(
+//                                             children: [
+//                                               Padding(
+//                                                 padding: const EdgeInsets.only(
+//                                                     left: 10, right: 5, top: 0),
+//                                                 child: Image.asset(
+//                                                     "assets/images/map.png",
+//                                                     height: 14),
+//                                               ),
+//                                               Padding(
+//                                                 padding: const EdgeInsets.only(
+//                                                     left: 0, right: 0, top: 0),
+//                                                 child: Text(
+//                                                   property.location.toString(),
+//                                                   style: TextStyle(
+//                                                       fontSize: 13,
+//                                                       height: 1.4,
+//                                                       overflow:
+//                                                           TextOverflow.visible),
+//                                                 ),
+//                                               ),
+//                                             ],
+//                                           ),
+//                                           SizedBox(height: 8),
+//                                           Padding(
+//                                             padding: const EdgeInsets.symmetric(
+//                                                 horizontal: 8.0),
+//                                             child: Row(
+//                                               children: [
+//                                                 // === BEDS: Only show if > 0 ===
+//                                                 if ((property.bedrooms ?? 0) >
+//                                                     0) ...[
+//                                                   Image.asset(
+//                                                       "assets/images/bed.png",
+//                                                       height: 13),
+//                                                   const SizedBox(width: 5),
+//                                                   Text(
+//                                                     '${property.bedrooms}',
+//                                                     style: const TextStyle(
+//                                                         fontSize: 14,
+//                                                         fontWeight:
+//                                                             FontWeight.w500),
+//                                                   ),
+//                                                   const SizedBox(
+//                                                       width:
+//                                                           15), // spacing between bed & bath
+//                                                 ],
+//
+//                                                 // === BATHS: Only show if > 0 ===
+//                                                 if ((property.bathrooms ?? 0) >
+//                                                     0) ...[
+//                                                   Image.asset(
+//                                                       "assets/images/bath.png",
+//                                                       height: 13),
+//                                                   const SizedBox(width: 5),
+//                                                   Text(
+//                                                     '${property.bathrooms}',
+//                                                     style: const TextStyle(
+//                                                         fontSize: 14,
+//                                                         fontWeight:
+//                                                             FontWeight.w500),
+//                                                   ),
+//                                                   const SizedBox(width: 15),
+//                                                 ],
+//
+//                                                 // === SIZE: Only show if valid (you already have this logic — keep it!)
+//                                                 if (property.displaySize
+//                                                         .isNotEmpty &&
+//                                                     property.displaySize !=
+//                                                         '0 sqft') ...[
+//                                                   Image.asset(
+//                                                       "assets/images/messure.png",
+//                                                       height: 13),
+//                                                   const SizedBox(width: 5),
+//                                                   Text(
+//                                                     property.displaySize,
+//                                                     style: const TextStyle(
+//                                                         fontSize: 14,
+//                                                         fontWeight:
+//                                                             FontWeight.w500),
+//                                                   ),
+//                                                 ],
+//                                               ],
+//                                             ),
+//                                           ),
+//                                           SizedBox(
+//                                             height: 10,
+//                                           ),
+//                                           Row(
+//                                             children: [
+//                                               const SizedBox(width: 10),
+//                                               Expanded(
+//                                                 child: ElevatedButton.icon(
+//                                                   onPressed: () async {
+//                                                     final propertyId =
+//                                                         _safePropertyId(
+//                                                             property.id);
+//
+//                                                     // Mark as contacted (CALL)
+//                                                     final success =
+//                                                         await markAsContacted(
+//                                                             propertyId,
+//                                                             contactType:
+//                                                                 "call");
+//
+//                                                     if (success && mounted) {
+//                                                       ScaffoldMessenger.of(
+//                                                               context)
+//                                                           .showSnackBar(
+//                                                         const SnackBar(
+//                                                           content: Text(
+//                                                               "Added to contacted properties"),
+//                                                           backgroundColor:
+//                                                               Colors.green,
+//                                                           duration: Duration(
+//                                                               seconds: 2),
+//                                                         ),
+//                                                       );
+//                                                     }
+//
+//                                                     String phone =
+//                                                         'tel:${phoneCallNumber(property.phoneNumber ?? '')}';
+//                                                     if (await canLaunchUrlString(
+//                                                         phone)) {
+//                                                       await launchUrlString(
+//                                                           phone,
+//                                                           mode: LaunchMode
+//                                                               .externalApplication);
+//                                                     }
+//                                                   },
+//                                                   icon: const Icon(Icons.call,
+//                                                       color: Colors.red),
+//                                                   label: const Text("Call",
+//                                                       style: TextStyle(
+//                                                           color: Colors.black)),
+//                                                   style:
+//                                                       ElevatedButton.styleFrom(
+//                                                     backgroundColor:
+//                                                         Colors.grey[100],
+//                                                     shape:
+//                                                         RoundedRectangleBorder(
+//                                                             borderRadius:
+//                                                                 BorderRadius
+//                                                                     .circular(
+//                                                                         10)),
+//                                                     elevation: 2,
+//                                                     padding: const EdgeInsets
+//                                                         .symmetric(
+//                                                         vertical: 12),
+//                                                   ),
+//                                                 ),
+//                                               ),
+//                                               const SizedBox(width: 10),
+//                                               Expanded(
+//                                                 child: ElevatedButton.icon(
+//                                                   onPressed: () async {
+//                                                     final propertyId =
+//                                                         _safePropertyId(
+//                                                             property.id);
+//
+//                                                     // Mark as contacted (WHATSAPP)
+//                                                     final success =
+//                                                         await markAsContacted(
+//                                                             propertyId,
+//                                                             contactType:
+//                                                                 "whatsapp");
+//
+//                                                     if (success && mounted) {
+//                                                       ScaffoldMessenger.of(
+//                                                               context)
+//                                                           .showSnackBar(
+//                                                         const SnackBar(
+//                                                           content: Text(
+//                                                               "Added to contacted properties"),
+//                                                           backgroundColor:
+//                                                               Colors.green,
+//                                                           duration: Duration(
+//                                                               seconds: 2),
+//                                                         ),
+//                                                       );
+//                                                     }
+//
+//                                                     final phone =
+//                                                         whatsAppNumber(
+//                                                             property.whatsapp ??
+//                                                                 '');
+//                                                     final message =
+//                                                         Uri.encodeComponent(
+//                                                             "Hi, I'm interested in your property: ${property.title}");
+//                                                     final url = Uri.parse(
+//                                                         "https://wa.me/$phone?text=$message");
+//
+//                                                     if (await canLaunchUrl(
+//                                                         url)) {
+//                                                       await launchUrl(url,
+//                                                           mode: LaunchMode
+//                                                               .externalApplication);
+//                                                     } else {
+//                                                       ScaffoldMessenger.of(
+//                                                               context)
+//                                                           .showSnackBar(
+//                                                         const SnackBar(
+//                                                             content: Text(
+//                                                                 "WhatsApp not installed")),
+//                                                       );
+//                                                     }
+//                                                   },
+//                                                   icon: Image.asset(
+//                                                       "assets/images/whats.png",
+//                                                       height: 20),
+//                                                   label: const Text("WhatsApp",
+//                                                       style: TextStyle(
+//                                                           color: Colors.black)),
+//                                                   style:
+//                                                       ElevatedButton.styleFrom(
+//                                                     backgroundColor:
+//                                                         Colors.grey[100],
+//                                                     shape:
+//                                                         RoundedRectangleBorder(
+//                                                             borderRadius:
+//                                                                 BorderRadius
+//                                                                     .circular(
+//                                                                         10)),
+//                                                     elevation: 2,
+//                                                     padding: const EdgeInsets
+//                                                         .symmetric(
+//                                                         vertical: 12),
+//                                                   ),
+//                                                 ),
+//                                               ),
+//                                               const SizedBox(width: 10),
+//                                             ],
+//                                           ),
+//                                           const SizedBox(height: 10),
+//                                         ],
+//                                       ),
+//                                     ),
+//                                   ),
+//                                 ),
+//                               );
                             },
                           ),
                         )

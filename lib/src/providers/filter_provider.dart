@@ -1,21 +1,19 @@
 import 'dart:convert';
 
 import 'package:Akarat/main.dart';
+import 'package:Akarat/src/features/property/data/models/property_model.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_core/core.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
-import '../core/network/dio_client.dart';
-import '../core/utils/locale_utils.dart';
+import '../core/services/api_service.dart';
 import '../features/filter/data/model/filtermodel.dart';
 import '../features/property/data/models/amenities_model.dart';
-
-import '../features/property/data/models/property_type_model.dart' hide Data;
-import '../core/services/api_service.dart';
+// import '../features/property/data/models/property_type_model.dart' hide Data;
+import '../features/property/data/models/property_type_model.dart';
 import '../utils/shared_preference_manager.dart';
 import 'location_picker_provider.dart';
 
@@ -113,8 +111,6 @@ class FilterProvider extends ChangeNotifier {
   FilterModel? filterModel;
 
   int filterResultCount = 0;
-
-  final Map<String, PropertyTypeModel> propertyTypeCache = {};
 
   String token = '';
   String email = '';
@@ -411,21 +407,18 @@ class FilterProvider extends ChangeNotifier {
   String? nextPageUrl;
 
   Future<void> updateFilterCount(
-      BuildContext context, {
-        bool loadMore = false,
-      }) async {
+    BuildContext context, {
+    bool loadMore = false,
+  }) async {
     if (isFilterListFilterModelLoading) return;
-
     try {
-      // Prevent unnecessary calls when there's no more data
+      // Stop if no more pages on loadMore
       if (loadMore && (nextPageUrl == null || nextPageUrl!.isEmpty)) {
         debugPrint("🔴 No more pages to load.");
         return;
       }
-
       isFilterListFilterModelLoading = true;
       notifyListeners();
-
       final amenitiesList = selectedAmenitiesId;
 
       final locList = navigatorKey.currentContext!
@@ -435,25 +428,29 @@ class FilterProvider extends ChangeNotifier {
       List<String?> locationNames = locList.map((e) {
         debugPrint('⬇⬇⬇ locations: ${e.location}');
         debugPrint('⬇⬇⬇ country: ${e.country}');
+
         return (e.location ?? e.country)?.toLowerCase();
       }).toList();
 
-      debugPrint('Locations sent: ${locationNames.join(',')}');
+      debugPrint(locationNames.join(','));
 
       String currentPage;
+      // Build URL to ALWAYS include sort_by
       if (loadMore) {
+        // Derive next page from meta; don't trust links.next because it may drop sort
         final meta = filterModel?.meta;
         final current = meta?.currentPage ?? 1;
         final last = meta?.lastPage ?? 1;
 
         if (current >= last) {
-          debugPrint("🔴 Already at last page.");
-          isFilterListFilterModelLoading = false;
+          isLoading = false;
           notifyListeners();
+          debugPrint("🔴 Already at last page.");
           return;
         }
 
-        currentPage = (current + 1).toString();
+        final nextPage = current + 1;
+        currentPage = nextPage.toString();
       } else {
         currentPage = "1";
       }
@@ -482,21 +479,17 @@ class FilterProvider extends ChangeNotifier {
         completions_min: completion_min,
       );
 
-      debugPrint('📢 Filter API URL: $uri');
+      debugPrint('📢 Filter API URL: $uri'); // log the URL
 
-      final response = await DioClient.dio.getUri(uri).timeout(
-        const Duration(seconds: 10),
-      );
-
-      debugPrint('Filter API → status: ${response.statusCode}');
+      final response = await http.get(uri);
 
       if (response.statusCode == 200) {
-        final data = response.data; // Dio already parsed JSON
+        final data = jsonDecode(response.body);
         final feature = FilterResponseModel.fromJson(data);
 
-        final List<Data> incoming = feature.data?.data ?? <Data>[];
-        final List<Data> currentList =
-        loadMore ? (filterModel?.data ?? <Data>[]) : <Data>[];
+        final List<Property> incoming = feature.data?.data ?? <Property>[];
+        final List<Property> currentList =
+            loadMore ? (filterModel?.data ?? <Property>[]) : <Property>[];
 
         // Merge + de-dupe by id
         final merged = mergeDedupData(currentList, incoming);
@@ -507,49 +500,44 @@ class FilterProvider extends ChangeNotifier {
           meta: feature.data?.meta,
         );
 
-        debugPrint('✅ filter model count: ${filterModel?.data?.length}');
+        // filterModel = feature.data!;
+        debugPrint('✅ filter modell count: ${filterModel?.data?.length}');
 
         filterResultCount = filterModel?.meta?.total ?? 0;
         displayedFilterResultCount = filterResultCount;
         debugPrint('✅ Updated filter count: $filterResultCount');
 
-        // Compute safe nextPageUrl (preserves all query params including sort_by)
+        // Compute a safe nextPageUrl that preserves sort_by
         final m = feature.data?.meta;
         if (m != null) {
           final cur = m.currentPage ?? 1;
           final last = m.lastPage ?? 1;
           nextPageUrl = (cur < last)
               ? ApiService.buildUri(
-            uri.path, // keep original path (/filters)
-            query: {
-              ...uri.queryParameters,
-              'page': '${cur + 1}',
-            },
-          ).toString()
+                  'properties',
+                  query: {
+                    'page': '${cur + 1}',
+                  },
+                ).toString()
               : null;
         } else {
           nextPageUrl = null;
         }
       } else {
         debugPrint("❌ API Error: ${response.statusCode}");
-        debugPrint("Response preview: ${response.data.toString().substring(0, 300)}...");
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
       debugPrint("❌ Error in updateFilterCount: $e");
-      if (kDebugMode) {
-        debugPrint("Stack trace: $stackTrace");
-      }
     }
-
     isFilterListFilterModelLoading = false;
     notifyListeners();
   }
 
-  List<Data> mergeDedupData(List<Data> a, List<Data> b) {
-    final map = <int, Data>{};
+  List<Property> mergeDedupData(List<Property> a, List<Property> b) {
+    final map = <int, Property>{};
 
-    for (Data item in [...a, ...b]) {
-      final id = item.id ?? -1;
+    for (Property item in [...a, ...b]) {
+      final id = (int.parse(item.id)) ?? -1;
       if (id != -1) {
         map[id] = item; // later item replaces old one
       }
@@ -563,173 +551,112 @@ class FilterProvider extends ChangeNotifier {
       isPropertyTypeLoading = true;
       notifyListeners();
 
-      debugPrint('Fetching property types for purpose: $purpose via Dio...');
-
       final uri = ApiService.buildUri('property-types/$purpose');
 
-
-      final response = await DioClient.dio.get(
-        uri.path,
-        queryParameters: uri.queryParameters,
-      );
-
-      debugPrint('Property types API → status: ${response.statusCode}');
+      final response = await http.get(uri);
 
       if (response.statusCode == 200) {
-        // Dio already parses JSON → use response.data directly
-        final data = response.data;
+        final data = jsonDecode(response.body);
         final feature = PropertyTypeModel.fromJson(data);
 
         propertyTypeModel = feature;
-        debugPrint('✅ Loaded ${feature.data?.length ?? 0} property types');
         notifyListeners();
       } else {
         debugPrint("❌ Property API failed: ${response.statusCode}");
-        debugPrint("Response preview: ${response.data.toString().substring(0, 300)}...");
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
       debugPrint("🚨 Property API error: $e");
-      if (kDebugMode) {
-        debugPrint('Stack trace: $stackTrace');
-      }
     }
-
     isPropertyTypeLoading = false;
     notifyListeners();
   }
 
-  Future<void> fetchAmenities(BuildContext context) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final currentLang = getCurrentLanguageCode(context); // e.g., 'ar' or 'en'
+  Future<void> fetchAmenities() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cachedKey = 'cached_amenities';
+    final cachedTimeKey = 'cached_time_amenities';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastFetched = prefs.getInt(cachedTimeKey) ?? 0;
 
-      // 🔹 Debug: check which language is being sent
-      debugPrint('🟢 Current language code: $currentLang');
+    // If cached data is fresh (<6 hours), use it
+    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
+      final cachedData = prefs.getString(cachedKey);
+      if (cachedData != null) {
+        final List<dynamic> jsonData = json.decode(cachedData);
 
-      final cacheKey = 'cached_amenities_$currentLang';
-      final cacheTimeKey = 'cached_time_amenities_$currentLang';
+        amenities = jsonData.map((data) => Amenities.fromJson(data)).toList();
 
-      final now = DateTime.now().millisecondsSinceEpoch;
-      final lastFetched = prefs.getInt(cacheTimeKey) ?? 0;
-
-      // Use cached data if recent
-      if (now - lastFetched < const Duration(hours: 6).inMilliseconds) {
-        final cachedData = prefs.getString(cacheKey);
-        if (cachedData != null) {
-          final List<dynamic> jsonData = json.decode(cachedData);
-          amenities = jsonData.map((e) => Amenities.fromJson(e)).toList();
-
-          notifyListeners();
-          return;
-        }
+        return;
       }
-
-      final uri = ApiService.buildUri('amenities');
-
-      final response = await http
-          .get(uri, headers: {
-        'Accept': 'application/json',
-        'Accept-Language': currentLang, // important
-      })
-          .timeout(const Duration(seconds: 8));
-
-      // 🔹 Debug: print the raw API response
-      debugPrint('🟢 Amenities response: ${response.body}');
-
-      if (response.statusCode == 200) {
-        prefs.setString(cacheKey, response.body);
-        prefs.setInt(cacheTimeKey, now);
-
-        // 🔹 Parse response with correct language
-        final List<dynamic> jsonData = json.decode(response.body);
-        amenities = jsonData.map((e) => Amenities.fromJson(e)).toList();
-
-
-      } else {
-        debugPrint('❌ fetchAmenities API failed: ${response.statusCode}');
-      }
-    } catch (e) {
-      debugPrint('❌ Error in fetchAmenities: $e');
     }
 
+    // Fetch data from API if not cached or cache has expired
+    try {
+      final uri = ApiService.buildUri('amenities');
+
+      final response = await http.get(uri).timeout(const Duration(seconds: 8));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+
+        // Save data to cache
+        prefs.setString(cachedKey, response.body);
+        prefs.setInt(cachedTimeKey, now);
+
+        amenities = jsonData.map((data) => Amenities.fromJson(data)).toList();
+      } else {
+        debugPrint("❌ Failed to load amenities: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("🚨 Error fetching amenities: $e");
+    }
     notifyListeners();
   }
-
-// ---------------------------------------------------------------------
-
-
-
-
 
   Future<void> loadInitialData() async {
     try {
       isLoading = true;
       notifyListeners();
 
-      // ────────────────────────────────────────────────
-      // FETCH AMENITIES using Dio (header added automatically)
-      // ────────────────────────────────────────────────
-      debugPrint('Loading initial amenities via Dio...');
+      // FETCH AMENITIES
 
-      final amenitiesResponse = await DioClient.dio.get(
-        '/amenities',
-      ).timeout(const Duration(seconds: 8));
+      final uri = ApiService.buildUri('amenities');
 
-      debugPrint('Amenities response status: ${amenitiesResponse.statusCode}');
+      final response = await http.get(uri).timeout(const Duration(seconds: 8));
 
-      if (amenitiesResponse.statusCode == 200) {
-        final List<dynamic> jsonData = amenitiesResponse.data;
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body) as List;
         amenities = jsonData.map((e) => Amenities.fromJson(e)).toList();
-        debugPrint('Loaded ${amenities.length} amenities successfully');
       } else {
         debugPrint(
-          '❌ Failed to fetch amenities - Status: ${amenitiesResponse.statusCode}',
-        );
-        debugPrint('Response data: ${amenitiesResponse.data}');
+            '❌❌❌ Failed to Fetch Amenities, Status Code :${response.statusCode} ❌❌❌');
       }
 
-      // ────────────────────────────────────────────────
-      // FETCH PROPERTY TYPES using Dio (if selectedPropType exists)
-      // ────────────────────────────────────────────────
+      // FETCH PROPERTY
+
       if (selectedPropType != null) {
         final initialPropertyType =
-        selectedPropType == 0 ? 'Residential' : 'Commercial';
+            selectedPropType == 0 ? 'Residential' : 'Commercial';
 
-        debugPrint('Loading property types for: $initialPropertyType');
+        final propertyUri =
+            ApiService.buildUri('property-types/$initialPropertyType');
 
-        final propertyResponse = await DioClient.dio.get(
-          '/property-types/$initialPropertyType',
-        ).timeout(const Duration(seconds: 8));
-
-        debugPrint(
-          'Property types response status: ${propertyResponse.statusCode}',
-        );
-
+        final propertyResponse =
+            await http.get(propertyUri).timeout(const Duration(seconds: 8));
         if (propertyResponse.statusCode == 200) {
-          final data = propertyResponse.data;
+          final data = json.decode(propertyResponse.body);
           propertyTypeModel = PropertyTypeModel.fromJson(data);
-          debugPrint(
-            'Loaded property types: ${propertyTypeModel?.data?.length ?? 0} items',
-          );
         } else {
           debugPrint(
-            '❌ Failed to fetch property types - Status: ${propertyResponse.statusCode}',
-          );
-          debugPrint('Response data: ${propertyResponse.data}');
+              '❌❌❌ Failed to Fetch Property Type, Status Code :${propertyResponse.statusCode} ❌❌❌');
         }
-      } else {
-        debugPrint('No selectedPropType → skipping property types fetch');
       }
 
       isLoading = false;
-    } catch (e, stackTrace) {
-      debugPrint('Error in loadInitialData: $e');
-      if (kDebugMode) {
-        debugPrint('Stack trace: $stackTrace');
-      }
+    } catch (e) {
+      debugPrint('Error loading initial data: $e');
       isLoading = false;
     }
-
     notifyListeners();
   }
 
@@ -1383,32 +1310,21 @@ class FilterProvider extends ChangeNotifier {
       isFilterListPropertyTypeLoading = true;
       notifyListeners();
 
-      debugPrint('Fetching property types for purpose: $purpose via Dio...');
+      final uri = ApiService.buildUri('property-types/$purpose');
 
-      // Use DioClient.dio – the interceptor will automatically add Accept-Language
-      final response = await DioClient.dio.get(
-        '/property-types/$purpose',
-      ).timeout(const Duration(seconds: 10));
-
-      debugPrint('Property types API → status: ${response.statusCode}');
+      final response = await http.get(uri).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
-        final data = response.data; // Dio already parses JSON automatically
+        final data = jsonDecode(response.body);
         final feature = PropertyTypeModel.fromJson(data);
 
         filterListPropertyTypeModel = feature;
-        debugPrint('✅ Loaded ${feature.data?.length ?? 0} property types');
       } else {
         debugPrint("❌ Property API failed: ${response.statusCode}");
-        debugPrint("Response preview: ${response.data.toString().substring(0, 300)}...");
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
       debugPrint("🚨 Property API error: $e");
-      if (kDebugMode) {
-        debugPrint('Stack trace: $stackTrace');
-      }
     }
-
     isFilterListPropertyTypeLoading = false;
     notifyListeners();
   }
@@ -1504,94 +1420,5 @@ class FilterProvider extends ChangeNotifier {
   }) async {
     filterListSelectedCompletion = index;
     notifyListeners();
-  }
-}
-
-class Dataarea {
-  Dataarea({required this.x, required this.y});
-  final double x;
-  final double y;
-}
-
-class Datas {
-  final double x, y;
-  Datas(this.x, this.y);
-}
-
-class FilterSnapshot {
-  final String agencyName;
-  final String agentName;
-  final List<String?> search;
-  final String propertyType;
-  final String furnishedStatus;
-  final List<String> bedrooms;
-  final List<String> bathrooms;
-  final String minPrice;
-  final String maxPrice;
-  final String paymentPeriod;
-  final String minSquareFeet;
-  final String maxSquareFeet;
-  final String? option;
-  final String purpose;
-  final int? propertyCategory;
-  final List<int> amenities;
-  final String handoverQuarter;
-  final String handoverYear;
-  final String completionsMax;
-  final String completionsMin;
-
-  FilterSnapshot({
-    required this.agencyName,
-    required this.agentName,
-    required this.search,
-    required this.propertyType,
-    required this.furnishedStatus,
-    required this.bedrooms,
-    required this.bathrooms,
-    required this.minPrice,
-    required this.maxPrice,
-    required this.paymentPeriod,
-    required this.minSquareFeet,
-    required this.maxSquareFeet,
-    required this.option,
-    required this.purpose,
-    this.propertyCategory,
-    required this.amenities,
-    required this.handoverQuarter,
-    required this.handoverYear,
-    required this.completionsMax,
-    required this.completionsMin,
-  });
-
-  bool isEqual(FilterSnapshot other) {
-    return agencyName == other.agencyName &&
-        agentName == other.agentName &&
-        _listEqual(search, other.search) &&
-        propertyType == other.propertyType &&
-        furnishedStatus == other.furnishedStatus &&
-        _listEqual(bedrooms, other.bedrooms) &&
-        _listEqual(bathrooms, other.bathrooms) &&
-        minPrice == other.minPrice &&
-        maxPrice == other.maxPrice &&
-        paymentPeriod == other.paymentPeriod &&
-        minSquareFeet == other.minSquareFeet &&
-        maxSquareFeet == other.maxSquareFeet &&
-        option == other.option &&
-        purpose == other.purpose &&
-        propertyCategory == other.propertyCategory &&
-        _listEqual(amenities, other.amenities) &&
-        handoverQuarter == other.handoverQuarter &&
-        handoverYear == other.handoverYear &&
-        completionsMax == other.completionsMax &&
-        completionsMin == other.completionsMin;
-  }
-
-  // Helper method to compare lists
-  bool _listEqual(List a, List b) {
-    if (a.length != b.length) return false;
-    for (int i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
   }
 }
