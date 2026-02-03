@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-
-
 class Featured_DetailModel {
   bool? success;
   String? message;
@@ -33,26 +31,20 @@ class Data {
   Data({this.property, this.recommended});
 
   Data.fromJson(Map<String, dynamic> json) {
-    // 1) Read property normally
-    final propJson = (json['property'] != null) ? json['property'] : json;
+    // Property parsing
+    final propJson = json['property'] ?? json;
     property = Property.fromJson(propJson);
 
-    // ✅ 2) If agency_name exists at DATA level, inject it into property
+    // Inject agency_name if present at data level
     final dataAgency = json['agency_name'] ?? json['agencyName'];
-    if (dataAgency != null) {
-      final current = property?.agencyName?.trim() ?? '';
-      if (current.isEmpty || current.toLowerCase() == 'null') {
-        property?.agencyName = dataAgency.toString();
-      }
+    if (dataAgency != null && (property?.agencyName?.trim().isEmpty ?? true)) {
+      property?.agencyName = dataAgency.toString().trim();
     }
 
-    // recommended
+    // Recommended properties
     final recJson = json['recommended'] ?? json['recommended_properties'];
     if (recJson is List) {
-      recommended = <Recommended>[];
-      for (var v in recJson) {
-        recommended!.add(Recommended.fromJson(v));
-      }
+      recommended = recJson.map((v) => Recommended.fromJson(v)).toList();
     }
   }
 
@@ -60,8 +52,7 @@ class Data {
     final Map<String, dynamic> data = <String, dynamic>{};
     if (property != null) data['property'] = property!.toJson();
     if (recommended != null) {
-      data['recommended_properties'] =
-          recommended!.map((v) => v.toJson()).toList();
+      data['recommended_properties'] = recommended!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -81,7 +72,7 @@ class Property {
   int? bedrooms;
   int? bathrooms;
   String? squareFeet;
-  String? propertySizeSqft;     // ← ADD THIS LINE (this was missing!)
+  String? propertySizeSqft;
   String? purpose;
   String? propertyType;
   String? agent;
@@ -95,20 +86,18 @@ class Property {
   RegulatoryInfo? regulatoryInfo;
   List<Amenities>? amenities;
 
-  // outer JSON fields
+  // Outer/project-level fields
   String? project;
   String? developer;
   String? deliveryDate;
   String? zoneName;
   String? reference;
-
-  // ✅ NEW: user-entered agency name
   String? agencyName;
 
-  // ✅ Project Information (typed model)
+  // Typed project information
   ProjectInformation? projectInformation;
 
-  // ✅ Old flat Project Information fields (kept for backward compatibility)
+  // Flat fallback fields (for backward compatibility)
   String? completionPercentage;
   String? deliveryYear;
   String? projectAnnouncementDate;
@@ -117,7 +106,6 @@ class Property {
   String? salesStartDate;
   String? governmentFee;
 
-  // ✅ permit_info for QR
   PermitInfo? permitInfo;
 
   Property({
@@ -134,6 +122,7 @@ class Property {
     this.bedrooms,
     this.bathrooms,
     this.squareFeet,
+    this.propertySizeSqft,
     this.purpose,
     this.propertyType,
     this.agent,
@@ -152,7 +141,7 @@ class Property {
     this.zoneName,
     this.reference,
     this.agencyName,
-    this.projectInformation, // ✅ added
+    this.projectInformation,
     this.permitInfo,
     this.completionPercentage,
     this.deliveryYear,
@@ -161,69 +150,34 @@ class Property {
     this.expectedCompletionDate,
     this.salesStartDate,
     this.governmentFee,
-    this.propertySizeSqft,
   });
-
-  // helper to read multiple possible keys
-  String? _readAny(Map<String, dynamic> json, List<String> keys) {
-    for (final k in keys) {
-      final v = json[k];
-      if (v != null &&
-          v.toString().trim().isNotEmpty &&
-          v.toString() != "null") {
-        return v.toString();
-      }
-    }
-    return null;
-  }
-
-  String? _cleanStr(dynamic v) {
-    if (v == null) return null;
-    final s = v.toString().trim();
-    if (s.isEmpty || s.toLowerCase() == 'null' || s == '0') return null;
-    return s;
-  }
 
   Property.fromJson(Map<String, dynamic> json) {
     id = json['id'];
 
-    // title can be {en, ar} or plain string
-    if (json['title'] is Map) {
-      title = json['title']['en']?.toString() ??
-          json['title']['ar']?.toString() ??
-          '';
-    } else {
-      title = json['title']?.toString();
-    }
+    title = json['title'] is Map
+        ? (json['title']['en'] ?? json['title']['ar'])?.toString()
+        : json['title']?.toString();
 
     price = json['price']?.toString();
     address = json['address']?.toString();
 
-    phoneNumber = json['phone_number'];
-    whatsapp = json['whatsapp'];
-    email = json['email'];
-    location = json['location'];
+    phoneNumber = json['phone_number']?.toString();
+    whatsapp = json['whatsapp']?.toString();
+    email = json['email']?.toString();
+    location = json['location']?.toString();
 
-    if (json['description'] is Map) {
-      description = json['description']['en']?.toString() ??
-          json['description']['ar']?.toString() ??
-          '';
-    } else {
-      description = json['description']?.toString();
-    }
+    description = json['description'] is Map
+        ? (json['description']['en'] ?? json['description']['ar'])?.toString()
+        : json['description']?.toString();
 
-    // ✅ payment_period sometimes comes twice in API
-    paymentPeriod = _readAny(json, ['payment_period', 'Payment Period']);
+    paymentPeriod = json['payment_period']?.toString() ?? json['Payment Period']?.toString();
 
     bedrooms = json['bedrooms'];
     bathrooms = json['bathrooms'];
 
-    // Add this line — it reads the new field from API
-    propertySizeSqft = json['propertySizeSqft']?.toString();
-    // ============ SMART SIZE PARSING (DLD FIRST) ============
+    // Smart size parsing
     String? dldSize;
-
-// Try to get size from DLD permit_response (most accurate)
     final permitResponse = json['regulatory_info']?['permit_response'];
     if (permitResponse != null) {
       try {
@@ -246,173 +200,87 @@ class Property {
       } catch (_) {}
     }
 
-// New flat field from API
-    final newSize = json['propertySizeSqft']?.toString();
+    propertySizeSqft = dldSize ?? json['propertySizeSqft']?.toString();
+    squareFeet = propertySizeSqft ?? json['square_feet']?.toString();
 
-// Final priority: DLD → new field → old square_feet
-    final bestSize = dldSize ?? newSize ?? json['square_feet']?.toString();
-
-    propertySizeSqft = dldSize ?? newSize;  // Keep the best source
-    squareFeet = bestSize;                  // Keep old field working
-    purpose = json['purpose'];
-    propertyType = json['property_type'];
-    agent = json['agent'];
-    latitude = json['latitude'];
-    longitude = json['longitude'];
+    purpose = json['purpose']?.toString();
+    propertyType = json['property_type']?.toString();
+    agent = json['agent']?.toString();
+    latitude = json['latitude']?.toString();
+    longitude = json['longitude']?.toString();
     agentId = json['agent_id'];
-
-    agentImage = json['agent_image'];
+    agentImage = json['agent_image']?.toString();
     postedOn = json['posted_on']?.toString();
 
-    // outer fields
     project = json['project']?.toString();
     developer = json['developer']?.toString();
     deliveryDate = json['delivery_date']?.toString();
     zoneName = json['zone_name']?.toString();
     reference = json['reference']?.toString();
 
-    // ✅ NEW: agency_name (supports multiple possible keys + nested object)
-    agencyName = _readAny(json, [
-      'agency_name',
-      'agencyName',
-      'agency',
-      'agency_title',
-      'agencyTitle',
-    ]);
+    // Agency name (multiple possible keys)
+    agencyName = json['agency_name']?.toString() ??
+        json['agencyName']?.toString() ??
+        json['agency']?['name']?.toString();
 
-    // If API sends nested agency object: { agency: { name: "..." } }
-    if (agencyName == null && json['agency'] is Map) {
-      final a = json['agency'] as Map;
-      agencyName = _cleanStr(a['name']) ?? _cleanStr(a['title']);
-    }
-
-    // ✅ if agency is nested object like {agency:{name:"..."}}
-    final agencyObj = json['agency'];
-    if ((agencyName == null || agencyName!.trim().isEmpty) && agencyObj is Map) {
-      final a = Map<String, dynamic>.from(agencyObj);
-      agencyName = _readAny(a, ['name', 'title', 'company_name', 'agency_name']);
-    }
-
-    // ==========================================================
-    // ✅ NEW: Parse project_information into typed model
-    // ==========================================================
+    // Project information (typed)
     if (json['project_information'] is Map<String, dynamic>) {
-      projectInformation =
-          ProjectInformation.fromJson(json['project_information']);
+      projectInformation = ProjectInformation.fromJson(json['project_information']);
     }
 
-    // ✅ Old flat Project Information mapping
-    completionPercentage = _readAny(json, [
-      'completion_percentage',
-      'Completion',
-      'completion',
-    ]) ?? projectInformation?.completion;
+    // Flat fallbacks
+    completionPercentage = json['completion_percentage']?.toString() ??
+        projectInformation?.completion;
 
-    deliveryYear = _readAny(json, [
-      'delivery_year',
-      'Delivery Year',
-    ]) ?? projectInformation?.deliveryYear;
+    deliveryYear = json['delivery_year']?.toString() ?? projectInformation?.deliveryYear;
 
-    projectAnnouncementDate = _readAny(json, [
-      'project_announcement_date',
-      'Project Announcement',
-      'project_announcement',
-    ]) ?? projectInformation?.projectAnnouncement;
+    projectAnnouncementDate = json['project_announcement_date']?.toString() ??
+        projectInformation?.projectAnnouncement;
 
-    constructionStartDate = _readAny(json, [
-      'construction_start_date',
-      'Construction Started',
-      'construction_started',
-    ]) ?? projectInformation?.constructionStarted;
+    constructionStartDate = json['construction_start_date']?.toString() ??
+        projectInformation?.constructionStarted;
 
-    expectedCompletionDate = _readAny(json, [
-      'expected_completion_date',
-      'Expected Completion',
-      'expected_completion',
-    ]) ?? projectInformation?.expectedCompletion;
+    expectedCompletionDate = json['expected_completion_date']?.toString() ??
+        projectInformation?.expectedCompletion;
 
-    salesStartDate = _readAny(json, [
-      'sales_start_date',
-      'Sales Started',
-      'sales_started',
-    ]) ?? projectInformation?.salesStarted;
+    salesStartDate = json['sales_start_date']?.toString() ??
+        projectInformation?.salesStarted;
 
-    governmentFee = _readAny(json, [
-      'government_fee',
-      'Government Fee',
-    ]) ?? projectInformation?.governmentFee;
+    governmentFee = json['government_fee']?.toString() ?? projectInformation?.governmentFee;
 
-    if (json['media'] != null) {
-      media = <Media>[];
-      for (var v in json['media']) {
-        media!.add(Media.fromJson(v));
-      }
+    // Media
+    if (json['media'] is List) {
+      media = (json['media'] as List).map((v) => Media.fromJson(v)).toList();
     }
 
-    if (json['floor'] != null) {
-      floor = <Floor>[];
-      for (var v in json['floor']) {
-        floor!.add(Floor.fromJson(v));
-      }
+    // Floor
+    if (json['floor'] is List) {
+      floor = (json['floor'] as List).map((v) => Floor.fromJson(v)).toList();
     }
 
+    // Regulatory Info
     regulatoryInfo = json['regulatory_info'] != null
         ? RegulatoryInfo.fromJson(json['regulatory_info'])
         : null;
 
-    // ✅ Robust Amenities parsing
+    // Amenities (robust parsing)
     final rawAmenities = json['amenities'];
-
     if (rawAmenities is List) {
-      amenities = <Amenities>[];
-      for (var v in rawAmenities) {
-        if (v is Map<String, dynamic>) {
-          amenities!.add(Amenities.fromJson(v));
-        } else if (v is Map) {
-          amenities!.add(Amenities.fromJson(Map<String, dynamic>.from(v)));
-        }
-      }
+      amenities = rawAmenities.map((v) => Amenities.fromJson(v)).toList();
     } else if (rawAmenities is String) {
-      // Sometimes backend sends JSON as a string
       try {
         final decoded = jsonDecode(rawAmenities);
         if (decoded is List) {
-          amenities = <Amenities>[];
-          for (var v in decoded) {
-            if (v is Map<String, dynamic>) {
-              amenities!.add(Amenities.fromJson(v));
-            } else if (v is Map) {
-              amenities!.add(Amenities.fromJson(Map<String, dynamic>.from(v)));
-            }
-          }
+          amenities = decoded.map((v) => Amenities.fromJson(v)).toList();
         }
-      } catch (_) {
-        // ignore parse error
-      }
-    } else if (rawAmenities is Map) {
-      // Just in case it comes wrapped, e.g. { "data": [ ... ] }
-      final list = rawAmenities['data'] ?? rawAmenities['items'];
-      if (list is List) {
-        amenities = <Amenities>[];
-        for (var v in list) {
-          if (v is Map<String, dynamic>) {
-            amenities!.add(Amenities.fromJson(v));
-          } else if (v is Map) {
-            amenities!.add(Amenities.fromJson(Map<String, dynamic>.from(v)));
-          }
-        }
-      }
+      } catch (_) {}
     }
 
+    // Permit Info
     permitInfo = json['permit_info'] != null
         ? PermitInfo.fromJson(json['permit_info'])
         : null;
   }
-
-  bool get hasPermitQr =>
-      permitInfo != null &&
-          permitInfo!.qr != null &&
-          permitInfo!.qr!.isNotEmpty;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -429,7 +297,7 @@ class Property {
     data['bedrooms'] = bedrooms;
     data['bathrooms'] = bathrooms;
     data['square_feet'] = squareFeet;
-    data['propertySizeSqft'] = propertySizeSqft;  // ← ADD THIS
+    data['propertySizeSqft'] = propertySizeSqft;
     data['purpose'] = purpose;
     data['property_type'] = propertyType;
     data['agent'] = agent;
@@ -438,21 +306,17 @@ class Property {
     data['agent_id'] = agentId;
     data['agent_image'] = agentImage;
     data['posted_on'] = postedOn;
-
-    // outer fields
     data['project'] = project;
     data['developer'] = developer;
     data['delivery_date'] = deliveryDate;
     data['zone_name'] = zoneName;
     data['reference'] = reference;
-
-    // ✅ NEW: agency_name
     data['agency_name'] = agencyName;
 
-    // ✅ NEW: project_information typed
-    data['project_information'] = projectInformation?.toJson();
+    if (projectInformation != null) {
+      data['project_information'] = projectInformation!.toJson();
+    }
 
-    // ✅ Old flat Project Information fields (still stored for safety)
     data['completion_percentage'] = completionPercentage;
     data['delivery_year'] = deliveryYear;
     data['project_announcement_date'] = projectAnnouncementDate;
@@ -461,22 +325,11 @@ class Property {
     data['sales_start_date'] = salesStartDate;
     data['government_fee'] = governmentFee;
 
-    if (media != null) {
-      data['media'] = media!.map((v) => v.toJson()).toList();
-    }
-
-    if (floor != null) {
-      data['floor'] = floor!.map((v) => v.toJson()).toList();
-    }
-    if (regulatoryInfo != null) {
-      data['regulatory_info'] = regulatoryInfo!.toJson();
-    }
-    if (amenities != null) {
-      data['amenities'] = amenities!.map((v) => v.toJson()).toList();
-    }
-    if (permitInfo != null) {
-      data['permit_info'] = permitInfo!.toJson();
-    }
+    if (media != null) data['media'] = media!.map((v) => v.toJson()).toList();
+    if (floor != null) data['floor'] = floor!.map((v) => v.toJson()).toList();
+    if (regulatoryInfo != null) data['regulatory_info'] = regulatoryInfo!.toJson();
+    if (amenities != null) data['amenities'] = amenities!.map((v) => v.toJson()).toList();
+    if (permitInfo != null) data['permit_info'] = permitInfo!.toJson();
 
     return data;
   }
@@ -492,6 +345,16 @@ class ProjectInformation {
   final String? governmentFee;
   final String? paymentPeriod;
 
+  // Added missing building-related fields
+  final String? buildingName;
+  final String? totalParking;
+  final String? buildingArea;
+  final String? yearOfCompletion;
+  final String? elevators;
+  final String? totalFloors;
+  final String? swimmingPools;
+  final String? retailCenters;
+
   ProjectInformation({
     this.completion,
     this.deliveryYear,
@@ -501,6 +364,14 @@ class ProjectInformation {
     this.salesStarted,
     this.governmentFee,
     this.paymentPeriod,
+    this.buildingName,
+    this.totalParking,
+    this.buildingArea,
+    this.yearOfCompletion,
+    this.elevators,
+    this.totalFloors,
+    this.swimmingPools,
+    this.retailCenters,
   });
 
   factory ProjectInformation.fromJson(Map<String, dynamic> json) {
@@ -519,6 +390,16 @@ class ProjectInformation {
       salesStarted: clean(json['sales_started']),
       governmentFee: clean(json['government_fee']),
       paymentPeriod: clean(json['payment_period']),
+
+      // Building info fields (from project_information)
+      buildingName: clean(json['building_name'] ?? json['buildingName']),
+      totalParking: clean(json['total_parking'] ?? json['totalParking']),
+      buildingArea: clean(json['building_area'] ?? json['buildingArea']),
+      yearOfCompletion: clean(json['year_of_completion'] ?? json['yearOfCompletion']),
+      elevators: clean(json['elevators'] ?? json['lift_count'] ?? json['lifts']),
+      totalFloors: clean(json['total_floors'] ?? json['totalFloors']),
+      swimmingPools: clean(json['swimming_pools'] ?? json['swimmingPools']),
+      retailCenters: clean(json['retail_centers'] ?? json['retailCenters']),
     );
   }
 
@@ -531,6 +412,14 @@ class ProjectInformation {
     'sales_started': salesStarted,
     'government_fee': governmentFee,
     'payment_period': paymentPeriod,
+    'building_name': buildingName,
+    'total_parking': totalParking,
+    'building_area': buildingArea,
+    'year_of_completion': yearOfCompletion,
+    'elevators': elevators,
+    'total_floors': totalFloors,
+    'swimming_pools': swimmingPools,
+    'retail_centers': retailCenters,
   };
 }
 
@@ -662,6 +551,30 @@ class Amenities {
     data['title'] = title;
     data['icon'] = icon;
     return data;
+  }
+
+  String getTitle(String currentLang) {
+    // If title is stored as plain string (most common case in your current model)
+    return title ?? '';
+
+    // ──────────────────────────────────────────────
+    // OR — if title can be a map like {'en': '...', 'ar': '...'}
+    // (uncomment if your API sometimes sends localized objects)
+    /*
+  if (title == null) return '';
+
+  try {
+    final decoded = jsonDecode(title!);
+    if (decoded is Map<String, dynamic>) {
+      final key = currentLang.toLowerCase() == 'ar' ? 'ar' : 'en';
+      return decoded[key]?.toString() ?? decoded['en']?.toString() ?? title!;
+    }
+  } catch (_) {
+    // not json → use as-is
+  }
+
+  return title!;
+  */
   }
 }
 

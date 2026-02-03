@@ -1,77 +1,34 @@
+// lib/src/features/property/presentation/bloc/enquiry_bloc.dart
+
+import 'dart:convert';
+
+import 'package:equatable/equatable.dart'; // ← THIS WAS MISSING – now added
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/services/api_service.dart';
 import '../../../../utils/shared_preference_manager.dart';
 
 // ====================== EVENTS ======================
-abstract class EnquiryEvent {}
-
-class SubmitEnquiry extends EnquiryEvent {
-  final int propertyId;
-  final String name;
-  final String email;
-  final String phone;
-  final String message;
-  final String? deviceId;
-  final String token;
-
-  SubmitEnquiry({
-    required this.propertyId,
-    required this.name,
-    required this.email,
-    required this.phone,
-    required this.message,
-    this.deviceId,
-    required this.token,
-  });
-}
+part 'enquiry_event.dart';   // ← move events here (see below)
 
 // ====================== STATES ======================
-abstract class EnquiryState {}
-
-class EnquiryInitial extends EnquiryState {}
-
-class EnquiryLoading extends EnquiryState {}
-
-class EnquirySuccess extends EnquiryState {
-  final String message;
-  EnquirySuccess(this.message);
-}
-
-class EnquiryFailure extends EnquiryState {
-  final String error;
-  EnquiryFailure(this.error);
-}
+part 'enquiry_state.dart';   // ← move states here (see below)
 
 // ====================== BLOC ======================
 class EnquiryBloc extends Bloc<EnquiryEvent, EnquiryState> {
   final SharedPreferencesManager prefManager = SharedPreferencesManager();
 
-  EnquiryBloc() : super(EnquiryInitial()) {
+  EnquiryBloc() : super(const EnquiryInitial()) {
     on<SubmitEnquiry>(_onSubmitEnquiry);
   }
 
   Future<void> _onSubmitEnquiry(
-      SubmitEnquiry event, Emitter<EnquiryState> emit) async {
-    emit(EnquiryLoading());
+      SubmitEnquiry event,
+      Emitter<EnquiryState> emit,
+      ) async {
+    emit(const EnquiryLoading());
 
     try {
-      // final url = ApiService.buildUri('email-enquiry');
-      //
-      // final response = await http.post(
-      //   url,
-      //   headers: {'Content-Type': 'application/json'},
-      //   body: jsonEncode({
-      //     'property_id': event.propertyId,
-      //     'name': event.name,
-      //     'email': event.email,
-      //     'phone': event.phone,
-      //     'message': event.message.isEmpty ? '-' : event.message,
-      //     'device_id': event.deviceId ?? 'unknown', // ← Safe fallback
-      //     'token': event.token,
-      //   }),
-      // );
-
       final response = await ApiService.post(
         'email-enquiry',
         body: {
@@ -85,7 +42,15 @@ class EnquiryBloc extends Bloc<EnquiryEvent, EnquiryState> {
         },
       );
 
-      // ... rest unchanged
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final json = jsonDecode(response.body);
+        final msg = json['message']?.toString() ?? 'Enquiry sent successfully';
+        emit(EnquirySuccess(msg));
+      } else {
+        final errorMsg = jsonDecode(response.body)['message']?.toString() ??
+            'Failed: ${response.statusCode}';
+        emit(EnquiryFailure(errorMsg));
+      }
     } catch (e) {
       emit(EnquiryFailure('Network error: $e'));
     }

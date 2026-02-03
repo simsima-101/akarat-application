@@ -20,11 +20,13 @@ import '../../data/model/filtermodel.dart';
 import '../bloc/filter_bloc.dart';
 import 'filter_list.dart' hide Data;
 
+/// ✅ Main Filter wrapper widget
 class Filter extends StatelessWidget {
   final dynamic data;
   final int? propertyType;
   final String? propertyCategoryType;
   final String? optionType;
+
   const Filter({
     super.key,
     required this.data,
@@ -35,27 +37,35 @@ class Filter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Detect device/app language
+    final currentLang = Localizations.localeOf(context).languageCode; // 'en' or 'ar'
+
     return FilterDemo(
       data: data,
       propertyType: propertyType,
       propertyCategoryType: propertyCategoryType,
       optionType: optionType,
-    ); // ✅ No MaterialApp — just return the screen
+      currentLang: currentLang,
+    );
   }
 }
 
+/// ✅ Stateful Filter screen
 class FilterDemo extends StatefulWidget {
   final dynamic data;
   final int? propertyType;
   final String? propertyCategoryType;
   final String? optionType;
+  final String currentLang; // added currentLang here
 
-  const FilterDemo(
-      {super.key,
-      required this.data,
-      this.optionType,
-      this.propertyType,
-      this.propertyCategoryType});
+  const FilterDemo({
+    super.key,
+    required this.data,
+    this.propertyType,
+    this.propertyCategoryType,
+    this.optionType,
+    this.currentLang = 'en',
+  });
 
   @override
   _FilterDemoState createState() => _FilterDemoState();
@@ -2272,6 +2282,7 @@ class _FilterDemoState extends State<FilterDemo> {
 
               // --- Amenities (always for Properties) ---
               const SizedBox(height: 15),
+
               Row(
                 children: const [
                   Padding(
@@ -2289,7 +2300,9 @@ class _FilterDemoState extends State<FilterDemo> {
                   ),
                 ],
               ),
+
               const SizedBox(height: 10),
+
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: GridView.builder(
@@ -2305,25 +2318,27 @@ class _FilterDemoState extends State<FilterDemo> {
                     mainAxisSpacing: 12,
                   ),
                   itemBuilder: (context, index) {
-                    final isSelected = filterProvider.selectedAmenitiesId
-                        .contains(filterProvider.amenities[index].id);
+                    final amenity = filterProvider.amenities[index];
+                    final isSelected = filterProvider.selectedAmenitiesId.contains(amenity.id);
+
+                    // Get current language from context (no widget.currentLang needed)
+                    final currentLangCode = Localizations.localeOf(context).languageCode;
+                    final isArabic = currentLangCode == 'ar';
 
                     return GestureDetector(
                       onTap: () {
-                        context
-                            .read<FilterBloc>()
-                            .add(FilterSetSelectedAmenities(
-                              index,
-                              context,
-                            ));
+                        context.read<FilterBloc>().add(
+                          FilterSetSelectedAmenities(
+                            index,
+                            context,
+                          ),
+                        );
                       },
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(
-                            color: isSelected
-                                ? Colors.black87
-                                : Colors.grey.shade300,
+                            color: isSelected ? Colors.black87 : Colors.grey.shade300,
                             width: isSelected ? 2 : 1,
                           ),
                           borderRadius: BorderRadius.circular(10),
@@ -2337,30 +2352,38 @@ class _FilterDemoState extends State<FilterDemo> {
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Row(
+                          textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
                           children: [
+                            // Icon
                             CachedNetworkImage(
-                              imageUrl:
-                                  filterProvider.amenities[index].icon ?? '',
+                              imageUrl: amenity.icon ?? '',
                               width: 18,
                               height: 18,
                               placeholder: (context, url) => const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(strokeWidth: 2),
                               ),
-                              errorWidget: (context, url, error) =>
-                                  const Icon(Icons.broken_image, size: 18),
+                              errorWidget: (context, url, error) => const Icon(
+                                Icons.broken_image,
+                                size: 18,
+                              ),
                             ),
                             const SizedBox(width: 10),
+
+                            // Title
                             Expanded(
                               child: Text(
-                                filterProvider.amenities[index].title ?? '',
-                                style: const TextStyle(
+                                amenity.getTitle(currentLangCode) ?? 'N/A',
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.black,
+                                  fontFamily: isArabic ? 'Tajawal' : null,
+                                  height: 1.3,
                                 ),
+                                textAlign: isArabic ? TextAlign.right : TextAlign.left,
+                                textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
                               ),
                             ),
                           ],
@@ -2370,11 +2393,13 @@ class _FilterDemoState extends State<FilterDemo> {
                   },
                 ),
               ),
+
               if (filterProvider.amenities.length > 6)
                 Padding(
                   padding: const EdgeInsets.only(top: 10.0),
                   child: TextButton(
                     onPressed: () async {
+                      // Precache images (good practice)
                       await Future.wait(
                         filterProvider.amenities.map((a) async {
                           final url = a.icon;
@@ -2387,25 +2412,26 @@ class _FilterDemoState extends State<FilterDemo> {
                         }),
                       );
 
+                      // Navigate to full selection screen (no currentLang needed anymore)
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => FullAmenitiesScreen(
                             allAmenities: filterProvider.amenities,
-                            selectedAmenitiesIds:
-                                filterProvider.selectedAmenitiesId,
-                            onDone: (selected) async {
-                              setState(() => filterProvider
-                                  .selectedAmenitiesId = selected);
-                              // await filterProvider
-                              //     .updateFilterCount(context);
+                            selectedAmenitiesIds: filterProvider.selectedAmenitiesId,
+                            onDone: (selected) {
+                              setState(() {
+                                filterProvider.selectedAmenitiesId = selected;
+                              });
                             },
                           ),
                         ),
                       );
                     },
                     child: Text(
-                      "Show more amenities",
+                      Localizations.localeOf(context).languageCode == 'ar'
+                          ? 'عرض المزيد من وسائل الراحة'
+                          : 'Show more amenities',
                       style: const TextStyle(
                         color: Colors.blueAccent,
                         fontWeight: FontWeight.bold,
@@ -2414,12 +2440,12 @@ class _FilterDemoState extends State<FilterDemo> {
                     ),
                   ),
                 ),
+
               if (!isBuyMode) ...[
                 const SizedBox(height: 10),
                 const Divider(height: 1, indent: 15, endIndent: 15),
                 const SizedBox(height: 20),
               ],
-
               //real estate
               if (showRentPaid) ...[
                 Row(

@@ -10,7 +10,8 @@
         android:label="Akarat"
         android:name="${applicationName}"
         android:enableOnBackInvokedCallback="true"
-        android:icon="@mipmap/launcher_icon">
+        android:icon="@mipmap/launcher_icon"
+        android:localeConfig="@xml/locale_config">
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

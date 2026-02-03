@@ -1,15 +1,17 @@
-// lib/src/common/widgets/property_card.dart
+
+import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../core/services/api_service.dart';
 import '../../core/utils/secure_storage.dart';
 import '../../core/utils/session_manager.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
-import '../../features/property/data/models/property_model.dart'; // Your unified Property model
+import '../../features/property/data/models/property_model.dart';
 import '../../features/property/presentation/bloc/favorite_bloc.dart';
 import '../../features/property/presentation/bloc/favorite_event.dart';
 import '../../features/property/presentation/bloc/favorite_state.dart';
@@ -17,11 +19,10 @@ import '../../screen/featured_detail.dart';
 import '../../screen/login.dart';
 
 class PropertyCard extends StatelessWidget {
-  final Property item; // Unified Property object
+  final Property item;
 
   const PropertyCard({super.key, required this.item});
 
-  // Fixed: Define propertyId as a getter using 'item'
   int get propertyId => int.tryParse(item.id) ?? 0;
 
   String _formatAgentName(String? fullName) {
@@ -36,8 +37,7 @@ class PropertyCard extends StatelessWidget {
     if (input.startsWith('+971')) return input;
     if (input.startsWith('00971')) return '+971${input.substring(5)}';
     if (input.startsWith('971')) return '+971${input.substring(3)}';
-    if (input.startsWith('0') && input.length == 10)
-      return '+971${input.substring(1)}';
+    if (input.startsWith('0') && input.length == 10) return '+971${input.substring(1)}';
     if (input.length == 9) return '+971$input';
     return input;
   }
@@ -47,45 +47,61 @@ class PropertyCard extends StatelessWidget {
     if (input.startsWith('971')) return input;
     if (input.startsWith('00971')) return input.substring(2);
     if (input.startsWith('+971')) return input.substring(1);
-    if (input.startsWith('0') && input.length == 10)
-      return '971${input.substring(1)}';
+    if (input.startsWith('0') && input.length == 10) return '971${input.substring(1)}';
     if (input.length == 9) return '971$input';
     return input;
   }
 
-  Future<bool> markAsContacted(int propertyId,
-      {required String contactType}) async {
+  Future<bool> markAsContacted(int propertyId, {required String contactType}) async {
     if (propertyId <= 0) return false;
     final token = SessionManager().token ?? await SecureStorage.getToken();
     if (token == null || token.isEmpty) return false;
 
     try {
-      // final response = await http.post(
-      //   ApiService.buildUri('property-contact'),
-      //   headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
-      //   body: jsonEncode({"property_id": propertyId, "contact_type": contactType}),
-      // );
+      // ────────────────────────────────────────────────
+      // Same language detection logic as in PropertyRepository
+      // ────────────────────────────────────────────────
+      String langCode = 'en'; // default fallback
 
-      final response = await ApiService.post(
-        'property-contact',
-        body: {
-          "property_id": propertyId,
-          "contact_type": contactType,
-        },
+      try {
+        langCode = WidgetsBinding.instance.window.locale.languageCode.toLowerCase();
+      } catch (e) {
+        debugPrint('Warning (markAsContacted): Could not read window.locale → fallback to en');
+      }
+
+      String acceptLanguage;
+      switch (langCode) {
+        case 'ar':
+          acceptLanguage = 'ar';
+          break;
+        case 'tr':
+          acceptLanguage = 'tr'; // Turkish support
+          break;
+        default:
+          acceptLanguage = 'en';
+      }
+
+      debugPrint('→ markAsContacted → Accept-Language: $acceptLanguage (lang: $langCode)');
+
+      final response = await http.post(
+        ApiService.buildUri('property-contact'),
         headers: {
           'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept-Language': acceptLanguage,  // ← Key addition: same logic as detail fetch
         },
+        body: jsonEncode({"property_id": propertyId, "contact_type": contactType}),
       );
 
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
+      debugPrint('Error marking as contacted: $e');
       return false;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Now 'item' is properly defined and accessible here
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -96,14 +112,13 @@ class PropertyCard extends StatelessWidget {
         child: Card(
           color: Colors.white,
           elevation: 10,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                PropertyImageCarousel(item: item), // Pass item correctly
+                PropertyImageCarousel(item: item),
 
                 const SizedBox(height: 30),
 
@@ -115,17 +130,14 @@ class PropertyCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           _formatAgentName(item.agent),
-                          style: const TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w600),
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Row(
                         children: [
                           if (item.postedOn?.isNotEmpty == true)
-                            Text('Listed ${item.postedOn}',
-                                style: const TextStyle(
-                                    fontSize: 13, color: Colors.grey)),
+                            Text('Listed ${item.postedOn}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
                           const SizedBox(width: 8),
                           if (item.agencyLogo?.isNotEmpty == true)
                             Container(
@@ -134,8 +146,7 @@ class PropertyCard extends StatelessWidget {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(4),
                                 image: DecorationImage(
-                                  image: CachedNetworkImageProvider(
-                                      item.agencyLogo!),
+                                  image: CachedNetworkImageProvider(item.agencyLogo!),
                                   fit: BoxFit.contain,
                                 ),
                               ),
@@ -150,24 +161,16 @@ class PropertyCard extends StatelessWidget {
                 const Divider(thickness: 0.3),
                 const SizedBox(height: 8),
 
-                Text(item.title ?? 'No title',
-                    style: const TextStyle(fontSize: 16, height: 1.4),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis),
+                Text(item.title ?? 'No title', style: const TextStyle(fontSize: 16, height: 1.4), maxLines: 3, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 5),
-                Text('${item.price ?? 'Price on request'} AED',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 22)),
+                Text('${item.price ?? 'Price on request'} AED', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
                 const SizedBox(height: 5),
 
                 Row(
                   children: [
                     Image.asset("assets/images/map.png", height: 14),
                     const SizedBox(width: 5),
-                    Expanded(
-                        child: Text(item.location ?? 'Location not available',
-                            style: const TextStyle(fontSize: 13),
-                            overflow: TextOverflow.ellipsis)),
+                    Expanded(child: Text(item.location ?? 'Location not available', style: const TextStyle(fontSize: 13), overflow: TextOverflow.ellipsis)),
                   ],
                 ),
 
@@ -179,23 +182,19 @@ class PropertyCard extends StatelessWidget {
                     if (item.bedrooms > 0) ...[
                       Image.asset("assets/images/bed.png", height: 14),
                       const SizedBox(width: 5),
-                      Text("${item.bedrooms}",
-                          style: const TextStyle(fontSize: 13))
+                      Text("${item.bedrooms}", style: const TextStyle(fontSize: 13))
                     ],
                     if (item.bathrooms > 0) ...[
                       if (item.bedrooms > 0) const SizedBox(width: 12),
                       Image.asset("assets/images/bath.png", height: 14),
                       const SizedBox(width: 5),
-                      Text("${item.bathrooms}",
-                          style: const TextStyle(fontSize: 13))
+                      Text("${item.bathrooms}", style: const TextStyle(fontSize: 13))
                     ],
                     if (item.displaySize.isNotEmpty) ...[
-                      if (item.bedrooms > 0 || item.bathrooms > 0)
-                        const SizedBox(width: 12),
+                      if (item.bedrooms > 0 || item.bathrooms > 0) const SizedBox(width: 12),
                       Image.asset("assets/images/messure.png", height: 14),
                       const SizedBox(width: 5),
-                      Text(item.displaySize,
-                          style: const TextStyle(fontSize: 13))
+                      Text(item.displaySize, style: const TextStyle(fontSize: 13))
                     ],
                   ],
                 ),
@@ -208,41 +207,26 @@ class PropertyCard extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          await markAsContacted(propertyId,
-                              contactType: "call");
-                          final phone =
-                              'tel:${phoneCallNumber(item.phoneNumber ?? '')}';
-                          if (await canLaunchUrlString(phone))
-                            await launchUrlString(phone);
+                          await markAsContacted(propertyId, contactType: "call");
+                          final phone = 'tel:${phoneCallNumber(item.phoneNumber ?? '')}';
+                          if (await canLaunchUrlString(phone)) await launchUrlString(phone);
                         },
                         icon: const Icon(Icons.call, color: Colors.red),
-                        label: const Text("Call",
-                            style: TextStyle(color: Colors.black)),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[100],
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
+                        label: const Text("Call", style: TextStyle(color: Colors.black)),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[100], shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          await markAsContacted(propertyId,
-                              contactType: "whatsapp");
-                          final url =
-                              "https://wa.me/${whatsAppNumber(item.whatsapp ?? '')}?text=${Uri.encodeComponent("Hi, I'm interested in your property: ${item.title ?? ''}")}";
-                          if (await canLaunchUrlString(url))
-                            await launchUrlString(url);
+                          await markAsContacted(propertyId, contactType: "whatsapp");
+                          final url = "https://wa.me/${whatsAppNumber(item.whatsapp ?? '')}?text=${Uri.encodeComponent("Hi, I'm interested in your property: ${item.title ?? ''}")}";
+                          if (await canLaunchUrlString(url)) await launchUrlString(url);
                         },
-                        icon:
-                            Image.asset("assets/images/whats.png", height: 20),
-                        label: const Text("WhatsApp",
-                            style: TextStyle(color: Colors.black)),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[100],
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
+                        icon: Image.asset("assets/images/whats.png", height: 20),
+                        label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[100], shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -256,6 +240,10 @@ class PropertyCard extends StatelessWidget {
     );
   }
 }
+
+// ──────────────────────────────────────────────
+// PropertyImageCarousel remains unchanged
+// ──────────────────────────────────────────────
 
 class PropertyImageCarousel extends StatefulWidget {
   final Property item;
@@ -300,34 +288,28 @@ class _PropertyImageCarouselState extends State<PropertyImageCarousel> {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Main Image Carousel
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: AspectRatio(
             aspectRatio: 1.4,
             child: hasMultiple
                 ? PageView.builder(
-                    controller: _pageController,
-                    itemCount: mediaList.length,
-                    onPageChanged: (i) =>
-                        setState(() => _currentImageIndex = i),
-                    itemBuilder: (_, i) => CachedNetworkImage(
-                      imageUrl: mediaList[i].originalUrl ?? '',
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) =>
-                          const Center(child: CircularProgressIndicator()),
-                      errorWidget: (_, __, ___) =>
-                          const Icon(Icons.broken_image, size: 50),
-                    ),
-                  )
+              controller: _pageController,
+              itemCount: mediaList.length,
+              onPageChanged: (i) => setState(() => _currentImageIndex = i),
+              itemBuilder: (_, i) => CachedNetworkImage(
+                imageUrl: mediaList[i].originalUrl ?? '',
+                fit: BoxFit.cover,
+                placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
+                errorWidget: (_, __, ___) => const Icon(Icons.broken_image, size: 50),
+              ),
+            )
                 : CachedNetworkImage(
-                    imageUrl: mainImage,
-                    fit: BoxFit.cover,
-                    placeholder: (_, __) =>
-                        const Center(child: CircularProgressIndicator()),
-                    errorWidget: (_, __, ___) =>
-                        const Icon(Icons.broken_image, size: 50),
-                  ),
+              imageUrl: mainImage,
+              fit: BoxFit.cover,
+              placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
+              errorWidget: (_, __, ___) => const Icon(Icons.broken_image, size: 50),
+            ),
           ),
         ),
 
@@ -342,8 +324,7 @@ class _PropertyImageCarouselState extends State<PropertyImageCarousel> {
               child: Center(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  physics:
-                      const NeverScrollableScrollPhysics(), // No manual scroll
+                  physics: const NeverScrollableScrollPhysics(), // No manual scroll
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(mediaList.length, (index) {
@@ -362,20 +343,17 @@ class _PropertyImageCarouselState extends State<PropertyImageCarousel> {
                         width: isCurrent ? 11 : 8,
                         height: isCurrent ? 11 : 8,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(isCurrent
-                              ? 1.0
-                              : isAdjacent
-                                  ? 0.5
-                                  : 0.3),
+                          color: Colors.white
+                              .withOpacity(isCurrent ? 1.0 : isAdjacent ? 0.5 : 0.3),
                           shape: BoxShape.circle,
                           boxShadow: isCurrent
                               ? [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
-                                  )
-                                ]
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            )
+                          ]
                               : null,
                         ),
                       );
@@ -408,24 +386,21 @@ class _PropertyImageCarouselState extends State<PropertyImageCarousel> {
                       icon: Icon(
                         isFavorited ? Icons.favorite : Icons.favorite_border,
                         color: isFavorited ? Colors.red : Colors.white,
-                        shadows: const [
-                          Shadow(color: Colors.black54, blurRadius: 6)
-                        ],
+                        shadows: const [Shadow(color: Colors.black54, blurRadius: 6)],
                         size: 28,
                       ),
                       onPressed: () {
                         if (!isLoggedIn) {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                                builder: (_) => const LoginDemo()),
+                            MaterialPageRoute(builder: (_) => const LoginDemo()),
                           );
                           return;
                         }
 
                         context.read<FavoriteBloc>().add(
-                              ToggleFavorite(propertyId: propertyId),
-                            );
+                          ToggleFavorite(propertyId: propertyId),
+                        );
                       },
                     );
                   },
@@ -471,13 +446,11 @@ class _PropertyImageCarouselState extends State<PropertyImageCarousel> {
                       fit: BoxFit.cover,
                       placeholder: (_, __) => Container(
                         color: Colors.grey[300],
-                        child: const Icon(Icons.person,
-                            size: 32, color: Colors.grey),
+                        child: const Icon(Icons.person, size: 32, color: Colors.grey),
                       ),
                       errorWidget: (_, __, ___) => Container(
                         color: Colors.grey[300],
-                        child: const Icon(Icons.person,
-                            size: 32, color: Colors.grey),
+                        child: const Icon(Icons.person, size: 32, color: Colors.grey),
                       ),
                     ),
                   ),

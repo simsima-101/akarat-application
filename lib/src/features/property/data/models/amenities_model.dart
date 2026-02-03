@@ -1,21 +1,30 @@
 class Amenities {
-  int? id;
-  String? title;
-  String? icon;
+  final int? id;
+  final String title; // single title from backend
+  final String? icon;
 
-  Amenities({this.id, this.title, this.icon});
+  Amenities({
+    this.id,
+    required this.title,
+    this.icon,
+  });
 
-  Amenities.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    title = json['title'];
-    icon = json['icon'];
+  /// Parse JSON from API
+  factory Amenities.fromJson(Map<String, dynamic> json) {
+    return Amenities(
+      id: json['id'] as int?,
+      title: (json['title'] as String?)?.trim() ?? '',
+      icon: (json['icon'] as String?)?.trim(),
+    );
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['title'] = title;
-    data['icon'] = icon;
-    return data;
+  /// Get title (for backward compatibility, just return title)
+  String getTitle(String lang) {
+    return title;
+  }
+
+  @override
+  String toString() {
+    return 'Amenities(id: $id, title: "$title", icon: $icon)';
   }
 }

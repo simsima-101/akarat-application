@@ -1,13 +1,19 @@
-import 'dart:convert';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 import '../../../../core/services/api_service.dart';
+
 import '../../data/models/project_model.dart'; // Adjust if path is different
 
 part 'new_projects_event.dart';
 part 'new_projects_state.dart';
+
+// lib/src/features/property/presentation/bloc/new_projects_bloc.dart
+
+// ... (imports and part declarations remain the same)
 
 class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
   NewProjectsBloc() : super(const NewProjectsState.initial()) {
@@ -16,18 +22,30 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
   }
 
   Future<void> _onLoadNewProjects(
-    LoadNewProjects event,
-    Emitter<NewProjectsState> emit,
-  ) async {
+      LoadNewProjects event,
+      Emitter<NewProjectsState> emit,
+      ) async {
     emit(state.copyWith(status: NewProjectsStatus.loading));
 
     try {
-      // final uri = ApiService.buildUri('new-projects', query: {'page': '1'});
-      // final response = await http.get(uri);
+      // Language detection (same logic)
+      String langCode = 'en';
+      try {
+        langCode = WidgetsBinding.instance.window.locale.languageCode.toLowerCase();
+      } catch (_) {}
 
-      final response = await ApiService.get(
-        'new-projects',
-        query: {'page': '1'},
+      final acceptLanguage = switch (langCode) {
+        'ar' => 'ar',
+        'tr' => 'tr',
+        _ => 'en',
+      };
+
+      debugPrint('→ NewProjects list (page 1) → Accept-Language: $acceptLanguage');
+
+      final uri = ApiService.buildUri('new-projects', query: {'page': '1'});
+      final response = await http.get(
+        uri,
+        headers: {'Accept-Language': acceptLanguage},
       );
 
       if (response.statusCode == 200) {
@@ -36,8 +54,7 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
         final fetchedData = responseModel.data!;
 
         final projects = fetchedData.data ?? [];
-        final hasMore = (fetchedData.meta?.currentPage ?? 1) <
-            (fetchedData.meta?.lastPage ?? 1);
+        final hasMore = (fetchedData.meta?.currentPage ?? 1) < (fetchedData.meta?.lastPage ?? 1);
 
         emit(state.copyWith(
           status: NewProjectsStatus.loaded,
@@ -60,21 +77,31 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
   }
 
   Future<void> _onLoadMoreNewProjects(
-    LoadMoreNewProjects event,
-    Emitter<NewProjectsState> emit,
-  ) async {
+      LoadMoreNewProjects event,
+      Emitter<NewProjectsState> emit,
+      ) async {
     if (!state.hasMore || state.status == NewProjectsStatus.loadingMore) return;
 
     emit(state.copyWith(status: NewProjectsStatus.loadingMore));
 
     try {
-      // final uri = ApiService.buildUri('new-projects',
-      //     query: {'page': '${state.currentPage}'});
-      // final response = await http.get(uri);
+      String langCode = 'en';
+      try {
+        langCode = WidgetsBinding.instance.window.locale.languageCode.toLowerCase();
+      } catch (_) {}
 
-      final response = await ApiService.get(
-        'new-projects',
-        query: {'page': '${state.currentPage}'},
+      final acceptLanguage = switch (langCode) {
+        'ar' => 'ar',
+        'tr' => 'tr',
+        _ => 'en',
+      };
+
+      debugPrint('→ NewProjects load more (page ${state.currentPage}) → Accept-Language: $acceptLanguage');
+
+      final uri = ApiService.buildUri('new-projects', query: {'page': '${state.currentPage}'});
+      final response = await http.get(
+        uri,
+        headers: {'Accept-Language': acceptLanguage},
       );
 
       if (response.statusCode == 200) {
@@ -83,8 +110,7 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
         final fetchedData = responseModel.data!;
 
         final newProjects = fetchedData.data ?? [];
-        final hasMore = (fetchedData.meta?.currentPage ?? 1) <
-            (fetchedData.meta?.lastPage ?? 1);
+        final hasMore = (fetchedData.meta?.currentPage ?? 1) < (fetchedData.meta?.lastPage ?? 1);
 
         emit(state.copyWith(
           projects: [...state.projects, ...newProjects],

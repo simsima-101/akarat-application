@@ -82,9 +82,9 @@ class SessionManager {
     _token = token.trim();
     _userName = userName.trim().isNotEmpty ? userName.trim() : 'User';
     _userEmail =
-        userEmail?.trim().isNotEmpty == true ? userEmail!.trim() : null;
+    userEmail?.trim().isNotEmpty == true ? userEmail!.trim() : null;
     _firstName =
-        firstName?.trim().isNotEmpty == true ? firstName!.trim() : null;
+    firstName?.trim().isNotEmpty == true ? firstName!.trim() : null;
     _lastName = lastName?.trim().isNotEmpty == true ? lastName!.trim() : null;
 
     // Auto-split name if first/last missing
@@ -167,7 +167,7 @@ class SessionManager {
 
   /// Try `/me` to fetch canonical identity if the login payload is thin.
   static Future<({String first, String last, String name, String email})?>
-      tryFetchMe(String token) async {
+  tryFetchMe(String token) async {
     try {
       // Try multiple possible endpoints (in order)
       final endpoints = ['/me', '/user', '/profile', '/account'];
@@ -192,10 +192,10 @@ class SessionManager {
           if (id.first.isNotEmpty || id.last.isNotEmpty) {
             final fullName = '${id.first} ${id.last}'.trim();
             return (
-              first: id.first,
-              last: id.last,
-              name: fullName.isNotEmpty ? fullName : id.name,
-              email: id.email
+            first: id.first,
+            last: id.last,
+            name: fullName.isNotEmpty ? fullName : id.name,
+            email: id.email
             );
           }
 
@@ -217,10 +217,10 @@ class SessionManager {
   }
 
   static Future<http.Response> _getAuth(
-    String endpoint,
-    String token, [
-    Map<String, String>? qs,
-  ]) async {
+      String endpoint,
+      String token, [
+        Map<String, String>? qs,
+      ]) async {
     if (token.isEmpty) {
       throw Exception(
           'No auth token present for ${ApiService.baseUrl}$endpoint');
@@ -288,7 +288,7 @@ class SessionManager {
   }
 
   static ({String first, String last, String name, String email})
-      extractIdentityFromAny(Map<String, dynamic> src) {
+  extractIdentityFromAny(Map<String, dynamic> src) {
     String pickStr(List<List<String>> paths) {
       for (final p in paths) {
         dynamic cur = src;

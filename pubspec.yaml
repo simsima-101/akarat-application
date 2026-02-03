@@ -59,7 +59,7 @@ dependencies:
   bloc: ^8.1.4  # NEW: Core Bloc
   json_annotation: ^4.9.0  # NEW: If needed for JSON models (add build_runner in dev for code gen)
 
-  app_settings: ^5.0.0
+  app_settings: ^5.1.1
 
   firebase_messaging: ^16.1.0    # ← this is the key fix!
   flutter_local_notifications: ^17.2.0   # keep this or latest

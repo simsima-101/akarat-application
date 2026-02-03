@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
-import '../core/services/api_service.dart';
+import '../core/constants/constants.dart' as ApiService;
 import '../core/utils/secure_storage.dart';
 import '../features/property/data/datasources/favorite_remote_datasource.dart';
 import '../features/property/data/models/saved_alert_model.dart';
@@ -15,449 +16,554 @@ import 'home.dart';
 import 'login.dart';
 import 'my_account.dart';
 
-class SavedAlertsScreen extends StatefulWidget {
+// ──────────────────────────────────────────────────────────────
+//  STATE
+// ──────────────────────────────────────────────────────────────
+
+enum SavedAlertsStatus {
+  initial,
+  loading,
+  success,
+  error,
+  deleting,
+  deleteSuccess,
+  deleteError,
+}
+
+class SavedAlertsState {
+  final SavedAlertsStatus status;
+  final List<SavedAlert> alerts;
+  final int currentPage;
+  final int pageSize;
+  final String? errorMessage;
+  final bool isDeletingAll;
+
+  const SavedAlertsState({
+    this.status = SavedAlertsStatus.initial,
+    this.alerts = const [],
+    this.currentPage = 1,
+    this.pageSize = 4,
+    this.errorMessage,
+    this.isDeletingAll = false,
+  });
+
+  int get totalPages => alerts.isEmpty ? 1 : ((alerts.length - 1) ~/ pageSize) + 1;
+
+  List<SavedAlert> get pageItems {
+    if (alerts.isEmpty) return const [];
+    final start = (currentPage - 1) * pageSize;
+    final end = (currentPage * pageSize).clamp(0, alerts.length);
+    if (start >= alerts.length) return const [];
+    return alerts.sublist(start, end);
+  }
+
+  bool get isLastPage => currentPage >= totalPages;
+
+  SavedAlertsState copyWith({
+    SavedAlertsStatus? status,
+    List<SavedAlert>? alerts,
+    int? currentPage,
+    String? errorMessage,
+    bool? isDeletingAll,
+  }) {
+    return SavedAlertsState(
+      status: status ?? this.status,
+      alerts: alerts ?? this.alerts,
+      currentPage: currentPage ?? this.currentPage,
+      pageSize: pageSize,
+      errorMessage: errorMessage ?? this.errorMessage,
+      isDeletingAll: isDeletingAll ?? this.isDeletingAll,
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────
+//  CUBIT
+// ──────────────────────────────────────────────────────────────
+
+class SavedAlertsCubit extends Cubit<SavedAlertsState> {
+  SavedAlertsCubit() : super(const SavedAlertsState());
+
+  String? _token;
+
+  Future<void> initialize({String? token}) async {
+    _token = token ?? await readToken();
+    await loadAlerts();
+  }
+
+  Future<void> loadAlerts() async {
+    emit(state.copyWith(status: SavedAlertsStatus.loading));
+
+    try {
+      final list = await _fetchAlerts();
+      emit(state.copyWith(
+        status: SavedAlertsStatus.success,
+        alerts: list,
+        currentPage: 1,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        status: SavedAlertsStatus.error,
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
+      ));
+    }
+  }
+
+  Future<void> reloadAlerts({bool goToLastPage = false}) async {
+    try {
+      final newList = await _fetchAlerts();
+
+      int newPage = state.currentPage;
+      if (goToLastPage || newList.length > state.alerts.length) {
+        newPage = newList.isEmpty ? 1 : ((newList.length - 1) ~/ state.pageSize) + 1;
+      } else if (newPage > ((newList.length - 1) ~/ state.pageSize) + 1) {
+        newPage = newList.isEmpty ? 1 : ((newList.length - 1) ~/ state.pageSize) + 1;
+      }
+
+      emit(state.copyWith(
+        status: SavedAlertsStatus.success,
+        alerts: newList,
+        currentPage: newPage,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        status: SavedAlertsStatus.error,
+        errorMessage: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> deleteAlert(SavedAlert alert) async {
+    if (_token == null) return;
+
+    emit(state.copyWith(status: SavedAlertsStatus.deleting));
+
+    bool success = false;
+
+    try {
+      success = await _tryDelete('${ApiService.baseUrl}/alerts/${alert.id}');
+      if (!success) {
+        success = await _tryDelete('${ApiService.baseUrl}/saved-searches/${alert.id}');
+      }
+
+      if (success) {
+        final updated = List<SavedAlert>.from(state.alerts)
+          ..removeWhere((a) => a.id == alert.id);
+
+        int newPage = state.currentPage;
+        final newPageItems = _getPageItems(updated, newPage);
+        if (newPageItems.isEmpty && newPage > 1) {
+          newPage--;
+        }
+
+        emit(state.copyWith(
+          status: SavedAlertsStatus.deleteSuccess,
+          alerts: updated,
+          currentPage: newPage,
+        ));
+      } else {
+        emit(state.copyWith(
+          status: SavedAlertsStatus.deleteError,
+          errorMessage: 'Failed to delete alert',
+        ));
+      }
+    } catch (_) {
+      emit(state.copyWith(
+        status: SavedAlertsStatus.deleteError,
+        errorMessage: 'Network error',
+      ));
+    }
+  }
+
+  Future<bool> _tryDelete(String urlStr) async {
+    final url = Uri.parse(urlStr);
+    final res = await http.delete(
+      url,
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $_token',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    );
+    return res.statusCode >= 200 && res.statusCode < 300;
+  }
+
+  Future<void> deleteAllAlerts() async {
+    if (_token == null || state.isDeletingAll) return;
+
+    emit(state.copyWith(isDeletingAll: true, status: SavedAlertsStatus.deleting));
+
+    try {
+      final url = Uri.parse('${ApiService.baseUrl}/alerts-deleteall');
+      var res = await http.delete(url, headers: _headers);
+
+      if (res.statusCode == 405 || res.statusCode == 404) {
+        res = await http.post(url, headers: _headers);
+      }
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        emit(state.copyWith(
+          status: SavedAlertsStatus.deleteSuccess,
+          alerts: const [],
+          currentPage: 1,
+          isDeletingAll: false,
+        ));
+      } else {
+        emit(state.copyWith(
+          status: SavedAlertsStatus.deleteError,
+          errorMessage: 'Failed to delete all (HTTP ${res.statusCode})',
+          isDeletingAll: false,
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        status: SavedAlertsStatus.deleteError,
+        errorMessage: e.toString(),
+        isDeletingAll: false,
+      ));
+    }
+  }
+
+  Map<String, String> get _headers => {
+    'Accept': 'application/json',
+    'Authorization': 'Bearer $_token',
+    'X-Requested-With': 'XMLHttpRequest',
+  };
+
+  Future<List<SavedAlert>> _fetchAlerts() async {
+    if (_token == null || _token!.isEmpty) {
+      throw Exception('Not authenticated');
+    }
+
+    debugPrint('→ Fetching saved alerts...');
+    final url = Uri.parse('${ApiService.baseUrl}/saved-searches');
+    final res = await http.get(url, headers: _headers);
+
+    if (res.statusCode == 401) {
+      throw Exception('401 - Unauthorized');
+    }
+
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      final body = jsonDecode(res.body);
+
+      List<dynamic> rawItems = [];
+
+      // Safe nested parsing (most common pattern in your API)
+      if (body is Map<String, dynamic>) {
+        final dataLevel1 = body['data'];
+        if (dataLevel1 is Map<String, dynamic>) {
+          // This is your real list: data.data
+          rawItems = dataLevel1['data'] as List<dynamic>? ?? [];
+        }
+        // Fallback if API changes to direct list
+        else if (dataLevel1 is List<dynamic>) {
+          rawItems = dataLevel1;
+        }
+
+        // Extra fallback for other possible keys
+        else if (body['saved_searches'] is List<dynamic>) {
+          rawItems = body['saved_searches'] as List<dynamic>;
+        }
+      }
+      // Very rare: root is list
+      else if (body is List<dynamic>) {
+        rawItems = body;
+      }
+
+      debugPrint('→ Parsed ${rawItems.length} raw items');
+
+      // Convert to model (safe cast)
+      return rawItems.map((item) {
+        if (item is Map<String, dynamic>) {
+          return SavedAlert.fromJson(item);
+        }
+        throw Exception('Invalid item format: expected Map, got ${item.runtimeType}');
+      }).toList();
+    }
+
+    final msg = (jsonDecode(res.body) as Map?)?['message'] ?? 'HTTP ${res.statusCode}';
+    throw Exception(msg);
+  }
+
+  List<SavedAlert> _getPageItems(List<SavedAlert> list, int page) {
+    final start = (page - 1) * state.pageSize;
+    final end = (page * state.pageSize).clamp(0, list.length);
+    if (start >= list.length) return const [];
+    return list.sublist(start, end);
+  }
+
+  void changePage(int page) {
+    final total = state.totalPages;
+    final safePage = page.clamp(1, total);
+    emit(state.copyWith(currentPage: safePage));
+  }
+}
+
+// ──────────────────────────────────────────────────────────────
+//  SCREEN
+// ──────────────────────────────────────────────────────────────
+
+class SavedAlertsScreen extends StatelessWidget {
   final String? token;
   const SavedAlertsScreen({super.key, this.token});
 
   @override
-  State<SavedAlertsScreen> createState() => _SavedAlertsScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => SavedAlertsCubit()..initialize(token: token),
+      child: const _SavedAlertsView(),
+    );
+  }
 }
 
-class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
-  late Future<List<SavedAlert>> _future;
-  String? _token;
-
-  List<SavedAlert> _all = [];
-  final Set<int> _selected = {};
-  bool _selectAll = false;
-
-  static const int _pageSize = 4;
-  int _page = 1;
-  int _lastCount = 0;
-  bool _deletingAll = false;
-
-  int pageIndex = 2;
+class _SavedAlertsView extends StatelessWidget {
+  const _SavedAlertsView();
 
   @override
-  void initState() {
-    super.initState();
-    _future = _fetchSavedAlerts(initial: true);
-    _future.then((list) {
-      if (!mounted) return;
-      setState(() => _all = list);
-    });
-  }
-
-  Future<void> _reload({bool goToLast = false}) async {
-    setState(() {
-      _future = _fetchSavedAlerts().then((list) {
-        _all = list;
-
-        final totalPages = _totalPages;
-        if (goToLast || list.length > _lastCount) {
-          _setPage(totalPages == 0 ? 1 : totalPages, resetSelection: true);
-        } else if (_page > totalPages) {
-          _setPage(totalPages == 0 ? 1 : totalPages, resetSelection: true);
-        }
-
-        _selected.removeWhere((id) => !_all.any((a) => a.id == id));
-        _lastCount = list.length;
-        return list;
-      });
-    });
-    await _future;
-  }
-
-  Future<List<SavedAlert>> _fetchSavedAlerts({bool initial = false}) async {
-    _token ??= widget.token ?? await readToken();
-
-    if (_token == null || _token!.isEmpty) {
-      if (!mounted) throw Exception('Not authenticated');
-      await Navigator.of(context)
-          .push(MaterialPageRoute(builder: (_) => const Login()));
-      _token = await readToken();
-      if (_token == null || _token!.isEmpty)
-        throw Exception('Not authenticated');
-    }
-
-    return _loadList(_token!);
-  }
-
-  Future<List<SavedAlert>> _loadList(String token) async {
-    debugPrint("tokensss : ${token}");
-    // final url = Uri.parse('${ApiService.baseUrl}/saved-searches');
-    // final res = await http.get(
-    //   url,
-    //   headers: {
-    //     'Accept': 'application/json',
-    //     'Authorization': 'Bearer $token',
-    //     'X-Requested-With': 'XMLHttpRequest',
-    //   },
-    // );
-
-    final res = await ApiService.get(
-      '/saved-searches',
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    ).timeout(const Duration(seconds: 25));
-
-    if (res.statusCode == 401) {
-      if (!mounted) throw Exception('Not authenticated');
-      await Navigator.of(context)
-          .push(MaterialPageRoute(builder: (_) => const Login()));
-      final t2 = await readToken();
-      if (t2 == null || t2.isEmpty) throw Exception('Not authenticated');
-      _token = t2;
-      return _loadList(t2);
-    }
-
-    if (res.statusCode >= 200 && res.statusCode < 300) {
-      final dynamic jsonBody =
-          res.body.isNotEmpty ? jsonDecode(res.body) : null;
-
-      List<dynamic> list;
-      if (jsonBody is List) {
-        list = jsonBody;
-      } else if (jsonBody is Map) {
-        final data = jsonBody['data'];
-        if (data is List) {
-          list = data;
-        } else if (data is Map && data['data'] is List) {
-          list = data['data'];
-        } else if (jsonBody['saved_searches'] is List) {
-          list = jsonBody['saved_searches'];
-        } else {
-          list = const [];
-        }
-      } else {
-        list = const [];
-      }
-
-      return list
-          .map((e) => SavedAlert.fromJson(Map<String, dynamic>.from(e)))
-          .toList();
-    } else {
-      final body = res.body.isNotEmpty ? jsonDecode(res.body) : null;
-      final msg = (body is Map && body['message'] != null)
-          ? body['message'].toString()
-          : 'Failed to load saved alerts (HTTP ${res.statusCode})';
-      throw Exception(msg);
-    }
-  }
-
-  Future<void> _deleteAlert(SavedAlert a) async {
-    if (_token == null) return;
-    try {
-      // final url = Uri.parse('${ApiService.baseUrl}/alerts/${a.id}');
-      // final res = await http.delete(url, headers: {
-      //   'Accept': 'application/json',
-      //   'Authorization': 'Bearer $_token',
-      //   'X-Requested-With': 'XMLHttpRequest',
-      // });
-
-      final res = await ApiService.delete(
-        '/alerts/${a.id}',
-        headers: {
-          'Authorization': 'Bearer $_token',
-        },
-      ).timeout(const Duration(seconds: 25));
-
-      Future<void> applyLocalDelete() async {
-        setState(() {
-          _all.removeWhere((x) => x.id == a.id);
-          _selected.remove(a.id);
-        });
-        if (_page > 1 && _pageItems.isEmpty) {
-          _setPage(_page - 1);
-        }
-      }
-
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        await applyLocalDelete();
-      } else {
-        // final fallback =
-        //     Uri.parse('${ApiService.baseUrl}/saved-searches/${a.id}');
-        // final res2 = await http.delete(fallback, headers: {
-        //   'Accept': 'application/json',
-        //   'Authorization': 'Bearer $_token',
-        //   'X-Requested-With': 'XMLHttpRequest',
-        // });
-        final res2 = await ApiService.delete(
-          '/saved-searches/${a.id}',
-          headers: {
-            'Authorization': 'Bearer $_token',
-          },
-        ).timeout(const Duration(seconds: 15));
-
-        if (res2.statusCode >= 200 && res2.statusCode < 300) {
-          await applyLocalDelete();
-        } else {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to delete alert')),
-          );
-        }
-      }
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Network error while deleting')),
-      );
-    }
-  }
-
-  Future<void> _deleteAllAlerts() async {
-    if (_token == null || _deletingAll) return;
-    _deletingAll = true;
-
-    try {
-      // final base = ApiService.baseUrl;
-      // final url = Uri.parse('$base/alerts-deleteall');
-      //
-      // final res = await http.delete(
-      //   url,
-      //   headers: {
-      //     'Accept': 'application/json',
-      //     'Authorization': 'Bearer $_token',
-      //     'X-Requested-With': 'XMLHttpRequest',
-      //   },
-      // );
-
-      final res = await ApiService.delete(
-        '/alerts-deleteall',
-        headers: {
-          'Authorization': 'Bearer $_token',
-        },
-      ).timeout(const Duration(seconds: 15));
-
-      http.Response? fallbackRes;
-      if (res.statusCode == 405 || res.statusCode == 404) {
-        // fallbackRes = await http.post(
-        //   url,
-        //   headers: {
-        //     'Accept': 'application/json',
-        //     'Authorization': 'Bearer $_token',
-        //     'X-Requested-With': 'XMLHttpRequest',
-        //   },
-        // );
-
-        fallbackRes = await ApiService.post(
-          '/alerts-deleteall',
-          headers: {
-            'Authorization': 'Bearer $_token',
-          },
-        ).timeout(const Duration(seconds: 15));
-      }
-
-      final ok = (res.statusCode >= 200 && res.statusCode < 300) ||
-          (fallbackRes != null &&
-              fallbackRes.statusCode >= 200 &&
-              fallbackRes.statusCode < 300);
-
-      if (!mounted) return;
-
-      if (ok) {
-        await _reload();
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('All alerts deleted')),
-        );
-      } else {
-        final code = fallbackRes?.statusCode ?? res.statusCode;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete all alerts (HTTP $code)')),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error while deleting all alerts: $e')),
-      );
-    } finally {
-      _deletingAll = false;
-    }
-  }
-
-  String _relativeTime(DateTime dt) {
-    final now = DateTime.now();
-    final diff = now.difference(dt);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return 'Created ${diff.inMinutes} minutes ago';
-    if (diff.inHours < 24) return 'Created ${diff.inHours} hours ago';
-    return 'Created ${diff.inDays} days ago';
-  }
-
-  int get _totalPages {
-    if (_all.isEmpty) return 1;
-    return ((_all.length - 1) ~/ _pageSize) + 1;
-  }
-
-  List<SavedAlert> get _pageItems {
-    if (_all.isEmpty) return const [];
-    final start = (_page - 1) * _pageSize;
-    final int end = ((_page * _pageSize).clamp(0, _all.length));
-    if (start >= _all.length) return const [];
-    return _all.sublist(start, end);
-  }
-
-  void _setPage(int p, {bool resetSelection = false}) {
-    final total = _totalPages;
-    final newPage = total <= 1 ? 1 : p.clamp(1, total);
-    setState(() {
-      _page = newPage;
-      if (resetSelection) {
-        _selected.clear();
-        _selectAll = false;
-      }
-    });
-  }
-
-  /// ------------------------------ NAV BAR (EXACTLY LIKE New_Projects) ------------------------------
-  Container buildMyNavBar(BuildContext context) {
-    return Container(
-      height: 50, // same as New_Projects
-      decoration: const BoxDecoration(
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      bottomNavigationBar: Container(
         color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
+        child: SafeArea(
+          top: false,
+          child: _buildNavBar(context),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // HOME
-          GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const Home()),
-            ),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0),
-              child: Image(
-                image: AssetImage("assets/images/home.png"),
-                height: 25,
-              ),
-            ),
-          ),
-
-          // FAVORITES
-          IconButton(
-            enableFeedback: false,
-            onPressed: () async {
-              final token = await SecureStorage.getToken();
-
-              if (token == null || token.isEmpty) {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white,
-                    title: const Text("Login Required",
-                        style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.",
-                        style: TextStyle(color: Colors.black)),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text("Cancel",
-                            style: TextStyle(color: Colors.red)),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (_) => const Login()));
-                        },
-                        child: const Text("Login",
-                            style: TextStyle(color: Colors.red)),
-                      ),
-                    ],
+      appBar: AppBar(
+        surfaceTintColor: Colors.white,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: const BackButton(color: Colors.red),
+        actions: [
+          BlocBuilder<SavedAlertsCubit, SavedAlertsState>(
+            buildWhen: (p, c) => p.alerts.length != c.alerts.length,
+            builder: (context, state) {
+              if (state.alerts.isEmpty) return const SizedBox.shrink();
+              return Row(
+                children: [
+                  IconButton(
+                    tooltip: "How to remove saved alerts",
+                    icon: Icon(Icons.info_outline, color: Colors.grey[600]),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: Colors.white,
+                          title: const Text(
+                            "How to Remove saved alerts ?",
+                            style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600),
+                          ),
+                          content: const Text(
+                            "Swipe left on any alert to remove it from your saved list",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text(
+                                "Got it",
+                                style: TextStyle(color: Colors.red, fontSize: 17, fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              } else {
-                // Logged in – go to favorites
-                Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const Fav_Logout()))
-                    .then((_) async {
-                  final updatedFavorites =
-                      await FavoriteService.fetchApiFavorites(token);
-                  if (!mounted) return;
-                  setState(() {
-                    FavoriteService.loggedInFavorites = updatedFavorites;
-                  });
-                });
-              }
-            },
-            icon: const Icon(Icons.favorite_border_outlined,
-                color: Colors.red, size: 30),
-          ),
+                  const Gap(5),
+                  TextButton(
+                    onPressed: () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: Colors.white,
+                          title: const Text("Clear All Saved Alert?"),
+                          content: const Text("This will remove all your saved alerts."),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              child: const Text("Clear", style: TextStyle(color: Colors.red)),
+                            ),
+                          ],
+                        ),
+                      );
 
-          // EMAIL
-          IconButton(
-            tooltip: "Email",
-            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
-            onPressed: () async {
-              final Uri emailUri = Uri.parse(
-                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
+                      if (confirmed == true && context.mounted) {
+                        context.read<SavedAlertsCubit>().deleteAllAlerts();
+                      }
+                    },
+                    child: const Text("Clear All", style: TextStyle(color: Colors.red, fontSize: 15)),
+                  ),
+                  const Gap(10),
+                ],
               );
-
-              if (await canLaunchUrl(emailUri)) {
-                await launchUrl(emailUri);
-              } else {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white,
-                    title: const Text('Email not available',
-                        style: TextStyle(color: Colors.black)),
-                    content: const Text(
-                      'No email app is configured on this device. Please add a mail account first.',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('OK',
-                            style: TextStyle(color: Colors.red)),
-                      ),
-                    ],
-                  ),
-                );
-              }
             },
-          ),
-
-          // MENU / MY ACCOUNT
-          Padding(
-            padding: const EdgeInsets.only(right: 20.0),
-            child: IconButton(
-              enableFeedback: false,
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const My_Account()));
-              },
-              icon: pageIndex == 3
-                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
-                  : const Icon(Icons.dehaze_outlined,
-                      color: Colors.red, size: 35),
-            ),
           ),
         ],
+      ),
+      body: BlocConsumer<SavedAlertsCubit, SavedAlertsState>(
+        listener: (context, state) {
+          if (state.status == SavedAlertsStatus.deleteSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.alerts.isEmpty ? 'All alerts deleted' : 'Alert deleted'),
+                duration: const Duration(milliseconds: 1500),
+              ),
+            );
+          }
+          if (state.status == SavedAlertsStatus.deleteError || state.status == SavedAlertsStatus.error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.errorMessage ?? 'An error occurred')),
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state.status == SavedAlertsStatus.loading && state.alerts.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state.status == SavedAlertsStatus.error && state.alerts.isEmpty) {
+            return _ErrorView(
+              message: state.errorMessage ?? 'Failed to load alerts',
+              onRetry: () => context.read<SavedAlertsCubit>().loadAlerts(),
+            );
+          }
+
+          final cubit = context.read<SavedAlertsCubit>();
+
+          return Column(
+            children: [
+              if (state.alerts.isNotEmpty || state.status != SavedAlertsStatus.loading)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      const Text(
+                        'Saved Alerts',
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.black, height: 1.1),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '(${state.alerts.length})',
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFFFF4D4D), height: 1.2),
+                      ),
+                    ],
+                  ),
+                ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Manage your saved property alerts here',
+                    style: TextStyle(fontSize: 14, color: Colors.black87, height: 1.2),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: state.alerts.isEmpty
+                    ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'You haven’t saved any alerts yet.',
+                        style: TextStyle(color: Colors.black54, fontSize: 17, fontWeight: FontWeight.w600),
+                      ),
+                      const Gap(24),
+                      SizedBox(
+                        width: 150,
+                        child: CreateAlertButton(
+                          disabled: false,
+                          onTap: () => _onCreateAlert(context, cubit),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                    : ListView.builder(
+                  itemCount: state.pageItems.length,
+                  itemBuilder: (context, index) {
+                    final alert = state.pageItems[index];
+                    return Dismissible(
+                      key: Key(alert.id.toString()),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        child: const Icon(Icons.delete, color: Colors.white, size: 30),
+                      ),
+                      confirmDismiss: (_) async {
+                        return await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            backgroundColor: Colors.white,
+                            title: const Text("Delete Saved Alert?"),
+                            content: const Text("Are you sure to delete this saved alert."),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text("Delete", style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          ),
+                        ) ??
+                            false;
+                      },
+                      onDismissed: (_) => cubit.deleteAlert(alert),
+                      child: SavedAlertCard(
+                        title: alert.alertName ?? 'Alert',
+                        frequency: alert.timePeriod ?? 'Daily',
+                        created: _relativeTime(alert.createdAt),
+                      ),
+                    );
+                  },
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+              ),
+              if (state.totalPages > 1)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.chevron_left),
+                        onPressed: state.currentPage > 1 ? () => cubit.changePage(state.currentPage - 1) : null,
+                      ),
+                      Text('Page ${state.currentPage} of ${state.totalPages}'),
+                      IconButton(
+                        icon: const Icon(Icons.chevron_right),
+                        onPressed: !state.isLastPage ? () => cubit.changePage(state.currentPage + 1) : null,
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  bool _alertCreated = false;
-
-  bool get isLoggedIn => _token != null && _token!.isNotEmpty;
-
-  Future<void> _onCreateAlert() async {
+  Future<void> _onCreateAlert(BuildContext context, SavedAlertsCubit cubit) async {
+    final isLoggedIn = await _isUserLoggedIn();
     if (!isLoggedIn) {
+      // Show your beautiful login required dialog
       showDialog(
         context: context,
         builder: (ctx) => Dialog(
@@ -466,10 +572,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
           child: Container(
             height: 70,
             margin: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
-            decoration: BoxDecoration(
-              color: Colors.red,
-              borderRadius: BorderRadius.circular(10),
-            ),
+            decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(10)),
             child: Stack(
               clipBehavior: Clip.none,
               children: [
@@ -479,8 +582,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                   child: Material(
                     color: Colors.transparent,
                     child: IconButton(
-                      icon: const Icon(Icons.close,
-                          color: Colors.white, size: 20),
+                      icon: const Icon(Icons.close, color: Colors.white, size: 20),
                       onPressed: () => Navigator.of(ctx).pop(),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -503,7 +605,7 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
                       GestureDetector(
                         onTap: () {
                           Navigator.of(ctx).pop();
-                          Navigator.of(ctx).pushNamed('/login');
+                          Navigator.of(context).pushNamed('/login');
                         },
                         child: const Text(
                           'Login',
@@ -538,277 +640,142 @@ class _SavedAlertsScreenState extends State<SavedAlertsScreen> {
       ),
     );
 
-    // Optionally refresh saved alerts / show toast if user saved one
-    if (saved == true) {
-      // e.g., ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Alert saved')));
-    }
-
-    if (!mounted) return;
-
-    if (saved == true) {
-      setState(() => _alertCreated = true);
-
-      final messenger = ScaffoldMessenger.of(context);
-      messenger.hideCurrentSnackBar(); // optional
-      messenger.showSnackBar(
+    if (saved == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Alert created'),
           duration: Duration(milliseconds: 1200),
         ),
       );
+      await cubit.reloadAlerts(goToLastPage: true);
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      bottomNavigationBar: Container(
+  Future<bool> _isUserLoggedIn() async {
+    final token = await readToken();
+    return token != null && token.isNotEmpty;
+  }
+
+  String _relativeTime(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return 'Created ${diff.inMinutes} minutes ago';
+    if (diff.inHours < 24) return 'Created ${diff.inHours} hours ago';
+    return 'Created ${diff.inDays} days ago';
+  }
+
+  // ────────────────────────────────────────────────
+  // Bottom Navigation Bar (kept almost identical)
+  // ────────────────────────────────────────────────
+  Container _buildNavBar(BuildContext context) {
+    const pageIndex = 2;
+
+    return Container(
+      height: 50,
+      decoration: const BoxDecoration(
         color: Colors.white,
-        child: SafeArea(
-          top: false,
-          child: buildMyNavBar(context),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
       ),
-      appBar: AppBar(
-        actions: [
-          if (_all.isNotEmpty) ...[
-            IconButton(
-                tooltip: "How to remove saved alerts",
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      backgroundColor: Colors.white,
-                      titlePadding: EdgeInsets.only(
-                          top: 24, left: 20, right: 20, bottom: 0),
-                      contentPadding: EdgeInsets.only(
-                          top: 18, left: 20, right: 20, bottom: 0),
-                      actionsPadding: EdgeInsets.only(
-                          top: 18, left: 20, right: 30, bottom: 15),
-                      title: const Text(
-                        "How to Remove saved alerts ?",
-                        style: TextStyle(
-                            fontSize: 19, fontWeight: FontWeight.w600),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const Home())),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              child: Image(image: AssetImage("assets/images/home.png"), height: 25),
+            ),
+          ),
+          IconButton(
+            enableFeedback: false,
+            onPressed: () async {
+              final token = await SecureStorage.getToken();
+              if (token == null || token.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white,
+                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
+                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Cancel", style: TextStyle(color: Colors.red)),
                       ),
-                      content: const Text(
-                        "Swipe left on any alert to remove it from your saved list",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w400),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const Login()));
+                        },
+                        child: const Text("Login", style: TextStyle(color: Colors.red)),
                       ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: const Text(
-                            "Got it",
-                            style: TextStyle(
-                                color: Colors.red,
-                                fontSize: 17,
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                icon: Icon(
-                  Icons.info_outline,
-                  color: Colors.grey[600],
-                )),
-            Gap(5),
-            TextButton(
-                onPressed: () async {
-                  await showDialog(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      backgroundColor: Colors.white,
-                      title: const Text("Clear All Saved Alert?"),
-                      content:
-                          const Text("This will remove all your saved alerts."),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: const Text("Cancel",
-                              style: TextStyle(color: Colors.red)),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            if (_all.isEmpty || _deletingAll) {
-                              Navigator.pop(ctx);
-                            } else {
-                              _deleteAllAlerts();
-                              Navigator.pop(ctx);
-                            }
-                          },
-                          child: const Text("Clear",
-                              style: TextStyle(color: Colors.red)),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                child: Text("Clear All",
-                    style: TextStyle(color: Colors.red, fontSize: 15))),
-            Gap(10),
-          ],
-        ],
-        surfaceTintColor: Colors.white,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: const BackButton(color: Colors.red),
-        // title: const Text(
-        //   "My Account",
-        //   style: TextStyle(color: Colors.deepPurpleAccent),
-        // ),
-      ),
-      body: FutureBuilder<List<SavedAlert>>(
-          future: _future,
-          builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting &&
-                _all.isEmpty) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snap.hasError && _all.isEmpty) {
-              return _ErrorView(
-                message: snap.error.toString(),
-                onRetry: _reload,
+                    ],
+                  ),
+                );
+              } else {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const Fav_Logout())).then((_) async {
+                  // Optional: refresh favorites if needed
+                });
+              }
+            },
+            icon: const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+          ),
+          IconButton(
+            tooltip: "Email",
+            icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
+            onPressed: () async {
+              final Uri emailUri = Uri.parse(
+                'mailto:info@akarat.com?subject=Property%20Inquiry&body=Hi,%20I%20saw%20your%20agent%20profile%20on%20Akarat.',
               );
-            }
-
-            final int titleCount =
-                snap.hasData ? (snap.data?.length ?? _all.length) : _all.length;
-
-            return Column(
-              children: [
-                if (true) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        const Text(
-                          'Saved Alerts',
-                          style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black,
-                              height: 1.1),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          '($titleCount)',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFFFF4D4D),
-                            height: 1.2,
-                          ),
-                        ),
-                      ],
+              if (await canLaunchUrl(emailUri)) {
+                await launchUrl(emailUri);
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white,
+                    title: const Text('Email not available', style: TextStyle(color: Colors.black)),
+                    content: const Text(
+                      'No email app is configured on this device. Please add a mail account first.',
+                      style: TextStyle(color: Colors.black),
                     ),
-                  ),
-                  const SizedBox(height: 15),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Manage your saved property alerts here',
-                        style: TextStyle(
-                            fontSize: 14, color: Colors.black87, height: 1.2),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('OK', style: TextStyle(color: Colors.red)),
                       ),
-                    ),
+                    ],
                   ),
-                  const SizedBox(height: 10),
-                ],
-                Expanded(
-                  child: _all.isEmpty
-                      ? Center(
-                          child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'You haven’t saved any alerts yet.',
-                              style: TextStyle(
-                                color: Colors.black54,
-                                fontSize: 17,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Gap(24),
-                            SizedBox(
-                                width: 150, // <-- reduce width here
-                                child: CreateAlertButton(
-                                  disabled:
-                                      _alertCreated, // true after saving the alert
-                                  onTap: _onCreateAlert, // normal handler
-                                )),
-                          ],
-                        ))
-                      : ListView.builder(
-                          itemCount: _pageItems.length,
-                          itemBuilder: (context, index) {
-                            final alert = _pageItems[index];
-                            return Dismissible(
-                              key: Key(alert.id.toString()),
-                              direction: DismissDirection.endToStart,
-                              background: Container(
-                                color: Colors.red,
-                                alignment: Alignment.centerRight,
-                                padding: const EdgeInsets.only(right: 20),
-                                child: const Icon(Icons.delete,
-                                    color: Colors.white, size: 30),
-                              ),
-                              confirmDismiss: (_) async {
-                                return await showDialog<bool>(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    backgroundColor: Colors.white,
-                                    title: const Text("Delete Saved Alert?"),
-                                    content: const Text(
-                                        "Are you sure to delete this saved alert."),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(ctx, false),
-                                        child: const Text("Cancel",
-                                            style:
-                                                TextStyle(color: Colors.red)),
-                                      ),
-                                      TextButton(
-                                        onPressed: () async {
-                                          Navigator.pop(ctx, true);
-                                        },
-                                        child: const Text("Delete",
-                                            style:
-                                                TextStyle(color: Colors.red)),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                              onDismissed: (_) async {
-                                await _deleteAlert(alert);
-                              },
-                              child: SavedAlertCard(
-                                title: alert.alertName,
-                                frequency: alert.timePeriod,
-                                created: _relativeTime(alert.createdAt),
-                              ),
-                            );
-                          },
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                        ),
-                ),
-              ],
-            );
-          }),
+                );
+              }
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: IconButton(
+              enableFeedback: false,
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const My_Account()));
+              },
+              icon: pageIndex == 3
+                  ? const Icon(Icons.dehaze, color: Colors.red, size: 35)
+                  : const Icon(Icons.dehaze_outlined, color: Colors.red, size: 35),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
+
+// ──────────────────────────────────────────────────────────────
+//  SUPPORTING WIDGETS (unchanged)
+// ──────────────────────────────────────────────────────────────
 
 class SavedAlertCard extends StatelessWidget {
   final String title;
@@ -825,34 +792,11 @@ class SavedAlertCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         boxShadow: [
-          BoxShadow(
-            offset: Offset(0, 0),
-            color: Colors.grey.shade300,
-            blurRadius: 3,
-            spreadRadius: 3,
-          ),
-          // BoxShadow(
-          //   offset: Offset(1, 1),
-          //   color: Colors.grey.shade300,
-          //   blurRadius: 2,
-          //   spreadRadius: 2,
-          // ),
-          // BoxShadow(
-          //   offset: Offset(1, 1),
-          //   color: Colors.grey.shade300,
-          //   blurRadius: 1,
-          //   spreadRadius: 2,
-          // ),
-          // BoxShadow(
-          //   offset: Offset(1, 1),
-          //   color: Colors.grey.shade300,
-          //   blurRadius: 2,
-          //   spreadRadius: 2,
-          // )
+          BoxShadow(offset: const Offset(0, 0), color: Colors.grey.shade300, blurRadius: 3, spreadRadius: 3),
         ],
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -860,31 +804,14 @@ class SavedAlertCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 14),
-          const Text(
-            "Receive updates",
-            style: TextStyle(
-              color: Colors.black87,
-              fontSize: 14,
-            ),
-          ),
+          const Text("Receive updates", style: TextStyle(color: Colors.black87, fontSize: 14)),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -895,25 +822,12 @@ class SavedAlertCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  frequency,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontSize: 16,
-                  ),
-                ),
-                // const Icon(Icons.keyboard_arrow_down, color: Colors.black),
+                Text(frequency, style: const TextStyle(color: Colors.black87, fontSize: 16)),
               ],
             ),
           ),
           const SizedBox(height: 10),
-          Text(
-            created,
-            style: const TextStyle(
-              color: Colors.black87,
-              fontSize: 13,
-            ),
-          ),
+          Text(created, style: const TextStyle(color: Colors.black87, fontSize: 13)),
         ],
       ),
     );
@@ -924,15 +838,10 @@ class CreateAlertButton extends StatelessWidget {
   final VoidCallback? onTap;
   final bool disabled;
 
-  const CreateAlertButton({
-    super.key,
-    this.onTap,
-    this.disabled = false,
-  });
+  const CreateAlertButton({super.key, this.onTap, this.disabled = false});
 
   @override
   Widget build(BuildContext context) {
-    // keep the same visuals always
     const gradient = LinearGradient(
       begin: Alignment.centerRight,
       end: Alignment.centerLeft,
@@ -940,13 +849,11 @@ class CreateAlertButton extends StatelessWidget {
     );
 
     return AbsorbPointer(
-      // blocks taps but keeps semantics hit-test for parent
       absorbing: disabled,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(28),
-          // don't trigger ripple when disabled
           onTap: disabled ? null : onTap,
           splashColor: disabled ? Colors.transparent : null,
           highlightColor: disabled ? Colors.transparent : null,
@@ -957,13 +864,7 @@ class CreateAlertButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(28),
               border: Border.all(color: Colors.red, width: 1),
               gradient: gradient,
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 6,
-                  offset: Offset(0, 2),
-                ),
-              ],
+              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -974,21 +875,12 @@ class CreateAlertButton extends StatelessWidget {
                   height: 18,
                   width: 18,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(
-                    Icons.notifications_none,
-                    size: 18,
-                    color: Colors.black,
-                  ),
+                  errorBuilder: (_, __, ___) => const Icon(Icons.notifications_none, size: 18, color: Colors.black),
                 ),
                 const SizedBox(width: 6),
                 const Text(
                   'Create Alert',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.2,
-                  ),
+                  style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.2),
                 ),
               ],
             ),
@@ -1002,7 +894,8 @@ class CreateAlertButton extends StatelessWidget {
 class _ErrorView extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
-  const _ErrorView({super.key, required this.message, required this.onRetry});
+
+  const _ErrorView({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {

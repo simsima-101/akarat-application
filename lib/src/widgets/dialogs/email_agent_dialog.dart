@@ -23,16 +23,22 @@ Future<void> showEmailAgentDialog(
 
   await showDialog(
     context: context,
-    builder: (context) => BlocListener<EnquiryBloc, EnquiryState>(
+    builder: (dialogContext) => BlocListener<EnquiryBloc, EnquiryState>(
       listener: (context, state) {
         if (state is EnquirySuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
+            SnackBar(
+              content: Text(state.message ?? 'Enquiry sent successfully'),
+              backgroundColor: Colors.green,
+            ),
           );
-          Navigator.pop(context); // Close dialog on success
+          Navigator.pop(dialogContext); // Close dialog on success
         } else if (state is EnquiryFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.error), backgroundColor: Colors.red),
+            SnackBar(
+              content: Text(state.message ?? 'Failed to send enquiry'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       },
@@ -83,7 +89,7 @@ Future<void> showEmailAgentDialog(
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           BlocBuilder<EnquiryBloc, EnquiryState>(
