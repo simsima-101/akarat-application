@@ -7,30 +7,25 @@ import 'package:Akarat/src/screen/register_screen.dart';
 import 'package:Akarat/src/screen/saved_alert_screen.dart';
 import 'package:Akarat/src/screen/support.dart';
 import 'package:Akarat/src/screen/terms_condition.dart';
-
+import 'package:app_settings/app_settings.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../core/localization/language_controller.dart';
-import '../core/utils/secure_storage.dart';
 import '../core/services/api_service.dart';
+import '../core/utils/secure_storage.dart';
 import '../core/utils/session_manager.dart';
+import '../features/find_agent/presentation/pages/findagent.dart';
 import '../utils/fav_logout.dart';
 import '../widgets/custom_alert_box.dart';
 import 'ContactFormScreen.dart';
 import 'about_us.dart';
-import '../features/find_agent/presentation/pages/findagent.dart';
+import 'contacted_properties.dart';
 import 'home.dart';
 import 'login.dart';
 import 'personal_information.dart';
-import 'contacted_properties.dart';
-
-import 'package:app_settings/app_settings.dart';
-
-
-import 'package:url_launcher/url_launcher.dart';
 
 class My_Account extends StatefulWidget {
   const My_Account({super.key});
@@ -73,8 +68,8 @@ class _My_AccountState extends State<My_Account> {
 
   bool get _isLoggedIn =>
       SessionManager().isAuthenticated &&
-          userName != 'User' &&
-          userName?.isNotEmpty == true;
+      userName != 'User' &&
+      userName?.isNotEmpty == true;
 
   // ===================== LOGOUT =====================
   Future<void> _logout() async {
@@ -82,7 +77,7 @@ class _My_AccountState extends State<My_Account> {
       final token = SessionManager().token;
       if (token != null && token.isNotEmpty) {
         try {
-          await ApiService.logoutUser(token);
+          await logoutUser(token);
         } catch (_) {}
       }
     } finally {
@@ -93,10 +88,66 @@ class _My_AccountState extends State<My_Account> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const LoginDemo()),
-            (route) => false,
+        (route) => false,
       );
     }
   }
+
+  static Future<void> logoutUser(String token) async {
+    final resp = await _postAuth('/logout', token, const {});
+    if (resp.statusCode != 200) {
+      throw Exception('Logout failed: ${resp.statusCode}');
+    }
+  }
+
+  static Future<http.Response> _postAuth(
+    String endpoint,
+    String token,
+    Map<String, dynamic> body,
+  ) async {
+    if (token.isEmpty) {
+      throw Exception(
+          'No auth token present for ${ApiService.baseUrl}$endpoint');
+    }
+    // final url = ApiService.buildUri(endpoint);
+    // final resp = await http
+    //     .post(url, headers: _authHeaders(token), body: jsonEncode(body))
+    //     .timeout(Duration(seconds: 25));
+
+    final resp = await ApiService.post(
+      endpoint,
+      body: body,
+      headers: _authHeaders(token),
+    ).timeout(const Duration(seconds: 25));
+
+    if (kDebugMode) {
+      print('[POST*] -> ${resp.statusCode} ${resp.body}');
+    }
+
+    return resp;
+  }
+
+  static Map<String, String> _authHeaders(String token) {
+    final cleanToken = token.trim();
+    debugPrint('SENDING AUTH HEADER → Bearer $cleanToken');
+
+    if (cleanToken.isEmpty) {
+      throw Exception('Empty token in _authHeaders');
+    }
+
+    return {
+      ..._jsonHeaders,
+      'Authorization': 'Bearer $cleanToken',
+      'Origin': 'https://akarat.com', // ← Add this (helps Sanctum)
+      'Referer': 'https://akarat.com', // ← Add this (helps Sanctum)
+    };
+  }
+
+  static const Map<String, String> _jsonHeaders = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json; charset=UTF-8',
+    'X-Requested-With': 'XMLHttpRequest',
+  };
 
   // ===================== DELETE ACCOUNT =====================
   Future<void> deleteAccount() async {
@@ -109,20 +160,27 @@ class _My_AccountState extends State<My_Account> {
         return;
       }
 
-      final uri = Uri.parse('${ApiService.baseUrl}/delete');
-      var resp = await http.delete(uri, headers: {'Authorization': 'Bearer $token'});
+      // Primary attempt: use proper DELETE method
+      var resp = await ApiService.delete(
+        '/delete',
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
 
+      // Fallback: if backend rejects DELETE (405 or 404),
+      // use POST with _method=DELETE (common in Laravel/Sanctum)
       if (resp.statusCode == 405 || resp.statusCode == 404) {
-        resp = await http.post(
-          uri,
+        resp = await ApiService.post(
+          '/delete',
+          body: {'_method': 'DELETE'},
           headers: {
             'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
           },
-          body: jsonEncode({'_method': 'DELETE'}),
         );
       }
 
+      // Success check
       if (resp.statusCode == 200 || resp.statusCode == 204) {
         await SessionManager().signOut();
 
@@ -134,11 +192,17 @@ class _My_AccountState extends State<My_Account> {
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const LoginDemo()),
-                (route) => false,
+            (route) => false,
           );
         }
       } else {
-        throw Exception('Failed: ${resp.statusCode}');
+        // Improved error with response body if available
+        String errorMsg = 'Failed: ${resp.statusCode}';
+        try {
+          final errorBody = jsonDecode(resp.body);
+          errorMsg += ' - ${errorBody['message'] ?? 'Unknown error'}';
+        } catch (_) {}
+        throw Exception(errorMsg);
       }
     } catch (e) {
       if (mounted) {
@@ -160,111 +224,119 @@ class _My_AccountState extends State<My_Account> {
         child: _isLoggedIn == false && userName == null
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n?.myAccount ?? 'My Account',
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n?.myAccount ?? 'My Account',
+                      style: const TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
 
-              // Profile Card
-              Padding(
-                padding: const EdgeInsets.only(top: 30, bottom: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.black12, blurRadius: 6)
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () async {
-                          if (!_isLoggedIn) {
-                            _showLoginDialog("Please login to edit your profile.");
-                            return;
-                          }
+                    // Profile Card
+                    Padding(
+                      padding: const EdgeInsets.only(top: 30, bottom: 16),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black12, blurRadius: 6)
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () async {
+                                if (!_isLoggedIn) {
+                                  _showLoginDialog(
+                                      "Please login to edit your profile.");
+                                  return;
+                                }
 
-                          final changed = await Navigator.push<bool>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PersonalInformationScreen(
-                                name: userName ?? '',
-                                email: userEmail ?? '',
-                                onDeleteAccount: deleteAccount,
+                                final changed = await Navigator.push<bool>(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => PersonalInformationScreen(
+                                      name: userName ?? '',
+                                      email: userEmail ?? '',
+                                      onDeleteAccount: deleteAccount,
+                                    ),
+                                  ),
+                                );
+
+                                if (changed == true && mounted) {
+                                  await _loadUserData();
+                                }
+                              },
+                              child: CircleAvatar(
+                                radius: 30,
+                                backgroundColor: Colors.grey[200],
+                                child: ClipOval(
+                                  child: Image.asset(
+                                    'assets/images/avatar.png',
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                               ),
                             ),
-                          );
-
-                          if (changed == true && mounted) {
-                            await _loadUserData();
-                          }
-                        },
-                        child: CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Colors.grey[200],
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/images/avatar.png',
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _isLoggedIn
-                            ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _displayName,
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              userEmail ?? '',
-                              style: const TextStyle(fontSize: 13, color: Colors.grey),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _isLoggedIn
+                                  ? Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _displayName,
+                                          style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          userEmail ?? '',
+                                          style: const TextStyle(
+                                              fontSize: 13, color: Colors.grey),
+                                        ),
+                                      ],
+                                    )
+                                  : GestureDetector(
+                                      onTap: () async {
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const LoginDemo()),
+                                        );
+                                        if (mounted) await _loadUserData();
+                                      },
+                                      child: const Text(
+                                        "Welcome! Login / Sign up",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.red,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
                             ),
                           ],
-                        )
-                            : GestureDetector(
-                          onTap: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const LoginDemo()),
-                            );
-                            if (mounted) await _loadUserData();
-                          },
-                          child: const Text(
-                            "Welcome! Login / Sign up",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+
+                    const SizedBox(height: 10),
+                    _buildSettings(_isLoggedIn),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 10),
-              _buildSettings(_isLoggedIn),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -274,7 +346,8 @@ class _My_AccountState extends State<My_Account> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: Colors.red,
-        title: const Text("Login Required", style: TextStyle(color: Colors.white)),
+        title:
+            const Text("Login Required", style: TextStyle(color: Colors.white)),
         content: Text(description, style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(
@@ -291,7 +364,8 @@ class _My_AccountState extends State<My_Account> {
             },
             child: const Text(
               "Login",
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -306,7 +380,8 @@ class _My_AccountState extends State<My_Account> {
       children: [
         _settingsContainer([
           if (!isLoggedIn)
-            _settingsTile("My Account", "assets/images/my-account-profile.png", () {
+            _settingsTile("My Account", "assets/images/my-account-profile.png",
+                () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const RegisterScreen()),
@@ -338,7 +413,8 @@ class _My_AccountState extends State<My_Account> {
               );
             }
           }),
-          _settingsTile("Contacted Properties", "assets/images/contacted.png", () {
+          _settingsTile("Contacted Properties", "assets/images/contacted.png",
+              () {
             if (!_isLoggedIn) {
               _showLoginDialog("Please login to view contacted properties.");
               return;
@@ -349,69 +425,60 @@ class _My_AccountState extends State<My_Account> {
             );
           }),
           _settingsTile("About Us", "assets/images/about.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => About_Us()));
+            Navigator.push(
+                context, MaterialPageRoute(builder: (_) => About_Us()));
           }),
           _settingsTile("Support", "assets/images/support.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const Support()));
+            Navigator.push(
+                context, MaterialPageRoute(builder: (_) => const Support()));
           }),
-          _settingsTile("Privacy Policy", "assets/images/privacy-policy.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const Privacy()));
+          _settingsTile("Privacy Policy", "assets/images/privacy-policy.png",
+              () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (_) => const Privacy()));
           }),
-          _settingsTile("Terms And Conditions", "assets/images/terms-and-conditions.png", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsCondition()));
+          _settingsTile(
+              "Terms And Conditions", "assets/images/terms-and-conditions.png",
+              () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const TermsCondition()));
           }),
 
           // Language Tile - Opens native per-app language settings
-          // In your settings widget
-          ListTile(
-            title: const Text('Change Language in Device Settings'),
-            subtitle: const Text('Open device settings → Language & Region'),
-            leading: const Icon(Icons.language),
-            onTap: () async {
+          _settingsTile(
+            l10n?.language ?? "Language",
+            "assets/images/terms-and-conditions.png", // Recommended: add a globe icon
+            () async {
               try {
-                // Opens the main/general app settings screen (cross-platform)
-                // On Android → often shows app permissions + "App info" where language might be nearby
-                // On iOS   → opens the app's own settings page (language is usually in system settings)
+                // Direct to app language settings on Android 13+ / falls back on iOS
                 await AppSettings.openAppSettings(
-                  type: AppSettingsType.settings,   // ← this is the correct value for general settings
-                );
-
-                // Optional: show hint to user (especially helpful on iOS where language is system-wide)
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Go to Settings → General → Language & Region (or similar) to change language',
-                      ),
-                      duration: Duration(seconds: 5),
-                    ),
-                  );
-                }
+                    type: AppSettingsType.appLocale);
               } catch (e) {
-                debugPrint('Failed to open settings: $e');
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Could not open settings')),
-                  );
-                }
+                // Fallback to general app settings
+                await AppSettings.openAppSettings(
+                    type: AppSettingsType.settings);
               }
             },
           ),
           _settingsTile(
             "Rate Us",
             "assets/images/stars (1).png",
-                () async {
+            () async {
               const String androidPackage = "com.akarat.drawerdemo";
               const String iosAppId = "6745213903";
 
               // Use country-specific link (very important for AE/UAE!)
-              final String countryCode = 'ae'; // Change to 'us', 'gb', etc. if needed
+              final String countryCode =
+                  'ae'; // Change to 'us', 'gb', etc. if needed
 
               final Uri storeUrl = Platform.isIOS
-                  ? Uri.parse("https://apps.apple.com/$countryCode/app/id$iosAppId")
+                  ? Uri.parse(
+                      "https://apps.apple.com/$countryCode/app/id$iosAppId")
                   : Platform.isAndroid
-                  ? Uri.parse("https://play.google.com/store/apps/details?id=$androidPackage")
-                  : Uri.parse("https://apps.apple.com/$countryCode/app/id$iosAppId"); // fallback
+                      ? Uri.parse(
+                          "https://play.google.com/store/apps/details?id=$androidPackage")
+                      : Uri.parse(
+                          "https://apps.apple.com/$countryCode/app/id$iosAppId"); // fallback
 
               try {
                 // First try external app mode (App Store / Play Store native)
@@ -422,14 +489,17 @@ class _My_AccountState extends State<My_Account> {
                   );
 
                   if (!launched) {
-                    debugPrint("External launch failed → trying in-app/browser fallback");
+                    debugPrint(
+                        "External launch failed → trying in-app/browser fallback");
                     await launchUrl(
                       storeUrl,
-                      mode: LaunchMode.platformDefault, // Opens in Safari or in-app webview
+                      mode: LaunchMode
+                          .platformDefault, // Opens in Safari or in-app webview
                     );
                   }
                 } else {
-                  debugPrint("Cannot launch $storeUrl → trying platform default");
+                  debugPrint(
+                      "Cannot launch $storeUrl → trying platform default");
                   await launchUrl(
                     storeUrl,
                     mode: LaunchMode.platformDefault,
@@ -444,35 +514,34 @@ class _My_AccountState extends State<My_Account> {
               }
             },
           ),
-
         ]),
 
         // Logout / Login Section
         _settingsContainer(
           isLoggedIn
               ? [
-            _settingsTile("Logout", "", () async {
-              customAlertBox(
-                context: context,
-                title: 'Are you sure you want to logout?',
-                onPress: () async {
-                  Navigator.of(context, rootNavigator: true).pop();
-                  await _logout();
-                },
-                icons: 'assets/images/alert_box_logout_icon.png',
-              );
-            }),
-          ]
+                  _settingsTile("Logout", "", () async {
+                    customAlertBox(
+                      context: context,
+                      title: 'Are you sure you want to logout?',
+                      onPress: () async {
+                        Navigator.of(context, rootNavigator: true).pop();
+                        await _logout();
+                      },
+                      icons: 'assets/images/alert_box_logout_icon.png',
+                    );
+                  }),
+                ]
               : [
-            _settingsTile("Login", "", () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginDemo()),
-              ).then((_) {
-                if (mounted) _loadUserData();
-              });
-            }),
-          ],
+                  _settingsTile("Login", "", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginDemo()),
+                    ).then((_) {
+                      if (mounted) _loadUserData();
+                    });
+                  }),
+                ],
         ),
       ],
     );
@@ -509,7 +578,8 @@ class _My_AccountState extends State<My_Account> {
       height: 50,
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20), topRight: Radius.circular(20)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -518,11 +588,12 @@ class _My_AccountState extends State<My_Account> {
             onTap: () => Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (_) => const Home()),
-                  (route) => false,
+              (route) => false,
             ),
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Image(image: AssetImage("assets/images/home.png"), height: 25),
+              child: Image(
+                  image: AssetImage("assets/images/home.png"), height: 25),
             ),
           ),
           IconButton(
@@ -535,11 +606,16 @@ class _My_AccountState extends State<My_Account> {
                     title: const Text("Login Required"),
                     content: const Text("Please login to access favorites."),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+                      TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Cancel")),
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginDemo()));
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const LoginDemo()));
                         },
                         child: const Text("Login"),
                       ),
@@ -547,10 +623,12 @@ class _My_AccountState extends State<My_Account> {
                   ),
                 );
               } else {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const Fav_Logout()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const Fav_Logout()));
               }
             },
-            icon: const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
+            icon: const Icon(Icons.favorite_border_outlined,
+                color: Colors.red, size: 30),
           ),
           IconButton(
             icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),

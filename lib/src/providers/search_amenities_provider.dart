@@ -1,11 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import '../core/localization/language_controller.dart'; // ← import this
-import '../features/property/data/models/amenities_model.dart';
 import '../core/services/api_service.dart'; // Make sure this path is correct
+import '../features/property/data/models/amenities_model.dart';
 
 class AmenitiesProvider extends ChangeNotifier {
   // ────────────────────────────────────────────────
@@ -25,9 +23,6 @@ class AmenitiesProvider extends ChangeNotifier {
   // Constructor – listen to language changes
   // ────────────────────────────────────────────────
   AmenitiesProvider() {
-    // Listen globally to language changes
-    LanguageController.instance.addListener(_onLanguageChanged);
-
     Future.microtask(() => refresh());
     // Optional: initial fetch on creation (uncomment if needed)
     // fetchAmenities();
@@ -66,22 +61,17 @@ class AmenitiesProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await ApiService.wrappedGet(
-        ApiService.buildUri('amenities'),
-      );
-
-      debugPrint('Fetch amenities response → status: ${response.statusCode} | lang used: ${LanguageController.instance.languageCode}');
+      final response = await ApiService.get("amenities");
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        final List<dynamic> data = decoded is List
-            ? decoded
-            : (decoded['data'] as List? ?? []);
+        final List<dynamic> data =
+            decoded is List ? decoded : (decoded['data'] as List? ?? []);
 
         _allAmenities = data.map((e) => Amenities.fromJson(e)).toList();
-        debugPrint('Loaded ${_allAmenities.length} amenities (lang: ${LanguageController.instance.languageCode})');
       } else {
-        debugPrint('Failed to load amenities: ${response.statusCode} - ${response.body}');
+        debugPrint(
+            'Failed to load amenities: ${response.statusCode} - ${response.body}');
         _allAmenities = [];
       }
     } catch (e, stack) {
@@ -114,21 +104,22 @@ class AmenitiesProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final uri = ApiService.buildUri(
+      // final uri = ApiService.buildUri(
+      //   'amenities/search',
+      //   query: {'q': trimmedQuery},
+      // );
+
+      final response = await ApiService.get(
         'amenities/search',
         query: {'q': trimmedQuery},
       );
 
-      final response = await ApiService.wrappedGet(uri);
-
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        final List<dynamic> data = decoded is List
-            ? decoded
-            : (decoded['data'] as List? ?? []);
+        final List<dynamic> data =
+            decoded is List ? decoded : (decoded['data'] as List? ?? []);
 
         _searchResults = data.map((e) => Amenities.fromJson(e)).toList();
-        debugPrint('Search "$trimmedQuery" → ${_searchResults.length} results (lang: ${LanguageController.instance.languageCode})');
       } else {
         debugPrint('Search failed: ${response.statusCode} - ${response.body}');
         _searchResults = [];
@@ -158,8 +149,6 @@ class AmenitiesProvider extends ChangeNotifier {
   // Refresh everything (called on language change or manually)
   // ────────────────────────────────────────────────
   Future<void> refresh() async {
-    debugPrint('AmenitiesProvider refresh triggered (lang: ${LanguageController.instance.languageCode})');
-
     // Clear old data to force UI update
     _allAmenities = [];
     _searchResults = [];
@@ -178,7 +167,6 @@ class AmenitiesProvider extends ChangeNotifier {
   // ────────────────────────────────────────────────
   @override
   void dispose() {
-    LanguageController.instance.removeListener(_onLanguageChanged);
     searchController.dispose();
     super.dispose();
   }

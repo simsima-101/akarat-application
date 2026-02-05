@@ -2,9 +2,7 @@
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../core/localization/language_controller.dart';
 import '../core/utils/session_manager.dart';
 import 'home.dart';
 
@@ -32,7 +30,7 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
 
     // Start language initialization in background (non-blocking)
-    Future.microtask(_initializeLanguage);
+    // Future.microtask(_initializeLanguage);
 
     // === Your beautiful animation stays 100% intact ===
     _controller = AnimationController(
@@ -84,25 +82,25 @@ class _SplashScreenState extends State<SplashScreen>
     });
   }
 
-  /// Initialize language: clear old pref + force sync with device
-  Future<void> _initializeLanguage() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final old = prefs.getString('language_code');
-      print('OLD saved language_code = $old');
-
-      await prefs.remove('language_code');
-      print('REMOVED language_code from prefs → now following device');
-
-      await LanguageController.instance.useDeviceLanguage();
-      print('useDeviceLanguage completed');
-
-      LanguageController.instance.refreshFromDeviceIfNeeded();
-      print('After refresh → current lang = ${LanguageController.instance.languageCode}');
-    } catch (e) {
-      print('Language init error: $e');
-    }
-  }
+  // /// Initialize language: clear old pref + force sync with device
+  // Future<void> _initializeLanguage() async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     final old = prefs.getString('language_code');
+  //     print('OLD saved language_code = $old');
+  //
+  //     await prefs.remove('language_code');
+  //     print('REMOVED language_code from prefs → now following device');
+  //
+  //     await LanguageController.instance.useDeviceLanguage();
+  //     print('useDeviceLanguage completed');
+  //
+  //     LanguageController.instance.refreshFromDeviceIfNeeded();
+  //     print('After refresh → current lang = ${LanguageController.instance.languageCode}');
+  //   } catch (e) {
+  //     print('Language init error: $e');
+  //   }
+  // }
 
   /// Always navigate to Home — this is the new behavior you wanted!
   Future<void> _goToHome() async {

@@ -1,9 +1,11 @@
 // Core utilities
 import 'package:Akarat/src/core/constants/constants.dart' as ApiService;
-import 'package:Akarat/src/core/localization/language_controller.dart';
 import 'package:Akarat/src/core/utils/session_manager.dart';
 // Blocs
 import 'package:Akarat/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:Akarat/src/features/localization/presentation/bloc/localization_cubit.dart';
+import 'package:Akarat/src/features/localization/presentation/bloc/localization_state.dart';
+import 'package:Akarat/src/features/localization/repo/localization_repo.dart';
 import 'package:Akarat/src/features/property/data/repositories/property_repository.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/enquiry_bloc.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/favorite_bloc.dart';
@@ -23,7 +25,6 @@ import 'package:Akarat/src/screen/otp_verification.dart';
 import 'package:Akarat/src/screen/register_screen.dart';
 import 'package:Akarat/src/screen/reset_password.dart';
 import 'package:Akarat/src/screen/splash_screen.dart';
-import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
@@ -38,6 +39,7 @@ import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
+import 'l10n/l10n.dart';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Global keys
@@ -121,30 +123,6 @@ Future<void> _initializeRemoteConfig() async {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Tiny helper widget to run initial language sync AFTER providers are available
-class _InitialLanguageSync extends StatefulWidget {
-  const _InitialLanguageSync();
-
-  @override
-  State<_InitialLanguageSync> createState() => __InitialLanguageSyncState();
-}
-
-class __InitialLanguageSyncState extends State<_InitialLanguageSync> {
-  @override
-  void initState() {
-    super.initState();
-    // Wait until first frame → providers & context are ready
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      LanguageController.instance.refreshFromDeviceIfNeeded();
-      debugPrint('Initial language sync completed (post-frame)');
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -160,23 +138,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _setupNotifications();
-  }
-
-  @override
-  void didChangeLocales(List<Locale>? locales) {
-    super.didChangeLocales(locales);
-    if (locales == null || locales.isEmpty) return;
-
-    LanguageController.instance.refreshFromDeviceIfNeeded();
-    debugPrint('System locales changed → refreshed language');
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      LanguageController.instance.refreshFromDeviceIfNeeded();
-      debugPrint('App resumed → checked device language');
-    }
   }
 
   @override
@@ -231,20 +192,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (_) => FilterProvider()),
         ChangeNotifierProvider(create: (_) => LocationPickerProvider()),
         ChangeNotifierProvider(create: (_) => FavoriteProvider()),
-        ChangeNotifierProvider(
-          create: (_) => LanguageController.instance,
-        ),
       ],
       child: Builder(
         builder: (context) {
-          final lang = context.watch<LanguageController>();
-
           return MultiRepositoryProvider(
             providers: [
               RepositoryProvider(create: (_) => PropertyRepository()),
             ],
             child: MultiBlocProvider(
               providers: [
+                BlocProvider(
+                  create: (_) => LocalizationCubit(LocalizationRepository()),
+                ),
                 BlocProvider(create: (_) => AuthBloc()..add(AppStarted())),
                 BlocProvider(
                     create: (_) => FavoriteBloc()..add(const LoadFavorites())),
@@ -254,6 +213,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 //   ),
                 // ),
                 BlocProvider(create: (_) => EnquiryBloc()),
+
                 BlocProvider(
                   create: (context) => PropertiesBloc(
                     repository: context.read<PropertyRepository>(),
@@ -270,70 +230,56 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     );
                   }
                 },
-                child: MaterialApp(
-                  title: 'Akarat',
-                  debugShowCheckedModeBanner: false,
-                  navigatorKey: navigatorKey,
-                  scaffoldMessengerKey: scaffoldMessengerKey,
-                  locale: lang.locale,
-                  supportedLocales: const [
-                    Locale('en'),
-                    Locale('ar'),
-                    Locale('tr'),
-                  ],
-                  localizationsDelegates: const [
-                    AppLocalizations.delegate,
-                    GlobalMaterialLocalizations.delegate,
-                    GlobalWidgetsLocalizations.delegate,
-                    GlobalCupertinoLocalizations.delegate,
-                    CountryLocalizations.delegate,
-                  ],
-                  builder: (context, child) {
-                    return Directionality(
-                      textDirection: lang.languageCode == 'ar'
-                          ? TextDirection.rtl
-                          : TextDirection.ltr,
-                      child: Stack(
-                        children: [
-                          child!,
-                          const _InitialLanguageSync(),
-                        ],
+                child: BlocBuilder<LocalizationCubit, LocalizationState>(
+                  builder: (context, state) {
+                    return MaterialApp(
+                      title: 'Akarat',
+                      debugShowCheckedModeBanner: false,
+                      navigatorKey: navigatorKey,
+                      scaffoldMessengerKey: scaffoldMessengerKey,
+                      locale: state.locale,
+                      supportedLocales: L10n.all,
+                      localizationsDelegates: const [
+                        AppLocalizations.delegate,
+                        GlobalMaterialLocalizations.delegate,
+                        GlobalWidgetsLocalizations.delegate,
+                        GlobalCupertinoLocalizations.delegate,
+                      ],
+                      theme: ThemeData(
+                        useMaterial3: true,
+                        colorSchemeSeed: const Color(0xFFE01E26),
+                        fontFamily: 'Tajawal',
                       ),
+                      home: const SplashScreen(),
+                      routes: {
+                        '/login': (_) => const Login(),
+                        '/register': (_) => const RegisterScreen(),
+                        '/home': (_) => const Home(),
+                        '/my-account': (_) => const My_Account(),
+                        '/forgot-password': (_) => const ForgotPasswordScreen(),
+                        '/new-projects': (_) => const NewProjectsScreen(),
+                      },
+                      onGenerateRoute: (settings) {
+                        if (settings.name == '/verify-otp') {
+                          return MaterialPageRoute(
+                            builder: (_) => const OtpVerificationScreen(),
+                          );
+                        }
+
+                        if (settings.name == '/reset-password') {
+                          final args =
+                              settings.arguments as Map<String, dynamic>? ?? {};
+                          return MaterialPageRoute(
+                            builder: (_) => ResetPasswordScreen(
+                              email: args['email'] ?? '',
+                              token: args['token'] ?? '',
+                            ),
+                          );
+                        }
+
+                        return null;
+                      },
                     );
-                  },
-                  theme: ThemeData(
-                    useMaterial3: true,
-                    colorSchemeSeed: const Color(0xFFE01E26),
-                    fontFamily: 'Tajawal',
-                  ),
-                  home: const SplashScreen(),
-                  routes: {
-                    '/login': (_) => const Login(),
-                    '/register': (_) => const RegisterScreen(),
-                    '/home': (_) => const Home(),
-                    '/my-account': (_) => const My_Account(),
-                    '/forgot-password': (_) => const ForgotPasswordScreen(),
-                    '/new-projects': (_) => const NewProjectsScreen(),
-                  },
-                  onGenerateRoute: (settings) {
-                    if (settings.name == '/verify-otp') {
-                      return MaterialPageRoute(
-                        builder: (_) => const OtpVerificationScreen(),
-                      );
-                    }
-
-                    if (settings.name == '/reset-password') {
-                      final args =
-                          settings.arguments as Map<String, dynamic>? ?? {};
-                      return MaterialPageRoute(
-                        builder: (_) => ResetPasswordScreen(
-                          email: args['email'] ?? '',
-                          token: args['token'] ?? '',
-                        ),
-                      );
-                    }
-
-                    return null;
                   },
                 ),
               ),
