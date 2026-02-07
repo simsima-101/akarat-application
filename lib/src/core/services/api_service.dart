@@ -68,6 +68,12 @@ class ApiService {
   static Uri buildUri(String endpoint, {Map<String, String>? query}) =>
       _buildUri(endpoint, query);
 
+  static String _getLanguageCode() {
+    final ctx = navigatorKey.currentContext;
+    if (ctx == null) return 'en';
+    return ctx.read<LocalizationCubit>().state.language;
+  }
+
   // ==============================
   // Signature
   // ==============================
@@ -78,9 +84,11 @@ class ApiService {
 
     final hmac = Hmac(sha256, utf8.encode(_appSecret));
     final signature = hmac.convert(utf8.encode(payload)).toString();
-    final langCode = navigatorKey.currentContext!
-        .read<LocalizationCubit>()
-        .currentLanguageCode;
+    // final langCode = navigatorKey.currentContext!
+    //     .read<LocalizationCubit>()
+    //     .currentLanguageCode;
+
+    final langCode = _getLanguageCode();
 
     return {
       'X-APP-KEY': _appKey,

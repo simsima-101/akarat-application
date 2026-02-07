@@ -195,93 +195,95 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       ],
       child: Builder(
         builder: (context) {
-          return MultiRepositoryProvider(
+          return MultiBlocProvider(
             providers: [
-              RepositoryProvider(create: (_) => PropertyRepository()),
-            ],
-            child: MultiBlocProvider(
-              providers: [
-                BlocProvider(
-                  create: (_) => LocalizationCubit(LocalizationRepository()),
-                ),
-                BlocProvider(create: (_) => AuthBloc()..add(AppStarted())),
-                BlocProvider(
-                    create: (_) => FavoriteBloc()..add(const LoadFavorites())),
-                // BlocProvider(
-                //   create: (context) => FilterBloc(
-                //     context.read<FilterRepository>(), // ← pass it here
-                //   ),
-                // ),
-                BlocProvider(create: (_) => EnquiryBloc()),
+              BlocProvider(
+                create: (_) => LocalizationCubit(LocalizationRepository()),
+              ),
+              BlocProvider(create: (_) => AuthBloc()..add(AppStarted())),
+              BlocProvider(
+                  create: (_) => FavoriteBloc()..add(const LoadFavorites())),
+              // BlocProvider(
+              //   create: (context) => FilterBloc(
+              //     context.read<FilterRepository>(), // ← pass it here
+              //   ),
+              // ),
+              BlocProvider(create: (_) => EnquiryBloc()),
 
-                BlocProvider(
+              BlocProvider(
                   create: (context) => PropertiesBloc(
-                    repository: context.read<PropertyRepository>(),
-                  )..add(const LoadProperties(endpoint: 'properties')),
-                ),
-              ],
-              child: BlocListener<AuthBloc, AuthState>(
-                listener: (context, state) {
-                  if (state is AuthUnauthenticated) {
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      '/login',
-                      (_) => false,
-                    );
-                  }
+                        repository: PropertyRepository(),
+                      )),
+            ],
+            child: BlocListener<AuthBloc, AuthState>(
+              listener: (context, state) {
+                if (state is AuthUnauthenticated) {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/login',
+                    (_) => false,
+                  );
+                }
+              },
+              child: BlocBuilder<LocalizationCubit, LocalizationState>(
+                builder: (context, state) {
+                  return MaterialApp(
+                    title: 'Akarat',
+                    debugShowCheckedModeBanner: false,
+                    navigatorKey: navigatorKey,
+                    scaffoldMessengerKey: scaffoldMessengerKey,
+                    locale: state.locale,
+                    supportedLocales: L10n.all,
+                    localizationsDelegates: const [
+                      AppLocalizations.delegate,
+                      GlobalMaterialLocalizations.delegate,
+                      GlobalWidgetsLocalizations.delegate,
+                      GlobalCupertinoLocalizations.delegate,
+                    ],
+                    builder: (context, child) {
+                      return Directionality(
+                        // Flutter can detect RTL automatically from locale
+                        // But you can also force it if needed:
+                        textDirection: TextDirection.rtl,
+                        child: child!,
+                      );
+                    },
+                    theme: ThemeData(
+                      useMaterial3: true,
+                      colorSchemeSeed: const Color(0xFFE01E26),
+                      fontFamily: 'Tajawal',
+                    ),
+                    home: const SplashScreen(),
+                    routes: {
+                      '/login': (_) => const Login(),
+                      '/register': (_) => const RegisterScreen(),
+                      '/home': (_) => const Home(),
+                      '/my-account': (_) => const My_Account(),
+                      '/forgot-password': (_) => const ForgotPasswordScreen(),
+                      '/new-projects': (_) => const NewProjectsScreen(),
+                    },
+                    onGenerateRoute: (settings) {
+                      if (settings.name == '/verify-otp') {
+                        return MaterialPageRoute(
+                          builder: (_) => const OtpVerificationScreen(),
+                        );
+                      }
+
+                      if (settings.name == '/reset-password') {
+                        final args =
+                            settings.arguments as Map<String, dynamic>? ?? {};
+                        return MaterialPageRoute(
+                          builder: (_) => ResetPasswordScreen(
+                            email: args['email'] ?? '',
+                            token: args['token'] ?? '',
+                          ),
+                        );
+                      }
+
+                      return null;
+                    },
+                  );
                 },
-                child: BlocBuilder<LocalizationCubit, LocalizationState>(
-                  builder: (context, state) {
-                    return MaterialApp(
-                      title: 'Akarat',
-                      debugShowCheckedModeBanner: false,
-                      navigatorKey: navigatorKey,
-                      scaffoldMessengerKey: scaffoldMessengerKey,
-                      locale: state.locale,
-                      supportedLocales: L10n.all,
-                      localizationsDelegates: const [
-                        AppLocalizations.delegate,
-                        GlobalMaterialLocalizations.delegate,
-                        GlobalWidgetsLocalizations.delegate,
-                        GlobalCupertinoLocalizations.delegate,
-                      ],
-                      theme: ThemeData(
-                        useMaterial3: true,
-                        colorSchemeSeed: const Color(0xFFE01E26),
-                        fontFamily: 'Tajawal',
-                      ),
-                      home: const SplashScreen(),
-                      routes: {
-                        '/login': (_) => const Login(),
-                        '/register': (_) => const RegisterScreen(),
-                        '/home': (_) => const Home(),
-                        '/my-account': (_) => const My_Account(),
-                        '/forgot-password': (_) => const ForgotPasswordScreen(),
-                        '/new-projects': (_) => const NewProjectsScreen(),
-                      },
-                      onGenerateRoute: (settings) {
-                        if (settings.name == '/verify-otp') {
-                          return MaterialPageRoute(
-                            builder: (_) => const OtpVerificationScreen(),
-                          );
-                        }
-
-                        if (settings.name == '/reset-password') {
-                          final args =
-                              settings.arguments as Map<String, dynamic>? ?? {};
-                          return MaterialPageRoute(
-                            builder: (_) => ResetPasswordScreen(
-                              email: args['email'] ?? '',
-                              token: args['token'] ?? '',
-                            ),
-                          );
-                        }
-
-                        return null;
-                      },
-                    );
-                  },
-                ),
               ),
             ),
           );

@@ -5,11 +5,10 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/material.dart'; // for WidgetsBinding (language fallback)
 
 import '../../../../core/services/api_service.dart';
-import '../models/project_model.dart';       // ProjectResponseModel
-import '../models/fdetailmodel.dart';      // Featured_DetailModel
+import '../models/fdetailmodel.dart'; // Featured_DetailModel
+import '../models/project_model.dart'; // ProjectResponseModel
 
 class PropertyRepository {
   final http.Client client;
@@ -73,51 +72,20 @@ class PropertyRepository {
 
   /// Fetches detailed information for a single property by its ID.
   Future<Featured_DetailModel> fetchPropertyDetail(
-      String propertyId, {
-        Map<String, String>? extraHeaders,
-      }) async {
+    String propertyId, {
+    Map<String, String>? extraHeaders,
+  }) async {
     try {
       final uri = ApiService.buildUri('properties/$propertyId');
 
       if (kDebugMode) {
         debugPrint('→ Fetching property detail: $uri');
       }
-
-      // ────────────────────────────────────────────────
-      // Determine current language for Accept-Language header
-      // ────────────────────────────────────────────────
-      String langCode = 'en'; // fallback
-
-      try {
-        final locale = WidgetsBinding.instance.platformDispatcher.locale;
-        langCode = locale.languageCode.toLowerCase().trim();
-      } catch (e) {
-        debugPrint('Warning: Could not read locale → fallback to en');
-      }
-
-      String acceptLanguage;
-      switch (langCode) {
-        case 'ar':
-          acceptLanguage = 'ar';
-          break;
-        case 'tr':
-          acceptLanguage = 'tr';
-          break;
-        default:
-          acceptLanguage = 'en';
-      }
-
-      if (kDebugMode) {
-        debugPrint('→ Property detail request → Accept-Language: $acceptLanguage');
-        debugPrint('→ Detected language code: $langCode');
-      }
-
       // Use ApiService.get (compatibility helper)
       final response = await ApiService.get(
         'properties/$propertyId',
         headers: {
           ...?extraHeaders,
-          'Accept-Language': acceptLanguage,
         },
       ).timeout(const Duration(seconds: 30));
 
@@ -142,7 +110,8 @@ class PropertyRepository {
     } on http.ClientException catch (e) {
       throw NetworkException('Network error: ${e.message}', uri: e.uri);
     } on TimeoutException {
-      throw TimeoutException('Property detail request timed out after 30 seconds');
+      throw TimeoutException(
+          'Property detail request timed out after 30 seconds');
     } catch (e) {
       throw Exception('Unexpected error fetching property detail: $e');
     }
@@ -160,7 +129,8 @@ class HttpException implements Exception {
   HttpException(this.message, {this.uri, this.statusCode});
 
   @override
-  String toString() => 'HttpException: $message (status: $statusCode, url: $uri)';
+  String toString() =>
+      'HttpException: $message (status: $statusCode, url: $uri)';
 }
 
 class NetworkException implements Exception {

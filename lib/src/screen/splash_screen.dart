@@ -1,9 +1,11 @@
 // lib/screen/splash_screen.dart
-import 'dart:ui' show ImageFilter;
+
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../core/utils/session_manager.dart';
+import '../features/property/presentation/bloc/properties_bloc.dart';
 import 'home.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -106,9 +108,13 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _goToHome() async {
     try {
       // Still restore session in background (for profile, favorites, etc.)
-      await SessionManager().restore();
+      // await SessionManager().restore();
 
       if (!mounted) return;
+
+      // ✅ Fetch properties AFTER language is ready
+      final propertiesBloc = context.read<PropertiesBloc>();
+      propertiesBloc.add(const LoadProperties(endpoint: 'properties'));
 
       // Always go to Home — guest or logged in
       Navigator.of(context).pushReplacement(

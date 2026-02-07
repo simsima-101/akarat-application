@@ -38,11 +38,9 @@ class LocalizationCubit extends Cubit<LocalizationState> {
     String languageCode;
 
     if (Platform.isIOS) {
-      // Use system locale
       final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
-      languageCode = L10n.all.contains(Locale(systemLocale.languageCode))
-          ? systemLocale.languageCode
-          : 'en';
+      final code = systemLocale.languageCode;
+      languageCode = L10n.all.contains(Locale(code)) ? code : 'en';
     } else {
       // Android → read from secure storage
       languageCode =

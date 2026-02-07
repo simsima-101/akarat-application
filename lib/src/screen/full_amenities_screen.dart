@@ -3,10 +3,11 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+// If your Amenity model is elsewhere, import it here
 import '../features/property/data/models/amenities_model.dart';
 
 class FullAmenitiesScreen extends StatefulWidget {
-  final List<Amenities> allAmenities;
+  final List<Amenities> allAmenities; // ← Now singular: Amenity
   final List<int> selectedAmenitiesIds;
   final Function(List<int>) onDone;
 
@@ -22,224 +23,199 @@ class FullAmenitiesScreen extends StatefulWidget {
 }
 
 class _FullAmenitiesScreenState extends State<FullAmenitiesScreen> {
-  late List<int> _selectedIds;
-  Timer? _debounce;
+  late List<int> _selected;
+  Timer? _searchDebounce;
   String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    _selectedIds = List.from(widget.selectedAmenitiesIds);
+    _selected = List.from(widget.selectedAmenitiesIds);
   }
 
   @override
   void dispose() {
-    _debounce?.cancel();
+    _searchDebounce?.cancel();
     super.dispose();
   }
 
+  // Simple client-side search filter
   List<Amenities> get _filteredAmenities {
     if (_searchQuery.isEmpty) {
       return widget.allAmenities;
     }
-
-    final query = _searchQuery.toLowerCase().trim();
-    final currentLang = Localizations.localeOf(context).languageCode.toLowerCase();
-
+    final lowerQuery = _searchQuery.toLowerCase();
     return widget.allAmenities.where((amenity) {
-      final title = amenity.getTitle(currentLang) ?? '';
-      return title.toLowerCase().contains(query);
+      return amenity.title?.toLowerCase().contains(lowerQuery) ?? false;
     }).toList();
   }
 
-  bool get _isRtl => Localizations.localeOf(context).languageCode == 'ar';
-
   @override
   Widget build(BuildContext context) {
-    final locale = Localizations.localeOf(context);
-    final isArabic = locale.languageCode == 'ar';
-    final filtered = _filteredAmenities;
+    final filteredList = _filteredAmenities;
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87),
-        title: Text(
-          isArabic ? 'وسائل الراحة' : 'Amenities',
-          style: const TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.w600,
-          ),
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.black),
+        title: const Text(
+          "Amenities",
+          style: TextStyle(color: Colors.black),
         ),
-        centerTitle: true,
+        elevation: 0,
       ),
-      body: Directionality(
-        textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
-        child: Column(
-          children: [
-            // Search bar
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: isArabic ? 'ابحث عن وسيلة راحة...' : 'Search amenities...',
-                  hintStyle: TextStyle(color: Colors.grey.shade500),
-                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
+      body: Column(
+        children: [
+          // 🔍 Search bar (client-side filtering)
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search amenities...',
+                hintStyle: TextStyle(color: Colors.grey.shade600),
+                filled: true,
+                fillColor: Colors.grey.shade100,
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none,
                 ),
-                textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
-                onChanged: (value) {
-                  _debounce?.cancel();
-                  _debounce = Timer(const Duration(milliseconds: 350), () {
-                    if (mounted) {
-                      setState(() => _searchQuery = value.trim());
-                    }
+              ),
+              onChanged: (query) {
+                // Debounce for smooth typing
+                _searchDebounce?.cancel();
+                _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+                  setState(() {
+                    _searchQuery = query.trim();
                   });
-                },
-              ),
+                });
+              },
             ),
+          ),
 
-            // Grid or empty state
-            Expanded(
-              child: filtered.isEmpty
-                  ? Center(
-                child: Text(
-                  _searchQuery.isEmpty
-                      ? (isArabic ? 'لا توجد وسائل راحة متاحة' : 'No amenities available')
-                      : (isArabic ? 'لا توجد نتائج مطابقة' : 'No matching results'),
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              )
-                  : GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 4.2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                ),
-                itemCount: filtered.length,
-                itemBuilder: (context, index) {
-                  final amenity = filtered[index];
-                  final isSelected = _selectedIds.contains(amenity.id);
-
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        if (isSelected) {
-                          _selectedIds.remove(amenity.id);
-                        } else {
-                          _selectedIds.add(amenity.id!);
-                        }
-                      });
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isSelected ? Colors.red.shade700 : Colors.grey.shade300,
-                          width: isSelected ? 2 : 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.06),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      child: Row(
-                        children: [
-                          // Icon
-                          CachedNetworkImage(
-                            imageUrl: amenity.icon ?? '',
-                            width: 24,
-                            height: 24,
-                            fit: BoxFit.contain,
-                            placeholder: (context, url) => const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                            errorWidget: (context, url, error) => const Icon(
-                              Icons.broken_image_outlined,
-                              size: 24,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-
-                          // Title
-                          Expanded(
-                            child: Text(
-                              amenity.getTitle(locale.languageCode) ?? 'Unknown',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: isArabic ? 'Tajawal' : null,
-                                height: 1.3,
-                              ),
-                              textAlign: isArabic ? TextAlign.right : TextAlign.left,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            // Done button
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      widget.onDone(_selectedIds);
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade700,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
+          // 📦 Amenities Grid
+          Expanded(
+            child: filteredList.isEmpty
+                ? Center(
                     child: Text(
-                      isArabic ? 'تم' : 'Done',
+                      _searchQuery.isEmpty
+                          ? 'No amenities available'
+                          : 'No amenities found',
                       style: const TextStyle(
                         fontSize: 16,
+                        color: Colors.grey,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.all(10),
+                    itemCount: filteredList.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 4,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                    ),
+                    itemBuilder: (_, index) {
+                      final amenity = filteredList[index];
+                      final bool isSelected = _selected.contains(amenity.id);
+
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (isSelected) {
+                              _selected.remove(amenity.id);
+                            } else {
+                              _selected.add(amenity.id!);
+                            }
+                          });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.black87
+                                  : Colors.grey.shade300,
+                              width: isSelected ? 2 : 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 3,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Row(
+                            children: [
+                              CachedNetworkImage(
+                                imageUrl: amenity.icon ?? '',
+                                width: 18,
+                                height: 18,
+                                placeholder: (context, url) => const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 1.5,
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(
+                                  Icons.broken_image,
+                                  size: 18,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  amenity.title ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
+          ),
+
+          // ✅ Done Button
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () {
+                  widget.onDone(_selected);
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  "Done",
+                  style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

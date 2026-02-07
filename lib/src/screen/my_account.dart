@@ -5,19 +5,23 @@ import 'dart:io';
 import 'package:Akarat/src/screen/privacy.dart';
 import 'package:Akarat/src/screen/register_screen.dart';
 import 'package:Akarat/src/screen/saved_alert_screen.dart';
+import 'package:Akarat/src/screen/splash_screen.dart';
 import 'package:Akarat/src/screen/support.dart';
 import 'package:Akarat/src/screen/terms_condition.dart';
 import 'package:app_settings/app_settings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../general/widgets/lanagauage_dailog.dart';
 import '../../l10n/app_localizations.dart';
 import '../core/services/api_service.dart';
 import '../core/utils/secure_storage.dart';
 import '../core/utils/session_manager.dart';
 import '../features/find_agent/presentation/pages/findagent.dart';
+import '../features/localization/presentation/bloc/localization_cubit.dart';
 import '../utils/fav_logout.dart';
 import '../widgets/custom_alert_box.dart';
 import 'ContactFormScreen.dart';
@@ -446,18 +450,37 @@ class _My_AccountState extends State<My_Account> {
 
           // Language Tile - Opens native per-app language settings
           _settingsTile(
-            l10n?.language ?? "Language",
+            "Language",
             "assets/images/terms-and-conditions.png", // Recommended: add a globe icon
             () async {
-              try {
-                // Direct to app language settings on Android 13+ / falls back on iOS
-                await AppSettings.openAppSettings(
-                    type: AppSettingsType.appLocale);
-              } catch (e) {
-                // Fallback to general app settings
-                await AppSettings.openAppSettings(
-                    type: AppSettingsType.settings);
-              }
+              showChangeLanguageDialog(
+                  context: context,
+
+                  ////// FOR IOS //////
+                  onOpenSettings: () async {
+                    try {
+                      await AppSettings.openAppSettings(
+                        type: AppSettingsType.settings,
+                      );
+                    } catch (e) {
+                      await AppSettings.openAppSettings(
+                        type: AppSettingsType.settings,
+                      );
+                    }
+                  },
+
+                  ////// FOR ANDROID //////
+                  onLanguageSelected: (lang) async {
+                    await context
+                        .read<LocalizationCubit>()
+                        .updateLocale(lang.languageCode);
+
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SplashScreen()),
+                      (route) => false,
+                    );
+                  });
             },
           ),
           _settingsTile(

@@ -3,9 +3,7 @@ import 'dart:convert';
 import 'package:Akarat/main.dart';
 import 'package:Akarat/src/features/property/data/models/property_model.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_core/core.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
@@ -316,7 +314,7 @@ class FilterProvider extends ChangeNotifier {
     return first;
   }
 
-  Uri buildFilterUri({
+  Map<String, dynamic> buildFilterQueryParams({
     String? page,
     List<String?>? search,
     String? propertyType,
@@ -397,11 +395,7 @@ class FilterProvider extends ChangeNotifier {
       queryParams['amenities'] = amenities.join(',');
     }
 
-    return Uri.https(
-      'akarat.com',
-      '/api/filters',
-      queryParams,
-    );
+    return queryParams;
   }
 
   String? nextPageUrl;
@@ -455,7 +449,7 @@ class FilterProvider extends ChangeNotifier {
         currentPage = "1";
       }
 
-      final uri = buildFilterUri(
+      final filterQP = buildFilterQueryParams(
         page: currentPage,
         agencyName: agentOrAgencyController.text.trim().toLowerCase(),
         agentName: agentOrAgencyController.text.trim().toLowerCase(),
@@ -479,9 +473,15 @@ class FilterProvider extends ChangeNotifier {
         completions_min: completion_min,
       );
 
-      debugPrint('📢 Filter API URL: $uri'); // log the URL
+      // debugPrint('📢 Filter API URL: $uri'); // log the URL
 
-      final response = await http.get(uri);
+      // Use the new ApiService
+      final response = await ApiService.get(
+        'filters',
+        query: filterQP,
+      );
+
+      // final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -551,9 +551,11 @@ class FilterProvider extends ChangeNotifier {
       isPropertyTypeLoading = true;
       notifyListeners();
 
-      final uri = ApiService.buildUri('property-types/$purpose');
+      // final uri = ApiService.buildUri('property-types/$purpose');
+      //
+      // final response = await http.get(uri);
 
-      final response = await http.get(uri);
+      final response = await ApiService.get('property-types/$purpose');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -572,36 +574,17 @@ class FilterProvider extends ChangeNotifier {
   }
 
   Future<void> fetchAmenities() async {
-    final prefs = await SharedPreferences.getInstance();
-    final cachedKey = 'cached_amenities';
-    final cachedTimeKey = 'cached_time_amenities';
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final lastFetched = prefs.getInt(cachedTimeKey) ?? 0;
-
-    // If cached data is fresh (<6 hours), use it
-    if (now - lastFetched < Duration(hours: 6).inMilliseconds) {
-      final cachedData = prefs.getString(cachedKey);
-      if (cachedData != null) {
-        final List<dynamic> jsonData = json.decode(cachedData);
-
-        amenities = jsonData.map((data) => Amenities.fromJson(data)).toList();
-
-        return;
-      }
-    }
-
     // Fetch data from API if not cached or cache has expired
     try {
-      final uri = ApiService.buildUri('amenities');
+      // final uri = ApiService.buildUri('amenities');
 
-      final response = await http.get(uri).timeout(const Duration(seconds: 8));
+      // final response = await http.get(uri).timeout(const Duration(seconds: 8));
+
+      final response = await ApiService.get('amenities')
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
-
-        // Save data to cache
-        prefs.setString(cachedKey, response.body);
-        prefs.setInt(cachedTimeKey, now);
 
         amenities = jsonData.map((data) => Amenities.fromJson(data)).toList();
       } else {
@@ -620,9 +603,12 @@ class FilterProvider extends ChangeNotifier {
 
       // FETCH AMENITIES
 
-      final uri = ApiService.buildUri('amenities');
+      // final uri = ApiService.buildUri('amenities');
 
-      final response = await http.get(uri).timeout(const Duration(seconds: 8));
+      // final response = await http.get(uri).timeout(const Duration(seconds: 8));
+
+      final response = await ApiService.get('amenities')
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body) as List;
@@ -638,11 +624,15 @@ class FilterProvider extends ChangeNotifier {
         final initialPropertyType =
             selectedPropType == 0 ? 'Residential' : 'Commercial';
 
-        final propertyUri =
-            ApiService.buildUri('property-types/$initialPropertyType');
+        // final propertyUri =
+        //     ApiService.buildUri('property-types/$initialPropertyType');
+        //
+        // final propertyResponse =
+        //     await http.get(propertyUri).timeout(const Duration(seconds: 8));
 
         final propertyResponse =
-            await http.get(propertyUri).timeout(const Duration(seconds: 8));
+            await ApiService.get('property-types/$purpose');
+
         if (propertyResponse.statusCode == 200) {
           final data = json.decode(propertyResponse.body);
           propertyTypeModel = PropertyTypeModel.fromJson(data);
@@ -1310,10 +1300,11 @@ class FilterProvider extends ChangeNotifier {
       isFilterListPropertyTypeLoading = true;
       notifyListeners();
 
-      final uri = ApiService.buildUri('property-types/$purpose');
+      // final uri = ApiService.buildUri('property-types/$purpose');
 
-      final response = await http.get(uri).timeout(const Duration(seconds: 10));
-
+      // final response = await http.get(uri).timeout(const Duration(seconds: 10));
+      final response = await ApiService.get('property-types/$purpose')
+          .timeout(const Duration(seconds: 30));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final feature = PropertyTypeModel.fromJson(data);
