@@ -1,14 +1,70 @@
 {
-  "appTitle": "Akarat",
+  "@@locale": "en",
+
+  "appTitle": "Properties",
   "search": "Search",
   "properties": "Properties",
   "hello": "Hello",
   "language": "Language",
-
   "myAccount": "My Account",
   "@myAccount": {
     "description": "Title for the My Account screen"
   },
+  "newProjectsSubtitle": "Find off-plan development and everything you need to know to invest in UAE's real estate market",
+  "@newProjectsSubtitle": {
+    "description": "Subtitle text shown on the New Projects screen"
+  },
 
-  "@@locale": "en"
+  "errorLoadingProjects": "Failed to load projects.",
+  "@errorLoadingProjects": {
+    "description": "Error message when projects fail to load"
+  },
+
+  "noProjectsFound": "No properties found.",
+  "@noProjectsFound": {
+    "description": "Message when no projects are available"
+  },
+
+  "projectInformation": "Project Information",
+  "@projectInformation": {
+    "description": "Section title for project details"
+  },
+    "projectDetail": "Project Detail",
+    "@projectDetail": {
+      "description": "Title for the project detail screen/app bar"
+    },
+
+    "noData": "No data available",
+    "@noData": {
+      "description": "Message shown when project data is missing or null"
+    },
+
+     "latestProjectsTitle": "Latest Projects in Dubai",
+     "@latestProjectsTitle": {
+       "description": "Message shown when latest project in Dubai"
+},
+
+  "loginRequired": "Login Required",
+  "@loginRequired": {
+    "description": "Title of the dialog that appears when user tries to access favorites without being logged in"
+  },
+
+  "loginToAccessFavorites": "Please login to access your favorites.",
+  "@loginToAccessFavorites": {
+    "description": "Message explaining why login is needed to view favorites"
+  },
+
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Button text to close/cancel the login dialog"
+  },
+
+  "login": "Login",
+  "@login": {
+    "description": "Button text that takes the user to the login screen"
+  },
+    "newProjectsTitle": "New Projects",
+    "@newProjectsTitle": {
+      "description": "Title of the New Projects screen / app bar"
+    }
 }

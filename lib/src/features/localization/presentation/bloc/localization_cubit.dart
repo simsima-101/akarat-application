@@ -8,49 +8,94 @@ import '../../repo/localization_repo.dart';
 import 'localization_state.dart';
 
 class LocalizationCubit extends Cubit<LocalizationState> {
-  final LocalizationRepository _localizationRepository;
+  final LocalizationRepository _repo;
 
-  LocalizationCubit(this._localizationRepository)
+  bool _isUserOverridden = false;
+  bool get isUserOverridden => _isUserOverridden;
+
+  LocalizationCubit(this._repo)
       : super(const LocalizationState(language: 'en', locale: Locale('en'))) {
-    _initializeLocale();
+    _loadInitial();
   }
 
-  /// On Android: saves to secure storage
-  /// On iOS: just updates state, no storage
-  Future<void> updateLocale(String value) async {
-    if (!L10n.all.contains(Locale(value))) {
-      debugPrint("->->-> Language '$value' not found in L10n list");
+  /// Load initial language at app startup
+  Future<void> _loadInitial() async {
+    String code = 'en';
+
+    if (Platform.isIOS) {
+      // iOS: always follow system locale (no persistent override)
+      final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
+      code = _resolveSupportedLanguage(systemLocale.languageCode);
+    } else {
+      // Android: respect user override if exists
+      final saved = await _repo.getSavedLanguage();
+      final overridden = await _repo.getIsOverriddenFlag() ?? false;
+
+      if (overridden && saved != null && L10n.all.any((l) => l.languageCode == saved)) {
+        _isUserOverridden = true;
+        code = saved;
+      } else {
+        // Fallback to system
+        final sys = WidgetsBinding.instance.platformDispatcher.locale;
+        code = _resolveSupportedLanguage(sys.languageCode);
+      }
+    }
+
+    emit(state.copyWith(language: code, locale: Locale(code)));
+  }
+
+  /// Manually change language
+  Future<void> setLanguage(String langCode, {required bool isUserChoice}) async {
+    if (!L10n.all.any((l) => l.languageCode == langCode)) {
+      debugPrint("→ Language code '$langCode' is not supported.");
       return;
     }
 
-    emit(state.copyWith(language: value, locale: Locale(value)));
+    if (isUserChoice) {
+      _isUserOverridden = true;
+      if (!Platform.isIOS) {
+        // Only save on Android
+        await _repo.saveLanguage(langCode);
+        await _repo.setOverriddenFlag(true);
+      }
+    }
+
+    emit(state.copyWith(language: langCode, locale: Locale(langCode)));
+  }
+
+  /// Reset to follow system language
+  Future<void> resetToSystem() async {
+    _isUserOverridden = false;
 
     if (!Platform.isIOS) {
-      // Only save on Android
-      await _localizationRepository.addLanguageToSecureStorage(value);
-    }
-  }
-
-  /// Load locale at startup
-  /// iOS → system locale
-  /// Android → stored locale or default
-  Future<void> _initializeLocale() async {
-    String languageCode;
-
-    if (Platform.isIOS) {
-      final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
-      final code = systemLocale.languageCode;
-      languageCode = L10n.all.contains(Locale(code)) ? code : 'en';
-    } else {
-      // Android → read from secure storage
-      languageCode =
-          await _localizationRepository.getLanguageFromSecureStorage('en');
+      // Clear override on Android only
+      await _repo.setOverriddenFlag(false);
+      // Optionally clear saved language (optional)
+      // await _repo.saveLanguage(null);
     }
 
-    emit(state.copyWith(language: languageCode, locale: Locale(languageCode)));
+    final sys = WidgetsBinding.instance.platformDispatcher.locale;
+    final code = _resolveSupportedLanguage(sys.languageCode);
+
+    emit(state.copyWith(language: code, locale: Locale(code)));
   }
 
-  /// Optional helper to get current locale for API calls
+  /// Map any language code to supported one or fallback to 'en'
+  String _resolveSupportedLanguage(String code) {
+    final supportedCodes = L10n.all.map((l) => l.languageCode).toSet();
+    if (supportedCodes.contains(code)) return code;
+
+    // Fallback for variants like 'ar_AE' → 'ar'
+    final baseCode = code.split('_').first;
+    return supportedCodes.contains(baseCode) ? baseCode : 'en';
+  }
+
+  /// Getters
   String get currentLanguageCode => state.language;
   Locale get currentLocale => state.locale;
+
+  /// Legacy method name (optional)
+  Future<void> updateLocale(String value) async {
+    await setLanguage(value, isUserChoice: true);
+  }
 }

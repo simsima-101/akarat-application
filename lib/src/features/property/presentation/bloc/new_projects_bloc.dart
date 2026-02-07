@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import '../../../../core/services/api_service.dart';
 
+import '../../../localization/presentation/bloc/localization_cubit.dart';
 import '../../data/models/project_model.dart'; // Adjust if path is different
 
 part 'new_projects_event.dart';
@@ -16,9 +17,22 @@ part 'new_projects_state.dart';
 // ... (imports and part declarations remain the same)
 
 class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
-  NewProjectsBloc() : super(const NewProjectsState.initial()) {
+  final LocalizationCubit localizationCubit;
+
+  NewProjectsBloc({
+    required this.localizationCubit,
+  }) : super(const NewProjectsState.initial()) {
     on<LoadNewProjects>(_onLoadNewProjects);
     on<LoadMoreNewProjects>(_onLoadMoreNewProjects);
+  }
+
+  String get _acceptLanguage {
+    final lang = localizationCubit.state.language.toLowerCase();
+    return switch (lang) {
+      'ar' => 'ar',
+      'tr' => 'tr',
+      _ => 'en',
+    };
   }
 
   Future<void> _onLoadNewProjects(
@@ -28,18 +42,7 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
     emit(state.copyWith(status: NewProjectsStatus.loading));
 
     try {
-      // Language detection (same logic)
-      String langCode = 'en';
-      try {
-        langCode = WidgetsBinding.instance.window.locale.languageCode.toLowerCase();
-      } catch (_) {}
-
-      final acceptLanguage = switch (langCode) {
-        'ar' => 'ar',
-        'tr' => 'tr',
-        _ => 'en',
-      };
-
+      final acceptLanguage = _acceptLanguage;
       debugPrint('→ NewProjects list (page 1) → Accept-Language: $acceptLanguage');
 
       final uri = ApiService.buildUri('new-projects', query: {'page': '1'});
@@ -63,16 +66,12 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
           hasMore: hasMore,
         ));
       } else {
-        emit(state.copyWith(
-          status: NewProjectsStatus.error,
-          errorMessage: 'Failed to load projects',
-        ));
+        emit(state.copyWith(status: NewProjectsStatus.error));
+        // Removed errorMessage → handle in UI with AppLocalizations
       }
     } catch (e) {
-      emit(state.copyWith(
-        status: NewProjectsStatus.error,
-        errorMessage: 'Connection failed',
-      ));
+      debugPrint('NewProjects load error: $e');
+      emit(state.copyWith(status: NewProjectsStatus.error));
     }
   }
 
@@ -85,17 +84,7 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
     emit(state.copyWith(status: NewProjectsStatus.loadingMore));
 
     try {
-      String langCode = 'en';
-      try {
-        langCode = WidgetsBinding.instance.window.locale.languageCode.toLowerCase();
-      } catch (_) {}
-
-      final acceptLanguage = switch (langCode) {
-        'ar' => 'ar',
-        'tr' => 'tr',
-        _ => 'en',
-      };
-
+      final acceptLanguage = _acceptLanguage;
       debugPrint('→ NewProjects load more (page ${state.currentPage}) → Accept-Language: $acceptLanguage');
 
       final uri = ApiService.buildUri('new-projects', query: {'page': '${state.currentPage}'});
@@ -122,6 +111,7 @@ class NewProjectsBloc extends Bloc<NewProjectsEvent, NewProjectsState> {
         emit(state.copyWith(status: NewProjectsStatus.loaded));
       }
     } catch (e) {
+      debugPrint('NewProjects load more error: $e');
       emit(state.copyWith(status: NewProjectsStatus.loaded));
     }
   }

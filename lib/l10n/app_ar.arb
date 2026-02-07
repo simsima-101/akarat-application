@@ -1,4 +1,6 @@
 {
+  "@@locale": "ar",
+
   "appTitle": "عقارات",
   "search": "بحث",
   "properties": "عقارات",
@@ -10,5 +12,61 @@
     "description": "Title for the My Account screen"
   },
 
-  "@@locale": "ar"
+  "newProjectsSubtitle": "اكتشف التطويرات تحت الإنشاء وكل ما تحتاج معرفته للاستثمار في سوق العقارات في الإمارات",
+  "@newProjectsSubtitle": {
+    "description": "Subtitle text shown on the New Projects screen"
+  },
+    "errorLoadingProjects": "فشل تحميل المشاريع.",
+    "@errorLoadingProjects": {
+      "description": "Error message when projects fail to load"
+    },
+
+    "noProjectsFound": "لم يتم العثور على عقارات.",
+    "@noProjectsFound": {
+      "description": "Message when no projects are available"
+    },
+
+    "projectInformation": "معلومات المشروع",
+    "@projectInformation": {
+      "description": "Section title for project details"
+    },
+
+      "projectDetail": "تفاصيل المشروع",
+      "@projectDetail": {
+        "description": "Title for the project detail screen/app bar"
+      },
+
+      "noData": "لا توجد بيانات",
+      "@noData": {
+        "description": "Message shown when project data is missing or null"
+      },
+        "latestProjectsTitle": "أحدث المشاريع في دبي",
+        "@latestProjectsTitle": {
+          "description": "Message shown when latest project in Dubai"
+        },
+
+          "loginRequired": "يتطلب تسجيل الدخول",
+          "@loginRequired": {
+            "description": "Title of the dialog that appears when user tries to access favorites without being logged in"
+          },
+
+          "loginToAccessFavorites": "يرجى تسجيل الدخول للوصول إلى المفضلة.",
+          "@loginToAccessFavorites": {
+            "description": "Message explaining why login is needed to view favorites"
+          },
+
+          "cancel": "إلغاء",
+          "@cancel": {
+            "description": "Button text to close/cancel the login dialog"
+          },
+
+          "login": "تسجيل الدخول",
+          "@login": {
+            "description": "Button text that takes the user to the login screen"
+          },
+            "newProjectsTitle": "المشاريع الجديدة",
+            "@newProjectsTitle": {
+              "description": "Title of the New Projects screen / app bar"
+            }
+
 }

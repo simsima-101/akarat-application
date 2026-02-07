@@ -103,7 +103,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Akarat'**
+  /// **'Properties'**
   String get appTitle;
 
   /// No description provided for @search.
@@ -135,6 +135,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'My Account'**
   String get myAccount;
+
+  /// Subtitle text shown on the New Projects screen
+  ///
+  /// In en, this message translates to:
+  /// **'Find off-plan development and everything you need to know to invest in UAE\'s real estate market'**
+  String get newProjectsSubtitle;
+
+  /// Error message when projects fail to load
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load projects.'**
+  String get errorLoadingProjects;
+
+  /// Message when no projects are available
+  ///
+  /// In en, this message translates to:
+  /// **'No properties found.'**
+  String get noProjectsFound;
+
+  /// Section title for project details
+  ///
+  /// In en, this message translates to:
+  /// **'Project Information'**
+  String get projectInformation;
+
+  /// Title for the project detail screen/app bar
+  ///
+  /// In en, this message translates to:
+  /// **'Project Detail'**
+  String get projectDetail;
+
+  /// Message shown when project data is missing or null
+  ///
+  /// In en, this message translates to:
+  /// **'No data available'**
+  String get noData;
+
+  /// Message shown when latest project in Dubai
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Projects in Dubai'**
+  String get latestProjectsTitle;
+
+  /// Title of the dialog that appears when user tries to access favorites without being logged in
+  ///
+  /// In en, this message translates to:
+  /// **'Login Required'**
+  String get loginRequired;
+
+  /// Message explaining why login is needed to view favorites
+  ///
+  /// In en, this message translates to:
+  /// **'Please login to access your favorites.'**
+  String get loginToAccessFavorites;
+
+  /// Button text to close/cancel the login dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// Button text that takes the user to the login screen
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get login;
+
+  /// Title of the New Projects screen / app bar
+  ///
+  /// In en, this message translates to:
+  /// **'New Projects'**
+  String get newProjectsTitle;
 }
 
 class _AppLocalizationsDelegate

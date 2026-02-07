@@ -1,7 +1,7 @@
-// Core utilities
+import 'dart:async';
+
 import 'package:Akarat/src/core/constants/constants.dart' as ApiService;
 import 'package:Akarat/src/core/utils/session_manager.dart';
-// Blocs
 import 'package:Akarat/src/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:Akarat/src/features/localization/presentation/bloc/localization_cubit.dart';
 import 'package:Akarat/src/features/localization/presentation/bloc/localization_state.dart';
@@ -11,11 +11,9 @@ import 'package:Akarat/src/features/property/presentation/bloc/enquiry_bloc.dart
 import 'package:Akarat/src/features/property/presentation/bloc/favorite_bloc.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/favorite_event.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/properties_bloc.dart';
-// Providers
 import 'package:Akarat/src/providers/favorite_provider.dart';
 import 'package:Akarat/src/providers/filter_provider.dart';
 import 'package:Akarat/src/providers/location_picker_provider.dart';
-// Screens
 import 'package:Akarat/src/screen/forgot_password.dart';
 import 'package:Akarat/src/screen/home.dart';
 import 'package:Akarat/src/screen/login.dart';
@@ -33,29 +31,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-// Localization
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n.dart';
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Global keys
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-    GlobalKey<ScaffoldMessengerState>();
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-// Background message handler
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  debugPrint(
-      "📬 Background message: ${message.notification?.title ?? 'No title'}");
+  debugPrint("📬 Background message: ${message.notification?.title ?? 'No title'}");
 }
 
-// Bloc observer
 class AppBlocObserver extends BlocObserver {
   @override
   void onChange(BlocBase bloc, Change change) {
@@ -70,7 +60,6 @@ class AppBlocObserver extends BlocObserver {
   }
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _initializeAppServices();
@@ -78,14 +67,10 @@ Future<void> main() async {
 }
 
 Future<void> _initializeAppServices() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await dotenv.load(fileName: ".env");
-
   await _initializeRemoteConfig();
-
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   final session = SessionManager();
@@ -101,20 +86,14 @@ Future<void> _initializeAppServices() async {
 
 Future<void> _initializeRemoteConfig() async {
   final rc = FirebaseRemoteConfig.instance;
-
   try {
-    await rc.setDefaults(const {
-      'api_base_url': 'https://api.fallback.example.com',
-    });
-
+    await rc.setDefaults(const {'api_base_url': 'https://api.fallback.example.com'});
     await rc.setConfigSettings(
       RemoteConfigSettings(
         fetchTimeout: const Duration(seconds: 10),
-        minimumFetchInterval:
-            kDebugMode ? Duration.zero : const Duration(hours: 12),
+        minimumFetchInterval: kDebugMode ? Duration.zero : const Duration(hours: 12),
       ),
     );
-
     await rc.fetchAndActivate();
     debugPrint('API Base: ${ApiService.baseUrl}');
   } catch (e) {
@@ -122,7 +101,6 @@ Future<void> _initializeRemoteConfig() async {
   }
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -146,19 +124,27 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // ──────────────────────────────────────────────────────────────────────────────
-  Future<void> _setupNotifications() async {
-    await FirebaseMessaging.instance
-        .requestPermission(alert: true, sound: true);
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    super.didChangeLocales(locales);
+    if (locales != null && locales.isNotEmpty) {
+      final newCode = locales.first.languageCode;
+      final cubit = BlocProvider.of<LocalizationCubit>(context);
+      debugPrint('didChangeLocales → new system locale: $newCode');
+      if (!cubit.isUserOverridden) {
+        cubit.setLanguage(newCode, isUserChoice: false);
+      }
+    }
+  }
 
+  Future<void> _setupNotifications() async {
+    await FirebaseMessaging.instance.requestPermission(alert: true, sound: true);
     FirebaseMessaging.onMessage.listen(_showLocalNotification);
 
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosInit = DarwinInitializationSettings();
 
-    const initSettings =
-        InitializationSettings(android: androidInit, iOS: iosInit);
-
+    const initSettings = InitializationSettings(android: androidInit, iOS: iosInit);
     await _localNotifications.initialize(initSettings);
   }
 
@@ -184,7 +170,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -193,101 +178,91 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (_) => LocationPickerProvider()),
         ChangeNotifierProvider(create: (_) => FavoriteProvider()),
       ],
-      child: Builder(
-        builder: (context) {
-          return MultiBlocProvider(
-            providers: [
-              BlocProvider(
-                create: (_) => LocalizationCubit(LocalizationRepository()),
-              ),
-              BlocProvider(create: (_) => AuthBloc()..add(AppStarted())),
-              BlocProvider(
-                  create: (_) => FavoriteBloc()..add(const LoadFavorites())),
-              // BlocProvider(
-              //   create: (context) => FilterBloc(
-              //     context.read<FilterRepository>(), // ← pass it here
-              //   ),
-              // ),
-              BlocProvider(create: (_) => EnquiryBloc()),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => LocalizationCubit(LocalizationRepository())),
+          BlocProvider(create: (_) => AuthBloc()..add(AppStarted())),
+          BlocProvider(create: (_) => FavoriteBloc()..add(const LoadFavorites())),
+          BlocProvider(create: (_) => EnquiryBloc()),
+          BlocProvider(
+            create: (context) => PropertiesBloc(
+              repository: PropertyRepository(),
+            )..add(const LoadProperties(endpoint: 'properties')),
+          ),
+        ],
+        child: BlocBuilder<LocalizationCubit, LocalizationState>(
+          builder: (context, locState) {
+            debugPrint(
+              "→ MaterialApp rebuilt | locale = ${locState.locale.languageCode} | language = ${locState.language}",
+            );
 
-              BlocProvider(
-                  create: (context) => PropertiesBloc(
-                        repository: PropertyRepository(),
-                      )),
-            ],
-            child: BlocListener<AuthBloc, AuthState>(
-              listener: (context, state) {
-                if (state is AuthUnauthenticated) {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    '/login',
-                    (_) => false,
+            return MaterialApp(
+              locale: locState.locale,
+              title: 'Akarat',
+              debugShowCheckedModeBanner: false,
+              navigatorKey: navigatorKey,
+              scaffoldMessengerKey: scaffoldMessengerKey,
+
+              // ── Critical: correct delegates & supported locales ──
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+
+              // Alternative explicit version (uncomment if needed):
+              // localizationsDelegates: const [
+              //   AppLocalizations.delegate,
+              //   GlobalMaterialLocalizations.delegate,
+              //   GlobalWidgetsLocalizations.delegate,
+              //   GlobalCupertinoLocalizations.delegate,
+              // ],
+              // supportedLocales: const [
+              //   Locale('en'),
+              //   Locale('ar'),
+              //   Locale('tr'),
+              // ],
+
+              builder: (context, child) {
+                final langCode = BlocProvider.of<LocalizationCubit>(context).currentLocale.languageCode;
+                return Directionality(
+                  textDirection: langCode == 'ar' ? TextDirection.rtl : TextDirection.ltr,
+                  child: child!,
+                );
+              },
+
+              theme: ThemeData(
+                useMaterial3: true,
+                colorSchemeSeed: const Color(0xFFE01E26),
+                fontFamily: 'Tajawal',
+              ),
+
+              home: const SplashScreen(),
+
+              routes: {
+                '/login': (_) => const Login(),
+                '/register': (_) => const RegisterScreen(),
+                '/home': (_) => const Home(),
+                '/my-account': (_) => const My_Account(),
+                '/forgot-password': (_) => const ForgotPasswordScreen(),
+                '/new-projects': (_) => const NewProjectsScreen(),
+              },
+
+              onGenerateRoute: (settings) {
+                if (settings.name == '/verify-otp') {
+                  return MaterialPageRoute(builder: (_) => const OtpVerificationScreen());
+                }
+                if (settings.name == '/reset-password') {
+                  final args = settings.arguments as Map<String, dynamic>? ?? {};
+                  return MaterialPageRoute(
+                    builder: (_) => ResetPasswordScreen(
+                      email: args['email'] ?? '',
+                      token: args['token'] ?? '',
+                    ),
                   );
                 }
+                return null;
               },
-              child: BlocBuilder<LocalizationCubit, LocalizationState>(
-                builder: (context, state) {
-                  return MaterialApp(
-                    title: 'Akarat',
-                    debugShowCheckedModeBanner: false,
-                    navigatorKey: navigatorKey,
-                    scaffoldMessengerKey: scaffoldMessengerKey,
-                    locale: state.locale,
-                    supportedLocales: L10n.all,
-                    localizationsDelegates: const [
-                      AppLocalizations.delegate,
-                      GlobalMaterialLocalizations.delegate,
-                      GlobalWidgetsLocalizations.delegate,
-                      GlobalCupertinoLocalizations.delegate,
-                    ],
-                    builder: (context, child) {
-                      return Directionality(
-                        // Flutter can detect RTL automatically from locale
-                        // But you can also force it if needed:
-                        textDirection: TextDirection.rtl,
-                        child: child!,
-                      );
-                    },
-                    theme: ThemeData(
-                      useMaterial3: true,
-                      colorSchemeSeed: const Color(0xFFE01E26),
-                      fontFamily: 'Tajawal',
-                    ),
-                    home: const SplashScreen(),
-                    routes: {
-                      '/login': (_) => const Login(),
-                      '/register': (_) => const RegisterScreen(),
-                      '/home': (_) => const Home(),
-                      '/my-account': (_) => const My_Account(),
-                      '/forgot-password': (_) => const ForgotPasswordScreen(),
-                      '/new-projects': (_) => const NewProjectsScreen(),
-                    },
-                    onGenerateRoute: (settings) {
-                      if (settings.name == '/verify-otp') {
-                        return MaterialPageRoute(
-                          builder: (_) => const OtpVerificationScreen(),
-                        );
-                      }
-
-                      if (settings.name == '/reset-password') {
-                        final args =
-                            settings.arguments as Map<String, dynamic>? ?? {};
-                        return MaterialPageRoute(
-                          builder: (_) => ResetPasswordScreen(
-                            email: args['email'] ?? '',
-                            token: args['token'] ?? '',
-                          ),
-                        );
-                      }
-
-                      return null;
-                    },
-                  );
-                },
-              ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

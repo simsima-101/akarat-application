@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -11,6 +10,7 @@ import '../../core/services/api_service.dart';
 import '../../core/utils/secure_storage.dart';
 import '../../core/utils/session_manager.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/localization/presentation/bloc/localization_cubit.dart';
 import '../../features/property/data/models/property_model.dart';
 import '../../features/property/presentation/bloc/favorite_bloc.dart';
 import '../../features/property/presentation/bloc/favorite_event.dart';
@@ -52,45 +52,32 @@ class PropertyCard extends StatelessWidget {
     return input;
   }
 
-  Future<bool> markAsContacted(int propertyId, {required String contactType}) async {
+  Future<bool> markAsContacted(
+      BuildContext context,
+      int propertyId, {
+        required String contactType,
+      }) async {
     if (propertyId <= 0) return false;
+
     final token = SessionManager().token ?? await SecureStorage.getToken();
     if (token == null || token.isEmpty) return false;
 
     try {
-      // ────────────────────────────────────────────────
-      // Same language detection logic as in PropertyRepository
-      // ────────────────────────────────────────────────
-      String langCode = 'en'; // default fallback
+      final currentLang = context.read<LocalizationCubit>().state.language;
 
-      try {
-        langCode = WidgetsBinding.instance.window.locale.languageCode.toLowerCase();
-      } catch (e) {
-        debugPrint('Warning (markAsContacted): Could not read window.locale → fallback to en');
-      }
-
-      String acceptLanguage;
-      switch (langCode) {
-        case 'ar':
-          acceptLanguage = 'ar';
-          break;
-        case 'tr':
-          acceptLanguage = 'tr'; // Turkish support
-          break;
-        default:
-          acceptLanguage = 'en';
-      }
-
-      debugPrint('→ markAsContacted → Accept-Language: $acceptLanguage (lang: $langCode)');
+      debugPrint('→ markAsContacted → Accept-Language: $currentLang');
 
       final response = await http.post(
         ApiService.buildUri('property-contact'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
-          'Accept-Language': acceptLanguage,  // ← Key addition: same logic as detail fetch
+          'Accept-Language': currentLang,
         },
-        body: jsonEncode({"property_id": propertyId, "contact_type": contactType}),
+        body: jsonEncode({
+          "property_id": propertyId,
+          "contact_type": contactType,
+        }),
       );
 
       return response.statusCode == 200 || response.statusCode == 201;
@@ -98,6 +85,37 @@ class PropertyCard extends StatelessWidget {
       debugPrint('Error marking as contacted: $e');
       return false;
     }
+  }
+
+  // Helper to safely load any image with fallback
+  Widget _safeCachedImage(
+      String? url, {
+        double? height,
+        double? width,
+        BoxFit fit = BoxFit.cover,
+        Widget? placeholder,
+        Widget? errorWidget,
+      }) {
+    if (url == null || url.trim().isEmpty) {
+      return Container(
+        height: height,
+        width: width,
+        color: Colors.grey[200],
+        alignment: Alignment.center,
+        child: errorWidget ?? const Icon(Icons.broken_image, color: Colors.grey, size: 32),
+      );
+    }
+
+    return CachedNetworkImage(
+      imageUrl: url,
+      height: height,
+      width: width,
+      fit: fit,
+      placeholder: (context, url) =>
+      placeholder ?? const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      errorWidget: (context, url, error) =>
+      errorWidget ?? const Icon(Icons.broken_image, color: Colors.grey, size: 32),
+    );
   }
 
   @override
@@ -134,24 +152,12 @@ class PropertyCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Row(
-                        children: [
-                          if (item.postedOn?.isNotEmpty == true)
-                            Text('Listed ${item.postedOn}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                          const SizedBox(width: 8),
-                          if (item.agencyLogo?.isNotEmpty == true)
-                            Container(
-                              height: 30,
-                              width: 30,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(4),
-                                image: DecorationImage(
-                                  image: CachedNetworkImageProvider(item.agencyLogo!),
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ),
-                        ],
+                      _safeCachedImage(
+                        item.agencyLogo,
+                        height: 30,
+                        width: 30,
+                        fit: BoxFit.contain,
+                        errorWidget: const Icon(Icons.business, color: Colors.grey, size: 20),
                       ),
                     ],
                   ),
@@ -161,16 +167,30 @@ class PropertyCard extends StatelessWidget {
                 const Divider(thickness: 0.3),
                 const SizedBox(height: 8),
 
-                Text(item.title ?? 'No title', style: const TextStyle(fontSize: 16, height: 1.4), maxLines: 3, overflow: TextOverflow.ellipsis),
+                Text(
+                  item.title ?? 'No title',
+                  style: const TextStyle(fontSize: 16, height: 1.4),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 5),
-                Text('${item.price ?? 'Price on request'} AED', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+                Text(
+                  '${item.price ?? 'Price on request'} AED',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                ),
                 const SizedBox(height: 5),
 
                 Row(
                   children: [
                     Image.asset("assets/images/map.png", height: 14),
                     const SizedBox(width: 5),
-                    Expanded(child: Text(item.location ?? 'Location not available', style: const TextStyle(fontSize: 13), overflow: TextOverflow.ellipsis)),
+                    Expanded(
+                      child: Text(
+                        item.location ?? 'Location not available',
+                        style: const TextStyle(fontSize: 13),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
 
@@ -182,19 +202,19 @@ class PropertyCard extends StatelessWidget {
                     if (item.bedrooms > 0) ...[
                       Image.asset("assets/images/bed.png", height: 14),
                       const SizedBox(width: 5),
-                      Text("${item.bedrooms}", style: const TextStyle(fontSize: 13))
+                      Text("${item.bedrooms}", style: const TextStyle(fontSize: 13)),
                     ],
                     if (item.bathrooms > 0) ...[
                       if (item.bedrooms > 0) const SizedBox(width: 12),
                       Image.asset("assets/images/bath.png", height: 14),
                       const SizedBox(width: 5),
-                      Text("${item.bathrooms}", style: const TextStyle(fontSize: 13))
+                      Text("${item.bathrooms}", style: const TextStyle(fontSize: 13)),
                     ],
                     if (item.displaySize.isNotEmpty) ...[
                       if (item.bedrooms > 0 || item.bathrooms > 0) const SizedBox(width: 12),
                       Image.asset("assets/images/messure.png", height: 14),
                       const SizedBox(width: 5),
-                      Text(item.displaySize, style: const TextStyle(fontSize: 13))
+                      Text(item.displaySize, style: const TextStyle(fontSize: 13)),
                     ],
                   ],
                 ),
@@ -207,26 +227,33 @@ class PropertyCard extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          await markAsContacted(propertyId, contactType: "call");
+                          await markAsContacted(context, propertyId, contactType: "call");
                           final phone = 'tel:${phoneCallNumber(item.phoneNumber ?? '')}';
                           if (await canLaunchUrlString(phone)) await launchUrlString(phone);
                         },
                         icon: const Icon(Icons.call, color: Colors.red),
                         label: const Text("Call", style: TextStyle(color: Colors.black)),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[100], shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[100],
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          await markAsContacted(propertyId, contactType: "whatsapp");
-                          final url = "https://wa.me/${whatsAppNumber(item.whatsapp ?? '')}?text=${Uri.encodeComponent("Hi, I'm interested in your property: ${item.title ?? ''}")}";
+                          await markAsContacted(context, propertyId, contactType: "whatsapp");
+                          final url = "https://wa.me/${whatsAppNumber(item.whatsapp ?? '')}"
+                              "?text=${Uri.encodeComponent("Hi, I'm interested in your property: ${item.title ?? ''}")}";
                           if (await canLaunchUrlString(url)) await launchUrlString(url);
                         },
                         icon: Image.asset("assets/images/whats.png", height: 20),
                         label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[100], shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[100],
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -242,7 +269,7 @@ class PropertyCard extends StatelessWidget {
 }
 
 // ──────────────────────────────────────────────
-// PropertyImageCarousel remains unchanged
+// PropertyImageCarousel (updated with safe image loading)
 // ──────────────────────────────────────────────
 
 class PropertyImageCarousel extends StatefulWidget {
@@ -273,6 +300,21 @@ class _PropertyImageCarouselState extends State<PropertyImageCarousel> {
     super.dispose();
   }
 
+  Widget _safeCachedImage(String? url) {
+    if (url == null || url.trim().isEmpty) {
+      return const Center(
+        child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+      );
+    }
+
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
+      errorWidget: (_, __, ___) => const Icon(Icons.broken_image, size: 50),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final mediaList = widget.item.media ?? [];
@@ -297,23 +339,13 @@ class _PropertyImageCarouselState extends State<PropertyImageCarousel> {
               controller: _pageController,
               itemCount: mediaList.length,
               onPageChanged: (i) => setState(() => _currentImageIndex = i),
-              itemBuilder: (_, i) => CachedNetworkImage(
-                imageUrl: mediaList[i].originalUrl ?? '',
-                fit: BoxFit.cover,
-                placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
-                errorWidget: (_, __, ___) => const Icon(Icons.broken_image, size: 50),
-              ),
+              itemBuilder: (_, i) => _safeCachedImage(mediaList[i].originalUrl),
             )
-                : CachedNetworkImage(
-              imageUrl: mainImage,
-              fit: BoxFit.cover,
-              placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
-              errorWidget: (_, __, ___) => const Icon(Icons.broken_image, size: 50),
-            ),
+                : _safeCachedImage(mainImage),
           ),
         ),
 
-        // Minimal Dots Indicator - Only show current + nearby dots
+        // Minimal Dots Indicator
         if (hasMultiple)
           Positioned(
             bottom: 16,
@@ -324,13 +356,11 @@ class _PropertyImageCarouselState extends State<PropertyImageCarousel> {
               child: Center(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  physics: const NeverScrollableScrollPhysics(), // No manual scroll
+                  physics: const NeverScrollableScrollPhysics(),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(mediaList.length, (index) {
                       final distance = (index - currentIndex).abs();
-
-                      // Only show current dot + 2 on each side (max 5 dots)
                       if (distance > 2) return const SizedBox.shrink();
 
                       final bool isCurrent = distance == 0;
@@ -343,8 +373,7 @@ class _PropertyImageCarouselState extends State<PropertyImageCarousel> {
                         width: isCurrent ? 11 : 8,
                         height: isCurrent ? 11 : 8,
                         decoration: BoxDecoration(
-                          color: Colors.white
-                              .withOpacity(isCurrent ? 1.0 : isAdjacent ? 0.5 : 0.3),
+                          color: Colors.white.withOpacity(isCurrent ? 1.0 : isAdjacent ? 0.5 : 0.3),
                           shape: BoxShape.circle,
                           boxShadow: isCurrent
                               ? [
@@ -441,18 +470,7 @@ class _PropertyImageCarouselState extends State<PropertyImageCarousel> {
                     ],
                   ),
                   child: ClipOval(
-                    child: CachedNetworkImage(
-                      imageUrl: widget.item.agentImage ?? '',
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.person, size: 32, color: Colors.grey),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.person, size: 32, color: Colors.grey),
-                      ),
-                    ),
+                    child: _safeCachedImage(widget.item.agentImage),
                   ),
                 ),
                 const SizedBox(height: 12),

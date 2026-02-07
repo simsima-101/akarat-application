@@ -9,7 +9,7 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get appTitle => 'Akarat';
+  String get appTitle => 'Emlak';
 
   @override
   String get search => 'Ara';
@@ -25,4 +25,42 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get myAccount => 'Hesabım';
+
+  @override
+  String get newProjectsSubtitle =>
+      'Dubai\'deki yeni inşaat projelerini keşfedin ve BAE emlak piyasasına yatırım yapmak için bilmeniz gereken her şeyi öğrenin';
+
+  @override
+  String get errorLoadingProjects => 'Projeler yüklenemedi.';
+
+  @override
+  String get noProjectsFound => 'Hiç mülk bulunamadı.';
+
+  @override
+  String get projectInformation => 'Proje Bilgileri';
+
+  @override
+  String get projectDetail => 'Proje Detayı';
+
+  @override
+  String get noData => 'Veri yok';
+
+  @override
+  String get latestProjectsTitle => 'Dubai\'deki En Son Projeler';
+
+  @override
+  String get loginRequired => 'Giriş Yapılması Gerekiyor';
+
+  @override
+  String get loginToAccessFavorites =>
+      'Favorilere erişmek için lütfen giriş yapın.';
+
+  @override
+  String get cancel => 'İptal';
+
+  @override
+  String get login => 'Giriş Yap';
+
+  @override
+  String get newProjectsTitle => 'Yeni Projeler';
 }
